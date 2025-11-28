@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "404434331315",
+    "firebase_url": "https://rebtal-default-rtdb.firebaseio.com",
+    "project_id": "rebtal",
+    "storage_bucket": "rebtal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:404434331315:android:513e4190a9df1637a832c6",
+        "android_client_info": {
+          "package_name": "com.example.rebtal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm00q5_ydV9ETNo-uYcCHkwODHD1EpTnc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
