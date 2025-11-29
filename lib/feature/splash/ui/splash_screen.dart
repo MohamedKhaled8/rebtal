@@ -141,7 +141,10 @@ class _SplashScreenState extends State<SplashScreen>
           if (role == 'admin') {
             Navigator.pushReplacementNamed(context, Routes.dashboardScreen);
           } else if (role == 'owner') {
-            Navigator.pushReplacementNamed(context, Routes.ownerScreen);
+            Navigator.pushReplacementNamed(
+              context,
+              Routes.bottomNavigationBarScreen,
+            );
           } else {
             Navigator.pushReplacementNamed(
               context,

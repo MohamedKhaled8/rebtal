@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class SwitchActionTile extends StatelessWidget {
@@ -64,7 +65,7 @@ class SwitchActionTile extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeColor: ColorManager.white,
             activeTrackColor: color,
             inactiveThumbColor: isDark ? Colors.white70 : Colors.grey,
             inactiveTrackColor: isDark ? Colors.white24 : Colors.grey.shade300,

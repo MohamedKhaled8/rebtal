@@ -19,6 +19,13 @@ class BottomNavigationScreen extends StatefulWidget {
 
 class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Reset to Home tab whenever this screen is initialized (app start or login)
+    bottomNavIndex.value = 0;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {

@@ -49,6 +49,21 @@ abstract class ColorManager {
   static const profileGradientDark1 = Color(0xFF0B0F0D);
   static const profileGradientDark2 = Color(0xFF001409);
 
+  static const profileTextPrimaryDark = Colors.white;
+  static const profileTextPrimaryLight = Colors.black;
+
+  static Color getProfileBackground(bool isDark) =>
+      isDark ? profileBackgroundDark : profileBackgroundLight;
+
+  static Color getProfileSurface(bool isDark) =>
+      isDark ? profileSurfaceDark : profileSurfaceLight;
+
+  static Color getProfileSurfaceAlt(bool isDark) =>
+      isDark ? profileSurfaceAltDark : profileSurfaceAltLight;
+
+  static Color getProfileTextPrimary(bool isDark) =>
+      isDark ? profileTextPrimaryDark : profileTextPrimaryLight;
+
   // Owner Bookings Page Colors
   static const bookingsBackgroundDark = Color(0xFF0A0E27);
   static const bookingsBackgroundLight = Color(0xFFF8F9FA);

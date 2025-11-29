@@ -4,12 +4,14 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/theme/painter/pattern_painter.dart';
 import 'package:rebtal/feature/profile/widget/modern_profile_item.dart';
 import 'package:rebtal/feature/profile/widget/switch_action_tile.dart';
 import 'package:rebtal/feature/profile/widget/stat_card.dart';
 import 'package:rebtal/feature/profile/widget/modern_action_tile.dart';
 import 'package:rebtal/feature/profile/widget/chalet_management_tile.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/feature/profile/utils/profile_helper.dart';
 
 class ProfileContent extends StatelessWidget {
   final UserModel user;
@@ -27,20 +29,8 @@ class ProfileContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDark = DynamicThemeManager.isDarkMode(context);
 
-    final Color background = isDark
-        ? ColorManager.profileBackgroundDark
-        : ColorManager.profileBackgroundLight;
-    final Color surface = isDark
-        ? ColorManager.profileSurfaceDark
-        : ColorManager.profileSurfaceLight;
-    final Color surfaceAlt = isDark
-        ? ColorManager.profileSurfaceAltDark
-        : ColorManager.profileSurfaceAltLight;
-    final Color accent = ColorManager.profileAccent;
-    final Color textPrimary = isDark ? Colors.white : Colors.black;
-
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: ColorManager.getProfileBackground(isDark),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -48,7 +38,7 @@ class ProfileContent extends StatelessWidget {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: surface,
+            backgroundColor: ColorManager.getProfileSurface(isDark),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -85,14 +75,16 @@ class ProfileContent extends StatelessWidget {
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
                               colors: [
-                                accent.withOpacity(0.6),
-                                accent.withOpacity(0.2),
+                                ColorManager.profileAccent.withOpacity(0.6),
+                                ColorManager.profileAccent.withOpacity(0.2),
                               ],
                             ),
                           ),
                           child: CircleAvatar(
                             radius: 52,
-                            backgroundColor: surfaceAlt,
+                            backgroundColor: ColorManager.getProfileSurfaceAlt(
+                              isDark,
+                            ),
                             child: Text(
                               user.name.isNotEmpty
                                   ? user.name[0].toUpperCase()
@@ -100,7 +92,7 @@ class ProfileContent extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
-                                color: accent,
+                                color: ColorManager.profileAccent,
                               ),
                             ),
                           ),
@@ -111,7 +103,7 @@ class ProfileContent extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: textPrimary,
+                            color: ColorManager.getProfileTextPrimary(isDark),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -121,15 +113,19 @@ class ProfileContent extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: accent.withOpacity(0.12),
+                            color: ColorManager.profileAccent.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: accent.withOpacity(0.3)),
+                            border: Border.all(
+                              color: ColorManager.profileAccent.withOpacity(
+                                0.3,
+                              ),
+                            ),
                           ),
                           child: Text(
-                            _getRoleText(user.role),
+                            ProfileHelper.getRoleText(user.role),
                             style: TextStyle(
                               fontSize: 12,
-                              color: accent,
+                              color: ColorManager.profileAccent,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -142,7 +138,10 @@ class ProfileContent extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.edit, color: textPrimary),
+                icon: Icon(
+                  Icons.edit,
+                  color: ColorManager.getProfileTextPrimary(isDark),
+                ),
                 onPressed: () {},
               ),
             ],
@@ -157,9 +156,9 @@ class ProfileContent extends StatelessWidget {
                       Expanded(
                         child: StatCard(
                           icon: Icons.calendar_month,
-                          value: _calculateDays(user.createdAt),
+                          value: ProfileHelper.calculateDays(user.createdAt),
                           label: 'أيام معنا',
-                          color: accent,
+                          color: ColorManager.profileAccent,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -176,7 +175,7 @@ class ProfileContent extends StatelessWidget {
                   const SizedBox(height: 16),
                   Container(
                     decoration: BoxDecoration(
-                      color: surfaceAlt,
+                      color: ColorManager.getProfileSurfaceAlt(isDark),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
@@ -194,12 +193,14 @@ class ProfileContent extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: accent.withOpacity(0.12),
+                                  color: ColorManager.profileAccent.withOpacity(
+                                    0.12,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   Icons.person_outline,
-                                  color: accent,
+                                  color: ColorManager.profileAccent,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -208,7 +209,9 @@ class ProfileContent extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: textPrimary,
+                                  color: ColorManager.getProfileTextPrimary(
+                                    isDark,
+                                  ),
                                 ),
                               ),
                             ],
@@ -218,7 +221,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.email_outlined,
                           label: 'البريد الإلكتروني',
                           value: user.email,
-                          iconColor: accent,
+                          iconColor: ColorManager.profileAccent,
                         ),
                         ModernProfileItem(
                           icon: Icons.phone_outlined,
@@ -229,7 +232,7 @@ class ProfileContent extends StatelessWidget {
                         ModernProfileItem(
                           icon: Icons.access_time,
                           label: 'تاريخ الإنشاء',
-                          value: _formatDate(user.createdAt),
+                          value: ProfileHelper.formatDate(user.createdAt),
                           iconColor: const Color(0xFFEAB308),
                           isLast: true,
                         ),
@@ -240,7 +243,7 @@ class ProfileContent extends StatelessWidget {
                   if (user.role.toLowerCase() == 'owner') ...[
                     Container(
                       decoration: BoxDecoration(
-                        color: surfaceAlt,
+                        color: ColorManager.getProfileSurfaceAlt(isDark),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark
@@ -258,12 +261,13 @@ class ProfileContent extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: accent.withOpacity(0.12),
+                                    color: ColorManager.profileAccent
+                                        .withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
                                     Icons.home_outlined,
-                                    color: accent,
+                                    color: ColorManager.profileAccent,
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -272,7 +276,9 @@ class ProfileContent extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
-                                    color: textPrimary,
+                                    color: ColorManager.getProfileTextPrimary(
+                                      isDark,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -302,7 +308,7 @@ class ProfileContent extends StatelessWidget {
                   ],
                   Container(
                     decoration: BoxDecoration(
-                      color: surfaceAlt,
+                      color: ColorManager.getProfileSurfaceAlt(isDark),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
@@ -338,7 +344,9 @@ class ProfileContent extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: textPrimary,
+                                  color: ColorManager.getProfileTextPrimary(
+                                    isDark,
+                                  ),
                                 ),
                               ),
                             ],
@@ -353,12 +361,12 @@ class ProfileContent extends StatelessWidget {
                                   ? Icons.dark_mode
                                   : Icons.light_mode,
                               title: isDarkMode
-                                  ? 'الوضع النهاري'
-                                  : 'الوضع الداكن',
+                                  ? 'الوضع الداكن'
+                                  : 'الوضع النهاري',
                               subtitle: isDarkMode
-                                  ? 'تفعيل المظهر النهاري'
-                                  : 'تفعيل المظهر الداكن',
-                              color: accent,
+                                  ? 'تفعيل المظهر الداكن'
+                                  : 'تفعيل المظهر النهاري',
+                              color: ColorManager.profileAccent,
                               value: isDarkMode,
                               onChanged: (_) {
                                 DynamicThemeManager.toggleTheme(context);
@@ -393,50 +401,4 @@ class ProfileContent extends StatelessWidget {
       ),
     );
   }
-
-  String _getRoleText(String role) {
-    switch (role.toLowerCase()) {
-      case 'user':
-        return 'مستخدم';
-      case 'owner':
-        return 'صاحب شاليه';
-      case 'admin':
-        return 'مدير';
-      default:
-        return 'مستخدم';
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  String _calculateDays(DateTime createdAt) {
-    final days = DateTime.now().difference(createdAt).inDays;
-    return days.toString();
-  }
-}
-
-// Custom Pattern Painter for background
-class PatternPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    const spacing = 30.0;
-
-    for (double i = -size.height; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
