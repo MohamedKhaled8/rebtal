@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class ModernProfileItem extends StatelessWidget {
   final IconData icon;

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 import 'package:rebtal/feature/booking/models/booking.dart';
-import 'package:rebtal/feature/booking/ui/payment_checkout_page.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -341,10 +340,10 @@ class BookingCard extends StatelessWidget {
   }
 
   void _payNow(BuildContext context, Booking booking) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => PaymentCheckoutPage(booking: booking)),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (_) => PaymentCheckoutPage(booking: booking)),
+    // );
   }
 }
 

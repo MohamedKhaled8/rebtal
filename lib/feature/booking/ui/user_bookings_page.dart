@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';

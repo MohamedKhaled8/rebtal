@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/feature/owner/logic/cubit/add_chalet_cubit.dart';
-import 'package:rebtal/core/constants/app_constants.dart';
+import 'package:rebtal/core/utils/constants/app_constants.dart';
 
 class AddChaletScreen extends StatelessWidget {
   const AddChaletScreen({super.key});

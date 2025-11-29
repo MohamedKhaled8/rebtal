@@ -4,7 +4,7 @@ import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_state.dart';
-import 'package:rebtal/core/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class FavoritesPage extends StatelessWidget {

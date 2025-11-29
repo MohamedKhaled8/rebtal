@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/theme/theme_cubit.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 
 class DynamicThemeManager {
   // Private constructor to prevent instantiation

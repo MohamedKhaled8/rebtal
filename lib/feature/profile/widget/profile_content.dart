@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
-import 'package:rebtal/core/theme/theme_cubit.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/profile/widget/modern_profile_item.dart';
 import 'package:rebtal/feature/profile/widget/switch_action_tile.dart';

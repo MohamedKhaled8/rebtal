@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:rebtal/core/services/uri_launcher_service.dart';
+import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/model/chat_model.dart';
 
 class BookingConfirmationPage extends StatefulWidget {

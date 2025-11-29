@@ -4,7 +4,7 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:screen_go/screen_go.dart';
-import 'package:rebtal/core/theme/theme_cubit.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/core/utils/theme/app_theme.dart';
 
 import 'package:flutter/foundation.dart';

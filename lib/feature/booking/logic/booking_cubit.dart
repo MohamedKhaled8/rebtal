@@ -103,6 +103,7 @@ class BookingCubit extends Cubit<BookingState> {
                   chaletLocation: chaletLocation,
                   userPhone: userPhone,
                   userEmail: userEmail,
+                  updatedAt: _parseDateTime(data['updatedAt']),
                 );
               }).toList(),
             );

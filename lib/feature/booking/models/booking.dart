@@ -29,6 +29,7 @@ class Booking {
   final double? amount;
   final DateTime? paidAt;
   final DateTime? paymentExpiresAt;
+  final DateTime? updatedAt;
 
   Booking({
     required this.id,
@@ -52,6 +53,7 @@ class Booking {
     this.amount,
     this.paidAt,
     this.paymentExpiresAt,
+    this.updatedAt,
   });
 
   Map<String, dynamic> toMap() => {
@@ -78,5 +80,6 @@ class Booking {
     'amount': amount,
     'paidAt': paidAt?.toIso8601String(),
     'paymentExpiresAt': paymentExpiresAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
   };
 }

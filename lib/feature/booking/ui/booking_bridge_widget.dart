@@ -4,7 +4,7 @@ import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:rebtal/core/services/uri_launcher_service.dart';
+import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingBridgeWidget extends StatefulWidget {
