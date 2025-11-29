@@ -27,9 +27,8 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <meta-data
-            android:name="com.mapbox.token"
-            android:value="YOUR_MAPBOX_ACCESS_TOKEN" />
+
+        <!-- MapLibre doesn't require access token -->
 
         <!-- نشاط لفتح الروابط الخارجية -->
         <activity

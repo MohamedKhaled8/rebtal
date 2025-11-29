@@ -3,7 +3,7 @@ import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
 import 'package:rebtal/feature/home/widget/header_section.dart';
 import 'package:rebtal/feature/home/widget/category_button.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
-import 'package:rebtal/core/utils/constants/app_constants.dart';
+import 'package:rebtal/core/utils/constant/app_constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:rebtal/core/Router/app_router.dart';
 import 'package:rebtal/core/utils/helper/firebase_options.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
@@ -9,6 +10,9 @@ import 'package:rebtal/rebtal_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   if (kIsWeb) {
     // للويب لازم تبعت الـ options

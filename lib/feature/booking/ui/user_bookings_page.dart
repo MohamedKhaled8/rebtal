@@ -29,11 +29,11 @@ class UserBookingsPage extends StatelessWidget {
         ),
         centerTitle: true,
         backgroundColor: DynamicThemeManager.isDarkMode(context)
-            ? ColorManager.black
+            ? ColorManager.transparent
             : ColorManager.white,
         foregroundColor: DynamicThemeManager.isDarkMode(context)
             ? ColorManager.white
-            : ColorManager.black,
+            : ColorManager.transparent,
         elevation: 0,
         shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,

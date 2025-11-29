@@ -67,8 +67,8 @@ dependencies:
   equatable: ^2.0.7
   # fawry_sdk: ^2.0.15  # temporarily disabled until maven repo is configured
   webview_flutter: ^4.8.0
-  mapbox_maps_flutter: ^2.12.0
-  paymob_payment: ^0.0.1+1
+  maplibre_gl: ^0.24.1
+  flutter_dotenv: ^5.2.1
 
 
 
@@ -104,6 +104,7 @@ flutter:
     - assets/images/svg/
     - assets/images/json/
     - assets/localization/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

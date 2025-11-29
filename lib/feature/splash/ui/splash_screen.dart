@@ -1,13 +1,13 @@
-import 'dart:math' as math;
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/firebase_index_creator.dart';
-import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
-import 'package:flutter/services.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
+import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,101 +18,55 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _logoController;
-  late AnimationController _textController;
+  late AnimationController _sunController;
+  late AnimationController _cloudController;
   late AnimationController _waveController;
-  late AnimationController _shimmerController;
-
-  late Animation<double> _logoScale;
-  late Animation<double> _logoRotation;
-  late Animation<double> _textOpacity;
-  late Animation<Offset> _textSlide;
-  late Animation<double> _waveAnimation;
-  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    // شريط الحالة شفاف
+    // Dark icons for light background
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.dark,
       ),
     );
 
-    _initializeAnimations();
+    _sunController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+
+    _cloudController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20),
+    )..repeat();
+
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+
     _checkAuthState();
   }
 
-  void _initializeAnimations() {
-    // Logo animations
-    _logoController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _logoScale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
-    );
-
-    _logoRotation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
-    );
-
-    // Text animations
-    _textController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
-    _textOpacity = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
-
-    _textSlide = Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-        );
-
-    // Wave animation
-    _waveController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
-
-    _waveAnimation = Tween<double>(
-      begin: 0.0,
-      end: 2 * math.pi,
-    ).animate(_waveController);
-
-    // Shimmer animation
-    _shimmerController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat();
-
-    _shimmerAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_shimmerController);
-
-    // Start animations
-    _logoController.forward();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      _textController.forward();
-    });
+  @override
+  void dispose() {
+    _sunController.dispose();
+    _cloudController.dispose();
+    _waveController.dispose();
+    super.dispose();
   }
 
   void _checkAuthState() async {
     try {
       await FirebaseIndexCreator.createCompositeIndexes();
     } catch (e) {
-      print('🔍 DEBUG - Error initializing indexes in splash: $e');
+      debugPrint('🔍 DEBUG - Error initializing indexes in splash: $e');
     }
 
+    // Minimum splash duration
     await Future.delayed(const Duration(seconds: 3));
 
     if (mounted) {
@@ -133,24 +87,15 @@ class _SplashScreenState extends State<SplashScreen>
       if (authCubit.state is AuthSuccess) {
         final currentUser = authCubit.getCurrentUser();
         if (currentUser != null) {
-          // ✅ Read stored role
-          final String? role = getIt<CacheHelper>().getDataString(
-            key: 'userRole',
-          );
-
-          if (role == 'admin') {
-            Navigator.pushReplacementNamed(context, Routes.dashboardScreen);
-          } else if (role == 'owner') {
-            Navigator.pushReplacementNamed(
-              context,
-              Routes.bottomNavigationBarScreen,
-            );
-          } else {
-            Navigator.pushReplacementNamed(
-              context,
-              Routes.bottomNavigationBarScreen,
-            );
-          }
+          _navigateBasedOnRole();
+        } else {
+          Navigator.pushReplacementNamed(context, Routes.loginScreen);
+        }
+      } else {
+        // If state is not AuthSuccess (e.g. Initial), wait or navigate to login
+        final currentUser = authCubit.getCurrentUser();
+        if (currentUser != null) {
+          _navigateBasedOnRole();
         } else {
           Navigator.pushReplacementNamed(context, Routes.loginScreen);
         }
@@ -158,13 +103,15 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  @override
-  void dispose() {
-    _logoController.dispose();
-    _textController.dispose();
-    _waveController.dispose();
-    _shimmerController.dispose();
-    super.dispose();
+  void _navigateBasedOnRole() {
+    final String? role = getIt<CacheHelper>().getDataString(key: 'userRole');
+    if (role == 'admin') {
+      Navigator.pushReplacementNamed(context, Routes.dashboardScreen);
+    } else if (role == 'owner') {
+      Navigator.pushReplacementNamed(context, Routes.bottomNavigationBarScreen);
+    } else {
+      Navigator.pushReplacementNamed(context, Routes.bottomNavigationBarScreen);
+    }
   }
 
   @override
@@ -172,387 +119,241 @@ class _SplashScreenState extends State<SplashScreen>
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          // ✅ Read stored role
-          final String? role = getIt<CacheHelper>().getDataString(
-            key: 'userRole',
-          );
-
-          if (role == 'admin') {
-            Navigator.pushReplacementNamed(context, Routes.dashboardScreen);
-          } else if (role == 'owner') {
-            Navigator.pushReplacementNamed(
-              context,
-              Routes.bottomNavigationBarScreen,
-            );
-          } else {
-            Navigator.pushReplacementNamed(
-              context,
-              Routes.bottomNavigationBarScreen,
-            );
-          }
+          _navigateBasedOnRole();
         } else if (state is AuthFailure) {
           Navigator.pushReplacementNamed(context, Routes.loginScreen);
         }
       },
-      child: FutureBuilder(
-        future: Future.delayed(const Duration(seconds: 4)),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            WidgetsBinding.instance.addPostFrameCallback((_) async {
-              if (mounted) {
-                // Check onboarding first
-                final onboardingRepo = getIt<OnboardingRepository>();
-                final isOnboardingCompleted = await onboardingRepo
-                    .isOnboardingCompleted();
-
-                if (!isOnboardingCompleted) {
-                  Navigator.pushReplacementNamed(
-                    context,
-                    Routes.onBardingScreen,
-                  );
-                  return;
-                }
-
-                // Then check auth
-                final authCubit = context.read<AuthCubit>();
-                if (authCubit.state is AuthInitial) {
-                  Navigator.pushReplacementNamed(context, Routes.loginScreen);
-                }
-              }
-            });
-          }
-
-          return Scaffold(
-            body: Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0B1021),
-                    Color(0xFF0E1C34),
-                    Color(0xFF0F2A47),
-                  ],
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF4FA8C5), // Sky Blue
+                Color(0xFF87CEEB), // Lighter Sky
+                Colors.white,
+              ],
+              stops: [0.0, 0.6, 1.0],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // 1. The Sun (Pulsing)
+              Positioned(
+                top: -60,
+                right: -60,
+                child: AnimatedBuilder(
+                  animation: _sunController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: 1.0 + (_sunController.value * 0.1),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFFD54F).withOpacity(0.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD54F).withOpacity(0.4),
+                              blurRadius: 50 + (_sunController.value * 20),
+                              spreadRadius: 10 + (_sunController.value * 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Animated waves background
-                  AnimatedBuilder(
-                    animation: _waveAnimation,
+
+              // 2. Moving Clouds
+              Positioned(
+                top: 100,
+                left: 0,
+                right: 0,
+                height: 200,
+                child: AnimatedBuilder(
+                  animation: _cloudController,
+                  builder: (context, child) {
+                    return Stack(
+                      children: [
+                        _buildCloud(
+                          context,
+                          top: 20,
+                          left:
+                              -100 +
+                              (MediaQuery.of(context).size.width + 200) *
+                                  _cloudController.value,
+                          scale: 1.0,
+                        ),
+                        _buildCloud(
+                          context,
+                          top: 80,
+                          left:
+                              -150 +
+                              (MediaQuery.of(context).size.width + 300) *
+                                  ((_cloudController.value + 0.5) % 1.0),
+                          scale: 0.8,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              // 3. The Sea (Waves)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 150,
+                child: FadeInUp(
+                  duration: const Duration(seconds: 1),
+                  child: AnimatedBuilder(
+                    animation: _waveController,
                     builder: (context, child) {
                       return CustomPaint(
-                        painter: WavePainter(
-                          animation: _waveAnimation.value,
-                          waveColor: Colors.white.withOpacity(0.1),
+                        painter: SeaWavePainter(
+                          animationValue: _waveController.value,
                         ),
                         size: Size.infinite,
                       );
                     },
                   ),
-
-                  // Subtle background decoration (circles)
-                  Positioned(
-                    bottom: -50,
-                    right: -50,
-                    child: AnimatedBuilder(
-                      animation: _logoController,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _logoScale.value.clamp(0.0, 1.0),
-                          child: Container(
-                            width: 220,
-                            height: 220,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.04),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    top: -30,
-                    left: -30,
-                    child: AnimatedBuilder(
-                      animation: _logoController,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _logoScale.value.clamp(0.0, 1.0),
-                          child: Container(
-                            width: 160,
-                            height: 160,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.035),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  // Main content
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Animated Logo
-                        AnimatedBuilder(
-                          animation: _logoController,
-                          builder: (context, child) {
-                            return Transform.scale(
-                              scale: _logoScale.value.clamp(0.0, 1.0),
-                              child: Transform.rotate(
-                                angle: _logoRotation.value,
-                                child: Container(
-                                  width: 132,
-                                  height: 132,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Color(0xFF10B981),
-                                        Color(0xFF0EA5E9),
-                                      ],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 24,
-                                        offset: const Offset(0, 12),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      AnimatedBuilder(
-                                        animation: _shimmerAnimation,
-                                        builder: (context, child) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              gradient: SweepGradient(
-                                                colors: [
-                                                  Colors.white.withOpacity(0.0),
-                                                  Colors.white.withOpacity(
-                                                    0.20,
-                                                  ),
-                                                  Colors.white.withOpacity(0.0),
-                                                ],
-                                                stops: const [0.2, 0.5, 0.8],
-                                                transform: GradientRotation(
-                                                  _shimmerAnimation.value *
-                                                      2 *
-                                                      math.pi,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      const Icon(
-                                        Icons.holiday_village,
-                                        size: 64,
-                                        color: Colors.white,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 40),
-
-                        // Animated app name
-                        AnimatedBuilder(
-                          animation: _textController,
-                          builder: (context, child) {
-                            return SlideTransition(
-                              position: _textSlide,
-                              child: FadeTransition(
-                                opacity: _textOpacity,
-                                child: Column(
-                                  children: [
-                                    const Text(
-                                      'Rebtal',
-                                      style: TextStyle(
-                                        fontSize: 44,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                        letterSpacing: 1.5,
-                                        shadows: [
-                                          Shadow(
-                                            offset: Offset(0, 3),
-                                            blurRadius: 10,
-                                            color: Colors.black26,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.12),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.18),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'احجز شاليهك بسهولة وأمان',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 60),
-
-                        // Premium loading indicator
-                        AnimatedBuilder(
-                          animation: _textController,
-                          builder: (context, child) {
-                            return FadeTransition(
-                              opacity: _textOpacity,
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 3,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white.withOpacity(0.9),
-                                              ),
-                                          backgroundColor: Colors.white
-                                              .withOpacity(0.2),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 35,
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: RadialGradient(
-                                            colors: [
-                                              Colors.white.withOpacity(0.3),
-                                              Colors.transparent,
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    'جاري التحميل...',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.white70,
-                                      letterSpacing: 0.8,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Bottom decoration
-                  Positioned(
-                    bottom: 30,
-                    left: 0,
-                    right: 0,
-                    child: AnimatedBuilder(
-                      animation: _textController,
-                      builder: (context, child) {
-                        return FadeTransition(
-                          opacity: _textOpacity,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.event_available,
-                                size: 16,
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'حجوزات شاليهات بسهولة وأمان',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+
+              // 4. Main Content (Center)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Icon
+                    ZoomIn(
+                      duration: const Duration(milliseconds: 1000),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.beach_access_rounded,
+                          size: 64,
+                          color: Color(0xFF006994), // Sea Blue
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Text
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 300),
+                      child: const Text(
+                        'Rebtal',
+                        style: TextStyle(
+                          fontSize: 52,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF006994), // Sea Blue
+                          letterSpacing: 1.5,
+                          fontFamily: 'Outfit',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 500),
+                      child: Text(
+                        'صيفك يبدأ من هنا',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: const Color(0xFF006994).withOpacity(0.8),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCloud(
+    BuildContext context, {
+    required double top,
+    required double left,
+    required double scale,
+  }) {
+    return Positioned(
+      top: top,
+      left: left,
+      child: Transform.scale(
+        scale: scale,
+        child: Container(
+          width: 100,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(50),
+          ),
+        ),
       ),
     );
   }
 }
 
-// Custom Wave Painter for animated background
-class WavePainter extends CustomPainter {
-  final double animation;
-  final Color waveColor;
+class SeaWavePainter extends CustomPainter {
+  final double animationValue;
 
-  WavePainter({required this.animation, required this.waveColor});
+  SeaWavePainter({required this.animationValue});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = waveColor
+      ..color = const Color(0xFF006994).withOpacity(0.8)
       ..style = PaintingStyle.fill;
 
     final path = Path();
 
-    // First wave
-    path.moveTo(0, size.height * 0.75);
+    // Animate the wave by shifting the phase
+    // We'll use a simple sine-like movement by shifting control points
+    // Since we don't want to use dart:math, we can just linearly interpolate the control points
 
-    for (double i = 0; i <= size.width; i++) {
-      path.lineTo(
-        i,
-        size.height * 0.75 +
-            20 * math.sin((i / size.width * 2 * math.pi) + animation),
+    double shift =
+        size.width *
+        animationValue; // Shift by full width over the animation cycle
+
+    // We need to draw a wider wave so we can shift it
+    path.moveTo(-size.width + shift, size.height * 0.4);
+
+    // Draw multiple wave segments to cover the shift
+    for (int i = -1; i < 2; i++) {
+      double startX = (i * size.width) + shift;
+      path.quadraticBezierTo(
+        startX + size.width * 0.25,
+        size.height * 0.3,
+        startX + size.width * 0.5,
+        size.height * 0.4,
+      );
+      path.quadraticBezierTo(
+        startX + size.width * 0.75,
+        size.height * 0.5,
+        startX + size.width,
+        size.height * 0.4,
       );
     }
 
@@ -562,20 +363,30 @@ class WavePainter extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    // Second wave
+    // Second layer (slower or different phase)
+    final paint2 = Paint()
+      ..color = const Color(0xFF006994).withOpacity(0.4)
+      ..style = PaintingStyle.fill;
+
     final path2 = Path();
-    paint.color = waveColor.withOpacity(0.5);
+    double shift2 =
+        size.width * ((animationValue + 0.5) % 1.0); // Different phase
 
-    path2.moveTo(0, size.height * 0.8);
+    path2.moveTo(-size.width + shift2, size.height * 0.5);
 
-    for (double i = 0; i <= size.width; i++) {
-      path2.lineTo(
-        i,
-        size.height * 0.8 +
-            15 *
-                math.sin(
-                  (i / size.width * 2 * math.pi) + animation + math.pi / 2,
-                ),
+    for (int i = -1; i < 2; i++) {
+      double startX = (i * size.width) + shift2;
+      path2.quadraticBezierTo(
+        startX + size.width * 0.25,
+        size.height * 0.6,
+        startX + size.width * 0.5,
+        size.height * 0.5,
+      );
+      path2.quadraticBezierTo(
+        startX + size.width * 0.75,
+        size.height * 0.4,
+        startX + size.width,
+        size.height * 0.5,
       );
     }
 
@@ -583,11 +394,11 @@ class WavePainter extends CustomPainter {
     path2.lineTo(0, size.height);
     path2.close();
 
-    canvas.drawPath(path2, paint);
+    canvas.drawPath(path2, paint2);
   }
 
   @override
-  bool shouldRepaint(WavePainter oldDelegate) {
-    return animation != oldDelegate.animation;
+  bool shouldRepaint(covariant SeaWavePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue;
   }
 }
