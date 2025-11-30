@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/config/space.dart';
-// import 'package:screen_go/extensions/responsive_nums.dart';
 
 class OwnerInformationCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -15,20 +13,15 @@ class OwnerInformationCard extends StatelessWidget {
     final phoneNumber = requestData['phoneNumber'] ?? 'No phone';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -41,38 +34,61 @@ class OwnerInformationCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
-                  Icons.person_outline,
+                  Icons.person_rounded,
                   color: Color(0xFF6366F1),
-                  size: 20,
+                  size: 24,
                 ),
               ),
-              horizintalSpace(4),
+              const SizedBox(width: 16),
               const Text(
                 'Owner Information',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1A1A2E),
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
-          verticalSpace(2),
-          OwnerInfoRow(icon: Icons.person, label: "Name", value: merchantName),
-          const SizedBox(height: 12),
-          OwnerInfoRow(
-            icon: Icons.email_outlined,
-            label: "Email",
-            value: email,
-          ),
-          const SizedBox(height: 12),
-          OwnerInfoRow(
-            icon: Icons.phone_outlined,
-            label: "Phone",
-            value: phoneNumber,
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFF3F4F6)),
+            ),
+            child: Column(
+              children: [
+                OwnerInfoRow(
+                  icon: Icons.account_circle_outlined,
+                  label: "Name",
+                  value: merchantName,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                ),
+                OwnerInfoRow(
+                  icon: Icons.email_outlined,
+                  label: "Email",
+                  value: email,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                ),
+                OwnerInfoRow(
+                  icon: Icons.phone_outlined,
+                  label: "Phone",
+                  value: phoneNumber,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -96,20 +112,28 @@ class OwnerInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.grey[600], size: 18),
-        horizintalSpace(4),
+        Icon(icon, color: const Color(0xFF9CA3AF), size: 20),
+        const SizedBox(width: 12),
         Text(
-          "$label: ",
+          "$label:",
           style: const TextStyle(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF374151),
-            fontSize: 16,
+            color: Color(0xFF6B7280),
+            fontSize: 14,
           ),
         ),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 16),
+            style: const TextStyle(
+              color: Color(0xFF1F2937),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

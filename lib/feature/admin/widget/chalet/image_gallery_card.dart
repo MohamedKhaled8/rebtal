@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 
-class ImageGalleryCard extends StatelessWidget {
+class ImageGalleryCard extends StatefulWidget {
   final List<String> images;
   final Map<String, dynamic> requestData;
 
@@ -12,6 +13,45 @@ class ImageGalleryCard extends StatelessWidget {
     required this.images,
     required this.requestData,
   });
+
+  @override
+  State<ImageGalleryCard> createState() => _ImageGalleryCardState();
+}
+
+class _ImageGalleryCardState extends State<ImageGalleryCard> {
+  final ScrollController _scrollController = ScrollController();
+  Timer? _autoScrollTimer;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_scrollController.hasClients && widget.images.length > 1) {
+        _currentIndex = (_currentIndex + 1) % widget.images.length.clamp(0, 5);
+
+        final double targetOffset =
+            _currentIndex * 132.0; // 120 width + 12 margin
+
+        _scrollController.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +97,7 @@ class ImageGalleryCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Gallery (${images.length} photos)',
+                    'Gallery (${widget.images.length} photos)',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -67,8 +107,11 @@ class ImageGalleryCard extends StatelessWidget {
                 ],
               ),
               TextButton(
-                onPressed: () =>
-                    cubit.openFullScreen(context, images: images, start: 0),
+                onPressed: () => cubit.openFullScreen(
+                  context,
+                  images: widget.images,
+                  start: 0,
+                ),
                 child: const Text(
                   'View All',
                   style: TextStyle(
@@ -83,13 +126,14 @@ class ImageGalleryCard extends StatelessWidget {
           SizedBox(
             height: 100,
             child: ListView.builder(
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              itemCount: images.length.clamp(0, 5),
+              itemCount: widget.images.length.clamp(0, 5),
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () => cubit.openFullScreen(
                     context,
-                    images: images,
+                    images: widget.images,
                     start: index,
                   ),
                   child: Container(
@@ -108,7 +152,7 @@ class ImageGalleryCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: AppImageHelper(
-                        path: images[index],
+                        path: widget.images[index],
                         fit: BoxFit.cover,
                       ),
                     ),

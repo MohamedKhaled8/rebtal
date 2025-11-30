@@ -10,21 +10,18 @@ class AvailabilityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<AdminCubit>();
+    final isAvailable = requestData['isAvailable'] == true;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -34,127 +31,166 @@ class AvailabilityCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF059669).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
-                  Icons.calendar_today_outlined,
-                  color: Color(0xFF059669),
-                  size: 20,
+                  Icons.calendar_today_rounded,
+                  color: Color(0xFF10B981),
+                  size: 24,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               const Text(
                 'Availability',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1A1A2E),
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: (requestData['isAvailable'] == true)
-                  ? const Color(0xFF10B981).withOpacity(0.05)
-                  : const Color(0xFFEF4444).withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
+              color: isAvailable
+                  ? const Color(0xFFECFDF5)
+                  : const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: (requestData['isAvailable'] == true)
+                color: isAvailable
                     ? const Color(0xFF10B981).withOpacity(0.2)
                     : const Color(0xFFEF4444).withOpacity(0.2),
               ),
             ),
             child: Row(
               children: [
-                Icon(
-                  (requestData['isAvailable'] == true)
-                      ? Icons.check_circle_outline
-                      : Icons.cancel_outlined,
-                  color: (requestData['isAvailable'] == true)
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFEF4444),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  (requestData['isAvailable'] == true)
-                      ? 'Currently Available'
-                      : 'Not Available',
-                  style: TextStyle(
-                    color: (requestData['isAvailable'] == true)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: isAvailable
+                            ? const Color(0xFF10B981).withOpacity(0.2)
+                            : const Color(0xFFEF4444).withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    isAvailable ? Icons.check_rounded : Icons.close_rounded,
+                    color: isAvailable
                         ? const Color(0xFF10B981)
                         : const Color(0xFFEF4444),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    size: 20,
                   ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAvailable ? 'Available Now' : 'Currently Unavailable',
+                      style: TextStyle(
+                        color: isAvailable
+                            ? const Color(0xFF065F46)
+                            : const Color(0xFF991B1B),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    if (!isAvailable)
+                      Text(
+                        'Check back later',
+                        style: TextStyle(
+                          color: const Color(0xFFEF4444).withOpacity(0.8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Available From',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                child: _buildDateBox(
+                  label: 'From',
+                  date:
                       cubit.formatAvailabilityDate(
-                            requestData['availableFrom'],
-                          ) ??
-                          'Not specified',
-                      style: const TextStyle(
-                        color: Color(0xFF1F2937),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                        requestData['availableFrom'],
+                      ) ??
+                      '--',
+                  icon: Icons.login_rounded,
                 ),
               ),
+              const SizedBox(width: 16),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Available To',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
+                child: _buildDateBox(
+                  label: 'To',
+                  date:
                       cubit.formatAvailabilityDate(
-                            requestData['availableTo'],
-                          ) ??
-                          'Not specified',
-                      style: const TextStyle(
-                        color: Color(0xFF1F2937),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                        requestData['availableTo'],
+                      ) ??
+                      '--',
+                  icon: Icons.logout_rounded,
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateBox({
+    required String label,
+    required String date,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF9CA3AF)),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            date,
+            style: const TextStyle(
+              color: Color(0xFF1F2937),
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
