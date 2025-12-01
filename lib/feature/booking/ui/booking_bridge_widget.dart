@@ -542,32 +542,33 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             );
                             return;
                           }
-                          try {
-                            final resolved = await _resolveOwner();
-                            final updated = Booking(
-                              id: _bookingId,
-                              chaletId: widget.chaletId,
-                              chaletName: widget.chaletName,
-                              ownerId: _normOwnerId(
-                                resolved['ownerId'] ?? widget.ownerId,
-                              ),
-                              ownerName:
-                                  resolved['ownerName'] ?? widget.ownerName,
-                              userId: widget.userId,
-                              userName: widget.userName,
-                              from: _from!,
-                              to: _to!,
-                              status: BookingStatus.pending,
-                            );
-                            try {
-                              widget.parentContext
-                                  .read<BookingCubit>()
-                                  .addBooking(updated);
-                              _saveToFirestore(updated);
-                            } catch (_) {
-                              context.read<BookingCubit>().addBooking(updated);
-                            }
-                          } catch (_) {}
+                          // REMOVED: Do not save booking here. Wait for user confirmation.
+                          // try {
+                          //   final resolved = await _resolveOwner();
+                          //   final updated = Booking(
+                          //     id: _bookingId,
+                          //     chaletId: widget.chaletId,
+                          //     chaletName: widget.chaletName,
+                          //     ownerId: _normOwnerId(
+                          //       resolved['ownerId'] ?? widget.ownerId,
+                          //     ),
+                          //     ownerName:
+                          //         resolved['ownerName'] ?? widget.ownerName,
+                          //     userId: widget.userId,
+                          //     userName: widget.userName,
+                          //     from: _from!,
+                          //     to: _to!,
+                          //     status: BookingStatus.pending,
+                          //   );
+                          //   try {
+                          //     widget.parentContext
+                          //         .read<BookingCubit>()
+                          //         .addBooking(updated);
+                          //     _saveToFirestore(updated);
+                          //   } catch (_) {
+                          //     context.read<BookingCubit>().addBooking(updated);
+                          //   }
+                          // } catch (_) {}
                           setState(() => _launchedExternal = true);
                           await UriLauncherService.launchWhatsAppContact(
                             context: context,
@@ -748,29 +749,30 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () async {
-                    final resolved = await _resolveOwner();
-                    final booking = Booking(
-                      id: _bookingId,
-                      chaletId: widget.chaletId,
-                      chaletName: widget.chaletName,
-                      ownerId: _normOwnerId(
-                        resolved['ownerId'] ?? widget.ownerId,
-                      ),
-                      ownerName: resolved['ownerName'] ?? widget.ownerName,
-                      userId: widget.userId,
-                      userName: widget.userName,
-                      from: _from ?? DateTime.now(),
-                      to: _to ?? DateTime.now().add(const Duration(days: 1)),
-                      status: BookingStatus.rejected,
-                    );
-                    try {
-                      widget.parentContext.read<BookingCubit>().addBooking(
-                        booking,
-                      );
-                      _saveToFirestore(booking);
-                    } catch (_) {
-                      context.read<BookingCubit>().addBooking(booking);
-                    }
+                    // REMOVED: Do not save rejected booking since it was never created.
+                    // final resolved = await _resolveOwner();
+                    // final booking = Booking(
+                    //   id: _bookingId,
+                    //   chaletId: widget.chaletId,
+                    //   chaletName: widget.chaletName,
+                    //   ownerId: _normOwnerId(
+                    //     resolved['ownerId'] ?? widget.ownerId,
+                    //   ),
+                    //   ownerName: resolved['ownerName'] ?? widget.ownerName,
+                    //   userId: widget.userId,
+                    //   userName: widget.userName,
+                    //   from: _from ?? DateTime.now(),
+                    //   to: _to ?? DateTime.now().add(const Duration(days: 1)),
+                    //   status: BookingStatus.rejected,
+                    // );
+                    // try {
+                    //   widget.parentContext.read<BookingCubit>().addBooking(
+                    //     booking,
+                    //   );
+                    //   _saveToFirestore(booking);
+                    // } catch (_) {
+                    //   context.read<BookingCubit>().addBooking(booking);
+                    // }
                     ScaffoldMessenger.of(widget.parentContext).showSnackBar(
                       const SnackBar(content: Text('تم رفض الطلب')),
                     );
