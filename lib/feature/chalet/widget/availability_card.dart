@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
+import 'package:rebtal/feature/chalet/widget/date_box.dart';
 
 class AvailabilityCard extends StatelessWidget {
   const AvailabilityCard({super.key, required this.requestData});
@@ -135,82 +136,18 @@ class AvailabilityCard extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(
-                child: _buildDateBox(
-                  label: 'From',
-                  date:
-                      cubit.formatAvailabilityDate(
-                        requestData['availableFrom'],
-                      ) ??
-                      '--',
-                  icon: Icons.login_rounded,
-                  isDark: isDark,
-                ),
+              DateBox(
+                label: 'From',
+                date: cubit.formatDate(requestData['availableFrom']),
+                isDark: isDark,
               ),
               const SizedBox(width: 16),
-              Expanded(
-                child: _buildDateBox(
-                  label: 'To',
-                  date:
-                      cubit.formatAvailabilityDate(
-                        requestData['availableTo'],
-                      ) ??
-                      '--',
-                  icon: Icons.logout_rounded,
-                  isDark: isDark,
-                ),
+              DateBox(
+                label: 'To',
+                date: cubit.formatDate(requestData['availableTo']),
+                isDark: isDark,
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateBox({
-    required String label,
-    required String date,
-    required IconData icon,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark
-            ? ColorManager.chaletIconBackgroundDark
-            : const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.white10 : const Color(0xFFF3F4F6),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: const Color(0xFF9CA3AF)),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            date,
-            style: TextStyle(
-              color: isDark
-                  ? ColorManager.chaletTextPrimaryDark
-                  : const Color(0xFF1F2937),
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
           ),
         ],
       ),

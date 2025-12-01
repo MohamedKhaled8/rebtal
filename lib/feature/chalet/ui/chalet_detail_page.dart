@@ -14,6 +14,7 @@ import 'package:rebtal/feature/chalet/widget/image_gallery_card.dart';
 import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
 import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
+import 'package:rebtal/feature/chalet/widget/section_title.dart';
 
 class ChaletDetailPage extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -145,9 +146,9 @@ class ChaletDetailPage extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 24),
 
-                                      _buildSectionTitle(
-                                        'تفاصيل الطلب',
-                                        isDark,
+                                      SectionTitle(
+                                        title: 'تفاصيل الطلب',
+                                        isDark: isDark,
                                       ),
                                       const SizedBox(height: 12),
                                       RequestDetailsCard(
@@ -189,20 +190,6 @@ class ChaletDetailPage extends StatelessWidget {
             },
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title, bool isDark) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
-        color: isDark
-            ? ColorManager.chaletTextPrimaryDark
-            : ColorManager.chaletTextPrimaryLight,
-        letterSpacing: 0.5,
       ),
     );
   }
