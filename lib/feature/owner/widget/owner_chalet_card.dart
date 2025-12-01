@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
-import 'package:rebtal/feature/admin/ui/chalet-detailes_page.dart';
+import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;
@@ -154,24 +154,26 @@ class OwnerChaletCard extends StatelessWidget {
                     runSpacing: 6,
                     children: (chaletData['features'] as List)
                         .take(3)
-                        .map((feature) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                        .map(
+                          (feature) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              feature.toString(),
+                              style: TextStyle(
+                                color: Colors.deepPurple,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.deepPurple.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                feature.toString(),
-                                style: TextStyle(
-                                  color: Colors.deepPurple,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ))
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                   const SizedBox(height: 8),
@@ -188,10 +190,7 @@ class OwnerChaletCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         'Children: ${chaletData['childrenCount']}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ),
@@ -215,7 +214,7 @@ class OwnerChaletCard extends StatelessWidget {
                                             '',
                                           ),
                                         ) ??
-                                      0,
+                                        0,
                               withSuffixPerNight: false,
                             ),
                             style: TextStyle(
@@ -244,7 +243,7 @@ class OwnerChaletCard extends StatelessWidget {
                                             '',
                                           ),
                                         ) ??
-                                      0,
+                                        0,
                               withSuffixPerNight: false,
                             ),
                             style: const TextStyle(
@@ -300,7 +299,7 @@ class OwnerChaletCard extends StatelessWidget {
                   '',
                 ),
               ) ??
-            0.0;
+              0.0;
     final discountType = data['discountType'];
     final discountValue = double.tryParse(data['discountValue'] ?? '0') ?? 0.0;
 

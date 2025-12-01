@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
 class ImageGalleryCard extends StatefulWidget {
   final List<String> images;
@@ -55,21 +57,24 @@ class _ImageGalleryCardState extends State<ImageGalleryCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<AdminCubit>();
+    final cubit = context.read<ChaletDetailCubit>();
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+            ? ColorManager.chaletCardDark
+            : ColorManager.chaletCardLight,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
             blurRadius: 24,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(isDark ? 0.1 : 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -98,10 +103,12 @@ class _ImageGalleryCardState extends State<ImageGalleryCard> {
                   const SizedBox(width: 12),
                   Text(
                     'Gallery (${widget.images.length} photos)',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+                      color: isDark
+                          ? ColorManager.chaletTextPrimaryDark
+                          : const Color(0xFF1F2937),
                     ),
                   ),
                 ],

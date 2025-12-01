@@ -2,17 +2,19 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
-import 'package:rebtal/feature/admin/widget/chalet/action_buttons.dart';
-import 'package:rebtal/feature/admin/widget/chalet/availability_card.dart';
-import 'package:rebtal/feature/admin/widget/chalet/image_gallery_card.dart';
-import 'package:rebtal/feature/admin/widget/chalet/owner_information_card.dart';
-import 'package:rebtal/feature/admin/widget/chalet/property_features_card.dart';
-import 'package:rebtal/feature/admin/widget/chalet/request_details_card.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
+import 'package:rebtal/feature/chalet/widget/action_buttons.dart';
+import 'package:rebtal/feature/chalet/widget/availability_card.dart';
+import 'package:rebtal/feature/chalet/widget/image_gallery_card.dart';
+import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
+import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
+import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 
 class ChaletDetailPage extends StatefulWidget {
   final Map<String, dynamic> requestData;
@@ -35,22 +37,38 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
   bool _isDescriptionExpanded = false;
   int _currentImageIndex = 0;
   Timer? _autoPlayTimer;
+  List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
+    _images = _extractImagesFromRequestData();
     _startAutoPlay();
+  }
+
+  List<String> _extractImagesFromRequestData() {
+    final List<String> images = [];
+    final data = widget.requestData;
+
+    if (data['images'] != null && data['images'] is List) {
+      images.addAll((data['images'] as List).map((e) => e.toString()));
+    }
+    if (data['image'] != null) {
+      images.add(data['image'].toString());
+    }
+    if (data['imageUrl'] != null) {
+      images.add(data['imageUrl'].toString());
+    }
+
+    return images;
   }
 
   void _startAutoPlay() {
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_pageController.hasClients) {
-        final images = context.read<AdminCubit>().extractImages(
-          widget.requestData,
-        );
-        if (images.length > 1) {
+      if (_pageController.hasClients && mounted) {
+        if (_images.length > 1) {
           int nextIndex = _currentImageIndex + 1;
-          if (nextIndex >= images.length) {
+          if (nextIndex >= _images.length) {
             nextIndex = 0;
           }
           _pageController.animateToPage(
@@ -72,15 +90,11 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => AdminCubit()),
-        BlocProvider(create: (context) => AuthCubit()),
-      ],
-      child: BlocBuilder<AdminCubit, AdminState>(
+    return BlocProvider(
+      create: (context) => ChaletDetailCubit(),
+      child: BlocBuilder<ChaletDetailCubit, ChaletDetailState>(
         builder: (context, state) {
-          final cubit = context.read<AdminCubit>();
-          final images = cubit.extractImages(widget.requestData);
+          final images = _images;
           final hotelName = widget.requestData['chaletName'] ?? 'Chalet Name';
           final location = widget.requestData['location'] ?? 'Unknown Location';
           final price = widget.requestData['price'];
@@ -94,9 +108,13 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                 role = authState.user.role.toLowerCase().trim();
               }
 
+              final isDark = DynamicThemeManager.isDarkMode(context);
+
               return SafeArea(
                 child: Scaffold(
-                  backgroundColor: const Color(0xFFF5F8FF),
+                  backgroundColor: isDark
+                      ? ColorManager.chaletBackgroundDark
+                      : ColorManager.chaletBackgroundLight,
                   body: Stack(
                     children: [
                       // Main Scrollable Content
@@ -116,28 +134,33 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                           // Content Section
                           SliverToBoxAdapter(
                             child: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF5F8FF),
-                                borderRadius: BorderRadius.vertical(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? ColorManager.chaletBackgroundDark
+                                    : ColorManager.chaletBackgroundLight,
+                                borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(21.994),
                                 ),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.fromLTRB(
-                                  11.52,
-                                  8.798,
-                                  11.52,
+                                  16,
+                                  16,
+                                  16,
                                   100,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // About Us Section
-                                    _buildAboutUsSection(description),
-                                    const SizedBox(height: 8.798),
+                                    _buildAboutUsSection(description, isDark),
+                                    const SizedBox(height: 24),
 
                                     // Services & Facilities Section
-                                    _buildServicesSection(widget.requestData),
+                                    _buildServicesSection(
+                                      widget.requestData,
+                                      isDark,
+                                    ),
                                     const SizedBox(height: 24),
 
                                     // Additional Details
@@ -179,7 +202,10 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                                       ),
                                       const SizedBox(height: 24),
 
-                                      _buildSectionTitle('تفاصيل الطلب'),
+                                      _buildSectionTitle(
+                                        'تفاصيل الطلب',
+                                        isDark,
+                                      ),
                                       const SizedBox(height: 12),
                                       RequestDetailsCard(
                                         docId: widget.docId,
@@ -211,6 +237,7 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                           context,
                           price,
                           widget.requestData,
+                          isDark,
                         ),
                     ],
                   ),
@@ -219,6 +246,20 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, bool isDark) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        color: isDark
+            ? ColorManager.chaletTextPrimaryDark
+            : ColorManager.chaletTextPrimaryLight,
+        letterSpacing: 0.5,
       ),
     );
   }
@@ -252,7 +293,7 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
           // Main Image with PageView
           GestureDetector(
             onTap: () {
-              final cubit = context.read<AdminCubit>();
+              final cubit = context.read<ChaletDetailCubit>();
               cubit.openFullScreen(
                 context,
                 images: images,
@@ -439,25 +480,27 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
     );
   }
 
-  // About Us Section
-  Widget _buildAboutUsSection(String description) {
+  // About Us Section - Enhanced with Fade Effect
+  Widget _buildAboutUsSection(String description, bool isDark) {
     final displayText = description.isNotEmpty
         ? description
         : 'No description available.';
     final shouldShowExpand = displayText.length > 150;
     final displayDescription = _isDescriptionExpanded || !shouldShowExpand
         ? displayText
-        : '${displayText.substring(0, 150)}...';
+        : displayText; // Always show full text but mask it
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'About Us',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1A1A2E),
+            color: isDark
+                ? ColorManager.chaletTextPrimaryDark
+                : ColorManager.chaletTextPrimaryLight,
             letterSpacing: 0.5,
           ),
         ),
@@ -465,17 +508,47 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           alignment: Alignment.topCenter,
-          child: Text(
-            displayDescription,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Color(0xFF555555),
-              height: 1.6,
-              letterSpacing: 0.3,
-            ),
-            textAlign: TextAlign.justify,
-          ),
+          child: shouldShowExpand && !_isDescriptionExpanded
+              ? ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.black, Colors.black, Colors.transparent],
+                      stops: const [0.0, 0.5, 1.0],
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: SizedBox(
+                    height: 100, // Fixed height for collapsed state
+                    child: Text(
+                      displayText,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: isDark
+                            ? ColorManager.chaletTextSecondaryDark
+                            : ColorManager.chaletTextSecondaryLight,
+                        height: 1.6,
+                        letterSpacing: 0.3,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                  ),
+                )
+              : Text(
+                  displayText,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: isDark
+                        ? ColorManager.chaletTextSecondaryDark
+                        : ColorManager.chaletTextSecondaryLight,
+                    height: 1.6,
+                    letterSpacing: 0.3,
+                  ),
+                  textAlign: TextAlign.justify,
+                ),
         ),
         if (shouldShowExpand) ...[
           const SizedBox(height: 8),
@@ -489,11 +562,11 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _isDescriptionExpanded ? 'تقليص الوصف' : 'عرض المزيد',
+                  _isDescriptionExpanded ? 'Show Less' : 'Read More',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2C67FF),
+                    color: ColorManager.chaletAccent,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -501,7 +574,7 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                   _isDescriptionExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
-                  color: const Color(0xFF2C67FF),
+                  color: ColorManager.chaletAccent,
                   size: 20,
                 ),
               ],
@@ -512,25 +585,49 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
     );
   }
 
-  // Services & Facilities Section
-  Widget _buildServicesSection(Map<String, dynamic> requestData) {
+  // Services & Facilities Section - Enhanced Grid Layout
+  Widget _buildServicesSection(Map<String, dynamic> requestData, bool isDark) {
     final amenitiesList = [
-      {'label': 'Swimming pool', 'key': 'hasPool'},
-      {'label': 'Parking area', 'key': 'hasParking'},
-      {'label': 'Fitness center', 'key': 'hasGym'},
-      {'label': 'Wifi', 'key': 'hasWifi'},
-      {'label': '${requestData['bedrooms'] ?? 'N/A'} Rooms', 'key': 'bedrooms'},
-      {'label': 'Bars', 'key': 'hasBars'},
-      {'label': 'Play ground', 'key': 'hasPlayground'},
-      {'label': 'AC', 'key': 'hasAirConditioning'},
-      {'label': 'Garden', 'key': 'hasGarden'},
-      {'label': 'BBQ', 'key': 'hasBBQ'},
-      {'label': 'Beach View', 'key': 'hasBeachView'},
-      {'label': 'Housekeeping', 'key': 'hasHousekeeping'},
-      {'label': 'Pets Allowed', 'key': 'hasPetsAllowed'},
-      {'label': 'Kitchen', 'key': 'hasKitchen'},
-      {'label': 'TV', 'key': 'hasTV'},
-      {'label': 'Breakfast', 'key': 'hasBreakfast'},
+      {'label': 'Swimming Pool', 'key': 'hasPool', 'icon': Icons.pool},
+      {'label': 'Parking', 'key': 'hasParking', 'icon': Icons.local_parking},
+      {
+        'label': 'Fitness Center',
+        'key': 'hasGym',
+        'icon': Icons.fitness_center,
+      },
+      {'label': 'WiFi', 'key': 'hasWifi', 'icon': Icons.wifi},
+      {
+        'label': '${requestData['bedrooms'] ?? 'N/A'} Bedrooms',
+        'key': 'bedrooms',
+        'icon': Icons.bed,
+      },
+      {'label': 'Bar', 'key': 'hasBars', 'icon': Icons.local_bar},
+      {'label': 'Playground', 'key': 'hasPlayground', 'icon': Icons.child_care},
+      {
+        'label': 'Air Conditioning',
+        'key': 'hasAirConditioning',
+        'icon': Icons.ac_unit,
+      },
+      {'label': 'Garden', 'key': 'hasGarden', 'icon': Icons.yard},
+      {'label': 'BBQ Area', 'key': 'hasBBQ', 'icon': Icons.outdoor_grill},
+      {
+        'label': 'Beach View',
+        'key': 'hasBeachView',
+        'icon': Icons.beach_access,
+      },
+      {
+        'label': 'Housekeeping',
+        'key': 'hasHousekeeping',
+        'icon': Icons.cleaning_services,
+      },
+      {'label': 'Pets Allowed', 'key': 'hasPetsAllowed', 'icon': Icons.pets},
+      {'label': 'Kitchen', 'key': 'hasKitchen', 'icon': Icons.kitchen},
+      {'label': 'TV', 'key': 'hasTV', 'icon': Icons.tv},
+      {
+        'label': 'Breakfast',
+        'key': 'hasBreakfast',
+        'icon': Icons.free_breakfast,
+      },
     ];
 
     // Filter enabled amenities
@@ -543,96 +640,101 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
       return requestData[key] == true;
     }).toList();
 
-    // Split into two columns
-    final leftColumn = enabledAmenities
-        .take((enabledAmenities.length / 2).ceil())
-        .toList();
-    final rightColumn = enabledAmenities
-        .skip((enabledAmenities.length / 2).ceil())
-        .toList();
+    if (enabledAmenities.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Services & Facilities',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF323232),
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: isDark
+                ? ColorManager.chaletTextPrimaryDark
+                : ColorManager.chaletTextPrimaryLight,
             letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 8.798),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: leftColumn.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 5.865),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          size: 18,
-                          color: Color(0xFF2C67FF),
-                        ),
-                        const SizedBox(width: 2.933),
-                        Expanded(
-                          child: Text(
-                            item['label'] as String,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF555555),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Right Column
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: rightColumn.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 5.865),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          size: 18,
-                          color: Color(0xFF2C67FF),
-                        ),
-                        const SizedBox(width: 2.933),
-                        Expanded(
-                          child: Text(
-                            item['label'] as String,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF555555),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // 3 items per row
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.1, // Slightly taller than wide
+          ),
+          itemCount: enabledAmenities.length,
+          itemBuilder: (context, index) {
+            final item = enabledAmenities[index];
+            return _buildAmenityCard(
+              label: item['label'] as String,
+              icon: item['icon'] as IconData,
+              isDark: isDark,
+            );
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildAmenityCard({
+    required String label,
+    required IconData icon,
+    required bool isDark,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? ColorManager.chaletCardDark
+            : ColorManager.chaletCardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.black.withOpacity(0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: ColorManager.chaletAccent.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 24, color: ColorManager.chaletAccent),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? ColorManager.chaletTextPrimaryDark
+                    : ColorManager.chaletTextPrimaryLight,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -641,6 +743,7 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
     BuildContext context,
     dynamic price,
     Map<String, dynamic> requestData,
+    bool isDark,
   ) {
     final formattedPrice = CurrencyFormatter.egp(
       (price is num) ? price : double.tryParse((price ?? '').toString()) ?? 0,
@@ -694,10 +797,12 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark
+              ? ColorManager.chaletCardDark
+              : ColorManager.chaletCardLight,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -717,12 +822,16 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                     if (originalPriceStr != null) ...[
                       Text(
                         '$originalPriceStr / night',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           decoration: TextDecoration.lineThrough,
-                          decorationColor: Color(0xFF9CA3AF),
+                          decorationColor: isDark
+                              ? ColorManager.chaletTextSecondaryDark
+                              : ColorManager.chaletTextSecondaryLight,
                           decorationThickness: 2,
-                          color: Color(0xFF9CA3AF),
+                          color: isDark
+                              ? ColorManager.chaletTextSecondaryDark
+                              : ColorManager.chaletTextSecondaryLight,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -736,15 +845,17 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF2C67FF),
+                              color: ColorManager.chaletAccent,
                             ),
                           ),
-                          const TextSpan(
+                          TextSpan(
                             text: ' / night',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF6B7280),
+                              color: isDark
+                                  ? ColorManager.chaletTextSecondaryDark
+                                  : ColorManager.chaletTextSecondaryLight,
                             ),
                           ),
                         ],
@@ -799,17 +910,22 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'This chalet is currently not available for booking',
+                      SnackBar(
+                        content: const Text(
+                          'الحجز غير متاح حالياً',
+                          style: TextStyle(color: Colors.white),
                         ),
-                        backgroundColor: Colors.red,
+                        backgroundColor: const Color(0xFFEF4444),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C67FF),
+                  backgroundColor: ColorManager.chaletAccent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
@@ -818,33 +934,16 @@ class _ChaletDetailPageState extends State<ChaletDetailPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 4,
-                  shadowColor: const Color(0xFF2C67FF).withOpacity(0.4),
+                  elevation: 0,
                 ),
                 child: const Text(
                   'Reserve Now',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF1A1A2E),
-        letterSpacing: 0.5,
       ),
     );
   }

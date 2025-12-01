@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
 class AvailabilityCard extends StatelessWidget {
   const AvailabilityCard({super.key, required this.requestData});
@@ -9,17 +11,20 @@ class AvailabilityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<AdminCubit>();
+    final cubit = context.read<ChaletDetailCubit>();
     final isAvailable = requestData['isAvailable'] == true;
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+            ? ColorManager.chaletCardDark
+            : ColorManager.chaletCardLight,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -43,12 +48,14 @@ class AvailabilityCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
+              Text(
                 'Availability',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1A1A2E),
+                  color: isDark
+                      ? ColorManager.chaletTextPrimaryDark
+                      : ColorManager.chaletTextPrimaryLight,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -59,8 +66,12 @@ class AvailabilityCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isAvailable
-                  ? const Color(0xFFECFDF5)
-                  : const Color(0xFFFEF2F2),
+                  ? (isDark
+                        ? const Color(0xFF064E3B).withOpacity(0.3)
+                        : const Color(0xFFECFDF5))
+                  : (isDark
+                        ? const Color(0xFF7F1D1D).withOpacity(0.3)
+                        : const Color(0xFFFEF2F2)),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isAvailable
@@ -73,7 +84,7 @@ class AvailabilityCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? ColorManager.chaletCardDark : Colors.white,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -101,8 +112,8 @@ class AvailabilityCard extends StatelessWidget {
                       isAvailable ? 'Available Now' : 'Currently Unavailable',
                       style: TextStyle(
                         color: isAvailable
-                            ? const Color(0xFF065F46)
-                            : const Color(0xFF991B1B),
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
@@ -133,6 +144,7 @@ class AvailabilityCard extends StatelessWidget {
                       ) ??
                       '--',
                   icon: Icons.login_rounded,
+                  isDark: isDark,
                 ),
               ),
               const SizedBox(width: 16),
@@ -145,6 +157,7 @@ class AvailabilityCard extends StatelessWidget {
                       ) ??
                       '--',
                   icon: Icons.logout_rounded,
+                  isDark: isDark,
                 ),
               ),
             ],
@@ -158,13 +171,18 @@ class AvailabilityCard extends StatelessWidget {
     required String label,
     required String date,
     required IconData icon,
+    required bool isDark,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: isDark
+            ? ColorManager.chaletIconBackgroundDark
+            : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        border: Border.all(
+          color: isDark ? Colors.white10 : const Color(0xFFF3F4F6),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,8 +204,10 @@ class AvailabilityCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             date,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: isDark
+                  ? ColorManager.chaletTextPrimaryDark
+                  : const Color(0xFF1F2937),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

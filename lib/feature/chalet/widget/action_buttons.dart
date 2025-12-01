@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
 class ActionButtons extends StatelessWidget {
   final String status;
@@ -39,7 +38,7 @@ class ActionButtons extends StatelessWidget {
   }
 
   Widget _buildAdminButtons(BuildContext context) {
-    final cubit = context.read<AdminCubit>();
+    final cubit = context.read<ChaletDetailCubit>();
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
@@ -229,9 +228,6 @@ class ActionButtons extends StatelessWidget {
     var ownerId = requestData['ownerId'] ?? requestData['userId'] ?? '';
     if (ownerId.isEmpty) {
       debugPrint('Warning: ownerId is empty for requestData: $requestData');
-      // Do NOT fallback to current user (that makes ownerId == userId).
-      // Leave ownerId empty and let BookingBridgeWidget.resolveOwner fetch
-      // the real ownerId from the chalet document.
       ownerId = '';
     }
 
@@ -242,9 +238,6 @@ class ActionButtons extends StatelessWidget {
         requestData['merchantName'] ??
         requestData['ownerName'] ??
         'صاحب الشاليه';
-
-    debugPrint('Building booking button with ownerId: $ownerId');
-    debugPrint('RequestData: $requestData');
 
     return Container(
       width: double.infinity,
@@ -338,12 +331,11 @@ class ActionButtons extends StatelessWidget {
     );
   }
 
-  // BookingBridgeWidget moved to booking/ui/booking_bridge_widget.dart
-
   Widget _buildBookingToggleButton(BuildContext context) {
     final bookingAvailability =
         requestData['bookingAvailability'] ?? 'available';
     final isBookingAvailable = bookingAvailability == 'available';
+    final cubit = context.read<ChaletDetailCubit>();
 
     return Container(
       width: double.infinity,
@@ -373,7 +365,11 @@ class ActionButtons extends StatelessWidget {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () => _toggleBookingAvailability(context),
+        onPressed: () => cubit.toggleBookingAvailability(
+          context,
+          docId: docId,
+          requestData: requestData,
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -403,53 +399,6 @@ class ActionButtons extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _toggleBookingAvailability(BuildContext context) async {
-    try {
-      final currentAvailability =
-          requestData['bookingAvailability'] ?? 'available';
-      final newAvailability = currentAvailability == 'available'
-          ? 'unavailable'
-          : 'available';
-
-      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
-        'bookingAvailability': newAvailability,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newAvailability == 'available'
-                  ? 'تم تشغيل الحجز بنجاح'
-                  : 'تم إيقاف الحجز بنجاح',
-            ),
-            backgroundColor: newAvailability == 'available'
-                ? Colors.green
-                : Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في تحديث حالة الحجز: $e'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      }
-    }
   }
 
   Widget _buildOwnerStatusButton(BuildContext context) {

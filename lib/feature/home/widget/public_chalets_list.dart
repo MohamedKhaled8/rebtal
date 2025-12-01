@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
-import 'package:rebtal/feature/admin/ui/chalet-detailes_page.dart';
+import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 
 class PublicChaletCard extends StatefulWidget {
   final Map<String, dynamic> chaletData;

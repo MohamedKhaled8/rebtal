@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
 class RequestDetailsCard extends StatelessWidget {
   const RequestDetailsCard({
@@ -14,7 +14,7 @@ class RequestDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<AdminCubit>();
+    final cubit = context.read<ChaletDetailCubit>();
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

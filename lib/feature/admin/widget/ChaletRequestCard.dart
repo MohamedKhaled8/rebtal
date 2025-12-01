@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/feature/admin/ui/chalet-detailes_page.dart';
+import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 
 class ChaletRequestCard extends StatelessWidget {

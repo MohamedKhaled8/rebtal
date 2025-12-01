@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
-import 'package:rebtal/feature/admin/ui/chalet-detailes_page.dart';
+import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;

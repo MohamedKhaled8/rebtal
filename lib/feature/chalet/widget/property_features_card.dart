@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class PropertyFeaturesCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -11,15 +13,18 @@ class PropertyFeaturesCard extends StatelessWidget {
     final bathrooms = requestData['bathrooms']?.toString() ?? 'N/A';
     final chaletArea = requestData['chaletArea']?.toString();
     final childrenCount = requestData['childrenCount']?.toString();
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+            ? ColorManager.chaletCardDark
+            : ColorManager.chaletCardLight,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -28,12 +33,14 @@ class PropertyFeaturesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Property Features',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1A1A2E),
+              color: isDark
+                  ? ColorManager.chaletTextPrimaryDark
+                  : ColorManager.chaletTextPrimaryLight,
               letterSpacing: 0.5,
             ),
           ),
@@ -44,19 +51,21 @@ class PropertyFeaturesCard extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 2.2,
+            childAspectRatio: 2.0, // Adjusted to prevent overflow
             children: [
               FeatureItem(
                 icon: Icons.bed_rounded,
                 color: const Color(0xFF3B82F6),
                 value: bedrooms,
                 label: 'Bedrooms',
+                isDark: isDark,
               ),
               FeatureItem(
                 icon: Icons.bathtub_rounded,
                 color: const Color(0xFF8B5CF6),
                 value: bathrooms,
                 label: 'Bathrooms',
+                isDark: isDark,
               ),
               if (chaletArea != null && chaletArea.isNotEmpty)
                 FeatureItem(
@@ -64,6 +73,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                   color: const Color(0xFFF59E0B),
                   value: '$chaletArea m²',
                   label: 'Area',
+                  isDark: isDark,
                 ),
               if (childrenCount != null)
                 FeatureItem(
@@ -71,6 +81,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                   color: const Color(0xFFEC4899),
                   value: childrenCount,
                   label: 'Children',
+                  isDark: isDark,
                 ),
             ],
           ),
@@ -79,14 +90,19 @@ class PropertyFeaturesCard extends StatelessWidget {
           if (requestData['features'] != null &&
               (requestData['features'] as List).isNotEmpty) ...[
             const SizedBox(height: 24),
-            const Divider(height: 1, color: Color(0xFFEEEEEE)),
+            Divider(
+              height: 1,
+              color: isDark ? Colors.white10 : const Color(0xFFEEEEEE),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Additional Features',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1A1A2E),
+                color: isDark
+                    ? ColorManager.chaletTextPrimaryDark
+                    : ColorManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 16),
@@ -101,7 +117,9 @@ class PropertyFeaturesCard extends StatelessWidget {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: isDark
+                            ? ColorManager.chaletIconBackgroundDark
+                            : const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.transparent),
                       ),
@@ -116,10 +134,12 @@ class PropertyFeaturesCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             feature.toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151),
+                              color: isDark
+                                  ? ColorManager.chaletTextSecondaryDark
+                                  : const Color(0xFF374151),
                             ),
                           ),
                         ],
@@ -140,6 +160,7 @@ class FeatureItem extends StatelessWidget {
   final Color color;
   final String value;
   final String label;
+  final bool isDark;
 
   const FeatureItem({
     super.key,
@@ -147,6 +168,7 @@ class FeatureItem extends StatelessWidget {
     required this.color,
     required this.value,
     required this.label,
+    required this.isDark,
   });
 
   @override
@@ -163,7 +185,9 @@ class FeatureItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark
+                  ? ColorManager.chaletIconBackgroundDark
+                  : Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -183,10 +207,12 @@ class FeatureItem extends StatelessWidget {
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1F2937),
+                    color: isDark
+                        ? ColorManager.chaletTextPrimaryDark
+                        : const Color(0xFF1F2937),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -194,7 +220,9 @@ class FeatureItem extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: isDark
+                        ? ColorManager.chaletTextSecondaryDark
+                        : Colors.grey[600],
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

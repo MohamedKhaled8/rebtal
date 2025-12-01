@@ -81,4 +81,23 @@ abstract class ColorManager {
   static const bookingsTextSecondaryLight = Color(0xFF6B7280);
   static const bookingsBorderDark = Color(0xFF374151);
   static const bookingsBorderLight = Color(0xFFE5E7EB);
+  // Chalet Detail Page Colors
+  static const chaletBackgroundDark = Color(0xFF001409);
+  static const chaletBackgroundLight = Color(0xFFF5F8FF);
+
+  static const chaletCardDark = Color(0xFF0B0F0D);
+  static const chaletCardLight = Colors.white;
+
+  static const chaletTextPrimaryDark = Colors.white;
+  static const chaletTextPrimaryLight = Color(0xFF1A1A2E);
+
+  static const chaletTextSecondaryDark = Color(0xFFB0B0B0);
+  static const chaletTextSecondaryLight = Color(0xFF555555);
+
+  static const chaletIconBackgroundDark = Color(0xFF1A1F1C);
+  static const chaletIconBackgroundLight = Color(0xFFF0F4FF);
+
+  static const chaletAccent = Color(
+    0xFF1ED760,
+  ); // Using the green accent from Navbar
 }
