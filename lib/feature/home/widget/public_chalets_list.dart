@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -134,16 +136,23 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     final location = widget.chaletData['location'] ?? 'الموقع غير محدد';
     final price = widget.chaletData['price'];
     final images = _collectChaletImages(widget.chaletData);
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24, left: 20, right: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E), // Dark card background
+        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : Colors.grey.withOpacity(0.1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -243,8 +252,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         children: [
                           Text(
                             chaletName,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1A1A2E),
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               height: 1.2,
@@ -258,14 +269,18 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                               Icon(
                                 Icons.location_on_outlined,
                                 size: 14,
-                                color: Colors.white.withOpacity(0.6),
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.6)
+                                    : Colors.grey[600],
                               ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   location,
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.6)
+                                        : Colors.grey[600],
                                     fontSize: 13,
                                   ),
                                   maxLines: 1,
@@ -285,17 +300,23 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: isDark
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.star, color: Color(0xFFFFD700), size: 14),
-                          SizedBox(width: 4),
+                          const Icon(
+                            Icons.star,
+                            color: Color(0xFFFFD700),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
                           Text(
                             '4.8', // Placeholder rating
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : Colors.black87,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -323,13 +344,17 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               feature.toString(),
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.9)
+                                    : Colors.black87,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -348,13 +373,17 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                       Icon(
                         Icons.child_care_rounded,
                         size: 14,
-                        color: Colors.white.withOpacity(0.6),
+                        color: isDark
+                            ? Colors.white.withOpacity(0.6)
+                            : Colors.grey[600],
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Children: ${widget.chaletData['childrenCount']}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.6)
+                              : Colors.grey[600],
                           fontSize: 12,
                         ),
                       ),
@@ -373,7 +402,9 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         Text(
                           'السعر لليلة',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: isDark
+                                ? Colors.white.withOpacity(0.5)
+                                : Colors.grey[500],
                             fontSize: 11,
                           ),
                         ),
@@ -394,7 +425,9 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                               withSuffixPerNight: false,
                             ),
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.5)
+                                  : Colors.grey[500],
                               fontSize: 14,
                               decoration: TextDecoration.lineThrough,
                             ),
@@ -445,8 +478,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
+                        backgroundColor: isDark ? Colors.white : Colors.black,
+                        foregroundColor: isDark ? Colors.black : Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

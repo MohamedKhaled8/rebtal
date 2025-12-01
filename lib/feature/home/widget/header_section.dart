@@ -5,8 +5,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class HeaderSection extends StatefulWidget {
   const HeaderSection({super.key});
@@ -127,6 +129,7 @@ class _HeaderSectionState extends State<HeaderSection> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return SizedBox(
       height: 380, // Increased height for more immersion
       child: Stack(
@@ -152,17 +155,19 @@ class _HeaderSectionState extends State<HeaderSection> {
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.3),
-                              Colors.transparent,
-                              const Color(0xFF001409).withOpacity(0.8),
-                              const Color(0xFF001409),
-                            ],
-                            stops: const [0.0, 0.4, 0.8, 1.0],
-                          ),
+                          gradient: isDark
+                              ? LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.3),
+                                    Colors.transparent,
+                                    const Color(0xFF001409).withOpacity(0.8),
+                                    const Color(0xFF001409),
+                                  ],
+                                  stops: const [0.0, 0.4, 0.8, 1.0],
+                                )
+                              : null, // No gradient in Light Mode
                         ),
                       ),
                     ),
@@ -252,20 +257,22 @@ class _HeaderSectionState extends State<HeaderSection> {
                   const Spacer(),
 
                   // Big Title
-                  const Text(
+                  Text(
                     'ابحث عن\nوجهتك القادمة',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black45,
-                          offset: Offset(0, 4),
-                          blurRadius: 10,
-                        ),
-                      ],
+                      shadows: isDark
+                          ? [
+                              const Shadow(
+                                color: Colors.black45,
+                                offset: Offset(0, 4),
+                                blurRadius: 10,
+                              ),
+                            ]
+                          : [],
                     ),
                   ),
 
@@ -282,17 +289,24 @@ class _HeaderSectionState extends State<HeaderSection> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.15)
+                              : Colors.white.withOpacity(0.9),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: isDark
+                                ? Colors.white.withOpacity(0.2)
+                                : Colors.grey.withOpacity(0.2),
                           ),
+                          boxShadow: null,
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.search,
-                              color: Colors.white.withOpacity(0.8),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.8)
+                                  : Colors.grey[600],
                               size: 26,
                             ),
                             const SizedBox(width: 12),
@@ -303,15 +317,21 @@ class _HeaderSectionState extends State<HeaderSection> {
                                   return TextField(
                                     controller: _controller,
                                     onChanged: (v) => HomeSearch.q.value = v,
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
                                       fontSize: 16,
                                     ),
-                                    cursorColor: Colors.white,
+                                    cursorColor: isDark
+                                        ? Colors.white
+                                        : Colors.black,
                                     decoration: InputDecoration(
                                       hintText: 'ابحث عن شاليه، منتجع...',
                                       hintStyle: TextStyle(
-                                        color: Colors.white.withOpacity(0.6),
+                                        color: isDark
+                                            ? Colors.white.withOpacity(0.6)
+                                            : Colors.grey[500],
                                         fontSize: 15,
                                       ),
                                       border: InputBorder.none,

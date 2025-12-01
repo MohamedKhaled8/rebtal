@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class CategoryButton extends StatelessWidget {
   final String label;
@@ -16,6 +17,7 @@ class CategoryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -25,12 +27,16 @@ class CategoryButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF10B981)
-              : Colors.white.withOpacity(0.05),
+              : (isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.grey.withOpacity(0.1)),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : Colors.white.withOpacity(0.1),
+                : (isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.grey.withOpacity(0.2)),
           ),
           boxShadow: isSelected
               ? [
@@ -46,14 +52,18 @@ class CategoryButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.white70,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.white70 : Colors.black54),
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),

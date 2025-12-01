@@ -5,6 +5,9 @@ import 'package:rebtal/feature/home/widget/category_button.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 import 'package:rebtal/core/utils/constant/app_constants.dart';
 
+import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -29,8 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF001409),
+      backgroundColor: isDark
+          ? ColorManager.chaletBackgroundDark
+          : ColorManager.chaletBackgroundLight,
       body: CustomScrollView(
         slivers: [
           // 1. Immersive Header
@@ -40,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Container(
               height: 50,
-              margin: const EdgeInsets.only(bottom: 24),
+              margin: const EdgeInsets.only(bottom: 16, top: 8),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
