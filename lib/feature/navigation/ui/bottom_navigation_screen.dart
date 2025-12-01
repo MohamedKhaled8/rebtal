@@ -9,6 +9,7 @@ import 'package:rebtal/feature/owner/ui/owner_bookings_page.dart';
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
 import 'package:rebtal/feature/favorites/ui/favorites_page.dart';
+import 'package:rebtal/feature/notifications/ui/notifications_page.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 
 class BottomNavigationScreen extends StatefulWidget {
@@ -59,12 +60,14 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           screens = const [
             HomeScreen(),
             FavoritesPage(),
+            NotificationsPage(),
             UserBookingsPage(),
             ProfilePage(),
           ];
           bottomNavItems = const [
             NavItem(icon: Icons.home, label: 'الرئيسية'),
             NavItem(icon: Icons.favorite, label: 'المفضلة'),
+            NavItem(icon: Icons.notifications, label: 'الإشعارات'),
             NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
             NavItem(icon: Icons.person, label: 'الملف'),
           ];

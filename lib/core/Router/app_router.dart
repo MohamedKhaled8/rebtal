@@ -13,6 +13,7 @@ import "package:rebtal/feature/onboarding/ui/onboarding_screen.dart";
 import "package:rebtal/feature/onboarding/ui/terms_screen.dart";
 import "package:rebtal/feature/owner/logic/cubit/owner_cubit.dart";
 import "package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart";
+import "package:rebtal/feature/notifications/ui/notifications_page.dart";
 import "package:rebtal/feature/splash/ui/splash_screen.dart";
 
 class AppRouter {
@@ -64,6 +65,8 @@ class AppRouter {
             child: OwnerChaletAddScreen(),
           ),
         );
+      case Routes.notificationsPage:
+        return MaterialPageRoute(builder: (_) => const NotificationsPage());
       default:
         return MaterialPageRoute(
           builder: (_) =>

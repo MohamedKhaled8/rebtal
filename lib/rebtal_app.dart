@@ -3,6 +3,7 @@ import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
 import 'package:screen_go/screen_go.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/core/utils/theme/app_theme.dart';
@@ -22,6 +23,7 @@ class RebtalApp extends StatelessWidget {
         BlocProvider(create: (context) => AuthCubit()),
         BlocProvider(create: (context) => BookingCubit()),
         BlocProvider(create: (context) => ThemeCubit()),
+        BlocProvider(create: (context) => NotificationCubit()),
       ],
       child: ScreenGo(
         materialApp: true,

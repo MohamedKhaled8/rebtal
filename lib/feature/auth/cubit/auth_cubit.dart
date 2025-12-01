@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/feature/auth/repository/auth_repository.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
 
 part 'auth_state.dart';
 
@@ -297,6 +298,10 @@ class AuthCubit extends Cubit<AuthState> {
       );
       // ✅ Save role locally
       await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
+
+      // ✅ Save FCM token to Firestore
+      await NotificationService().saveFCMToken(user.uid);
+
       emit(AuthSuccess(user));
     } catch (e) {
       final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
@@ -328,6 +333,12 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     try {
+      // ✅ Delete FCM token from Firestore before logout
+      final currentUser = getCurrentUser();
+      if (currentUser != null) {
+        await NotificationService().deleteFCMToken(currentUser.uid);
+      }
+
       await FirebaseAuth.instance.signOut().timeout(const Duration(seconds: 5));
       clearControllers();
       // ✅ Clear role locally

@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 
 // ✅ إضافة هذه الدوال للـ BookingCubit
 
@@ -164,6 +166,32 @@ class BookingCubit extends Cubit<BookingState> {
       if (index >= 0) {
         currentBookings[index].status = newStatus;
         emit(state.copyWith(bookings: currentBookings));
+
+        // ✅ إرسال إشعار للمستخدم
+        final booking = currentBookings[index];
+        NotificationType notificationType = NotificationType.general;
+        String title = 'تحديث حالة الحجز';
+        String body = 'تم تحديث حالة حجزك في ${booking.chaletName}';
+
+        if (newStatus == BookingStatus.approved) {
+          notificationType = NotificationType.bookingApproved;
+          title = 'تمت الموافقة على الحجز! 🎉';
+          body =
+              'وافق المالك على طلب حجزك في ${booking.chaletName}. استعد لرحلتك!';
+        } else if (newStatus == BookingStatus.rejected) {
+          notificationType = NotificationType.bookingRejected;
+          title = 'تم رفض الحجز ❌';
+          body = 'عذراً، تم رفض طلب حجزك في ${booking.chaletName}.';
+        }
+
+        await NotificationService().sendNotification(
+          userId: booking.userId,
+          title: title,
+          body: body,
+          type: notificationType,
+          relatedId: booking.id,
+          data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
+        );
       }
     } catch (e) {
       debugPrint('Error updating booking status: $e');
@@ -210,6 +238,35 @@ class BookingCubit extends Cubit<BookingState> {
             'status': describeEnum(BookingStatus.cancelled),
             'updatedAt': FieldValue.serverTimestamp(),
           });
+
+      // ✅ إرسال إشعار للمالك (اختياري)
+      final booking = state.bookings.firstWhere(
+        (b) => b.id == bookingId,
+        orElse: () => Booking(
+          id: '',
+          chaletId: '',
+          chaletName: '',
+          ownerId: '',
+          ownerName: '',
+          userId: '',
+          userName: '',
+          from: DateTime.now(),
+          to: DateTime.now(),
+          status: BookingStatus.cancelled,
+          updatedAt: DateTime.now(),
+        ),
+      );
+
+      if (booking.id.isNotEmpty && booking.ownerId.isNotEmpty) {
+        await NotificationService().sendNotification(
+          userId: booking.ownerId,
+          title: 'تم إلغاء حجز ⚠️',
+          body: 'قام ${booking.userName} بإلغاء حجزه في ${booking.chaletName}.',
+          type: NotificationType.general,
+          relatedId: booking.id,
+          data: {'bookingId': booking.id},
+        );
+      }
     } catch (e) {
       debugPrint('Error cancelling booking: $e');
     }

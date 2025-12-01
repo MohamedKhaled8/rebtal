@@ -14,4 +14,5 @@ abstract class Routes {
   static const String profilePage = '/profilePage';
   static const String bookingConfirmationPage = '/bookingConfirmationPage';
   static const String approvedRequestsPage = '/approvedRequestsPage';
+  static const String notificationsPage = '/notificationsPage';
 }
