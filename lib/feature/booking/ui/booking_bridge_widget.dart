@@ -116,605 +116,695 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // pull handle
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.5 : 0.15),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Pull Handle
+              Container(
+                width: 48,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
-            ),
 
-            // Chalet info
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(12),
+              // Header Section
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [
+                            ColorManager.chaletAccent.withOpacity(0.15),
+                            ColorManager.chaletAccent.withOpacity(0.05),
+                          ]
+                        : [
+                            ColorManager.chaletAccent.withOpacity(0.1),
+                            ColorManager.chaletAccent.withOpacity(0.03),
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Icon(Icons.home, color: Colors.blue, size: 28),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.chaletName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'المستخدم: ${widget.userName}',
-                        style: TextStyle(color: Colors.grey[700]),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'تاريخ: ${DateTime.now().toLocal().toString().split(' ').first}',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                      ),
-                    ],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: ColorManager.chaletAccent.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            // Date Selection Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade50, Colors.purple.shade50],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.shade200, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.calendar_month,
-                          color: Colors.blue.shade700,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'اختر فترة الحجز',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildBookingDateSelector(
-                          context,
-                          label: 'من تاريخ',
-                          icon: Icons.play_arrow,
-                          selectedDate: _from,
-                          onTap: () async {
-                            final now = DateTime.now();
-                            // استخدام التواريخ المتاحة من صاحب الشاليه فقط
-                            final availableFrom =
-                                widget.requestData['availableFrom'];
-                            final availableTo =
-                                widget.requestData['availableTo'];
-
-                            DateTime firstDate = now;
-                            DateTime lastDate = DateTime(now.year + 1);
-
-                            if (availableFrom != null) {
-                              try {
-                                firstDate = DateTime.parse(
-                                  availableFrom.toString(),
-                                );
-                              } catch (e) {
-                                firstDate = now;
-                              }
-                            }
-
-                            if (availableTo != null) {
-                              try {
-                                lastDate = DateTime.parse(
-                                  availableTo.toString(),
-                                );
-                              } catch (e) {
-                                lastDate = DateTime(now.year + 1);
-                              }
-                            }
-
-                            // Ensure valid range: lastDate >= firstDate and initialDate within range
-                            if (lastDate.isBefore(firstDate)) {
-                              lastDate = firstDate;
-                            }
-                            // اجعل التاريخ الابتدائي مطابقاً لأول تاريخ متاح من المالك
-                            final initialFrom = firstDate;
-
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: initialFrom,
-                              firstDate: firstDate,
-                              lastDate: lastDate,
-                              builder: (context, child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    colorScheme: ColorScheme.light(
-                                      primary: Colors.blue,
-                                      onPrimary: Colors.white,
-                                      surface: Colors.white,
-                                      onSurface: Colors.black,
-                                    ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
-                            if (picked != null) {
-                              setState(() {
-                                _from = picked;
-                                // إذا كان التاريخ النهائي قبل التاريخ الجديد، امسحه
-                                if (_to != null && _to!.isBefore(picked)) {
-                                  _to = null;
-                                }
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildBookingDateSelector(
-                          context,
-                          label: 'إلى تاريخ',
-                          icon: Icons.stop,
-                          selectedDate: _to,
-                          onTap: () async {
-                            if (_from == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'يرجى اختيار تاريخ البداية أولاً',
-                                  ),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                              return;
-                            }
-
-                            // استخدام التواريخ المتاحة من صاحب الشاليه فقط
-                            final availableFrom =
-                                widget.requestData['availableFrom'];
-                            final availableTo =
-                                widget.requestData['availableTo'];
-
-                            DateTime firstDate = _from ?? DateTime.now();
-                            DateTime lastDate = DateTime(
-                              DateTime.now().year + 1,
-                            );
-
-                            if (availableFrom != null) {
-                              try {
-                                final parsedFrom = DateTime.parse(
-                                  availableFrom.toString(),
-                                );
-                                // الحد الأدنى لتاريخ النهاية هو الأكبر بين تاريخ البداية المختار المتاح وتاريخ توفر المالك
-                                if (parsedFrom.isAfter(firstDate)) {
-                                  firstDate = parsedFrom;
-                                }
-                              } catch (_) {}
-                            }
-
-                            if (availableTo != null) {
-                              try {
-                                lastDate = DateTime.parse(
-                                  availableTo.toString(),
-                                );
-                              } catch (e) {
-                                lastDate = DateTime(DateTime.now().year + 1);
-                              }
-                            }
-
-                            // Ensure valid range: lastDate >= firstDate and initialDate within range
-                            // نطاق الكالندر مطابق تماماً لفترة المالك
-                            // إذا اختير تاريخ بداية، نبدأ منه أو من availableFrom أيهما أكبر
-                            if (_from != null && lastDate.isBefore(_from!)) {
-                              lastDate = _from!;
-                            }
-                            if (_from != null && _from!.isAfter(firstDate)) {
-                              firstDate = _from!;
-                            }
-                            if (firstDate.isAfter(lastDate)) {
-                              firstDate = lastDate;
-                            }
-                            // اجعل التاريخ الابتدائي لنهاية الحجز عند أول تاريخ صالح داخل الفترة
-                            final initialTo = firstDate;
-
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: initialTo,
-                              firstDate: firstDate,
-                              lastDate: lastDate,
-                              builder: (context, child) {
-                                return Theme(
-                                  data: Theme.of(context).copyWith(
-                                    colorScheme: ColorScheme.light(
-                                      primary: Colors.purple,
-                                      onPrimary: Colors.white,
-                                      surface: Colors.white,
-                                      onSurface: Colors.black,
-                                    ),
-                                  ),
-                                  child: child!,
-                                );
-                              },
-                            );
-                            if (picked != null) {
-                              setState(() => _to = picked);
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  // معلومات التواريخ المتاحة
-                  if (widget.requestData['availableFrom'] != null ||
-                      widget.requestData['availableTo'] != null)
+                child: Row(
+                  children: [
                     Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.all(12),
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.blue.shade600,
-                            size: 16,
+                        gradient: const LinearGradient(
+                          colors: [
+                            ColorManager.chaletAccent,
+                            Color(0xFF00A896),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorManager.chaletAccent.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'التواريخ المتاحة: ${_formatAvailableDates()}',
-                              style: TextStyle(
-                                color: Colors.blue.shade700,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 12,
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.villa_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.chaletName,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1A1A1A),
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.person_outline_rounded,
+                                size: 16,
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.6)
+                                    : Colors.grey[600],
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.userName,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.7)
+                                        : Colors.grey[700],
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Date Selection Section
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF252525)
+                      : const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.05),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                ColorManager.chaletAccent,
+                                Color(0xFF00A896),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.calendar_month_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'اختر فترة الحجز',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF1A1A1A),
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildModernDateSelector(
+                            context,
+                            isDark: isDark,
+                            label: 'من تاريخ',
+                            icon: Icons.login_rounded,
+                            selectedDate: _from,
+                            onTap: () async {
+                              final now = DateTime.now();
+                              final availableFrom =
+                                  widget.requestData['availableFrom'];
+                              final availableTo =
+                                  widget.requestData['availableTo'];
+
+                              DateTime firstDate = now;
+                              DateTime lastDate = DateTime(now.year + 1);
+
+                              if (availableFrom != null) {
+                                try {
+                                  firstDate = DateTime.parse(
+                                    availableFrom.toString(),
+                                  );
+                                } catch (e) {
+                                  firstDate = now;
+                                }
+                              }
+
+                              if (availableTo != null) {
+                                try {
+                                  lastDate = DateTime.parse(
+                                    availableTo.toString(),
+                                  );
+                                } catch (e) {
+                                  lastDate = DateTime(now.year + 1);
+                                }
+                              }
+
+                              if (lastDate.isBefore(firstDate)) {
+                                lastDate = firstDate;
+                              }
+
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: firstDate,
+                                firstDate: firstDate,
+                                lastDate: lastDate,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: ColorManager.chaletAccent,
+                                        onPrimary: Colors.white,
+                                        surface: Colors.white,
+                                        onSurface: Colors.black,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _from = picked;
+                                  if (_to != null && _to!.isBefore(picked)) {
+                                    _to = null;
+                                  }
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildModernDateSelector(
+                            context,
+                            isDark: isDark,
+                            label: 'إلى تاريخ',
+                            icon: Icons.logout_rounded,
+                            selectedDate: _to,
+                            onTap: () async {
+                              if (_from == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'يرجى اختيار تاريخ البداية أولاً',
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              final availableTo =
+                                  widget.requestData['availableTo'];
+                              DateTime lastDate = DateTime(
+                                DateTime.now().year + 1,
+                              );
+
+                              if (availableTo != null) {
+                                try {
+                                  lastDate = DateTime.parse(
+                                    availableTo.toString(),
+                                  );
+                                } catch (e) {
+                                  lastDate = DateTime(DateTime.now().year + 1);
+                                }
+                              }
+
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _from!,
+                                firstDate: _from!,
+                                lastDate: lastDate,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: ColorManager.chaletAccent,
+                                        onPrimary: Colors.white,
+                                        surface: Colors.white,
+                                        onSurface: Colors.black,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setState(() => _to = picked);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Duration Display
+                    if (_from != null && _to != null) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'المدة: ${_calculateBookingDays(_from!, _to!)} يوم',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                letterSpacing: 0.3,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  if (_from != null && _to != null)
-                    Container(
-                      margin: const EdgeInsets.only(top: 12),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: Colors.green.shade600,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'المدة: ${_calculateBookingDays(_from!, _to!)} يوم',
-                            style: TextStyle(
-                              color: Colors.green.shade700,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            // Contact / Decision area
-            if (!_showDecisionButtons) ...[
-              // Check if dates are selected
-              if (_from == null || _to == null) ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.orange.shade600),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'يرجى اختيار فترة الحجز أولاً',
-                          style: TextStyle(
-                            color: Colors.orange.shade700,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-              ] else ...[
-                // Show contact buttons only when dates are selected
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final phone = await _resolvePhone();
-                    if (phone == null || phone.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('رقم الهاتف غير متوفر')),
-                      );
-                      return;
-                    }
-                    // update booking dates before launching
-                    try {
-                      // Resolve owner from chalet doc if not provided
-                      final resolved = await _resolveOwner();
-                      final updated = Booking(
-                        id: _bookingId,
-                        chaletId: widget.chaletId,
-                        chaletName: widget.chaletName,
-                        ownerId: _normOwnerId(
-                          resolved['ownerId'] ?? widget.ownerId,
+              ),
+
+              const SizedBox(height: 20),
+
+              // Action Buttons
+              if (!_showDecisionButtons) ...[
+                if (_from == null || _to == null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: Colors.orange[700],
+                          size: 22,
                         ),
-                        ownerName: resolved['ownerName'] ?? widget.ownerName,
-                        userId: widget.userId,
-                        userName: widget.userName,
-                        from: _from!,
-                        to: _to!,
-                        status: BookingStatus.pending,
-                      );
-                      // replace the booking in cubit by a remove+add approach
-                      try {
-                        widget.parentContext.read<BookingCubit>().addBooking(
-                          updated,
-                        );
-                        _saveToFirestore(updated);
-                      } catch (_) {
-                        context.read<BookingCubit>().addBooking(updated);
-                      }
-                    } catch (_) {}
-                    setState(() => _launchedExternal = true);
-                    await UriLauncherService.launchWhatsAppContact(
-                      context: context,
-                      phone: phone,
-                      message:
-                          'السلام عليكم، أريد حجز الشاليه للفترة من ${_from!.day}/${_from!.month}/${_from!.year} إلى ${_to!.day}/${_to!.month}/${_to!.year}',
-                    );
-                  },
-                  icon: const Icon(Icons.message, color: Colors.white),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Text(
-                      'فتح WhatsApp',
-                      style: TextStyle(
-                        color: ColorManager.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(56),
-                    backgroundColor: const Color(0xFF25D366),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final phone = await _resolvePhone();
-                    if (phone == null || phone.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('رقم الهاتف غير متوفر')),
-                      );
-                      return;
-                    }
-                    setState(() => _launchedExternal = true);
-                    await UriLauncherService.launchPhoneCall(context, phone);
-                  },
-                  icon: const Icon(Icons.call, color: Colors.white),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Text(
-                      'الاتصال',
-                      style: TextStyle(
-                        color: ColorManager.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(56),
-                    backgroundColor: const Color(0xFF1D4ED8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'بعد العودة سيظهر لك زري التأكيد/الرفض',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ] else ...[
-              // Decision big buttons stacked
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      // User confirms the booking locally — create a pending
-                      // booking and send it to the owner (owner will approve/decline).
-                      final resolved = await _resolveOwner();
-                      final booking = Booking(
-                        id: _bookingId,
-                        chaletId: widget.chaletId,
-                        chaletName: widget.chaletName,
-                        ownerId: _normOwnerId(
-                          resolved['ownerId'] ?? widget.ownerId,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'يرجى اختيار فترة الحجز أولاً',
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
-                        ownerName: resolved['ownerName'] ?? widget.ownerName,
-                        userId: widget.userId,
-                        userName: widget.userName,
-                        from: _from ?? DateTime.now(),
-                        to: _to ?? DateTime.now().add(const Duration(days: 1)),
-                        status: BookingStatus.pending,
-                      );
-                      try {
-                        widget.parentContext.read<BookingCubit>().addBooking(
-                          booking,
-                        );
-                        _saveToFirestore(booking);
-                      } catch (_) {
-                        context.read<BookingCubit>().addBooking(booking);
-                      }
-                      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-                        const SnackBar(content: Text('تم إرسال الطلب للمالك')),
-                      );
-                      await _showRatingBottomSheet();
-                      if (mounted) {
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      minimumSize: const Size.fromHeight(60),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      ],
                     ),
-                    child: const Text(
-                      'موافقة على الحجز',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                  ),
+                ] else ...[
+                  // WhatsApp Button
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF25D366), Color(0xFF128C7E)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF25D366).withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () async {
+                          final phone = await _resolvePhone();
+                          if (phone == null || phone.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('رقم الهاتف غير متوفر'),
+                              ),
+                            );
+                            return;
+                          }
+                          try {
+                            final resolved = await _resolveOwner();
+                            final updated = Booking(
+                              id: _bookingId,
+                              chaletId: widget.chaletId,
+                              chaletName: widget.chaletName,
+                              ownerId: _normOwnerId(
+                                resolved['ownerId'] ?? widget.ownerId,
+                              ),
+                              ownerName:
+                                  resolved['ownerName'] ?? widget.ownerName,
+                              userId: widget.userId,
+                              userName: widget.userName,
+                              from: _from!,
+                              to: _to!,
+                              status: BookingStatus.pending,
+                            );
+                            try {
+                              widget.parentContext
+                                  .read<BookingCubit>()
+                                  .addBooking(updated);
+                              _saveToFirestore(updated);
+                            } catch (_) {
+                              context.read<BookingCubit>().addBooking(updated);
+                            }
+                          } catch (_) {}
+                          setState(() => _launchedExternal = true);
+                          await UriLauncherService.launchWhatsAppContact(
+                            context: context,
+                            phone: phone,
+                            message:
+                                'السلام عليكم، أريد حجز الشاليه للفترة من ${_from!.day}/${_from!.month}/${_from!.year} إلى ${_to!.day}/${_to!.month}/${_to!.year}',
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.chat_bubble_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'فتح WhatsApp',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  OutlinedButton(
+                  // Call Button
+                  OutlinedButton.icon(
                     onPressed: () async {
-                      // User rejects—create a rejected record so user sees status
-                      // immediately in UserBookingsPage.
-                      final resolved = await _resolveOwner();
-                      final booking = Booking(
-                        id: _bookingId,
-                        chaletId: widget.chaletId,
-                        chaletName: widget.chaletName,
-                        ownerId: _normOwnerId(
-                          resolved['ownerId'] ?? widget.ownerId,
-                        ),
-                        ownerName: resolved['ownerName'] ?? widget.ownerName,
-                        userId: widget.userId,
-                        userName: widget.userName,
-                        from: _from ?? DateTime.now(),
-                        to: _to ?? DateTime.now().add(const Duration(days: 1)),
-                        status: BookingStatus.rejected,
-                      );
-                      try {
-                        widget.parentContext.read<BookingCubit>().addBooking(
-                          booking,
+                      final phone = await _resolvePhone();
+                      if (phone == null || phone.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('رقم الهاتف غير متوفر')),
                         );
-                        _saveToFirestore(booking);
-                      } catch (_) {
-                        context.read<BookingCubit>().addBooking(booking);
+                        return;
                       }
-                      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-                        const SnackBar(content: Text('تم رفض الطلب')),
-                      );
-                      Navigator.of(context).pop();
+                      setState(() => _launchedExternal = true);
+                      await UriLauncherService.launchPhoneCall(context, phone);
                     },
+                    icon: Icon(
+                      Icons.call_rounded,
+                      color: isDark
+                          ? ColorManager.chaletAccent
+                          : const Color(0xFF1D4ED8),
+                    ),
+                    label: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        'الاتصال',
+                        style: TextStyle(
+                          color: isDark
+                              ? ColorManager.chaletAccent
+                              : const Color(0xFF1D4ED8),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(56),
-                      side: const BorderSide(
-                        color: Color(0xFFEF4444),
+                      side: BorderSide(
+                        color: isDark
+                            ? ColorManager.chaletAccent
+                            : const Color(0xFF1D4ED8),
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'رفض الحجز',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'بعد العودة سيظهر لك زري التأكيد/الرفض',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.5)
+                          : Colors.grey[600],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
-              ),
-              const SizedBox(height: 8),
-            ],
+              ] else ...[
+                // Decision Buttons
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        final resolved = await _resolveOwner();
+                        final booking = Booking(
+                          id: _bookingId,
+                          chaletId: widget.chaletId,
+                          chaletName: widget.chaletName,
+                          ownerId: _normOwnerId(
+                            resolved['ownerId'] ?? widget.ownerId,
+                          ),
+                          ownerName: resolved['ownerName'] ?? widget.ownerName,
+                          userId: widget.userId,
+                          userName: widget.userName,
+                          from: _from ?? DateTime.now(),
+                          to:
+                              _to ??
+                              DateTime.now().add(const Duration(days: 1)),
+                          status: BookingStatus.pending,
+                        );
+                        try {
+                          widget.parentContext.read<BookingCubit>().addBooking(
+                            booking,
+                          );
+                          _saveToFirestore(booking);
+                        } catch (_) {
+                          context.read<BookingCubit>().addBooking(booking);
+                        }
+                        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('تم إرسال الطلب للمالك'),
+                          ),
+                        );
+                        await _showRatingBottomSheet();
+                        if (mounted) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              'موافقة على الحجز',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final resolved = await _resolveOwner();
+                    final booking = Booking(
+                      id: _bookingId,
+                      chaletId: widget.chaletId,
+                      chaletName: widget.chaletName,
+                      ownerId: _normOwnerId(
+                        resolved['ownerId'] ?? widget.ownerId,
+                      ),
+                      ownerName: resolved['ownerName'] ?? widget.ownerName,
+                      userId: widget.userId,
+                      userName: widget.userName,
+                      from: _from ?? DateTime.now(),
+                      to: _to ?? DateTime.now().add(const Duration(days: 1)),
+                      status: BookingStatus.rejected,
+                    );
+                    try {
+                      widget.parentContext.read<BookingCubit>().addBooking(
+                        booking,
+                      );
+                      _saveToFirestore(booking);
+                    } catch (_) {
+                      context.read<BookingCubit>().addBooking(booking);
+                    }
+                    ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+                      const SnackBar(content: Text('تم رفض الطلب')),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(
+                    Icons.cancel_rounded,
+                    color: Color(0xFFEF4444),
+                  ),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Text(
+                      'رفض الحجز',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEF4444),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                    side: const BorderSide(color: Color(0xFFEF4444), width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
 
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
       ),
     );
@@ -768,86 +858,75 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     return {'ownerId': ownerId, 'ownerName': ownerName};
   }
 
-  Widget _buildBookingDateSelector(
+  Widget _buildModernDateSelector(
     BuildContext context, {
+    required bool isDark,
     required String label,
     required IconData icon,
     required DateTime? selectedDate,
     required VoidCallback onTap,
   }) {
+    final isSelected = selectedDate != null;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isDark
+              ? (isSelected ? const Color(0xFF2A2A2A) : const Color(0xFF1F1F1F))
+              : (isSelected ? Colors.white : const Color(0xFFF5F5F5)),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selectedDate != null
-                ? Colors.blue.shade300
-                : Colors.grey.shade300,
-            width: 1.5,
+            color: isSelected
+                ? ColorManager.chaletAccent
+                : (isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.grey.shade300),
+            width: isSelected ? 2 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: selectedDate != null
-                    ? Colors.blue.shade100
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Icon(
-                icon,
-                color: selectedDate != null
-                    ? Colors.blue.shade600
-                    : Colors.grey.shade600,
-                size: 16,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected
+                      ? ColorManager.chaletAccent
+                      : (isDark
+                            ? Colors.white.withOpacity(0.5)
+                            : Colors.grey[600]),
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? Colors.white.withOpacity(0.6)
+                        : Colors.grey[600],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    selectedDate != null
-                        ? "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}"
-                        : "اختر التاريخ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: selectedDate != null
-                          ? Colors.black87
-                          : Colors.grey.shade500,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Icon(
-              Icons.arrow_drop_down,
-              color: selectedDate != null
-                  ? Colors.blue.shade600
-                  : Colors.grey.shade400,
+            const SizedBox(height: 8),
+            Text(
+              selectedDate != null
+                  ? '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'
+                  : 'اختر التاريخ',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? (isDark ? Colors.white : const Color(0xFF1A1A1A))
+                    : (isDark
+                          ? Colors.white.withOpacity(0.4)
+                          : Colors.grey[400]),
+              ),
             ),
           ],
         ),
@@ -857,42 +936,6 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
   int _calculateBookingDays(DateTime from, DateTime to) {
     return to.difference(from).inDays + 1;
-  }
-
-  String _formatAvailableDates() {
-    final availableFrom = widget.requestData['availableFrom'];
-    final availableTo = widget.requestData['availableTo'];
-
-    if (availableFrom == null && availableTo == null) {
-      return 'غير محدد';
-    }
-
-    try {
-      String fromStr = '';
-      String toStr = '';
-
-      if (availableFrom != null) {
-        final fromDate = DateTime.parse(availableFrom.toString());
-        fromStr = '${fromDate.day}/${fromDate.month}/${fromDate.year}';
-      }
-
-      if (availableTo != null) {
-        final toDate = DateTime.parse(availableTo.toString());
-        toStr = '${toDate.day}/${toDate.month}/${toDate.year}';
-      }
-
-      if (fromStr.isNotEmpty && toStr.isNotEmpty) {
-        return 'من $fromStr إلى $toStr';
-      } else if (fromStr.isNotEmpty) {
-        return 'من $fromStr';
-      } else if (toStr.isNotEmpty) {
-        return 'حتى $toStr';
-      }
-
-      return 'غير محدد';
-    } catch (e) {
-      return 'غير محدد';
-    }
   }
 
   Future<void> _showRatingBottomSheet() async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,84 @@ import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 part 'chalet_detail_state.dart';
 
 class ChaletDetailCubit extends Cubit<ChaletDetailState> {
+  PageController? _pageController;
+  Timer? _autoPlayTimer;
+
   ChaletDetailCubit() : super(ChaletDetailInitial());
+
+  PageController get pageController {
+    _pageController ??= PageController();
+    return _pageController!;
+  }
+
+  void initialize(Map<String, dynamic> requestData) {
+    final images = _extractImagesFromRequestData(requestData);
+    emit(ChaletDetailLoaded(images: images));
+    _startAutoPlay();
+  }
+
+  List<String> _extractImagesFromRequestData(Map<String, dynamic> data) {
+    final List<String> images = [];
+
+    if (data['images'] != null && data['images'] is List) {
+      images.addAll((data['images'] as List).map((e) => e.toString()));
+    }
+    if (data['image'] != null) {
+      images.add(data['image'].toString());
+    }
+    if (data['imageUrl'] != null) {
+      images.add(data['imageUrl'].toString());
+    }
+
+    return images;
+  }
+
+  void _startAutoPlay() {
+    _autoPlayTimer?.cancel();
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      final currentState = state;
+      if (currentState is ChaletDetailLoaded) {
+        if (_pageController?.hasClients == true &&
+            currentState.images.length > 1) {
+          int nextIndex = currentState.currentImageIndex + 1;
+          if (nextIndex >= currentState.images.length) {
+            nextIndex = 0;
+          }
+          _pageController?.animateToPage(
+            nextIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
+  }
+
+  void onPageChanged(int index) {
+    final currentState = state;
+    if (currentState is ChaletDetailLoaded) {
+      emit(currentState.copyWith(currentImageIndex: index));
+    }
+  }
+
+  void navigateToImage(int index) {
+    _pageController?.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void toggleDescription() {
+    final currentState = state;
+    if (currentState is ChaletDetailLoaded) {
+      emit(
+        currentState.copyWith(
+          isDescriptionExpanded: !currentState.isDescriptionExpanded,
+        ),
+      );
+    }
+  }
 
   Future<void> updateStatus(
     BuildContext context, {
@@ -157,5 +235,12 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
         );
       }
     }
+  }
+
+  @override
+  Future<void> close() {
+    _autoPlayTimer?.cancel();
+    _pageController?.dispose();
+    return super.close();
   }
 }

@@ -21,3 +21,28 @@ final class ChaletDetailImageIndexChanged extends ChaletDetailState {
   final int index;
   ChaletDetailImageIndexChanged(this.index);
 }
+
+final class ChaletDetailLoaded extends ChaletDetailState {
+  final List<String> images;
+  final int currentImageIndex;
+  final bool isDescriptionExpanded;
+
+  ChaletDetailLoaded({
+    required this.images,
+    this.currentImageIndex = 0,
+    this.isDescriptionExpanded = false,
+  });
+
+  ChaletDetailLoaded copyWith({
+    List<String>? images,
+    int? currentImageIndex,
+    bool? isDescriptionExpanded,
+  }) {
+    return ChaletDetailLoaded(
+      images: images ?? this.images,
+      currentImageIndex: currentImageIndex ?? this.currentImageIndex,
+      isDescriptionExpanded:
+          isDescriptionExpanded ?? this.isDescriptionExpanded,
+    );
+  }
+}
