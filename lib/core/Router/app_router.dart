@@ -12,7 +12,7 @@ import "package:rebtal/feature/onboarding/logic/cubit/terms_cubit.dart";
 import "package:rebtal/feature/onboarding/ui/onboarding_screen.dart";
 import "package:rebtal/feature/onboarding/ui/terms_screen.dart";
 import "package:rebtal/feature/owner/logic/cubit/owner_cubit.dart";
-import "package:rebtal/feature/owner/ui/owner_screen.dart";
+import "package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart";
 import "package:rebtal/feature/splash/ui/splash_screen.dart";
 
 class AppRouter {

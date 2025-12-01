@@ -53,9 +53,9 @@ class AboutUsSection extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black,
-                            Colors.black,
-                            Colors.transparent,
+                            ColorManager.black,
+                            ColorManager.black,
+                            ColorManager.transparent,
                           ],
                           stops: const [0.0, 0.5, 1.0],
                         ).createShader(bounds);

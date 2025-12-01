@@ -24,7 +24,7 @@ class OwnerInformationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -70,7 +70,7 @@ class OwnerInformationCard extends StatelessWidget {
                   : const Color(0xFFF9FAFB),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : const Color(0xFFF3F4F6),
+                color: isDark ? ColorManager.white10 : const Color(0xFFF3F4F6),
               ),
             ),
             child: Column(
@@ -85,7 +85,7 @@ class OwnerInformationCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Divider(
                     height: 1,
-                    color: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
+                    color: isDark ? ColorManager.white10 : const Color(0xFFE5E7EB),
                   ),
                 ),
                 OwnerInfoRow(
@@ -98,7 +98,7 @@ class OwnerInformationCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Divider(
                     height: 1,
-                    color: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
+                    color: isDark ? ColorManager.white10 : const Color(0xFFE5E7EB),
                   ),
                 ),
                 OwnerInfoRow(

@@ -24,7 +24,7 @@ class PropertyFeaturesCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -92,7 +92,7 @@ class PropertyFeaturesCard extends StatelessWidget {
             const SizedBox(height: 24),
             Divider(
               height: 1,
-              color: isDark ? Colors.white10 : const Color(0xFFEEEEEE),
+              color: isDark ? ColorManager.white10 : const Color(0xFFEEEEEE),
             ),
             const SizedBox(height: 24),
             Text(
@@ -121,7 +121,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                             ? ColorManager.chaletIconBackgroundDark
                             : const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.transparent),
+                        border: Border.all(color: ColorManager.transparent),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -187,7 +187,7 @@ class FeatureItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark
                   ? ColorManager.chaletIconBackgroundDark
-                  : Colors.white,
+                  : ColorManager.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -222,7 +222,7 @@ class FeatureItem extends StatelessWidget {
                   style: TextStyle(
                     color: isDark
                         ? ColorManager.chaletTextSecondaryDark
-                        : Colors.grey[600],
+                        : ColorManager.grey[600],
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),

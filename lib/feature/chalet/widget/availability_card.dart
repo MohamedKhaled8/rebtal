@@ -25,7 +25,7 @@ class AvailabilityCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -39,12 +39,12 @@ class AvailabilityCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: ColorManager.chaletAvailableGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.calendar_today_rounded,
-                  color: Color(0xFF10B981),
+                  color: ColorManager.chaletAvailableGreen,
                   size: 24,
                 ),
               ),
@@ -68,16 +68,16 @@ class AvailabilityCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isAvailable
                   ? (isDark
-                        ? const Color(0xFF064E3B).withOpacity(0.3)
-                        : const Color(0xFFECFDF5))
+                        ? ColorManager.chaletAvailableDarkGreen.withOpacity(0.3)
+                        : ColorManager.chaletAvailableLightGreen)
                   : (isDark
-                        ? const Color(0xFF7F1D1D).withOpacity(0.3)
-                        : const Color(0xFFFEF2F2)),
+                        ? ColorManager.chaletUnavailableDarkRed.withOpacity(0.3)
+                        : ColorManager.chaletUnavailableLightRed),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isAvailable
-                    ? const Color(0xFF10B981).withOpacity(0.2)
-                    : const Color(0xFFEF4444).withOpacity(0.2),
+                    ? ColorManager.chaletAvailableGreen.withOpacity(0.2)
+                    : ColorManager.chaletUnavailableRed.withOpacity(0.2),
               ),
             ),
             child: Row(
@@ -85,13 +85,15 @@ class AvailabilityCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: isDark ? ColorManager.chaletCardDark : Colors.white,
+                    color: isDark ? ColorManager.chaletCardDark : ColorManager.white,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
                         color: isAvailable
-                            ? const Color(0xFF10B981).withOpacity(0.2)
-                            : const Color(0xFFEF4444).withOpacity(0.2),
+                            ? ColorManager.chaletAvailableGreen.withOpacity(0.2)
+                            : ColorManager.chaletUnavailableRed.withOpacity(
+                                0.2,
+                              ),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -100,8 +102,8 @@ class AvailabilityCard extends StatelessWidget {
                   child: Icon(
                     isAvailable ? Icons.check_rounded : Icons.close_rounded,
                     color: isAvailable
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
+                        ? ColorManager.chaletAvailableGreen
+                        : ColorManager.chaletUnavailableRed,
                     size: 20,
                   ),
                 ),
@@ -113,8 +115,8 @@ class AvailabilityCard extends StatelessWidget {
                       isAvailable ? 'Available Now' : 'Currently Unavailable',
                       style: TextStyle(
                         color: isAvailable
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
+                            ? ColorManager.chaletAvailableGreen
+                            : ColorManager.chaletUnavailableRed,
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
                       ),
@@ -123,7 +125,9 @@ class AvailabilityCard extends StatelessWidget {
                       Text(
                         'Check back later',
                         style: TextStyle(
-                          color: const Color(0xFFEF4444).withOpacity(0.8),
+                          color: ColorManager.chaletUnavailableRed.withOpacity(
+                            0.8,
+                          ),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
@@ -44,7 +45,7 @@ class ImageHeaderSection extends StatelessWidget {
         return Container(
           height: 400,
           margin: const EdgeInsets.only(bottom: 16.31),
-          decoration: const BoxDecoration(color: Colors.black),
+          decoration: const BoxDecoration(color: ColorManager.black),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -81,9 +82,9 @@ class ImageHeaderSection extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.2),
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
+                        ColorManager.black.withOpacity(0.2),
+                        ColorManager.transparent,
+                        ColorManager.black.withOpacity(0.8),
                       ],
                       stops: const [0.0, 0.5, 1.0],
                     ),
@@ -97,10 +98,10 @@ class ImageHeaderSection extends StatelessWidget {
                 left: 20,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: ColorManager.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: ColorManager.white.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -111,7 +112,7 @@ class ImageHeaderSection extends StatelessWidget {
                       child: IconButton(
                         icon: const Icon(
                           Icons.arrow_back_ios_new,
-                          color: Colors.white,
+                          color: ColorManager.white,
                           size: 20,
                         ),
                         onPressed: () => Navigator.pop(context),
@@ -143,11 +144,11 @@ class ImageHeaderSection extends StatelessWidget {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: isSelected
-                                  ? Border.all(color: Colors.white, width: 2)
+                                  ? Border.all(color: ColorManager.white, width: 2)
                                   : null,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: ColorManager.black.withOpacity(0.3),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -180,7 +181,7 @@ class ImageHeaderSection extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: ColorManager.white,
                         letterSpacing: 0.5,
                         shadows: [
                           Shadow(
@@ -196,7 +197,7 @@ class ImageHeaderSection extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.location_on,
-                          color: Colors.white,
+                          color: ColorManager.white,
                           size: 16,
                         ),
                         const SizedBox(width: 4),

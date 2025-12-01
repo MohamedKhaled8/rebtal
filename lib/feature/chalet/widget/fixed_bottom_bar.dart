@@ -41,7 +41,7 @@ class FixedBottomBar extends StatelessWidget {
                       : ColorManager.chaletCardLight,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                      color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, -5),
                     ),
@@ -117,7 +117,7 @@ class FixedBottomBar extends StatelessWidget {
                             ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ColorManager.chaletAccent,
-                          foregroundColor: Colors.white,
+                          foregroundColor: ColorManager.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 32,
                             vertical: 16,

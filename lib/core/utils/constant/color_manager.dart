@@ -19,7 +19,9 @@ abstract class ColorManager {
   static const white = Colors.white;
   static const white24 = Colors.white24;
   static const white70 = Colors.white70;
+  static const white10 = Colors.white10;
   static const gray = Colors.grey;
+  static const grey = Colors.grey;
   static const red = Colors.red;
   static const green = Colors.green;
   static const yellow = Colors.yellow;
@@ -100,4 +102,35 @@ abstract class ColorManager {
   static const chaletAccent = Color(
     0xFF1ED760,
   ); // Using the green accent from Navbar
+
+  // Chalet Availability Colors
+  static const chaletAvailableGreen = Color(0xFF10B981);
+  static const chaletAvailableDarkGreen = Color(0xFF064E3B);
+  static const chaletAvailableLightGreen = Color(0xFFECFDF5);
+
+  static const chaletUnavailableRed = Color(0xFFEF4444);
+  static const chaletUnavailableDarkRed = Color(0xFF7F1D1D);
+  static const chaletUnavailableLightRed = Color(0xFFFEF2F2);
+
+  static const chaletGrey100 = Color(0xFFF3F4F6);
+  static const chaletGrey200 = Color(0xFFE5E7EB);
+  static const chaletGrey400 = Color(0xFF9CA3AF);
+  static const chaletGrey500 = Color(0xFF6B7280);
+  static const chaletGrey800 = Color(0xFF1F2937);
+  static const chaletGrey50 = Color(0xFFF9FAFB);
+
+  // Chalet Action Colors
+  static const chaletActionGreen = Color(0xFF10B981);
+  static const chaletActionDarkGreen = Color(0xFF059669);
+  static const chaletActionRed = Color(0xFFEF4444);
+  static const chaletActionDarkRed = Color(0xFFDC2626);
+  static const chaletActionBlue = Color(0xFF3B82F6);
+  static const chaletActionDarkBlue = Color(0xFF1D4ED8);
+  static const chaletActionGrey = Color(0xFF6B7280);
+  static const chaletActionDarkGrey = Color(0xFF4B5563);
+
+  // Chalet Gallery Colors
+  static const chaletGalleryPink = Color(0xFFEC4899);
+  static const chaletGalleryBlue = Color(0xFF3B82F6);
+  static const chaletGalleryTextDark = Color(0xFF1F2937);
 }

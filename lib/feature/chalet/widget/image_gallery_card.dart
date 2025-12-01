@@ -25,22 +25,42 @@ class ImageGalleryCard extends StatelessWidget {
         builder: (context, state) {
           final cubit = context.read<ImageGalleryCubit>();
           return Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark
-                  ? ColorManager.chaletCardDark
-                  : ColorManager.chaletCardLight,
-              borderRadius: BorderRadius.circular(16),
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        ColorManager.chaletCardDark,
+                        ColorManager.chaletCardDark.withOpacity(0.8),
+                      ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        ColorManager.chaletCardLight,
+                        ColorManager.chaletCardLight.withOpacity(0.95),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark
+                    ? ColorManager.white.withOpacity(0.05)
+                    : ColorManager.black.withOpacity(0.05),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
-                  blurRadius: 24,
-                  offset: const Offset(0, 6),
+                  color: ColorManager.chaletGalleryPink.withOpacity(0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.1 : 0.02),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -48,58 +68,127 @@ class ImageGalleryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEC4899).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.photo_library_outlined,
-                            color: Color(0xFFEC4899),
-                            size: 20,
-                          ),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            ColorManager.chaletGalleryPink.withOpacity(0.2),
+                            ColorManager.chaletGalleryPink.withOpacity(0.1),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Gallery (${images.length} photos)',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? ColorManager.chaletTextPrimaryDark
-                                : const Color(0xFF1F2937),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: ColorManager.chaletGalleryPink.withOpacity(
+                            0.3,
                           ),
+                          width: 1,
                         ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: () => cubit.openFullScreen(
-                        context,
-                        images: images,
-                        start: 0,
                       ),
-                      child: const Text(
-                        'View All',
-                        style: TextStyle(
-                          color: Color(0xFF3B82F6),
-                          fontWeight: FontWeight.w600,
+                      child: const Icon(
+                        Icons.collections_rounded,
+                        color: ColorManager.chaletGalleryPink,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Photo Gallery',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? ColorManager.chaletTextPrimaryDark
+                                  : ColorManager.chaletGalleryTextDark,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${images.length} photos',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? ColorManager.chaletTextSecondaryDark
+                                  : ColorManager.chaletTextSecondaryLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            ColorManager.chaletGalleryBlue,
+                            Color(0xFF2563EB),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorManager.chaletGalleryBlue.withOpacity(
+                              0.3,
+                            ),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: ColorManager.transparent,
+                        child: InkWell(
+                          onTap: () => cubit.openFullScreen(
+                            context,
+                            images: images,
+                            start: 0,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Text(
+                                  'View All',
+                                  style: TextStyle(
+                                    color: ColorManager.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: ColorManager.white,
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 SizedBox(
-                  height: 100,
+                  height: 140,
                   child: ListView.builder(
                     controller: cubit.scrollController,
                     scrollDirection: Axis.horizontal,
-                    itemCount: images.length.clamp(0, 5),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: images.length.clamp(0, 8),
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () => cubit.openFullScreen(
@@ -108,24 +197,120 @@ class ImageGalleryCard extends StatelessWidget {
                           start: index,
                         ),
                         child: Container(
-                          width: 120,
-                          margin: const EdgeInsets.only(right: 12),
+                          width: 160,
+                          margin: const EdgeInsets.only(right: 16),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                ColorManager.chaletGalleryPink.withOpacity(0.1),
+                                ColorManager.chaletGalleryBlue.withOpacity(0.1),
+                              ],
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                color: ColorManager.black.withOpacity(0.15),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                              BoxShadow(
+                                color: ColorManager.chaletGalleryPink
+                                    .withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: AppImageHelper(
-                              path: images[index],
-                              fit: BoxFit.cover,
-                            ),
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: AppImageHelper(
+                                  path: images[index],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              // Gradient overlay
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      ColorManager.transparent,
+                                      ColorManager.black.withOpacity(0.3),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Border
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: ColorManager.white.withOpacity(0.2),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              // Index badge
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: ColorManager.black.withOpacity(0.6),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: ColorManager.white.withOpacity(
+                                        0.3,
+                                      ),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${index + 1}/${images.length}',
+                                    style: const TextStyle(
+                                      color: ColorManager.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Tap indicator
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: ColorManager.white.withOpacity(0.9),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: ColorManager.black.withOpacity(
+                                          0.2,
+                                        ),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.zoom_in_rounded,
+                                    color: ColorManager.chaletGalleryBlue,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 
@@ -45,12 +46,18 @@ class _BookingButton extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: isBookingAvailable
             ? const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                colors: [
+                  ColorManager.chaletActionGreen,
+                  ColorManager.chaletActionDarkGreen,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFF6B7280), Color(0xFF4B5563)],
+                colors: [
+                  ColorManager.chaletActionGrey,
+                  ColorManager.chaletActionDarkGrey,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -59,8 +66,8 @@ class _BookingButton extends StatelessWidget {
           BoxShadow(
             color:
                 (isBookingAvailable
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF6B7280))
+                        ? ColorManager.chaletActionGreen
+                        : ColorManager.chaletActionGrey)
                     .withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -79,9 +86,9 @@ class _BookingButton extends StatelessWidget {
                   SnackBar(
                     content: const Text(
                       'الحجز غير متاح حالياً',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: ColorManager.white),
                     ),
-                    backgroundColor: const Color(0xFFEF4444),
+                    backgroundColor: ColorManager.chaletActionRed,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -90,8 +97,8 @@ class _BookingButton extends StatelessWidget {
                 );
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: ColorManager.transparent,
+          shadowColor: ColorManager.transparent,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -103,7 +110,7 @@ class _BookingButton extends StatelessWidget {
             Icon(
               isBookingAvailable ? Icons.bookmark_outline : Icons.lock,
               size: 22,
-              color: Colors.white,
+              color: ColorManager.white,
             ),
             const SizedBox(width: 12),
             Text(
@@ -111,7 +118,7 @@ class _BookingButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: ColorManager.white,
               ),
             ),
           ],
