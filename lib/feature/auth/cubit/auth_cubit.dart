@@ -25,6 +25,8 @@ class AuthCubit extends Cubit<AuthState> {
   bool obscurePassword = true;
   String selectedRole = "user";
 
+  String? currentViewRole;
+
   void togglePasswordVisibility() {
     obscurePassword = !obscurePassword;
     emit(AuthInitial());
@@ -35,17 +37,43 @@ class AuthCubit extends Cubit<AuthState> {
     emit(RoleChanged(role));
   }
 
+  /// Returns the role that should be used for UI rendering
   String getCurrentRole() {
+    if (currentViewRole != null) {
+      return currentViewRole!;
+    }
+
     if (state is AuthSuccess) {
       final authSuccess = state as AuthSuccess;
       final user = authSuccess.user;
       final originalRole = user.role;
       final normalizedRole = originalRole.toLowerCase().trim();
 
+      // Initialize currentViewRole if not set
+      currentViewRole = normalizedRole;
       return normalizedRole;
     }
 
     return 'guest';
+  }
+
+  /// Toggles the view mode for Owners between 'owner' and 'user'
+  void toggleViewMode() {
+    if (state is AuthSuccess) {
+      final user = (state as AuthSuccess).user;
+      final actualRole = user.role.toLowerCase().trim();
+
+      // Only owners can switch modes
+      if (actualRole == 'owner') {
+        if (currentViewRole == 'owner') {
+          currentViewRole = 'user';
+        } else {
+          currentViewRole = 'owner';
+        }
+        // Emit success again to trigger UI rebuilds in listeners
+        emit(AuthSuccess(user));
+      }
+    }
   }
 
   Future<void> _checkCurrentUser() async {

@@ -41,7 +41,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           );
         }
 
-        final role = currentUser.role.toLowerCase().trim();
+        final role = context.read<AuthCubit>().getCurrentRole();
         final List<Widget> screens;
         final List<NavItem> bottomNavItems;
 
@@ -77,8 +77,13 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           valueListenable: bottomNavIndex,
           builder: (context, currentIndex, _) {
             final int maxIndex = screens.length - 1;
+            // Ensure index is valid for the current screen list
             final int safeIndex = currentIndex.clamp(0, maxIndex);
+
+            // If the current index is out of bounds (e.g. switching from User->Owner while on index 4),
+            // safeIndex will be 2. We should update the notifier.
             if (safeIndex != currentIndex) {
+              // Schedule the update to avoid build conflicts
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 bottomNavIndex.value = safeIndex;
               });

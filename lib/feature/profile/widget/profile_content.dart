@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
@@ -240,7 +242,10 @@ class ProfileContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (user.role.toLowerCase() == 'owner') ...[
+                  // Only show Chalet Management if the user is an Owner AND is in Owner View Mode
+                  if (user.role.toLowerCase() == 'owner' &&
+                      context.read<AuthCubit>().getCurrentRole() ==
+                          'owner') ...[
                     Container(
                       decoration: BoxDecoration(
                         color: ColorManager.getProfileSurfaceAlt(isDark),
@@ -352,6 +357,31 @@ class ProfileContent extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (user.role.toLowerCase().trim() == 'owner')
+                          Builder(
+                            builder: (context) {
+                              final currentRole = context
+                                  .read<AuthCubit>()
+                                  .getCurrentRole();
+                              final isOwnerView = currentRole == 'owner';
+                              return ModernActionTile(
+                                icon: isOwnerView
+                                    ? Icons.person_outline
+                                    : Icons.store_outlined,
+                                title: isOwnerView
+                                    ? 'وضع المستخدم'
+                                    : 'وضع المالك',
+                                subtitle: isOwnerView
+                                    ? 'تصفح التطبيق كمستخدم'
+                                    : 'العودة للوحة التحكم',
+                                color: const Color(0xFF2563EB),
+                                onTap: () {
+                                  bottomNavIndex.value = 0;
+                                  context.read<AuthCubit>().toggleViewMode();
+                                },
+                              );
+                            },
+                          ),
                         BlocBuilder<ThemeCubit, ThemeState>(
                           builder: (context, themeState) {
                             final isDarkMode =
