@@ -33,7 +33,6 @@ class UsersTab extends StatelessWidget {
                     context,
                   );
                   // defensive fallback
-                  final int currentIndex = tabController.index ?? 0;
                   final items = <Map<String, dynamic>>[
                     {'icon': Icons.person_outline, 'label': 'Users'},
                     {'icon': Icons.storefront_outlined, 'label': 'Owners'},
@@ -48,12 +47,12 @@ class UsersTab extends StatelessWidget {
                       Expanded(
                         child: AnimatedBuilder(
                           animation:
-                              tabController ?? const AlwaysStoppedAnimation(0),
+                              tabController,
                           builder: (context, _) {
                             return Row(
                               children: List.generate(items.length, (i) {
                                 final bool selected =
-                                    (tabController.index ?? currentIndex) == i;
+                                    (tabController.index) == i;
                                 return Expanded(
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(10),

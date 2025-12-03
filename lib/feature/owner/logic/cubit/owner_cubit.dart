@@ -226,7 +226,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       }
 
       List<File> validImages = [];
-      List<String> validationErrors = [];
+      Set<String> validationErrors = {}; // Use Set to deduplicate errors
 
       if (source == ImageSource.gallery) {
         // For gallery, allow multiple selection
@@ -285,7 +285,7 @@ class OwnerCubit extends Cubit<OwnerState> {
         emit(currentData.copyWith(uploadedImages: updatedImages));
       }
 
-      return validationErrors;
+      return validationErrors.toList();
     } catch (e) {
       rethrow;
     }
@@ -294,7 +294,6 @@ class OwnerCubit extends Cubit<OwnerState> {
   // Validate image file
   String? _validateImage(File imageFile) {
     const int maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-    const List<String> allowedExtensions = ['jpg', 'jpeg', 'png'];
 
     // Check file size
     final fileSize = imageFile.lengthSync();
@@ -303,13 +302,14 @@ class OwnerCubit extends Cubit<OwnerState> {
     }
 
     // Check file extension
-    final fileName = imageFile.path.toLowerCase();
-    final hasValidExtension = allowedExtensions.any(
-      (ext) => fileName.endsWith('.$ext'),
-    );
-    if (!hasValidExtension) {
-      return 'Only JPG, JPEG, and PNG formats are allowed';
-    }
+    // Check file extension - REMOVED to allow all formats
+    // final fileName = imageFile.path.toLowerCase();
+    // final hasValidExtension = allowedExtensions.any(
+    //   (ext) => fileName.endsWith('.$ext'),
+    // );
+    // if (!hasValidExtension) {
+    //   return 'Only JPG, JPEG, and PNG formats are allowed';
+    // }
 
     return null; // Valid
   }

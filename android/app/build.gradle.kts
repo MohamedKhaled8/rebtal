@@ -10,6 +10,7 @@ plugins {
 android {
     namespace = "com.example.rebtal"
     compileSdk = 36
+    ndkVersion = "28.1.13356709"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
