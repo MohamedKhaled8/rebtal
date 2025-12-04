@@ -13,7 +13,8 @@ part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial()) {
-    _checkCurrentUser(); // ✅ أول ما يتبني الكيوبت
+    _loadSavedViewMode(); // ✅ Load saved view mode first
+    _checkCurrentUser(); // ✅ Then check current user
   }
   final AuthRepository authRepository = AuthRepository();
 
@@ -57,8 +58,19 @@ class AuthCubit extends Cubit<AuthState> {
     return 'guest';
   }
 
+  /// Load saved view mode from local storage
+  Future<void> _loadSavedViewMode() async {
+    final savedViewMode = getIt<CacheHelper>().getDataString(
+      key: 'currentViewRole',         
+    );
+    if (savedViewMode != null && savedViewMode.isNotEmpty) {
+      currentViewRole = savedViewMode;
+      debugPrint('🔄 Loaded saved view mode: $currentViewRole');
+    }
+  }
+
   /// Toggles the view mode for Owners between 'owner' and 'user'
-  void toggleViewMode() {
+  void toggleViewMode() async {
     if (state is AuthSuccess) {
       final user = (state as AuthSuccess).user;
       final actualRole = user.role.toLowerCase().trim();
@@ -70,6 +82,14 @@ class AuthCubit extends Cubit<AuthState> {
         } else {
           currentViewRole = 'owner';
         }
+
+        // ✅ Save the new view mode to local storage
+        await getIt<CacheHelper>().saveData(
+          key: 'currentViewRole',
+          value: currentViewRole!,
+        );
+        debugPrint('💾 Saved view mode: $currentViewRole');
+
         // Emit success again to trigger UI rebuilds in listeners
         emit(AuthSuccess(user));
       }
@@ -100,11 +120,27 @@ class AuthCubit extends Cubit<AuthState> {
 
         if (doc != null && doc.exists) {
           final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+
           // ✅ Save role locally
           await getIt<CacheHelper>().saveData(
             key: 'userRole',
             value: user.role,
           );
+
+          // ✅ Restore saved view mode for owners
+          if (user.role.toLowerCase().trim() == 'owner') {
+            final savedViewMode = getIt<CacheHelper>().getDataString(
+              key: 'currentViewRole',
+            );
+            if (savedViewMode != null && savedViewMode.isNotEmpty) {
+              currentViewRole = savedViewMode;
+              debugPrint('🔄 Restored view mode: $currentViewRole');
+            } else {
+              // Default to owner mode if no saved preference
+              currentViewRole = 'owner';
+            }
+          }
+
           emit(AuthSuccess(user));
         } else {
           emit(AuthInitial());
@@ -385,6 +421,10 @@ class AuthCubit extends Cubit<AuthState> {
       // ✅ Always clear local data and navigate
       clearControllers();
       await getIt<CacheHelper>().removeData(key: 'userRole');
+      await getIt<CacheHelper>().removeData(
+        key: 'currentViewRole',
+      ); // ✅ Clear saved view mode
+      currentViewRole = null; // ✅ Reset in-memory view mode
       emit(AuthInitial());
     } catch (e) {
       // Fallback for any unexpected errors

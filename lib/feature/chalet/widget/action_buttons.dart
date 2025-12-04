@@ -25,7 +25,8 @@ class ActionButtons extends StatelessWidget {
       child: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, authState) {
           if (authState is AuthSuccess) {
-            final role = authState.user.role.toLowerCase();
+            // ✅ Use getCurrentRole() to respect view mode switching
+            final role = context.read<AuthCubit>().getCurrentRole();
 
             if (role == 'admin') {
               return AdminButtons(status: status, docId: docId);

@@ -42,9 +42,10 @@ class ChaletDetailPage extends StatelessWidget {
         builder: (context, images) {
           return BlocBuilder<AuthCubit, AuthState>(
             builder: (context, authState) {
+              // ✅ Use getCurrentRole() to respect view mode switching
               String role = 'guest';
               if (authState is AuthSuccess) {
-                role = authState.user.role.toLowerCase().trim();
+                role = context.read<AuthCubit>().getCurrentRole();
               }
 
               final isDark = DynamicThemeManager.isDarkMode(context);
