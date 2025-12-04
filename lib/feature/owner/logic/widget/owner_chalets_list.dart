@@ -82,9 +82,10 @@ class OwnerChaletsList extends StatelessWidget {
         }
         final docs = snapshot.data!.docs;
 
-        return ValueListenableBuilder<String>(
-          valueListenable: HomeSearch.q,
-          builder: (context, query, _) {
+        return ValueListenableBuilder<SearchFilters>(
+          valueListenable: HomeSearch.filters,
+          builder: (context, filters, _) {
+            final query = filters.query;
             // تصفية الشاليهات حسب البحث
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;

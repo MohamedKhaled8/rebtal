@@ -25,7 +25,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
     super.initState();
     _cubit = OwnerCubit();
     _cubit?.fetchChalets();
-    _searchController.text = HomeSearch.q.value;
+    _searchController.text = HomeSearch.currentQuery;
   }
 
   @override
@@ -139,35 +139,38 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: ValueListenableBuilder<String>(
-                                        valueListenable: HomeSearch.q,
-                                        builder: (context, value, _) {
-                                          return TextField(
-                                            controller: _searchController,
-                                            onChanged: (v) =>
-                                                HomeSearch.q.value = v,
-                                            style: TextStyle(
-                                              color: isDark
-                                                  ? Colors.white
-                                                  : Colors.black87,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            decoration: InputDecoration(
-                                              hintText: 'ابحث عن الشاليهات...',
-                                              hintStyle: TextStyle(
-                                                color: isDark
-                                                    ? Colors.white38
-                                                    : Colors.grey[400],
-                                                fontSize: 14,
-                                              ),
-                                              border: InputBorder.none,
-                                              isDense: true,
-                                              contentPadding: EdgeInsets.zero,
-                                            ),
-                                          );
-                                        },
-                                      ),
+                                      child:
+                                          ValueListenableBuilder<SearchFilters>(
+                                            valueListenable: HomeSearch.filters,
+                                            builder: (context, filters, _) {
+                                              return TextField(
+                                                controller: _searchController,
+                                                onChanged: (v) =>
+                                                    HomeSearch.updateQuery(v),
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.black87,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                decoration: InputDecoration(
+                                                  hintText:
+                                                      'ابحث عن الشاليهات...',
+                                                  hintStyle: TextStyle(
+                                                    color: isDark
+                                                        ? Colors.white38
+                                                        : Colors.grey[400],
+                                                    fontSize: 14,
+                                                  ),
+                                                  border: InputBorder.none,
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      EdgeInsets.zero,
+                                                ),
+                                              );
+                                            },
+                                          ),
                                     ),
                                     const SizedBox(width: 16),
                                   ],

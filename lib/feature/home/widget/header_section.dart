@@ -10,6 +10,8 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
+import 'package:rebtal/feature/home/widget/advanced_search_sheet.dart';
+
 class HeaderSection extends StatefulWidget {
   const HeaderSection({super.key});
 
@@ -35,7 +37,7 @@ class _HeaderSectionState extends State<HeaderSection> {
   @override
   void initState() {
     super.initState();
-    _controller.text = HomeSearch.q.value;
+    _controller.text = HomeSearch.currentQuery;
     _getCurrentLocation();
     _pageController = PageController();
     _startImageSlideshow();
@@ -279,80 +281,96 @@ class _HeaderSectionState extends State<HeaderSection> {
                   const SizedBox(height: 24),
 
                   // Glass Search Bar
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.15)
-                              : Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.2)
-                                : Colors.grey.withOpacity(0.2),
+                  GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const AdvancedSearchSheet(),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12, // Increased vertical padding
                           ),
-                          boxShadow: null,
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.search,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withOpacity(0.15)
+                                : Colors.white.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.8)
-                                  : Colors.grey[600],
-                              size: 26,
+                                  ? Colors.white.withOpacity(0.2)
+                                  : Colors.grey.withOpacity(0.2),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ValueListenableBuilder<String>(
-                                valueListenable: HomeSearch.q,
-                                builder: (context, value, _) {
-                                  return TextField(
-                                    controller: _controller,
-                                    onChanged: (v) => HomeSearch.q.value = v,
-                                    style: TextStyle(
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                      fontSize: 16,
-                                    ),
-                                    cursorColor: isDark
-                                        ? Colors.white
-                                        : Colors.black,
-                                    decoration: InputDecoration(
-                                      hintText: 'ابحث عن شاليه، منتجع...',
-                                      hintStyle: TextStyle(
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.search,
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.8)
+                                    : Colors.grey[600],
+                                size: 26,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ValueListenableBuilder<SearchFilters>(
+                                  valueListenable: HomeSearch.filters,
+                                  builder: (context, filters, _) {
+                                    final hasFilters = !filters.isEmpty;
+                                    String text = 'ابحث عن شاليه، منتجع...';
+                                    if (hasFilters) {
+                                      if (filters.query.isNotEmpty) {
+                                        text = filters.query;
+                                      } else if (filters.location != null) {
+                                        text = filters.location!;
+                                      } else {
+                                        text = 'تم تطبيق فلاتر البحث';
+                                      }
+                                    }
+
+                                    return Text(
+                                      text,
+                                      style: TextStyle(
                                         color: isDark
-                                            ? Colors.white.withOpacity(0.6)
-                                            : Colors.grey[500],
-                                        fontSize: 15,
+                                            ? Colors.white.withOpacity(
+                                                hasFilters ? 1.0 : 0.6,
+                                              )
+                                            : (hasFilters
+                                                  ? Colors.black87
+                                                  : Colors.grey[500]),
+                                        fontSize: 16,
+                                        fontWeight: hasFilters
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
                                       ),
-                                      border: InputBorder.none,
-                                    ),
-                                  );
-                                },
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF10B981),
-                                shape: BoxShape.circle,
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF10B981),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.tune,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.tune,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

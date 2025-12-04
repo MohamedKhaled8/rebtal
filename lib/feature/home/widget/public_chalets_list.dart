@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
+
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/core/services/chalet_filter_service.dart';
 
 class PublicChaletCard extends StatefulWidget {
   final Map<String, dynamic> chaletData;
@@ -600,15 +601,31 @@ class PublicChaletsList extends StatelessWidget {
         }
         final docs = snapshot.data!.docs;
 
-        return ValueListenableBuilder<String>(
-          valueListenable: HomeSearch.q,
-          builder: (context, query, _) {
+        return ValueListenableBuilder<SearchFilters>(
+          valueListenable: HomeSearch.filters,
+          builder: (context, filters, _) {
+            // Debug logging
+            print('🔍 === SEARCH DEBUG ===');
+            print('📊 Total chalets from Firestore: ${docs.length}');
+            print('🎯 Active filters:');
+            print('   - Query: "${filters.query}"');
+            print('   - Location: ${filters.location}');
+            print('   - Price Range: ${filters.priceRange}');
+            print('   - Min Bedrooms: ${filters.minBedrooms}');
+            print('   - Min Bathrooms: ${filters.minBathrooms}');
+            print('   - Min Area: ${filters.minArea}');
+            print('   - Features: ${filters.features}');
+            print('   - Facilities: ${filters.facilities}');
+            print('   - Is Empty: ${filters.isEmpty}');
+
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;
+
+              // Visibility check
               final isVisible = data['isVisible'] ?? true;
               if (!isVisible) return false;
 
-              // Filter by category
+              // Category filter (from home screen tabs)
               if (selectedCategory != null) {
                 final features = data['features'] as List<dynamic>?;
                 if (features == null || !features.contains(selectedCategory)) {
@@ -616,18 +633,26 @@ class PublicChaletsList extends StatelessWidget {
                 }
               }
 
-              final lcq = query.toLowerCase();
-              if (lcq.isEmpty) return true;
-
-              final candidates = <String?>[
-                data['chaletName']?.toString(),
-                data['location']?.toString(),
-                data['description']?.toString(),
-              ];
-              return candidates.any(
-                (c) => c != null && c.toLowerCase().contains(lcq),
+              // Apply search filters using centralized service
+              final singleList = [data];
+              final result = ChaletFilterService.filterChalets(
+                singleList,
+                filters,
               );
+              return result.isNotEmpty;
             }).toList();
+
+            print('✅ Filtered results: ${filtered.length} chalets');
+            if (filtered.isNotEmpty && filtered.length <= 3) {
+              print('📝 Sample filtered chalet names:');
+              for (var doc in filtered) {
+                final data = doc.data() as Map<String, dynamic>;
+                print(
+                  '   - ${data['chaletName']} (${data['location']}, ${data['price']} EGP)',
+                );
+              }
+            }
+            print('🔍 === END DEBUG ===\n');
 
             if (filtered.isEmpty) {
               return Center(

@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/core/services/chalet_filter_service.dart';
 
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -94,24 +95,19 @@ class OwnerChaletsList extends StatelessWidget {
         }
         final docs = snapshot.data!.docs;
 
-        return ValueListenableBuilder<String>(
-          valueListenable: HomeSearch.q,
-          builder: (context, query, _) {
-            // تصفية الشاليهات حسب البحث
+        return ValueListenableBuilder<SearchFilters>(
+          valueListenable: HomeSearch.filters,
+          builder: (context, filters, _) {
+            // Apply filters using centralized service
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;
-              final lcq = query.toLowerCase();
-              if (lcq.isEmpty) return true;
-
-              // فحص الحقول الشائعة
-              final candidates = <String?>[
-                data['chaletName']?.toString(),
-                data['location']?.toString(),
-                data['description']?.toString(),
-              ];
-              return candidates.any(
-                (c) => c != null && c.toLowerCase().contains(lcq),
+              // Use filter service for single chalet check
+              final singleList = [data];
+              final result = ChaletFilterService.filterChalets(
+                singleList,
+                filters,
               );
+              return result.isNotEmpty;
             }).toList();
 
             return ListView.builder(
