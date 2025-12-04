@@ -113,6 +113,7 @@ class ChaletFilterService {
   }
 
   /// Matches chalet against price range filter
+  /// Uses final price after discount, not original price
   static bool matchesPriceRange(
     Map<String, dynamic> chalet,
     RangeValues? priceRange,
@@ -122,26 +123,38 @@ class ChaletFilterService {
       return true;
     }
 
-    final rawPrice = chalet['price'];
+    // ✅ Calculate final price (considering discount)
+    final basePrice = NumberParser.parseDouble(chalet['price']);
+    double finalPrice = basePrice;
+
+    // Check if discount is enabled and calculate final price
+    final discountEnabled = chalet['discountEnabled'] == true;
+    if (discountEnabled) {
+      final discountType = chalet['discountType'];
+      final discountValue = NumberParser.parseDouble(chalet['discountValue']);
+
+      if (discountType == 'percentage' && discountValue > 0) {
+        finalPrice = basePrice * (1 - discountValue / 100);
+      } else if (discountType == 'fixed' && discountValue > 0) {
+        finalPrice = basePrice - discountValue;
+      }
+    }
+
     print('💰 === PRICE DEBUG ===');
     print('   Chalet: ${chalet['chaletName']}');
-    print('   Raw price value: $rawPrice');
-    print('   Raw price type: ${rawPrice.runtimeType}');
-
-    final chaletPrice = NumberParser.parseDouble(chalet['price']);
-    print('   Parsed price: $chaletPrice');
+    print('   Base price: $basePrice');
+    print('   Discount enabled: $discountEnabled');
+    if (discountEnabled) {
+      print('   Discount type: ${chalet['discountType']}');
+      print('   Discount value: ${chalet['discountValue']}');
+    }
+    print('   Final price (after discount): $finalPrice');
     print('   Range start: ${priceRange!.start}');
     print('   Range end: ${priceRange.end}');
-    print(
-      '   Check: $chaletPrice >= ${priceRange.start} = ${chaletPrice >= priceRange.start}',
-    );
-    print(
-      '   Check: $chaletPrice <= ${priceRange.end} = ${chaletPrice <= priceRange.end}',
-    );
 
     final result =
-        chaletPrice >= priceRange.start && chaletPrice <= priceRange.end;
-    print('   Final result: $result');
+        finalPrice >= priceRange.start && finalPrice <= priceRange.end;
+    print('   Match result: $result');
     print('💰 === END PRICE DEBUG ===');
 
     return result;
@@ -165,13 +178,14 @@ class ChaletFilterService {
     return chaletBathrooms >= minBathrooms!;
   }
 
-  /// Matches chalet against area filter
+  /// Matches chalet against area filter (exact match)
   static bool matchesArea(Map<String, dynamic> chalet, double? minArea) {
     if (!isAreaActive(minArea)) return true;
 
     final chaletArea = NumberParser.parseDouble(chalet['chaletArea']);
 
-    return chaletArea >= minArea!;
+    // ✅ Exact match for area search
+    return chaletArea == minArea!;
   }
 
   /// Matches chalet against features filter (OR logic)
