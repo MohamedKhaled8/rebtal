@@ -11,7 +11,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
-      listenWhen: (prev, curr) => prev.runtimeType != curr.runtimeType,
+      // listenWhen: (prev, curr) => prev.runtimeType != curr.runtimeType,
       listener: (context, state) {
         if (state is AuthInitial) {
           Navigator.pushNamedAndRemoveUntil(

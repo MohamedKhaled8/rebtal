@@ -5,6 +5,8 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+
 class OwnerChaletsList extends StatelessWidget {
   final String status;
   final IconData? emptyIcon;
@@ -23,6 +25,7 @@ class OwnerChaletsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('chalets')
@@ -46,7 +49,10 @@ class OwnerChaletsList extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'خطأ في تحميل الشاليهات',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: isDark ? Colors.white70 : Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -60,19 +66,25 @@ class OwnerChaletsList extends StatelessWidget {
                 Icon(
                   emptyIcon ?? Icons.home_outlined,
                   size: 72,
-                  color: Colors.grey[400],
+                  color: isDark ? Colors.white38 : Colors.grey[400],
                 ),
                 const SizedBox(height: 16),
                 Text(
                   emptyTitle ?? 'لا توجد شاليهات',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: isDark ? Colors.white70 : Colors.grey[600],
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 if (emptySubtitle != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     emptySubtitle!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white38 : Colors.grey[500],
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -172,6 +184,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     final chaletName = widget.chaletData['chaletName'] ?? 'Unnamed Chalet';
     final location = widget.chaletData['location'] ?? 'Unknown Location';
     final price = widget.chaletData['price'];
@@ -186,6 +199,9 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
       margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
+        border: isDark
+            ? Border.all(color: Colors.white.withOpacity(0.1))
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),

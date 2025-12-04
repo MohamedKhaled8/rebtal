@@ -10,16 +10,56 @@ import 'package:rebtal/core/models/notification_type.dart';
 // ✅ إضافة هذه الدوال للـ BookingCubit
 
 class BookingCubit extends Cubit<BookingState> {
-  BookingCubit() : super(const BookingState(bookings: [], isLoading: true)) {
-    loadBookings(); // ✅ تحميل الحجوزات عند إنشاء الكيوبت
-  }
+  BookingCubit() : super(const BookingState(bookings: [], isLoading: false));
 
   StreamSubscription? _bookingsSubscription;
 
-  // ✅ تحميل الحجوزات والاستماع للتغييرات
+  // ✅ تحميل حجوزات المالك فقط
+  Future<void> loadOwnerBookings(String ownerId) async {
+    await _bookingsSubscription?.cancel();
+    emit(state.copyWith(isLoading: true));
+
+    _bookingsSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('ownerId', isEqualTo: ownerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen(
+          (snapshot) async {
+            await _processSnapshot(snapshot);
+          },
+          onError: (e) {
+            debugPrint('Error loading owner bookings: $e');
+            emit(state.copyWith(isLoading: false));
+          },
+        );
+  }
+
+  // ✅ تحميل حجوزات المستخدم فقط
+  Future<void> loadUserBookings(String userId) async {
+    await _bookingsSubscription?.cancel();
+    emit(state.copyWith(isLoading: true));
+
+    _bookingsSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen(
+          (snapshot) async {
+            await _processSnapshot(snapshot);
+          },
+          onError: (e) {
+            debugPrint('Error loading user bookings: $e');
+            emit(state.copyWith(isLoading: false));
+          },
+        );
+  }
+
+  // ✅ تحميل كل الحجوزات (للأدمن أو الاستخدام العام)
   Future<void> loadBookings() async {
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true)); // ✅ بدء التحميل
+    emit(state.copyWith(isLoading: true));
 
     _bookingsSubscription = FirebaseFirestore.instance
         .collection('bookings')
@@ -27,98 +67,98 @@ class BookingCubit extends Cubit<BookingState> {
         .snapshots()
         .listen(
           (snapshot) async {
-            final bookings = await Future.wait(
-              snapshot.docs.map((doc) async {
-                final data = doc.data();
-
-                // جلب معلومات الشاليه
-                String? chaletImage;
-                String? chaletLocation;
-
-                try {
-                  final chaletId = data['chaletId'] ?? '';
-                  if (chaletId.isNotEmpty) {
-                    final chaletDoc = await FirebaseFirestore.instance
-                        .collection('chalets')
-                        .doc(chaletId)
-                        .get();
-
-                    if (chaletDoc.exists) {
-                      final chaletData = chaletDoc.data();
-                      if (chaletData != null) {
-                        final images = (chaletData['images'] as List?)
-                            ?.cast<dynamic>();
-                        chaletImage = images != null && images.isNotEmpty
-                            ? images.first.toString()
-                            : null;
-
-                        chaletLocation =
-                            chaletData['location']?.toString() ??
-                            chaletData['city']?.toString() ??
-                            chaletData['address']?.toString() ??
-                            'غير محدد';
-                      }
-                    }
-                  }
-                } catch (e) {
-                  debugPrint('Error fetching chalet details: $e');
-                }
-
-                // جلب معلومات المستخدم
-                String? userPhone;
-                String? userEmail;
-
-                try {
-                  final userId = data['userId'] ?? '';
-                  if (userId.isNotEmpty) {
-                    final userDoc = await FirebaseFirestore.instance
-                        .collection('Users')
-                        .doc(userId)
-                        .get();
-
-                    if (userDoc.exists) {
-                      final userData = userDoc.data();
-                      if (userData != null) {
-                        userPhone = (userData['phone']?.toString() ?? '')
-                            .trim();
-                        userEmail = (userData['email']?.toString() ?? '')
-                            .trim();
-                      }
-                    }
-                  }
-                } catch (e) {
-                  debugPrint('Error fetching user details: $e');
-                }
-
-                return Booking(
-                  id: doc.id,
-                  chaletId: data['chaletId'] ?? '',
-                  chaletName: data['chaletName'] ?? '',
-                  ownerId: data['ownerId'] ?? '',
-                  ownerName: data['ownerName'] ?? '',
-                  userId: data['userId'] ?? '',
-                  userName: data['userName'] ?? '',
-                  from: _parseDateTime(data['from']),
-                  to: _parseDateTime(data['to']),
-                  status: _parseStatus(data['status']),
-                  chaletImage: chaletImage,
-                  chaletLocation: chaletLocation,
-                  userPhone: userPhone,
-                  userEmail: userEmail,
-                  updatedAt: _parseDateTime(data['updatedAt']),
-                );
-              }).toList(),
-            );
-
-            emit(
-              state.copyWith(bookings: bookings, isLoading: false),
-            ); // ✅ تحديث البيانات
+            await _processSnapshot(snapshot);
           },
           onError: (e) {
-            debugPrint('Error loading bookings: $e');
-            emit(state.copyWith(isLoading: false)); // ✅ انتهاء التحميل مع خطأ
+            debugPrint('Error loading all bookings: $e');
+            emit(state.copyWith(isLoading: false));
           },
         );
+  }
+
+  // معالجة البيانات المشتركة
+  Future<void> _processSnapshot(QuerySnapshot snapshot) async {
+    final bookings = await Future.wait(
+      snapshot.docs.map((doc) async {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // جلب معلومات الشاليه
+        String? chaletImage;
+        String? chaletLocation;
+
+        try {
+          final chaletId = data['chaletId'] ?? '';
+          if (chaletId.isNotEmpty) {
+            final chaletDoc = await FirebaseFirestore.instance
+                .collection('chalets')
+                .doc(chaletId)
+                .get();
+
+            if (chaletDoc.exists) {
+              final chaletData = chaletDoc.data();
+              if (chaletData != null) {
+                final images = (chaletData['images'] as List?)?.cast<dynamic>();
+                chaletImage = images != null && images.isNotEmpty
+                    ? images.first.toString()
+                    : null;
+
+                chaletLocation =
+                    chaletData['location']?.toString() ??
+                    chaletData['city']?.toString() ??
+                    chaletData['address']?.toString() ??
+                    'غير محدد';
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching chalet details: $e');
+        }
+
+        // جلب معلومات المستخدم
+        String? userPhone;
+        String? userEmail;
+
+        try {
+          final userId = data['userId'] ?? '';
+          if (userId.isNotEmpty) {
+            final userDoc = await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(userId)
+                .get();
+
+            if (userDoc.exists) {
+              final userData = userDoc.data();
+              if (userData != null) {
+                userPhone = (userData['phone']?.toString() ?? '').trim();
+                userEmail = (userData['email']?.toString() ?? '').trim();
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching user details: $e');
+        }
+
+        return Booking(
+          id: doc.id,
+          chaletId: data['chaletId'] ?? '',
+          chaletName: data['chaletName'] ?? '',
+          ownerId: data['ownerId'] ?? '',
+          ownerName: data['ownerName'] ?? '',
+          userId: data['userId'] ?? '',
+          userName: data['userName'] ?? '',
+          from: _parseDateTime(data['from']),
+          to: _parseDateTime(data['to']),
+          status: _parseStatus(data['status']),
+          chaletImage: chaletImage,
+          chaletLocation: chaletLocation,
+          userPhone: userPhone,
+          userEmail: userEmail,
+          updatedAt: _parseDateTime(data['updatedAt']),
+        );
+      }).toList(),
+    );
+
+    emit(state.copyWith(bookings: bookings, isLoading: false));
   }
 
   @override
@@ -149,8 +189,22 @@ class BookingCubit extends Cubit<BookingState> {
     String bookingId,
     BookingStatus newStatus,
   ) async {
+    // حفظ الحالة القديمة للتراجع في حالة الخطأ
+    final previousBookings = List<Booking>.from(state.bookings);
+    final index = previousBookings.indexWhere((b) => b.id == bookingId);
+
+    if (index == -1) return;
+
+
     try {
-      // تحديث في Firestore أولاً
+      // ✅ تحديث تفاؤلي (Optimistic Update): نحدث الواجهة فوراً
+      final currentBookings = List<Booking>.from(state.bookings);
+      currentBookings[index] = currentBookings[index].copyWith(
+        status: newStatus,
+      );
+      emit(state.copyWith(bookings: currentBookings));
+
+      // تحديث في Firestore
       await FirebaseFirestore.instance
           .collection('bookings')
           .doc(bookingId)
@@ -159,44 +213,39 @@ class BookingCubit extends Cubit<BookingState> {
             'updatedAt': FieldValue.serverTimestamp(),
           });
 
-      // إذا نجح التحديث في Firestore، نحدث محلياً
-      final currentBookings = List<Booking>.from(state.bookings);
-      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      // ✅ إرسال إشعار للمستخدم
+      final booking = currentBookings[index];
+      NotificationType notificationType = NotificationType.general;
+      String title = 'تحديث حالة الحجز';
+      String body = 'تم تحديث حالة حجزك في ${booking.chaletName}';
 
-      if (index >= 0) {
-        currentBookings[index].status = newStatus;
-        emit(state.copyWith(bookings: currentBookings));
-
-        // ✅ إرسال إشعار للمستخدم
-        final booking = currentBookings[index];
-        NotificationType notificationType = NotificationType.general;
-        String title = 'تحديث حالة الحجز';
-        String body = 'تم تحديث حالة حجزك في ${booking.chaletName}';
-
-        if (newStatus == BookingStatus.approved) {
-          notificationType = NotificationType.bookingApproved;
-          title = 'تمت الموافقة على الحجز! 🎉';
-          body =
-              'وافق المالك على طلب حجزك في ${booking.chaletName}. استعد لرحلتك!';
-        } else if (newStatus == BookingStatus.rejected) {
-          notificationType = NotificationType.bookingRejected;
-          title = 'تم رفض الحجز ❌';
-          body = 'عذراً، تم رفض طلب حجزك في ${booking.chaletName}.';
-        }
-
-        await NotificationService().sendNotification(
-          userId: booking.userId,
-          title: title,
-          body: body,
-          type: notificationType,
-          relatedId: booking.id,
-          data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
-        );
+      if (newStatus == BookingStatus.approved) {
+        notificationType = NotificationType.bookingApproved;
+        title = 'تمت الموافقة على الحجز! 🎉';
+        body =
+            'وافق المالك على طلب حجزك في ${booking.chaletName}. استعد لرحلتك!';
+      } else if (newStatus == BookingStatus.rejected) {
+        notificationType = NotificationType.bookingRejected;
+        title = 'تم رفض الحجز ❌';
+        body = 'عذراً، تم رفض طلب حجزك في ${booking.chaletName}.';
       }
+
+      await NotificationService().sendNotification(
+        userId: booking.userId,
+        title: title,
+        body: body,
+        type: notificationType,
+        relatedId: booking.id,
+        data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
+      );
     } catch (e) {
       debugPrint('Error updating booking status: $e');
-      // إعادة تحميل الحجوزات في حالة الخطأ
-      await loadBookings();
+
+      // ❌ تراجع عن التحديث في حالة الخطأ
+      emit(state.copyWith(bookings: previousBookings));
+
+      // إعادة تحميل الحجوزات للتأكد من التزامن
+      // await loadBookings();
       rethrow; // إعادة رمي الخطأ ليتم معالجته في واجهة المستخدم
     }
   }

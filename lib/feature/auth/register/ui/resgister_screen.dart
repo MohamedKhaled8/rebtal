@@ -90,9 +90,11 @@ class _RegisterScreenState extends State<RegisterScreen>
               children: [
                 const _RegisterBackground(),
                 SafeArea(
-                  child: SingleChildScrollView(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 6.w,
+                      vertical: 3.h,
+                    ),
                     child: FadeTransition(
                       opacity: CurvedAnimation(
                         parent: _introController,
@@ -103,11 +105,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                         children: [
                           Text(
                             "Create your account",
-                            style:
-                                Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
                           ),
                           verticalSpace(1),
                           Text(
@@ -117,47 +119,77 @@ class _RegisterScreenState extends State<RegisterScreen>
                             ),
                           ),
                           verticalSpace(3),
-                          _RegisterCard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GlassmorPhicCard(
-                                  obscurePassword: cubit.obscurePassword,
-                                  selectedRole: cubit.selectedRole,
-                                  togglePasswordVisibility:
-                                      cubit.togglePasswordVisibility,
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 5.w,
+                                vertical: 3.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 40,
+                                    offset: const Offset(0, 20),
+                                  ),
+                                ],
+                              ),
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    GlassmorPhicCard(
+                                      obscurePassword: cubit.obscurePassword,
+                                      selectedRole: cubit.selectedRole,
+                                      togglePasswordVisibility:
+                                          cubit.togglePasswordVisibility,
+                                    ),
+                                    verticalSpace(2.5),
+                                    AnimatedSwitcher(
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
+                                      child: isLoading
+                                          ? const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            )
+                                          : SizedBox(
+                                              width: double.infinity,
+                                              height: 6.5.h,
+                                              child: _RegisterPrimaryButton(
+                                                onPressed: () {
+                                                  cubit.register(
+                                                    name: cubit
+                                                        .nameController
+                                                        .text
+                                                        .trim(),
+                                                    email: cubit
+                                                        .emailController
+                                                        .text
+                                                        .trim(),
+                                                    phone: cubit
+                                                        .phoneController
+                                                        .text
+                                                        .trim(),
+                                                    password: cubit
+                                                        .passwordController
+                                                        .text
+                                                        .trim(),
+                                                    role: cubit.selectedRole,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                    ),
+                                    verticalSpace(2),
+                                    const LoginLinkWidget(),
+                                  ],
                                 ),
-                                verticalSpace(2.5),
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 250),
-                                  child: isLoading
-                                      ? const Center(
-                                          child: CircularProgressIndicator(),
-                                        )
-                                      : SizedBox(
-                                          width: double.infinity,
-                                          height: 6.5.h,
-                                          child: _RegisterPrimaryButton(
-                                            onPressed: () {
-                                              cubit.register(
-                                                name: cubit.nameController.text
-                                                    .trim(),
-                                                email: cubit.emailController.text
-                                                    .trim(),
-                                                phone: cubit.phoneController.text
-                                                    .trim(),
-                                                password: cubit
-                                                    .passwordController.text
-                                                    .trim(),
-                                                role: cubit.selectedRole,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                ),
-                                verticalSpace(2),
-                                const LoginLinkWidget(),
-                              ],
+                              ),
                             ),
                           ),
                         ],
@@ -274,10 +306,7 @@ class _RegisterPrimaryButtonState extends State<_RegisterPrimaryButton>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF3B82F6),
-                  Color(0xFF1D4ED8),
-                ],
+                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -330,10 +359,7 @@ class _RegisterBackgroundState extends State<_RegisterBackground>
             gradient: LinearGradient(
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
-              colors: [
-                Color(0xFF0EA5E9),
-                Color(0xFF1D4ED8),
-              ],
+              colors: [Color(0xFF0EA5E9), Color(0xFF1D4ED8)],
             ),
           ),
           child: Stack(

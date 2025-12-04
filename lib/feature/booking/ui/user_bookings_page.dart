@@ -9,8 +9,24 @@ import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/widgets/bookings_list.dart';
 import 'package:rebtal/feature/booking/widgets/empty_bookings_state.dart';
 
-class UserBookingsPage extends StatelessWidget {
+class UserBookingsPage extends StatefulWidget {
   const UserBookingsPage({super.key});
+
+  @override
+  State<UserBookingsPage> createState() => _UserBookingsPageState();
+}
+
+class _UserBookingsPageState extends State<UserBookingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthCubit>().state;
+      if (authState is AuthSuccess) {
+        context.read<BookingCubit>().loadBookings();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +99,8 @@ class UserBookingsPage extends StatelessWidget {
           }
 
           // تصفية جميع الحجوزات للمستخدم الحالي
+          // Since we are filtering at source, we can just use state.bookings
+          // But keeping client-side filter for safety is okay.
           final userBookings = state.bookings.where((b) {
             // تطبيع معرف المستخدم للمقارنة
             final normalizedUserId = b.userId.trim();

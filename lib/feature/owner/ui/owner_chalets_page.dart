@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
@@ -40,12 +41,16 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
     return BlocProvider.value(
       value: _cubit!,
       child: BlocBuilder<OwnerCubit, OwnerState>(
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: ColorManager.white,
+            backgroundColor: isDark
+                ? const Color(0xFF0B0F0D)
+                : ColorManager.white,
             body: CustomScrollView(
               slivers: [
                 // Responsive Header with Search and Add Button
@@ -54,18 +59,25 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                   floating: false,
                   pinned: true,
                   elevation: 0,
-                  backgroundColor: const Color(0xFF1A1A2E),
+                  backgroundColor: isDark
+                      ? const Color(0xFF0B0F0D)
+                      : const Color(0xFF1A1A2E),
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF1A1A2E), // Dark Blue
-                            Color(0xFF16213E), // Darker Blue
-                            Color(0xFF0F3460), // Navy Blue
-                          ],
+                          colors: isDark
+                              ? [
+                                  const Color(0xFF0B0F0D),
+                                  const Color(0xFF1A1A2E),
+                                ]
+                              : [
+                                  const Color(0xFF1A1A2E), // Dark Blue
+                                  const Color(0xFF16213E), // Darker Blue
+                                  const Color(0xFF0F3460), // Navy Blue
+                                ],
                         ),
                       ),
                       child: SafeArea(
@@ -98,7 +110,9 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                 width: double.infinity,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.05)
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(25),
                                   boxShadow: [
                                     BoxShadow(
@@ -107,13 +121,20 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                       offset: const Offset(0, 5),
                                     ),
                                   ],
+                                  border: isDark
+                                      ? Border.all(
+                                          color: Colors.white.withOpacity(0.1),
+                                        )
+                                      : null,
                                 ),
                                 child: Row(
                                   children: [
                                     const SizedBox(width: 16),
                                     Icon(
                                       Icons.search,
-                                      color: Colors.grey[600],
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.grey[600],
                                       size: 20,
                                     ),
                                     const SizedBox(width: 12),
@@ -125,15 +146,19 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                             controller: _searchController,
                                             onChanged: (v) =>
                                                 HomeSearch.q.value = v,
-                                            style: const TextStyle(
-                                              color: Colors.black87,
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black87,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
                                             ),
                                             decoration: InputDecoration(
                                               hintText: 'ابحث عن الشاليهات...',
                                               hintStyle: TextStyle(
-                                                color: Colors.grey[400],
+                                                color: isDark
+                                                    ? Colors.white38
+                                                    : Colors.grey[400],
                                                 fontSize: 14,
                                               ),
                                               border: InputBorder.none,
@@ -208,7 +233,9 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                         onRefresh: () =>
                             context.read<OwnerCubit>().fetchChalets(),
                         color: const Color(0xFFE94560),
-                        backgroundColor: Colors.white,
+                        backgroundColor: isDark
+                            ? const Color(0xFF1A1A2E)
+                            : Colors.white,
                         child: Padding(
                           padding: const EdgeInsets.only(
                             left: 20,

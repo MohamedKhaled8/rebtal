@@ -7,12 +7,28 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_card.dart';
 
-class OwnerBookingsPage extends StatelessWidget {
+class OwnerBookingsPage extends StatefulWidget {
   const OwnerBookingsPage({super.key});
 
+  @override
+  State<OwnerBookingsPage> createState() => _OwnerBookingsPageState();
+}
+
+class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
   String _norm(String id) {
     if (id.contains(':')) return id.split(':').last.trim();
     return id.trim();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthCubit>().state;
+      if (authState is AuthSuccess) {
+        context.read<BookingCubit>().loadBookings();
+      }
+    });
   }
 
   @override
@@ -55,15 +71,26 @@ class OwnerBookingsPage extends StatelessWidget {
           // المحتوى
           BlocBuilder<BookingCubit, BookingState>(
             builder: (context, state) {
+              if (state.isLoading) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
               final all = state.bookings;
               final ownerUidTrim = ownerUid.trim();
 
+              // Since we are now filtering at the source (Firestore),
+              // we might not need strict client-side filtering,
+              // but keeping it for safety is fine.
               final bookings = all.where((b) {
                 final normalizedBookingOwnerId = _norm(b.ownerId);
                 final isValidStatus =
                     b.status == BookingStatus.pending ||
                     b.status == BookingStatus.approved ||
                     b.status == BookingStatus.cancelled;
+                // If the query works correctly, normalizedBookingOwnerId should match.
+                // But let's keep the check.
                 return normalizedBookingOwnerId == ownerUidTrim &&
                     isValidStatus;
               }).toList();

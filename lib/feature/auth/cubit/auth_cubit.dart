@@ -361,27 +361,35 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     try {
-      // ✅ Delete FCM token from Firestore before logout
+      // ✅ Delete FCM token from Firestore before logout (Best effort, don't block)
       final currentUser = getCurrentUser();
       if (currentUser != null) {
-        await NotificationService().deleteFCMToken(currentUser.uid);
+        try {
+          await NotificationService()
+              .deleteFCMToken(currentUser.uid)
+              .timeout(const Duration(seconds: 2));
+        } catch (e) {
+          debugPrint("FCM Token deletion skipped or timed out: $e");
+        }
       }
 
-      await FirebaseAuth.instance.signOut().timeout(const Duration(seconds: 5));
+      // Attempt Firebase SignOut
+      try {
+        await FirebaseAuth.instance.signOut().timeout(
+          const Duration(seconds: 3),
+        );
+      } catch (e) {
+        debugPrint("Firebase SignOut failed or timed out: $e");
+      }
+
+      // ✅ Always clear local data and navigate
       clearControllers();
-      // ✅ Clear role locally
       await getIt<CacheHelper>().removeData(key: 'userRole');
       emit(AuthInitial());
     } catch (e) {
-      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
-      emit(
-        AuthFailure(
-          'Logout failed: $errorMessage',
-          errorCode: e is FirebaseException ? e.code : null,
-          isRetryable: FirebaseErrorHandler.isRetryableError(e),
-        ),
-      );
-      FirebaseErrorHandler.logError(e, context: 'Logout');
+      // Fallback for any unexpected errors
+      debugPrint("Logout error: $e");
+      emit(AuthInitial());
     }
   }
 
