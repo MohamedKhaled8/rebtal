@@ -14,6 +14,11 @@ import 'package:rebtal/feature/profile/widget/modern_action_tile.dart';
 import 'package:rebtal/feature/profile/widget/chalet_management_tile.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 import 'package:rebtal/feature/profile/utils/profile_helper.dart';
+import 'package:rebtal/feature/profile/ui/contact_us_page.dart';
+import 'package:rebtal/feature/profile/ui/about_us_page.dart';
+import 'package:rebtal/feature/profile/ui/privacy_policy_page.dart';
+import 'package:rebtal/feature/profile/ui/delivery_policy_page.dart';
+import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
 
 class ProfileContent extends StatelessWidget {
   final UserModel user;
@@ -332,8 +337,8 @@ class ProfileContent extends StatelessWidget {
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? Colors.white.withOpacity(0.06)
-                                      : Colors.black.withOpacity(0.06),
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.black.withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -345,7 +350,7 @@ class ProfileContent extends StatelessWidget {
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                'الإجراءات',
+                                'الإعدادات والدعم',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -411,6 +416,90 @@ class ProfileContent extends StatelessWidget {
                           color: const Color(0xFFEAB308),
                           onTap: () {},
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Divider(
+                            height: 1,
+                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          ),
+                        ),
+                        ModernActionTile(
+                          icon: Icons.contact_support_outlined,
+                          title: 'اتصل بنا',
+                          subtitle: 'لديك استفسار؟ تواصل معنا',
+                          color: const Color(0xFF06B6D4),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ContactUsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        ModernActionTile(
+                          icon: Icons.info_outline,
+                          title: 'عن التطبيق',
+                          subtitle: 'تعرف على المزيد عنا',
+                          color: const Color(0xFF8B5CF6),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AboutUsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        ModernActionTile(
+                          icon: Icons.privacy_tip_outlined,
+                          title: 'سياسة الخصوصية',
+                          subtitle: 'كيف نحمي بياناتك',
+                          color: const Color(0xFF10B981),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PrivacyPolicyPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        ModernActionTile(
+                          icon: Icons.local_shipping_outlined,
+                          title: 'سياسة الحجز',
+                          subtitle: 'شروط الحجز والتأكيد',
+                          color: const Color(0xFFF59E0B),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const DeliveryPolicyPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        ModernActionTile(
+                          icon: Icons.cancel_outlined,
+                          title: 'سياسة الإلغاء والاسترجاع',
+                          subtitle: 'شروط الإلغاء والاسترداد',
+                          color: const Color(0xFFEC4899),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RefundPolicyPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Divider(
+                            height: 1,
+                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          ),
+                        ),
                         ModernActionTile(
                           icon: Icons.logout_rounded,
                           title: 'تسجيل الخروج',
@@ -422,6 +511,7 @@ class ProfileContent extends StatelessWidget {
                       ],
                     ),
                   ),
+
                   SizedBox(height: 20.h),
                 ],
               ),
