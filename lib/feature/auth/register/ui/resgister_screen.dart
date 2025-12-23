@@ -2,7 +2,6 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/function/snak_bar.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/auth/register/widget/glassmor_phic_card.dart';
@@ -20,6 +19,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen>
     with TickerProviderStateMixin {
   late AnimationController _introController;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -33,6 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   void dispose() {
     _introController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -64,6 +65,11 @@ class _RegisterScreenState extends State<RegisterScreen>
             showMessage(context, state.message, QuickAlertType.warning);
           } else if (state is AuthOfflineWarning) {
             _showOfflineWarning(context, state.message);
+          } else if (state is AuthRegistrationSuccess) {
+            // Navigate to Email Verification Screen
+            Navigator.of(
+              context,
+            ).pushNamed(Routes.emailVerification, arguments: state.user.email);
           } else if (state is AuthSuccess) {
             showMessage(
               context,
@@ -90,111 +96,171 @@ class _RegisterScreenState extends State<RegisterScreen>
               children: [
                 const _RegisterBackground(),
                 SafeArea(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 6.w,
-                      vertical: 3.h,
-                    ),
-                    child: FadeTransition(
-                      opacity: CurvedAnimation(
-                        parent: _introController,
-                        curve: Curves.easeIn,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Create your account",
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5.w,
+                          vertical: 2.h,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
                           ),
-                          verticalSpace(1),
-                          Text(
-                            "Set up your profile to start booking effortless stays.",
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                          verticalSpace(3),
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 5.w,
-                                vertical: 3.h,
+                          child: IntrinsicHeight(
+                            child: FadeTransition(
+                              opacity: CurvedAnimation(
+                                parent: _introController,
+                                curve: Curves.easeIn,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
-                                    blurRadius: 40,
-                                    offset: const Offset(0, 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SizedBox(height: 2.h),
+
+                                  // Header
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 2.w,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Create your account",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                        SizedBox(height: 0.8.h),
+                                        Text(
+                                          "Set up your profile to start booking effortless stays.",
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.9,
+                                            ),
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+
+                                  SizedBox(height: 3.h),
+
+                                  // Centered Card
+                                  Center(
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: 500,
+                                      ),
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          horizontal: 1.w,
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 6.w,
+                                          vertical: 4.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            28,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                0.1,
+                                              ),
+                                              blurRadius: 40,
+                                              offset: const Offset(0, 20),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            GlassmorPhicCard(
+                                              obscurePassword:
+                                                  cubit.obscurePassword,
+                                              selectedRole: cubit.selectedRole,
+                                              togglePasswordVisibility: cubit
+                                                  .togglePasswordVisibility,
+                                            ),
+
+                                            SizedBox(height: 3.h),
+
+                                            // Register Button
+                                            AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 250,
+                                              ),
+                                              child: isLoading
+                                                  ? const SizedBox(
+                                                      height: 56,
+                                                      child: Center(
+                                                        child:
+                                                            CircularProgressIndicator(),
+                                                      ),
+                                                    )
+                                                  : SizedBox(
+                                                      width: double.infinity,
+                                                      height: 56,
+                                                      child: _RegisterPrimaryButton(
+                                                        onPressed: () {
+                                                          FocusScope.of(
+                                                            context,
+                                                          ).unfocus();
+                                                          cubit.register(
+                                                            name: cubit
+                                                                .nameController
+                                                                .text
+                                                                .trim(),
+                                                            email: cubit
+                                                                .emailController
+                                                                .text
+                                                                .trim(),
+                                                            phone: cubit
+                                                                .phoneController
+                                                                .text
+                                                                .trim(),
+                                                            password: cubit
+                                                                .passwordController
+                                                                .text
+                                                                .trim(),
+                                                            role: cubit
+                                                                .selectedRole,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                            ),
+
+                                            SizedBox(height: 2.5.h),
+
+                                            const LoginLinkWidget(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 2.h),
                                 ],
                               ),
-                              child: SingleChildScrollView(
-                                physics: const BouncingScrollPhysics(),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    GlassmorPhicCard(
-                                      obscurePassword: cubit.obscurePassword,
-                                      selectedRole: cubit.selectedRole,
-                                      togglePasswordVisibility:
-                                          cubit.togglePasswordVisibility,
-                                    ),
-                                    verticalSpace(2.5),
-                                    AnimatedSwitcher(
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
-                                      child: isLoading
-                                          ? const Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            )
-                                          : SizedBox(
-                                              width: double.infinity,
-                                              height: 6.5.h,
-                                              child: _RegisterPrimaryButton(
-                                                onPressed: () {
-                                                  cubit.register(
-                                                    name: cubit
-                                                        .nameController
-                                                        .text
-                                                        .trim(),
-                                                    email: cubit
-                                                        .emailController
-                                                        .text
-                                                        .trim(),
-                                                    phone: cubit
-                                                        .phoneController
-                                                        .text
-                                                        .trim(),
-                                                    password: cubit
-                                                        .passwordController
-                                                        .text
-                                                        .trim(),
-                                                    role: cubit.selectedRole,
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                    ),
-                                    verticalSpace(2),
-                                    const LoginLinkWidget(),
-                                  ],
-                                ),
-                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -205,7 +271,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  /// Shows error dialog with retry option if applicable
   void _showErrorDialog(
     BuildContext context,
     String errorMessage, {
@@ -230,7 +295,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  /// Shows offline warning dialog
   void _showOfflineWarning(BuildContext context, String message) {
     QuickAlert.show(
       context: context,
@@ -396,33 +460,6 @@ class _RegisterBackgroundState extends State<_RegisterBackground>
           ),
         ],
       ),
-    );
-  }
-}
-
-class _RegisterCard extends StatelessWidget {
-  const _RegisterCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: child,
     );
   }
 }

@@ -61,7 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// Load saved view mode from local storage
   Future<void> _loadSavedViewMode() async {
     final savedViewMode = getIt<CacheHelper>().getDataString(
-      key: 'currentViewRole',         
+      key: 'currentViewRole',
     );
     if (savedViewMode != null && savedViewMode.isNotEmpty) {
       currentViewRole = savedViewMode;
@@ -120,6 +120,14 @@ class AuthCubit extends Cubit<AuthState> {
 
         if (doc != null && doc.exists) {
           final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+
+          // ✅ Check if email is verified
+          await currentUser.reload(); // Ensure fresh status
+          if (!currentUser.emailVerified) {
+            // ⚠️ User exists but not verified -> Redirect to verification
+            emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
+            return;
+          }
 
           // ✅ Save role locally
           await getIt<CacheHelper>().saveData(
@@ -218,7 +226,9 @@ class AuthCubit extends Cubit<AuthState> {
         phone: phone.trim(),
       );
 
-      emit(AuthSuccess(user));
+      // ✅ Emit registration success to trigger OTP verification
+      emit(AuthRegistrationSuccess(user: user, phoneNumber: phone.trim()));
+
       // ✅ Save role locally
       await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
     } catch (e) {
@@ -246,6 +256,53 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       FirebaseErrorHandler.logError(e, context: 'Register');
+    }
+  }
+
+  // ✅ New method to verify email status manually
+  Future<void> confirmEmailVerification() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.reload(); // Reload to get fresh data
+        if (user.emailVerified) {
+          // Find user in Firestore collections
+          DocumentSnapshot? doc;
+          for (String col in ["Users", "Owners", "Admin"]) {
+            try {
+              doc = await FirebaseFirestore.instance
+                  .collection(col)
+                  .doc(user.uid)
+                  .get();
+              if (doc.exists) {
+                break;
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+
+          if (doc != null && doc.exists) {
+            final userModel = UserModel.fromMap(
+              doc.data() as Map<String, dynamic>,
+            );
+            // ✅ Save role locally
+            await getIt<CacheHelper>().saveData(
+              key: 'userRole',
+              value: userModel.role,
+            );
+
+            // ✅ Restore view mode for owners if needed
+            if (userModel.role.toLowerCase().trim() == 'owner') {
+              // ... handle view mode restoration if needed
+            }
+
+            emit(AuthSuccess(userModel));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error confirming email verification: $e");
     }
   }
 

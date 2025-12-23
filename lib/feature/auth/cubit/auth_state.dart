@@ -13,13 +13,20 @@ class AuthSuccess extends AuthState {
   AuthSuccess(this.user);
 }
 
+class AuthRegistrationSuccess extends AuthState {
+  final UserModel user;
+  final String phoneNumber;
+
+  AuthRegistrationSuccess({required this.user, required this.phoneNumber});
+}
+
 /// Comprehensive error state with error type and retry capability
 class AuthFailure extends AuthState {
   final String error;
   final String? errorCode;
   final bool isRetryable;
   final bool isOffline;
-  
+
   AuthFailure(
     this.error, {
     this.errorCode,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
 import 'package:rebtal/feature/home/widget/header_section.dart';
+import 'package:rebtal/feature/home/widget/top_rated_chalets_list.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -28,7 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
           // 1. Immersive Header
           const SliverToBoxAdapter(child: HeaderSection()),
 
-          // 2. Categories Bar
+          // 2. Top Rating Section
+          SliverToBoxAdapter(child: AccentBarTitle(title: "Top Rating")),
+          SliverToBoxAdapter(child: SizedBox(height: 1.5.h)),
+          const SliverToBoxAdapter(child: TopRatedChaletsList()),
+          SliverToBoxAdapter(child: SizedBox(height: 3.h)),
+
+          // 3. Categories Bar ('Chalets')
           SliverToBoxAdapter(child: AccentBarTitle(title: "Chalets")),
           SliverToBoxAdapter(child: SizedBox(height: 1.5.h)),
           // 3. Property Listings

@@ -2,6 +2,7 @@ import "package:rebtal/core/Router/export_routes.dart";
 import "package:rebtal/core/Router/routes.dart";
 import "package:rebtal/core/utils/dependency/get_it.dart";
 import "package:rebtal/feature/auth/login/ui/login_screen.dart";
+import "package:rebtal/feature/auth/email_verification/ui/email_verification_screen.dart";
 import "package:rebtal/feature/auth/register/ui/resgister_screen.dart";
 import "package:rebtal/feature/auth/welcome/ui/welcome_screen.dart";
 import "package:rebtal/feature/admin/ui/dashboard.dart";
@@ -51,6 +52,11 @@ class AppRouter {
         return _buildAnimatedRoute(
           const LoginScreen(),
           beginOffset: const Offset(-0.1, 0),
+        );
+      case Routes.emailVerification:
+        final email = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (_) => EmailVerificationScreen(email: email ?? ''),
         );
       case Routes.homeScreen:
         return MaterialPageRoute(builder: (_) => HomeScreen());

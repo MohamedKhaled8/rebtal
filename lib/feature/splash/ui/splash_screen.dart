@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/firebase_index_creator.dart';
@@ -85,19 +86,25 @@ class _SplashScreenState extends State<SplashScreen>
       final authCubit = context.read<AuthCubit>();
 
       if (authCubit.state is AuthSuccess) {
-        final currentUser = authCubit.getCurrentUser();
-        if (currentUser != null) {
-          _navigateBasedOnRole();
-        } else {
-          Navigator.pushReplacementNamed(context, Routes.loginScreen);
-        }
+        _navigateBasedOnRole();
+      } else if (authCubit.state is AuthRegistrationSuccess) {
+        final state = authCubit.state as AuthRegistrationSuccess;
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.emailVerification,
+          arguments: state.user.email,
+        );
       } else {
-        // If state is not AuthSuccess (e.g. Initial), wait or navigate to login
-        final currentUser = authCubit.getCurrentUser();
-        if (currentUser != null) {
-          _navigateBasedOnRole();
-        } else {
-          Navigator.pushReplacementNamed(context, Routes.loginScreen);
+        // Init logic will trigger listener automatically when state changes
+        // But if already logged in (from _checkCurrentUser in constructor), we can check logic
+        // We rely on the BlocListener above for async state changes.
+        // However, if we need to force check:
+        // _checkCurrentUser runs in constructor, so listener usually catches it.
+        // If it's already done (rare race condition):
+        // Fallback manual check:
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null && authCubit.state is AuthInitial) {
+          // Likely not logged in yet or check is running
         }
       }
     }
@@ -120,6 +127,13 @@ class _SplashScreenState extends State<SplashScreen>
       listener: (context, state) {
         if (state is AuthSuccess) {
           _navigateBasedOnRole();
+        } else if (state is AuthRegistrationSuccess) {
+          // Redirect to Email Verification if not verified
+          Navigator.pushReplacementNamed(
+            context,
+            Routes.emailVerification,
+            arguments: state.user.email,
+          );
         } else if (state is AuthFailure) {
           Navigator.pushReplacementNamed(context, Routes.loginScreen);
         }

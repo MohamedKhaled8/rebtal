@@ -23,7 +23,8 @@ class AuthRepository {
         return await operation();
       } catch (e) {
         attempt++;
-        if (!FirebaseErrorHandler.isRetryableError(e) || attempt >= maxRetries) {
+        if (!FirebaseErrorHandler.isRetryableError(e) ||
+            attempt >= maxRetries) {
           rethrow;
         }
         // Exponential backoff: 2s, 4s, 8s
@@ -69,6 +70,11 @@ class AuthRepository {
       final user = userCredential.user;
       if (user == null) {
         throw Exception('Failed to create user account');
+      }
+
+      // ✅ Send Email Verification
+      if (!user.emailVerified) {
+        await user.sendEmailVerification();
       }
 
       // ✅ Normalize role to lowercase
@@ -141,7 +147,7 @@ class AuthRepository {
 
       // 2- Find user in Firestore collections with retry
       DocumentSnapshot? foundDoc;
-      
+
       await _retryWithBackoff(() async {
         for (String col in ["Users", "Owners", "Admin"]) {
           try {

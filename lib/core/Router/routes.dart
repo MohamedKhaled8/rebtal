@@ -4,6 +4,7 @@ abstract class Routes {
   static const String onBardingScreen = '/onBardingScreen';
   static const String termsScreen = '/termsScreen';
   static const String loginScreen = '/loginScreen';
+  static const String emailVerification = '/emailVerification';
   static const String registerScreen = '/registerScreen';
   static const String bottomNavigationBarScreen = '/bottomNavigationBarScreen';
   static const String homeScreen = '/homeScreen';
