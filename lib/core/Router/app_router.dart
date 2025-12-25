@@ -19,9 +19,9 @@ import "package:rebtal/feature/splash/ui/splash_screen.dart";
 
 // Payment System Imports
 import "package:rebtal/feature/booking/models/booking.dart";
-import "package:rebtal/feature/booking/ui/payment_method_selection_page.dart";
-import "package:rebtal/feature/booking/ui/payment_instructions_page_new.dart";
-import "package:rebtal/feature/booking/ui/payment_proof_upload_page.dart";
+import "package:rebtal/feature/payment/ui/payment_method_selection_page.dart";
+import "package:rebtal/feature/payment/ui/payment_instructions_page_new.dart";
+import "package:rebtal/feature/payment/ui/payment_proof_upload_page.dart";
 import "package:rebtal/feature/booking/ui/booking_confirmation_page.dart";
 import "package:rebtal/feature/admin/ui/admin_payments_page.dart";
 import "package:rebtal/feature/booking/ui/cancellation_policy_page.dart";
@@ -196,3 +196,4 @@ class AppRouter {
     );
   }
 }
+
