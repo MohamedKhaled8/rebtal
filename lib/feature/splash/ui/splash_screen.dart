@@ -95,16 +95,10 @@ class _SplashScreenState extends State<SplashScreen>
           arguments: state.user.email,
         );
       } else {
-        // Init logic will trigger listener automatically when state changes
-        // But if already logged in (from _checkCurrentUser in constructor), we can check logic
-        // We rely on the BlocListener above for async state changes.
-        // However, if we need to force check:
-        // _checkCurrentUser runs in constructor, so listener usually catches it.
-        // If it's already done (rare race condition):
-        // Fallback manual check:
+        // Fallback: If no success/registration state, check if we need to go to login
         final user = FirebaseAuth.instance.currentUser;
-        if (user == null && authCubit.state is AuthInitial) {
-          // Likely not logged in yet or check is running
+        if (user == null || authCubit.state is AuthFailure) {
+          Navigator.pushReplacementNamed(context, Routes.loginScreen);
         }
       }
     }

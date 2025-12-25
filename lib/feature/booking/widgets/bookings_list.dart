@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/Router/routes.dart';
 
 import 'package:rebtal/feature/booking/models/booking.dart';
 
@@ -48,15 +49,24 @@ class BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = DynamicThemeManager.isDarkMode(context);
-    final isApproved = booking.status == BookingStatus.approved;
-    final isRejected = booking.status == BookingStatus.rejected;
+    final isApproved =
+        booking.status == BookingStatus.approved ||
+        booking.status == BookingStatus.awaitingPayment;
+    final isConfirmed = booking.status == BookingStatus.confirmed;
+    final isRejected =
+        booking.status == BookingStatus.rejected ||
+        booking.status == BookingStatus.cancelled;
 
     // ألوان الحالة
-    final Color statusColor = isApproved
-        ? const Color(0xFF10B981)
+    final Color statusColor = isConfirmed
+        ? const Color(0xFF10B981) // Green for confirmed
+        : isApproved
+        ? const Color(0xFF10B981) // Green for approved/accepted
         : isRejected
         ? const Color(0xFFEF4444)
-        : const Color(0xFFF59E0B);
+        : booking.status == BookingStatus.paymentUnderReview
+        ? const Color(0xFF3B82F6) // Blue for under review
+        : const Color(0xFFF59E0B); // Orange for pending/awaiting
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -83,9 +93,9 @@ class BookingCard extends StatelessWidget {
             spreadRadius: 0,
           ),
           // تأثير توهج خفيف للحالات
-          if (isApproved)
+          if (isApproved || isConfirmed)
             BoxShadow(
-              color: const Color(0xFF10B981).withOpacity(0.05),
+              color: statusColor.withOpacity(0.05),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -209,10 +219,15 @@ class BookingCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              isApproved
+                              isConfirmed
+                                  ? 'تم الدفع بنجاح'
+                                  : isApproved
                                   ? 'مقبول'
                                   : isRejected
                                   ? 'مرفوض'
+                                  : booking.status ==
+                                        BookingStatus.paymentUnderReview
+                                  ? 'قيد المراجعة'
                                   : 'معلق',
                               style: TextStyle(
                                 color: statusColor,
@@ -280,18 +295,23 @@ class BookingCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isApproved
                             ? const Color(0xFF1ED760)
+                            : isConfirmed
+                            ? const Color(0xFF10B981) // Green for confirmed
                             : (isDarkMode
                                   ? Colors.white.withOpacity(0.05)
                                   : Colors.grey.shade100),
-                        foregroundColor: isApproved
-                            ? Colors.black
+                        foregroundColor: isApproved || isConfirmed
+                            ? Colors
+                                  .black // Dark text on bright button
                             : (isDarkMode
                                   ? Colors.white54
                                   : Colors.grey.shade600),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: isApproved ? 4 : 0,
-                        shadowColor: isApproved
-                            ? const Color(0xFF1ED760).withOpacity(0.4)
+                        elevation: isApproved || isConfirmed ? 4 : 0,
+                        shadowColor: isApproved || isConfirmed
+                            ? (isConfirmed
+                                  ? const Color(0xFF10B981).withOpacity(0.4)
+                                  : const Color(0xFF1ed760).withOpacity(0.4))
                             : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -299,7 +319,7 @@ class BookingCard extends StatelessWidget {
                       ),
                       onPressed: isApproved
                           ? () => _payNow(context, booking)
-                          : null,
+                          : null, // Disabled if confirmed or other status
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -307,11 +327,23 @@ class BookingCard extends StatelessWidget {
                             const Icon(Icons.payment_rounded, size: 20),
                             const SizedBox(width: 8),
                           ],
+                          if (isConfirmed) ...[
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           Text(
                             isApproved
                                 ? 'إتمام الدفع'
+                                : isConfirmed
+                                ? 'تم الدفع بنجاح'
                                 : isRejected
                                 ? 'تم رفض هذا الطلب'
+                                : booking.status ==
+                                      BookingStatus.paymentUnderReview
+                                ? 'جاري مراجعة الدفع'
                                 : 'بانتظار موافقة المضيف',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
@@ -340,10 +372,11 @@ class BookingCard extends StatelessWidget {
   }
 
   void _payNow(BuildContext context, Booking booking) {
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (_) => PaymentCheckoutPage(booking: booking)),
-    // );
+    Navigator.pushNamed(
+      context,
+      Routes.paymentMethodSelection,
+      arguments: {'booking': booking, 'totalAmount': booking.amount ?? 0.0},
+    );
   }
 }
 

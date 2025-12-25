@@ -17,6 +17,18 @@ import "package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart";
 import "package:rebtal/feature/notifications/ui/notifications_page.dart";
 import "package:rebtal/feature/splash/ui/splash_screen.dart";
 
+// Payment System Imports
+import "package:rebtal/feature/booking/models/booking.dart";
+import "package:rebtal/feature/booking/ui/payment_method_selection_page.dart";
+import "package:rebtal/feature/booking/ui/payment_instructions_page_new.dart";
+import "package:rebtal/feature/booking/ui/payment_proof_upload_page.dart";
+import "package:rebtal/feature/booking/ui/booking_confirmation_page.dart";
+import "package:rebtal/feature/admin/ui/admin_payments_page.dart";
+import "package:rebtal/feature/booking/ui/cancellation_policy_page.dart";
+import "package:rebtal/feature/booking/ui/refund_request_page.dart";
+import "package:rebtal/feature/booking/ui/rating_page.dart";
+import "package:rebtal/feature/booking/ui/transaction_history_page.dart";
+
 class AppRouter {
   Route<dynamic>? generateRoute(RouteSettings settings) {
     // final argument = settings.arguments; // currently unused
@@ -73,6 +85,75 @@ class AppRouter {
         );
       case Routes.notificationsPage:
         return MaterialPageRoute(builder: (_) => const NotificationsPage());
+
+      // Payment System Routes
+      case Routes.paymentMethodSelection:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => PaymentMethodSelectionPage(
+            booking: args['booking'] as Booking,
+            totalAmount: args['totalAmount'] as double,
+          ),
+        );
+
+      case Routes.paymentInstructions:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => PaymentInstructionsPage(
+            booking: args['booking'] as Booking,
+            paymentMethod: args['paymentMethod'] as PaymentMethod,
+            amount: args['amount'] as double,
+          ),
+        );
+
+      case Routes.paymentProofUpload:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => PaymentProofUploadPage(
+            booking: args['booking'] as Booking,
+            paymentMethod: args['paymentMethod'] as PaymentMethod,
+            amount: args['amount'] as double,
+          ),
+        );
+
+      case Routes.bookingConfirmationPage:
+        final booking = settings.arguments as Booking?;
+        return MaterialPageRoute(
+          builder: (_) => BookingConfirmationPage(booking: booking),
+        );
+
+      case Routes.adminPayments:
+        return MaterialPageRoute(builder: (_) => const AdminPaymentsPage());
+
+      case Routes.cancellationPolicy:
+        return MaterialPageRoute(
+          builder: (_) => const CancellationPolicyPage(),
+        );
+
+      case Routes.refundRequest:
+        final booking = settings.arguments as Booking;
+        return MaterialPageRoute(
+          builder: (_) => RefundRequestPage(booking: booking),
+        );
+
+      case Routes.ratingPage:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => RatingPage(
+            booking: args['booking'] as Booking,
+            isOwnerRating: args['isOwnerRating'] as bool? ?? false,
+          ),
+        );
+
+      case Routes.transactionHistory:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => TransactionHistoryPage(
+            userId: args['userId'] as String,
+            isOwner: args['isOwner'] as bool? ?? false,
+          ),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) =>

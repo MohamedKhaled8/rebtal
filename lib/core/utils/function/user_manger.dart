@@ -4,6 +4,7 @@ import 'package:rebtal/feature/admin/widget/request/approved_requests_tab.dart';
 import 'package:rebtal/feature/admin/widget/request/pending_requsted_tab.dart';
 import 'package:rebtal/feature/admin/widget/request/rejected_requests_tab.dart';
 import 'package:rebtal/feature/admin/widget/user/user_tab.dart';
+import 'package:rebtal/feature/admin/ui/admin_payments_page.dart';
 
 class UserManager {
   /// لون حسب الدور
@@ -173,25 +174,28 @@ class UserManager {
         return Colors.grey;
     }
   }
-static  final List<Widget> tabs = const [
+
+  static final List<Widget> tabs = const [
     UsersTab(),
     PendingRequestsTab(),
+    AdminPaymentsPage(),
     ApprovedRequestsTab(),
     RejectedRequestsTab(),
   ];
 
-static  final List<String> tabTitles = const [
+  static final List<String> tabTitles = const [
     'Users',
     'Pending',
+    'Payments',
     'Approved',
     'Rejected',
   ];
 
-static  final List<IconData> tabIcons = const [
+  static final List<IconData> tabIcons = const [
     Icons.people,
     Icons.pending_actions,
+    Icons.payment,
     Icons.check_circle,
     Icons.cancel,
   ];
-
 }

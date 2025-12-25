@@ -85,15 +85,60 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
               // but keeping it for safety is fine.
               final bookings = all.where((b) {
                 final normalizedBookingOwnerId = _norm(b.ownerId);
+                // Include all statuses except maybe 'initial' if exists, or show everything
+                // Historically filtered: pending, approved, cancelled.
+                // NOW adding: awaitingPayment, paymentUnderReview, completed.
                 final isValidStatus =
                     b.status == BookingStatus.pending ||
                     b.status == BookingStatus.approved ||
-                    b.status == BookingStatus.cancelled;
-                // If the query works correctly, normalizedBookingOwnerId should match.
-                // But let's keep the check.
+                    b.status == BookingStatus.awaitingPayment ||
+                    b.status == BookingStatus.paymentUnderReview ||
+                    b.status == BookingStatus.completed ||
+                    b.status == BookingStatus.cancelled ||
+                    b.status == BookingStatus.rejected;
+
                 return normalizedBookingOwnerId == ownerUidTrim &&
                     isValidStatus;
               }).toList();
+
+              // Sort bookings: Pending/Action Required first, then by date (newest first)
+              bookings.sort((a, b) {
+                // Priority logic:
+                // 1. Pending (requires approval)
+                // 2. Payment Under Review (requires verification)
+                // 3. Awaiting Payment
+                // 4. Approved
+                // 5. Others (Completed, Cancelled, Rejected)
+
+                int getPriority(BookingStatus status) {
+                  switch (status) {
+                    case BookingStatus.pending:
+                      return 0;
+                    case BookingStatus.paymentUnderReview:
+                      return 1;
+                    case BookingStatus.awaitingPayment:
+                      return 2;
+                    case BookingStatus.approved:
+                      return 3;
+                    default:
+                      return 4;
+                  }
+                }
+
+                final priorityA = getPriority(a.status);
+                final priorityB = getPriority(b.status);
+
+                if (priorityA != priorityB) {
+                  return priorityA.compareTo(priorityB);
+                }
+
+                // If same priority, sort by createdAt (newest first)
+                // Fallback to ancient date if createdAt is null so they appear last
+                final dateA = a.createdAt ?? DateTime(2000);
+                final dateB = b.createdAt ?? DateTime(2000);
+                // Reverse compare for descending order
+                return dateB.compareTo(dateA);
+              });
 
               if (bookings.isEmpty) {
                 return SliverFillRemaining(

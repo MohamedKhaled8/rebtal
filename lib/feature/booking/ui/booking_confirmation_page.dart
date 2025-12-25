@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/utils/helper/extensions.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/services/invoice_service.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/model/chat_model.dart';
 
+import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/feature/booking/widgets/booking_ticket_widget.dart';
+
 class BookingConfirmationPage extends StatefulWidget {
   final List<ChatModel>? requests;
+  final Booking? booking;
 
-  const BookingConfirmationPage({super.key, this.requests});
+  const BookingConfirmationPage({super.key, this.requests, this.booking});
 
   @override
   State<BookingConfirmationPage> createState() =>
@@ -15,6 +23,8 @@ class BookingConfirmationPage extends StatefulWidget {
 }
 
 class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
+  final GlobalKey _repaintKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +39,10 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.booking != null) {
+      return _buildSuccessView(context, widget.booking!);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('طلبات الحجز الخاصة بي'),
@@ -52,6 +66,133 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         BookingRequestCard(chat: widget.requests![index]),
                   ),
                 ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessView(BuildContext context, Booking booking) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 80),
+              const SizedBox(height: 24),
+              Text(
+                'تم استلام طلبك بنجاح',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Display Ticket wrapped in RepaintBoundary
+              RepaintBoundary(
+                key: _repaintKey,
+                child: BookingTicketWidget(booking: booking),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Print and Save Buttons with Dark Mode support
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        InvoiceService.printInvoice(
+                          context,
+                          _repaintKey,
+                          booking,
+                        );
+                      },
+                      icon: const Icon(Icons.print),
+                      label: const Text('طباعة'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.3)
+                              : Colors.black12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        InvoiceService.showSaveOptions(
+                          context,
+                          _repaintKey,
+                          booking,
+                        );
+                      },
+                      icon: const Icon(Icons.save_alt),
+                      label: const Text('حفظ'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.3)
+                              : Colors.black12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+              Text(
+                'سيقوم الأدمن بمراجعة الدفع وتأكيد حجزك قريباً.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to home and clear stack
+                    context.pushNamedAndRemoveUntil(
+                      Routes.bottomNavigationBarScreen,
+                      predicate: (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'العودة للرئيسية',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -295,6 +436,8 @@ class _StatusChip extends StatelessWidget {
         return Colors.red.shade400;
       case 'completed':
         return Colors.blue.shade700;
+      case 'paymentUnderReview':
+        return Colors.purple.shade700;
       default:
         return Colors.grey.shade700;
     }
@@ -312,6 +455,8 @@ class _StatusChip extends StatelessWidget {
         return 'تم الإلغاء';
       case 'completed':
         return 'مكتمل';
+      case 'paymentUnderReview':
+        return 'قيد مراجعة الدفع';
       default:
         return 'غير معروف';
     }

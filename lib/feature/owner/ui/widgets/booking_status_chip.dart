@@ -60,6 +60,30 @@ class BookingStatusChip extends StatelessWidget {
           'text': 'مقبول',
           'icon': Icons.check_circle,
         };
+      case BookingStatus.awaitingPayment:
+        return {
+          'color': Colors.blue.shade600,
+          'text': 'في انتظار الدفع',
+          'icon': Icons.payment,
+        };
+      case BookingStatus.paymentUnderReview:
+        return {
+          'color': Colors.purple.shade600,
+          'text': 'قيد المراجعة',
+          'icon': Icons.hourglass_empty,
+        };
+      case BookingStatus.confirmed:
+        return {
+          'color': Colors.teal.shade600,
+          'text': 'مؤكد',
+          'icon': Icons.verified,
+        };
+      case BookingStatus.completed:
+        return {
+          'color': Colors.indigo.shade600,
+          'text': 'مكتمل',
+          'icon': Icons.done_all,
+        };
       case BookingStatus.rejected:
         return {
           'color': Colors.red.shade600,

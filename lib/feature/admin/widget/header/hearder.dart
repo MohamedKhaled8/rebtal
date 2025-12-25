@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 import 'package:screen_go/functions/screen_type_value_func.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 
 class HeaderAdmin extends StatelessWidget {
   const HeaderAdmin({super.key});
@@ -14,93 +15,123 @@ class HeaderAdmin extends StatelessWidget {
     final isLargeScreen = MediaQuery.of(context).size.width > 800;
     final cubit = context.read<AdminCubit>();
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isLargeScreen ? 20 : 12,
-        vertical: 14,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8),
-        ],
-        borderRadius: isLargeScreen
-            ? const BorderRadius.only(topLeft: Radius.circular(24))
-            : null,
-      ),
-      child: Row(
-        children: [
-          if (!isLargeScreen)
-            IconButton(
-              icon: const Icon(Icons.menu, color: Colors.deepPurple),
-              onPressed: () => context
-                  .read<AdminCubit>()
-                  .scaffoldKey
-                  .currentState
-                  ?.openDrawer(),
-            )
-          else
-            horizintalSpace(1),
-          Text(
-            UserManager.tabTitles[context.read<AdminCubit>().selectedIndex],
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, themeState) {
+        final isDark =
+            themeState.themeMode == ThemeMode.dark ||
+            (themeState.themeMode == ThemeMode.system &&
+                MediaQuery.of(context).platformBrightness == Brightness.dark);
+
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLargeScreen ? 20 : 12,
+            vertical: 14,
           ),
-          SizedBox(width: 2.w),
-          // search field
-          Container(
-            width: stv(
-              context: context,
-              mobile: 58.sp,
-              tablet: 100.sp,
-              desktop: 50.sp,
-            ),
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.withOpacity(0.12)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 10),
-                const Icon(Icons.search, color: Colors.black54),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: BlocBuilder<AdminCubit, AdminState>(
-                    builder: (context, state) {
-                      return TextField(
-                        controller: cubit.searchController,
-                        onChanged: cubit.updateSearch,
-                        textInputAction: TextInputAction.search,
-                        decoration: const InputDecoration.collapsed(
-                          hintText: 'Search users, chalets, phone...',
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.3 : 0.03),
+                blurRadius: 8,
+              ),
+            ],
+            borderRadius: isLargeScreen
+                ? const BorderRadius.only(topLeft: Radius.circular(24))
+                : null,
+          ),
+          child: Row(
+            children: [
+              if (!isLargeScreen)
+                IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: isDark ? Colors.white : Colors.deepPurple,
+                  ),
+                  onPressed: () => context
+                      .read<AdminCubit>()
+                      .scaffoldKey
+                      .currentState
+                      ?.openDrawer(),
+                )
+              else
+                horizintalSpace(1),
+              Text(
+                UserManager.tabTitles[context.read<AdminCubit>().selectedIndex],
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.deepPurple,
+                ),
+              ),
+              SizedBox(width: 2.w),
+              // search field
+              Expanded(
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF252540) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.grey.withOpacity(0.12),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 10),
+                      Icon(
+                        Icons.search,
+                        color: isDark ? Colors.white54 : Colors.black54,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: BlocBuilder<AdminCubit, AdminState>(
+                          builder: (context, state) {
+                            return TextField(
+                              controller: cubit.searchController,
+                              onChanged: cubit.updateSearch,
+                              textInputAction: TextInputAction.search,
+                              decoration: InputDecoration.collapsed(
+                                hintText: 'Search users, chalets, phone...',
+                                hintStyle: TextStyle(
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.grey[500],
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            );
+                          },
                         ),
-                        style: const TextStyle(fontSize: 14),
-                      );
-                    },
+                      ),
+                      BlocBuilder<AdminCubit, AdminState>(
+                        builder: (context, state) {
+                          if (cubit.searchController.text.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              size: 18,
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
+                            onPressed: cubit.clearSearch,
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                   ),
                 ),
-                BlocBuilder<AdminCubit, AdminState>(
-                  builder: (context, state) {
-                    if (cubit.searchController.text.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
-                      onPressed: cubit.clearSearch,
-                    );
-                  },
-                ),
-                const SizedBox(width: 6),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

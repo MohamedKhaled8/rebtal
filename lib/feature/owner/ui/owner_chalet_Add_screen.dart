@@ -504,7 +504,6 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () async {
-              final cubit = context.read<OwnerCubit>();
               final selected = await Navigator.push(
                 context,
                 MaterialPageRoute(

@@ -16,4 +16,14 @@ abstract class Routes {
   static const String bookingConfirmationPage = '/bookingConfirmationPage';
   static const String approvedRequestsPage = '/approvedRequestsPage';
   static const String notificationsPage = '/notificationsPage';
+
+  // Payment System Routes
+  static const String paymentMethodSelection = '/paymentMethodSelection';
+  static const String paymentInstructions = '/paymentInstructions';
+  static const String paymentProofUpload = '/paymentProofUpload';
+  static const String adminPayments = '/adminPayments';
+  static const String cancellationPolicy = '/cancellationPolicy';
+  static const String refundRequest = '/refundRequest';
+  static const String ratingPage = '/ratingPage';
+  static const String transactionHistory = '/transactionHistory';
 }

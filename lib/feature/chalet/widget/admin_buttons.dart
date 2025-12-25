@@ -11,146 +11,197 @@ class AdminButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ActionButtonsCubit>();
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
-      child: status == 'pending'
-          ? Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        cubit.updateStatus(docId: docId, newStatus: 'approved'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.chaletActionGreen,
-                      foregroundColor: ColorManager.white,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      elevation: 0,
-                      shadowColor: ColorManager.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.check_circle_outline, size: 22),
-                        SizedBox(width: 12),
-                        Text(
-                          'Approve Request',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () =>
-                        cubit.updateStatus(docId: docId, newStatus: 'rejected'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: ColorManager.chaletActionRed,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      side: const BorderSide(
-                        color: ColorManager.chaletActionRed,
-                        width: 2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.cancel_outlined, size: 22),
-                        SizedBox(width: 12),
-                        Text(
-                          'Reject Request',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    ColorManager.chaletActionBlue,
-                    ColorManager.chaletActionDarkBlue,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorManager.chaletActionBlue.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+    return BlocConsumer<ActionButtonsCubit, ActionButtonsState>(
+      listener: (context, state) {
+        if (state is ActionButtonsSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.message,
+                style: const TextStyle(color: ColorManager.white),
               ),
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Request already processed',
-                        style: TextStyle(color: ColorManager.white),
-                      ),
-                      backgroundColor: ColorManager.chaletGrey800,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorManager.transparent,
-                  shadowColor: ColorManager.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      status == 'approved' ? Icons.check_circle : Icons.cancel,
-                      size: 22,
-                      color: ColorManager.white,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      status == 'approved'
-                          ? 'Request Approved'
-                          : 'Request Rejected',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: ColorManager.white,
-                      ),
-                    ),
-                  ],
-                ),
+              backgroundColor: state.newStatus == 'rejected'
+                  ? ColorManager.chaletActionRed
+                  : ColorManager.chaletActionGreen,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
+          );
+        } else if (state is ActionButtonsError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.message,
+                style: const TextStyle(color: ColorManager.white),
+              ),
+              backgroundColor: ColorManager.chaletActionRed,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        final cubit = context.read<ActionButtonsCubit>();
+        String currentStatus = status;
+        if (state is ActionButtonsSuccess && state.newStatus != null) {
+          currentStatus = state.newStatus!;
+        }
+
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+          child: currentStatus == 'pending'
+              ? Column(
+                  children: [
+                    if (state is ActionButtonsLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => cubit.updateStatus(
+                            docId: docId,
+                            newStatus: 'approved',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorManager.chaletActionGreen,
+                            foregroundColor: ColorManager.white,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            elevation: 0,
+                            shadowColor: ColorManager.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_outline, size: 22),
+                              SizedBox(width: 12),
+                              Text(
+                                'Approve Request',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () => cubit.updateStatus(
+                            docId: docId,
+                            newStatus: 'rejected',
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: ColorManager.chaletActionRed,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            side: const BorderSide(
+                              color: ColorManager.chaletActionRed,
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cancel_outlined, size: 22),
+                              SizedBox(width: 12),
+                              Text(
+                                'Reject Request',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                )
+              : Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        ColorManager.chaletActionBlue,
+                        ColorManager.chaletActionDarkBlue,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorManager.chaletActionBlue.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            'Request already processed',
+                            style: TextStyle(color: ColorManager.white),
+                          ),
+                          backgroundColor: ColorManager.chaletGrey800,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorManager.transparent,
+                      shadowColor: ColorManager.transparent,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          currentStatus == 'approved'
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          size: 22,
+                          color: ColorManager.white,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          currentStatus == 'approved'
+                              ? 'Request Approved'
+                              : 'Request Rejected',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: ColorManager.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 }

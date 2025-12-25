@@ -21,6 +21,7 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
       emit(
         ActionButtonsSuccess(
           newStatus == 'approved' ? 'Request Approved' : 'Request Rejected',
+          newStatus: newStatus,
         ),
       );
     } catch (e) {

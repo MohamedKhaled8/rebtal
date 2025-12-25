@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
-import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class TopRatedChaletsList extends StatelessWidget {
   const TopRatedChaletsList({super.key});
@@ -50,7 +48,6 @@ class _TopRatedChaletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = DynamicThemeManager.isDarkMode(context);
     final String image =
         (data['images'] is List && (data['images'] as List).isNotEmpty)
         ? data['images'][0]

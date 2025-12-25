@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/painter/pattern_painter.dart';
+import 'package:rebtal/feature/profile/ui/user_invoices_page.dart';
 import 'package:rebtal/feature/profile/widget/modern_profile_item.dart';
 import 'package:rebtal/feature/profile/widget/switch_action_tile.dart';
 import 'package:rebtal/feature/profile/widget/stat_card.dart';
@@ -414,13 +415,25 @@ class ProfileContent extends StatelessWidget {
                           title: 'اللغة',
                           subtitle: 'اختيار لغة العرض',
                           color: const Color(0xFFEAB308),
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const UserInvoicesPage(),
+                              ),
+                            );
+                          },
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           child: Divider(
                             height: 1,
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                         ),
                         ModernActionTile(
@@ -494,10 +507,15 @@ class ProfileContent extends StatelessWidget {
                           },
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           child: Divider(
                             height: 1,
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                         ),
                         ModernActionTile(

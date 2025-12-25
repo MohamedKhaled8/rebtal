@@ -443,42 +443,97 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         ),
                       ],
                     ),
-
-                    // Duration Display
-                    if (_from != null && _to != null) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'المدة: ${_calculateBookingDays(_from!, _to!)} يوم',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
+
+              if (_from != null && _to != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: ColorManager.chaletAccent.withOpacity(0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'عدد الليالي:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            '${_calculateBookingDays(_from!, _to!)} ليال',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'سعر الليلة:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            '${_calculateNightlyPrice().toStringAsFixed(0)} جنيه',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'الإجمالي:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          Text(
+                            '${_calculateTotalAmount(_from!, _to!).toStringAsFixed(0)} جنيه',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: ColorManager.chaletAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 20),
 
@@ -685,6 +740,69 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     child: InkWell(
                       onTap: () async {
                         final resolved = await _resolveOwner();
+                        final totalAmount = _calculateTotalAmount(_from!, _to!);
+
+                        // Fetch user details
+                        String? userPhone;
+                        String? userEmail;
+                        try {
+                          // Try Users collection first
+                          var userDoc = await FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(widget.userId)
+                              .get();
+
+                          // If not found, try Owners collection
+                          if (!userDoc.exists) {
+                            userDoc = await FirebaseFirestore.instance
+                                .collection('Owners')
+                                .doc(widget.userId)
+                                .get();
+                          }
+
+                          if (userDoc.exists) {
+                            final userData = userDoc.data();
+                            userPhone =
+                                userData?['phone'] ?? userData?['phoneNumber'];
+                            userEmail = userData?['email'];
+                          }
+                        } catch (e) {
+                          debugPrint('Error fetching user details: $e');
+                        }
+
+                        // Fetch owner details
+                        String? ownerPhone;
+                        String? ownerEmail;
+                        try {
+                          final ownerId = _normOwnerId(
+                            resolved['ownerId'] ?? widget.ownerId,
+                          );
+
+                          // Try Users collection first
+                          var ownerDoc = await FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(ownerId)
+                              .get();
+
+                          // If not found, try Owners collection
+                          if (!ownerDoc.exists) {
+                            ownerDoc = await FirebaseFirestore.instance
+                                .collection('Owners')
+                                .doc(ownerId)
+                                .get();
+                          }
+
+                          if (ownerDoc.exists) {
+                            final ownerData = ownerDoc.data();
+                            ownerPhone =
+                                ownerData?['phone'] ??
+                                ownerData?['phoneNumber'];
+                            ownerEmail = ownerData?['email'];
+                          }
+                        } catch (e) {
+                          debugPrint('Error fetching owner details: $e');
+                        }
+
                         final booking = Booking(
                           id: _bookingId,
                           chaletId: widget.chaletId,
@@ -700,6 +818,13 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               _to ??
                               DateTime.now().add(const Duration(days: 1)),
                           status: BookingStatus.pending,
+                          amount: totalAmount,
+                          userPhone: userPhone,
+                          userEmail: userEmail,
+                          ownerPhone: ownerPhone,
+                          ownerEmail: ownerEmail,
+                          chaletLocation:
+                              widget.requestData['location'] as String?,
                         );
                         try {
                           widget.parentContext.read<BookingCubit>().addBooking(
@@ -936,10 +1061,6 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     );
   }
 
-  int _calculateBookingDays(DateTime from, DateTime to) {
-    return to.difference(from).inDays + 1;
-  }
-
   Future<void> _showRatingBottomSheet() async {
     await showModalBottomSheet(
       context: context,
@@ -1090,5 +1211,51 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+  }
+
+  int _calculateBookingDays(DateTime from, DateTime to) {
+    final duration = to.difference(from).inDays;
+    return duration > 0 ? duration : 1;
+  }
+
+  double _calculateNightlyPrice() {
+    final price = widget.requestData['price'];
+    final discountEnabled = widget.requestData['discountEnabled'] == true;
+    final discountValue =
+        double.tryParse(
+          widget.requestData['discountValue']?.toString() ?? '0',
+        ) ??
+        0;
+
+    double basePrice;
+    if (price is num) {
+      basePrice = price.toDouble();
+    } else {
+      basePrice =
+          double.tryParse(
+            (price ?? '').toString().replaceAll(RegExp(r'[^0-9.]'), ''),
+          ) ??
+          0.0;
+    }
+
+    if (discountEnabled && discountValue > 0) {
+      final discountType = widget.requestData['discountType'];
+      if (discountType == 'percentage') {
+        basePrice = basePrice * (1 - discountValue / 100);
+      } else if (discountType == 'fixed') {
+        basePrice = basePrice - discountValue;
+      }
+      if (basePrice < 0) basePrice = 0;
+    }
+
+    return basePrice;
+  }
+
+  double _calculateTotalAmount(DateTime from, DateTime to) {
+    final duration = to.difference(from).inDays;
+    // Minimum 1 night charge
+    final nightsCount = duration > 0 ? duration : 1;
+
+    return _calculateNightlyPrice() * nightsCount;
   }
 }

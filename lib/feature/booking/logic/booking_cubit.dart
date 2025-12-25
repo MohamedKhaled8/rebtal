@@ -17,70 +17,119 @@ class BookingCubit extends Cubit<BookingState> {
   // ✅ تحميل حجوزات المالك فقط
   Future<void> loadOwnerBookings(String ownerId) async {
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, bookings: []));
 
-    _bookingsSubscription = FirebaseFirestore.instance
+    final query = FirebaseFirestore.instance
         .collection('bookings')
-        .where('ownerId', isEqualTo: ownerId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) async {
-            await _processSnapshot(snapshot);
-          },
-          onError: (e) {
-            debugPrint('Error loading owner bookings: $e');
-            emit(state.copyWith(isLoading: false));
-          },
-        );
+        .where('ownerId', isEqualTo: ownerId);
+    // .orderBy('createdAt', descending: true); // ⚠️ تم التعطيل مؤقتاً لإصلاح مشكلة الـ Index
+
+    // ⚡️ محاولة تحديث الكاش من السيرفر مباشرة أولاً
+    try {
+      final serverSnapshot = await query.get(
+        const GetOptions(source: Source.server),
+      );
+      await _processSnapshot(serverSnapshot);
+    } catch (e) {
+      debugPrint(
+        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
+      );
+    }
+
+    _bookingsSubscription = query.snapshots().listen(
+      (snapshot) async {
+        await _processSnapshot(snapshot);
+      },
+      onError: (e) {
+        debugPrint('Error loading owner bookings: $e');
+        emit(state.copyWith(isLoading: false));
+      },
+    );
   }
 
   // ✅ تحميل حجوزات المستخدم فقط
   Future<void> loadUserBookings(String userId) async {
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, bookings: []));
 
-    _bookingsSubscription = FirebaseFirestore.instance
+    final query = FirebaseFirestore.instance
         .collection('bookings')
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) async {
-            await _processSnapshot(snapshot);
-          },
-          onError: (e) {
-            debugPrint('Error loading user bookings: $e');
-            emit(state.copyWith(isLoading: false));
-          },
-        );
+        .where('userId', isEqualTo: userId);
+    // .orderBy('createdAt', descending: true); // ⚠️ تم التعطيل مؤقتاً لإصلاح مشكلة الـ Index
+
+    // ⚡️ محاولة تحديث الكاش من السيرفر مباشرة أولاً
+    try {
+      final serverSnapshot = await query.get(
+        const GetOptions(source: Source.server),
+      );
+      await _processSnapshot(serverSnapshot);
+    } catch (e) {
+      debugPrint(
+        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
+      );
+    }
+
+    _bookingsSubscription = query.snapshots().listen(
+      (snapshot) async {
+        await _processSnapshot(snapshot);
+      },
+      onError: (e) {
+        debugPrint('Error loading user bookings: $e');
+        emit(state.copyWith(isLoading: false));
+      },
+    );
   }
 
   // ✅ تحميل كل الحجوزات (للأدمن أو الاستخدام العام)
   Future<void> loadBookings() async {
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, bookings: []));
 
-    _bookingsSubscription = FirebaseFirestore.instance
-        .collection('bookings')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .listen(
-          (snapshot) async {
-            await _processSnapshot(snapshot);
-          },
-          onError: (e) {
-            debugPrint('Error loading all bookings: $e');
-            emit(state.copyWith(isLoading: false));
-          },
-        );
+    final query = FirebaseFirestore.instance.collection('bookings')
+    // .orderBy('createdAt', descending: true) // ⚠️ تم التعطيل مؤقتاً
+    ;
+
+    // ⚡️ محاولة تحديث الكاش من السيرفر مباشرة أولاً
+    try {
+      final serverSnapshot = await query.get(
+        const GetOptions(source: Source.server),
+      );
+      await _processSnapshot(serverSnapshot);
+    } catch (e) {
+      debugPrint(
+        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
+      );
+    }
+
+    _bookingsSubscription = query.snapshots().listen(
+      (snapshot) async {
+        await _processSnapshot(snapshot);
+      },
+      onError: (e) {
+        debugPrint('Error loading all bookings: $e');
+        emit(state.copyWith(isLoading: false));
+      },
+    );
   }
 
   // معالجة البيانات المشتركة
   Future<void> _processSnapshot(QuerySnapshot snapshot) async {
+    debugPrint(
+      '🔎 _processSnapshot called. Docs found: ${snapshot.docs.length}',
+    );
+
+    if (snapshot.docs.isEmpty) {
+      debugPrint('📭 Snapshot is empty. Emitting empty list.');
+      emit(state.copyWith(bookings: [], isLoading: false));
+      return;
+    }
+
     final bookings = await Future.wait(
       snapshot.docs.map((doc) async {
         final data = doc.data() as Map<String, dynamic>;
+        debugPrint(
+          '📄 Processing Doc: ${doc.id} | UserID: ${data['userId']} | OwnerID: ${data['ownerId']}',
+        );
 
         // جلب معلومات الشاليه
         String? chaletImage;
@@ -121,10 +170,19 @@ class BookingCubit extends Cubit<BookingState> {
         try {
           final userId = data['userId'] ?? '';
           if (userId.isNotEmpty) {
-            final userDoc = await FirebaseFirestore.instance
+            // Try Users collection first
+            var userDoc = await FirebaseFirestore.instance
                 .collection('Users')
                 .doc(userId)
                 .get();
+
+            // If not found, try Owners collection
+            if (!userDoc.exists) {
+              userDoc = await FirebaseFirestore.instance
+                  .collection('Owners')
+                  .doc(userId)
+                  .get();
+            }
 
             if (userDoc.exists) {
               final userData = userDoc.data();
@@ -136,6 +194,39 @@ class BookingCubit extends Cubit<BookingState> {
           }
         } catch (e) {
           debugPrint('Error fetching user details: $e');
+        }
+
+        // جلب معلومات المالك
+        String? ownerPhone;
+        String? ownerEmail;
+
+        try {
+          final ownerId = data['ownerId'] ?? '';
+          if (ownerId.isNotEmpty) {
+            // Try Users collection first
+            var ownerDoc = await FirebaseFirestore.instance
+                .collection('Users')
+                .doc(ownerId)
+                .get();
+
+            // If not found, try Owners collection
+            if (!ownerDoc.exists) {
+              ownerDoc = await FirebaseFirestore.instance
+                  .collection('Owners')
+                  .doc(ownerId)
+                  .get();
+            }
+
+            if (ownerDoc.exists) {
+              final ownerData = ownerDoc.data();
+              if (ownerData != null) {
+                ownerPhone = (ownerData['phone']?.toString() ?? '').trim();
+                ownerEmail = (ownerData['email']?.toString() ?? '').trim();
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching owner details: $e');
         }
 
         return Booking(
@@ -153,11 +244,17 @@ class BookingCubit extends Cubit<BookingState> {
           chaletLocation: chaletLocation,
           userPhone: userPhone,
           userEmail: userEmail,
+          ownerPhone: ownerPhone,
+          ownerEmail: ownerEmail,
+          amount: (data['amount'] as num?)?.toDouble(),
           updatedAt: _parseDateTime(data['updatedAt']),
         );
       }).toList(),
     );
 
+    debugPrint(
+      '✅ Finished processing bookings. Total count: ${bookings.length}',
+    );
     emit(state.copyWith(bookings: bookings, isLoading: false));
   }
 
@@ -194,7 +291,6 @@ class BookingCubit extends Cubit<BookingState> {
     final index = previousBookings.indexWhere((b) => b.id == bookingId);
 
     if (index == -1) return;
-
 
     try {
       // ✅ تحديث تفاؤلي (Optimistic Update): نحدث الواجهة فوراً
@@ -382,12 +478,284 @@ class BookingCubit extends Cubit<BookingState> {
           return BookingStatus.rejected;
         case 'cancelled':
           return BookingStatus.cancelled;
+        case 'awaitingpayment':
+          return BookingStatus.awaitingPayment;
+        case 'paymentunderreview':
+          return BookingStatus.paymentUnderReview;
+        case 'confirmed':
+          return BookingStatus.confirmed;
+        case 'completed':
+          return BookingStatus.completed;
         default:
           return BookingStatus.pending;
       }
     } catch (e) {
       debugPrint('Error parsing status: $e');
       return BookingStatus.pending;
+    }
+  }
+
+  // ==================== PAYMENT METHODS ====================
+
+  /// Owner approves booking - move to awaitingPayment
+  Future<void> ownerApproveBooking(String bookingId) async {
+    try {
+      await updateBookingStatus(bookingId, BookingStatus.awaitingPayment);
+
+      // Send notification to user
+      // final booking = state.bookings.firstWhere((b) => b.id == bookingId);
+      // TODO: Send FCM notification to user using booking details
+      debugPrint('✅ Booking approved, awaiting payment: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error approving booking: $e');
+      rethrow;
+    }
+  }
+
+  /// User selects payment method
+  Future<void> selectPaymentMethod(
+    String bookingId,
+    PaymentMethod paymentMethod,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'paymentMethod': paymentMethod.name,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          paymentMethod: paymentMethod,
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      debugPrint('✅ Payment method selected: ${paymentMethod.name}');
+    } catch (e) {
+      debugPrint('❌ Error selecting payment method: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload payment proof
+  Future<void> uploadPaymentProof({
+    required String bookingId,
+    String? proofImageUrl,
+    required String transactionNumber,
+  }) async {
+    try {
+      final booking = state.bookings.firstWhere((b) => b.id == bookingId);
+
+      // Create payment proof document
+      await FirebaseFirestore.instance.collection('payment_proofs').add({
+        'bookingId': bookingId,
+        'userId': booking.userId,
+        'userName': booking.userName,
+        'imageUrl': proofImageUrl,
+        'transactionNumber': transactionNumber,
+        'uploadedAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+      });
+
+      // Update booking
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'paymentProofUrl': proofImageUrl,
+            'paymentProofUploadedAt': FieldValue.serverTimestamp(),
+            'status': BookingStatus.paymentUnderReview.name,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          paymentProofUrl: proofImageUrl,
+          paymentProofUploadedAt: DateTime.now(),
+          status: BookingStatus.paymentUnderReview,
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      // TODO: Send notification to admin
+      debugPrint('✅ Payment proof uploaded: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error uploading payment proof: $e');
+      rethrow;
+    }
+  }
+
+  /// Admin confirms payment
+  Future<void> adminConfirmPayment(String bookingId, String? notes) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': BookingStatus.confirmed.name,
+            'adminConfirmedPaymentAt': FieldValue.serverTimestamp(),
+            'adminPaymentNotes': notes,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          status: BookingStatus.confirmed,
+          adminConfirmedPaymentAt: DateTime.now(),
+          adminPaymentNotes: notes,
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      // TODO: Send notification to user and owner
+      debugPrint('✅ Payment confirmed by admin: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error confirming payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Admin rejects payment
+  Future<void> adminRejectPayment(String bookingId, String reason) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': BookingStatus.awaitingPayment.name,
+            'adminPaymentNotes': reason,
+            'paymentProofUrl': null,
+            'paymentProofUploadedAt': null,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          status: BookingStatus.awaitingPayment,
+          adminPaymentNotes: reason,
+          paymentProofUrl: null,
+          paymentProofUploadedAt: null,
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      // TODO: Send notification to user
+      debugPrint('✅ Payment rejected by admin: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error rejecting payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Confirm cash on arrival payment
+  Future<void> confirmCashOnArrival(String bookingId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': BookingStatus.confirmed.name,
+            'adminConfirmedPaymentAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          status: BookingStatus.confirmed,
+          adminConfirmedPaymentAt: DateTime.now(),
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      debugPrint('✅ Cash on arrival confirmed: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error confirming cash on arrival: $e');
+      rethrow;
+    }
+  }
+
+  /// Complete booking after stay
+  Future<void> completeBooking(String bookingId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': BookingStatus.completed.name,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          status: BookingStatus.completed,
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      debugPrint('✅ Booking completed: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error completing booking: $e');
+      rethrow;
+    }
+  }
+
+  /// Request refund
+  Future<void> requestRefund({
+    required String bookingId,
+    required String reason,
+    required double refundAmount,
+  }) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': BookingStatus.cancelled.name,
+            'refundReason': reason,
+            'refundAmount': refundAmount,
+            'refundedAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Update local state
+      final currentBookings = List<Booking>.from(state.bookings);
+      final index = currentBookings.indexWhere((b) => b.id == bookingId);
+      if (index != -1) {
+        currentBookings[index] = currentBookings[index].copyWith(
+          status: BookingStatus.cancelled,
+          refundReason: reason,
+          refundAmount: refundAmount,
+          refundedAt: DateTime.now(),
+        );
+        emit(state.copyWith(bookings: currentBookings));
+      }
+
+      // TODO: Send notification to admin
+      debugPrint('✅ Refund requested: $bookingId');
+    } catch (e) {
+      debugPrint('❌ Error requesting refund: $e');
+      rethrow;
     }
   }
 }

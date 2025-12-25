@@ -121,12 +121,28 @@ class AuthCubit extends Cubit<AuthState> {
         if (doc != null && doc.exists) {
           final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
 
-          // ✅ Check if email is verified
-          await currentUser.reload(); // Ensure fresh status
-          if (!currentUser.emailVerified) {
-            // ⚠️ User exists but not verified -> Redirect to verification
-            emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
-            return;
+          // ✅ Skip email verification for admin
+          final isAdmin = user.role.toLowerCase().trim() == 'admin';
+
+          // ✅ Check if email is verified (skip for admin)
+          if (!isAdmin) {
+            await currentUser.reload(); // Ensure fresh status
+
+            // Only redirect to verification if user just registered
+            // Don't force verification on every app restart
+            final isJustRegistered = getIt<CacheHelper>().getDataString(
+              key: 'justRegistered',
+            );
+
+            if (!currentUser.emailVerified && isJustRegistered == 'true') {
+              // ⚠️ User just registered but not verified -> Redirect to verification
+              debugPrint('⚠️ User not verified, redirecting to verification');
+              emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
+              return;
+            }
+
+            // Clear the flag after first check
+            await getIt<CacheHelper>().removeData(key: 'justRegistered');
           }
 
           // ✅ Save role locally
@@ -231,6 +247,9 @@ class AuthCubit extends Cubit<AuthState> {
 
       // ✅ Save role locally
       await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
+
+      // ✅ Mark as just registered to enforce email verification
+      await getIt<CacheHelper>().saveData(key: 'justRegistered', value: 'true');
     } catch (e) {
       final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
       final isOffline = FirebaseErrorHandler.isOfflineError(e);
@@ -291,6 +310,9 @@ class AuthCubit extends Cubit<AuthState> {
               key: 'userRole',
               value: userModel.role,
             );
+
+            // ✅ Clear the just registered flag
+            await getIt<CacheHelper>().removeData(key: 'justRegistered');
 
             // ✅ Restore view mode for owners if needed
             if (userModel.role.toLowerCase().trim() == 'owner') {

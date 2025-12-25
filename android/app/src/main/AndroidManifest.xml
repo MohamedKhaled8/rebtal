@@ -15,6 +15,9 @@
     <!-- Android 13+ separate media permissions. Keep READ_EXTERNAL_STORAGE for older APIs. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    
+    <!-- إذن إدارة التخزين الخارجي لـ Android 11+ (للحفظ في Downloads) -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
         android:label="rebtal"
