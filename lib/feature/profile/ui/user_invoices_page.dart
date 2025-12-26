@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/services/invoice_service.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -206,30 +207,21 @@ class _InvoiceCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            final GlobalKey repaintKey = GlobalKey();
+
             showDialog(
               context: context,
               builder: (ctx) => Dialog(
                 backgroundColor: Colors.transparent,
                 insetPadding: const EdgeInsets.all(16),
-                child: Stack(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(height: 40),
-                          BookingTicketWidget(
-                            booking: booking,
-                            ownerPhone: booking.ownerPhone ?? '201008422234',
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
+                    // Close button at top
+                    Align(
+                      alignment: Alignment.topRight,
                       child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: isDark ? Colors.grey.shade800 : Colors.white,
                           shape: BoxShape.circle,
@@ -247,6 +239,94 @@ class _InvoiceCard extends StatelessWidget {
                           ),
                           onPressed: () => Navigator.pop(ctx),
                         ),
+                      ),
+                    ),
+
+                    // Invoice wrapped in RepaintBoundary
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: RepaintBoundary(
+                          key: repaintKey,
+                          child: BookingTicketWidget(
+                            booking: booking,
+                            ownerPhone: booking.ownerPhone ?? '201008422234',
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                InvoiceService.printInvoice(
+                                  context,
+                                  repaintKey,
+                                  booking,
+                                );
+                              },
+                              icon: const Icon(Icons.print_rounded),
+                              label: const Text('طباعة'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: isDark
+                                    ? Colors.white
+                                    : Colors.black87,
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.3)
+                                      : Colors.black12,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                InvoiceService.showSaveOptions(
+                                  context,
+                                  repaintKey,
+                                  booking,
+                                );
+                              },
+                              icon: const Icon(Icons.save_alt_rounded),
+                              label: const Text('حفظ'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorManager.chaletAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

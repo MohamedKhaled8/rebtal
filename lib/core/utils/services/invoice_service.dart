@@ -9,46 +9,83 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'dart:ui' as ui;
+import 'package:gal/gal.dart';
 
 class InvoiceService {
-  /// Modern SnackBar
+  /// Modern SnackBar at Top
   static void _showModernSnackBar(
     BuildContext context, {
     required String message,
     required IconData icon,
     required Color color,
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(milliseconds: 300),
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, -50 * (1 - value)),
+                child: Opacity(opacity: value, child: child),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
+                color: color,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
       ),
     );
+
+    overlay.insert(overlayEntry);
+
+    // Auto remove after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      overlayEntry.remove();
+    });
   }
 
   /// Request storage permission with settings redirect
@@ -365,26 +402,41 @@ class InvoiceService {
         return;
       }
 
+      // Show loading indicator
+      if (context.mounted) {
+        _showModernSnackBar(
+          context,
+          message: 'جاري حفظ الصورة...',
+          icon: Icons.downloading_rounded,
+          color: Colors.blue,
+        );
+      }
+
       RenderRepaintBoundary boundary =
           repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
+
+      // Use lower pixelRatio for faster processing if speed is critical,
+      // but 3.0 is good for quality. Let's keep 3.0.
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.png,
       );
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final output = await _getDownloadsDir();
-      final fileName = 'فاتورة_${booking.id.substring(0, 8)}.png';
-      final file = File('${output.path}/$fileName');
-      await file.writeAsBytes(pngBytes);
+      final fileName =
+          'invoice_${booking.id.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}';
 
-      debugPrint('✅ Image saved: ${file.path}');
+      // Save to Gallery using Gal
+      // Gal handles permissions and saving automatically
+      await Gal.putImageBytes(pngBytes, name: fileName);
+
+      debugPrint('✅ Image saved to gallery');
 
       if (context.mounted) {
         _showModernSnackBar(
           context,
-          message: 'تم حفظ الصورة في مجلد التنزيلات ✓',
+          message: 'تم حفظ الصورة في المعرض بنجاح ✓',
           icon: Icons.check_circle_rounded,
           color: Colors.green,
         );

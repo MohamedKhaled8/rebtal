@@ -1215,7 +1215,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
   int _calculateBookingDays(DateTime from, DateTime to) {
     final duration = to.difference(from).inDays;
-    return duration > 0 ? duration : 1;
+    // Inclusive count: start day is counted.
+    // If from=15, to=30, diff=15. Result=16 days.
+    return duration >= 0 ? duration + 1 : 1;
   }
 
   double _calculateNightlyPrice() {
@@ -1252,10 +1254,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   }
 
   double _calculateTotalAmount(DateTime from, DateTime to) {
-    final duration = to.difference(from).inDays;
-    // Minimum 1 night charge
-    final nightsCount = duration > 0 ? duration : 1;
-
-    return _calculateNightlyPrice() * nightsCount;
+    final days = _calculateBookingDays(from, to);
+    return _calculateNightlyPrice() * days;
   }
 }

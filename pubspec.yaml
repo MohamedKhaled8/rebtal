@@ -80,6 +80,7 @@ dependencies:
   printing: ^5.13.4
   screenshot: ^3.0.0
   path_provider: ^2.1.5
+  gal: ^2.3.0
 
 
 

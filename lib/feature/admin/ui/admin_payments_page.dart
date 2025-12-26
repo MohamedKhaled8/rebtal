@@ -405,33 +405,36 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ColorManager.chaletAccent.withOpacity(
-                                  0.1,
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
+                                decoration: BoxDecoration(
                                   color: ColorManager.chaletAccent.withOpacity(
-                                    0.3,
+                                    0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: ColorManager.chaletAccent
+                                        .withOpacity(0.3),
                                   ),
                                 ),
-                              ),
-                              child: SelectableText(
-                                '#$shortId',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: ColorManager.chaletAccent,
-                                  letterSpacing: 1.2,
+                                child: Text(
+                                  '#$shortId',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: ColorManager.chaletAccent,
+                                    letterSpacing: 1.0,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 4),
                             InkWell(
                               onTap: () {
                                 Clipboard.setData(ClipboardData(text: shortId));
@@ -450,7 +453,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: Icon(
                                   Icons.copy,
-                                  size: 20,
+                                  size: 18,
                                   color: Colors.grey.shade500,
                                 ),
                               ),

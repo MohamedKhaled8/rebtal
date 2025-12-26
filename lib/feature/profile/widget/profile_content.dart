@@ -404,8 +404,8 @@ class ProfileContent extends StatelessWidget {
                                   : 'تفعيل المظهر النهاري',
                               color: ColorManager.profileAccent,
                               value: isDarkMode,
-                              onChanged: (_) {
-                                DynamicThemeManager.toggleTheme(context);
+                              onChanged: (value) {
+                                context.read<ThemeCubit>().toggleTheme();
                               },
                             );
                           },

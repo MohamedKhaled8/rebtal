@@ -15,18 +15,13 @@ class OwnerBookingsPage extends StatefulWidget {
 }
 
 class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
-  String _norm(String id) {
-    if (id.contains(':')) return id.split(':').last.trim();
-    return id.trim();
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthCubit>().state;
       if (authState is AuthSuccess) {
-        context.read<BookingCubit>().loadBookings();
+        context.read<BookingCubit>().loadOwnerBookings(authState.user.uid);
       }
     });
   }
@@ -51,7 +46,7 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
             floating: true,
             pinned: false,
             elevation: 0,
-            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            backgroundColor: isDark ? Colors.transparent : Colors.white,
             title: const Text(
               'حجوزاتي',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -59,10 +54,15 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
             centerTitle: true,
             actions: [
               IconButton(
-                icon: const Icon(Icons.refresh_rounded),
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
-                  context.read<BookingCubit>().loadBookings();
+                  if (ownerUid.isNotEmpty) {
+                    context.read<BookingCubit>().loadOwnerBookings(ownerUid);
+                  }
                 },
               ),
             ],
@@ -78,27 +78,12 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
               }
 
               final all = state.bookings;
-              final ownerUidTrim = ownerUid.trim();
 
-              // Since we are now filtering at the source (Firestore),
-              // we might not need strict client-side filtering,
-              // but keeping it for safety is fine.
+              // Filter bookings
+              // We rely on the query to filter by ownerId.
+              // Just filter by valid status to exclude temp/corrupt records if any.
               final bookings = all.where((b) {
-                final normalizedBookingOwnerId = _norm(b.ownerId);
-                // Include all statuses except maybe 'initial' if exists, or show everything
-                // Historically filtered: pending, approved, cancelled.
-                // NOW adding: awaitingPayment, paymentUnderReview, completed.
-                final isValidStatus =
-                    b.status == BookingStatus.pending ||
-                    b.status == BookingStatus.approved ||
-                    b.status == BookingStatus.awaitingPayment ||
-                    b.status == BookingStatus.paymentUnderReview ||
-                    b.status == BookingStatus.completed ||
-                    b.status == BookingStatus.cancelled ||
-                    b.status == BookingStatus.rejected;
-
-                return normalizedBookingOwnerId == ownerUidTrim &&
-                    isValidStatus;
+                return b.status != null;
               }).toList();
 
               // Sort bookings: Pending/Action Required first, then by date (newest first)

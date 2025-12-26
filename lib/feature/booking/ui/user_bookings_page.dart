@@ -49,7 +49,7 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
             : ColorManager.white,
         foregroundColor: DynamicThemeManager.isDarkMode(context)
             ? ColorManager.white
-            : ColorManager.transparent,
+            : ColorManager.black,
         elevation: 0,
         shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
@@ -96,7 +96,9 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
         builder: (context, state) {
           if (state.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: CircularProgressIndicator(
+                color: ColorManager.primaryColor,
+              ),
             );
           }
 

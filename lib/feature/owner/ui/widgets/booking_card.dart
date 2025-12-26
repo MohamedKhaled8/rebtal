@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
-import 'package:rebtal/feature/booking/utils/booking_helper.dart';
+import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_status_chip.dart';
 import 'package:rebtal/feature/owner/ui/widgets/guest_info_card.dart';
 
@@ -15,7 +15,10 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nights = booking.to.difference(booking.from).inDays.clamp(1, 365);
+    final nights = (booking.to.difference(booking.from).inDays + 1).clamp(
+      1,
+      365,
+    );
 
     return Container(
       decoration: BoxDecoration(
