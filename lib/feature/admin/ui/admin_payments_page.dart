@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/core/services/email_service.dart';
 
 class AdminPaymentsPage extends StatefulWidget {
   const AdminPaymentsPage({super.key});
@@ -1025,7 +1026,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _approvePayment(proof.id, proof.bookingId, notesController.text);
+              _approvePayment(proof.id, booking, notesController.text);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('موافقة'),
@@ -1037,7 +1038,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
   Future<void> _approvePayment(
     String proofId,
-    String bookingId,
+    Booking booking,
     String notes,
   ) async {
     try {
@@ -1052,13 +1053,16 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
       await FirebaseFirestore.instance
           .collection('bookings')
-          .doc(bookingId)
+          .doc(booking.id)
           .update({
             'status': 'confirmed',
             'adminConfirmedPaymentAt': FieldValue.serverTimestamp(),
             'adminPaymentNotes': notes,
             'updatedAt': FieldValue.serverTimestamp(),
           });
+
+      // Send Confirmation Email
+      await EmailService().sendBookingConfirmationEmail(booking);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1070,6 +1074,14 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('حدث خطأ أثناء الموافقة: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

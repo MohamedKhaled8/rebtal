@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/services/email_service.dart';
 
 // ✅ إضافة هذه الدوال للـ BookingCubit
 
@@ -618,6 +619,12 @@ class BookingCubit extends Cubit<BookingState> {
         );
         emit(state.copyWith(bookings: currentBookings));
       }
+
+      // Retrieve the booking object to send email
+      final booking = currentBookings[index];
+
+      // Send confirmation email (Fire and forget, don't await blocking UI)
+      EmailService().sendBookingConfirmationEmail(booking);
 
       // TODO: Send notification to user and owner
       debugPrint('✅ Payment confirmed by admin: $bookingId');
