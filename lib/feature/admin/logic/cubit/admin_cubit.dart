@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/admin/ui/dashboard.dart';
 import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 
 part 'admin_state.dart';
 
@@ -74,10 +76,62 @@ class AdminCubit extends Cubit<AdminState> {
     required String newStatus,
   }) async {
     try {
-      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
-        'status': newStatus,
-        'updatedAt': Timestamp.now(),
-      });
+      final docRef = FirebaseFirestore.instance
+          .collection('chalets')
+          .doc(docId);
+      final chaletDoc = await docRef.get();
+
+      await docRef.update({'status': newStatus, 'updatedAt': Timestamp.now()});
+
+      // ✅ Send notification to owner
+      if (chaletDoc.exists) {
+        final chaletData = chaletDoc.data() as Map<String, dynamic>;
+
+        // Use merchantId or userId as fallback for ownerId
+        String? ownerId =
+            (chaletData['ownerId'] ??
+                    chaletData['merchantId'] ??
+                    chaletData['userId'])
+                ?.toString();
+        final chaletName = chaletData['chaletName'] ?? 'شاليهك';
+
+        if (ownerId != null && ownerId.isNotEmpty) {
+          // Normalize ID just in case it has a prefix (e.g., 'user:ABC')
+          if (ownerId.contains(':')) {
+            ownerId = ownerId.split(':').last.trim();
+          }
+
+          NotificationType type = NotificationType.general;
+          String title = 'تحديث حالة الشاليه';
+          String body = 'تمت مراجعة شاليهك $chaletName من قبل الإدارة.';
+
+          if (newStatus == 'approved') {
+            type = NotificationType.chaletApproved;
+            title = 'تهانينا! تمت الموافقة 🎉';
+            body =
+                'تمت الموافقة على شاليهك $chaletName من قبل الإدارة وهو الآن متاح للمستخدمين.';
+          } else if (newStatus == 'rejected') {
+            type = NotificationType.chaletRejected;
+            title = 'تم رفض الشاليه ❌';
+            body =
+                'عذراً، تم رفض طلبك لإضافة شاليه $chaletName. يرجى مراجعة التفاصيل والتعديل.';
+          }
+
+          debugPrint(
+            'Sending notification to owner: $ownerId for chalet: $docId',
+          );
+          await NotificationService().sendNotification(
+            userId: ownerId,
+            title: title,
+            body: body,
+            type: type,
+            relatedId: docId,
+            data: {'chaletId': docId},
+          );
+        } else {
+          debugPrint('Could not find ownerId or merchantId for chalet: $docId');
+        }
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -66,41 +68,6 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  Future<void> _saveToFirestore(Booking booking) async {
-    try {
-      debugPrint('Saving booking to Firestore: ${booking.toMap()}');
-      // Defensive: if ownerId is empty, try to resolve from chalet doc
-      String ownerId = booking.ownerId;
-      if (ownerId.trim().isEmpty) {
-        try {
-          final resolved = await _resolveOwner();
-          ownerId = (resolved['ownerId'] ?? '').toString();
-          debugPrint('Resolved ownerId in _saveToFirestore: $ownerId');
-        } catch (e) {
-          debugPrint('Failed to resolve ownerId: $e');
-        }
-      }
-
-      final data = {
-        ...booking.toMap(),
-        'ownerId': _normOwnerId(ownerId),
-        'createdAt': FieldValue.serverTimestamp(),
-      };
-      if (data['ownerId'].toString().trim().isEmpty) {
-        debugPrint(
-          'Cannot save booking: resolved ownerId is empty. Booking id=${booking.id}',
-        );
-        return;
-      }
-      await FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(booking.id)
-          .set(data);
-    } catch (e) {
-      debugPrint('Error saving booking to Firestore: $e');
-    }
   }
 
   @override
@@ -827,12 +794,37 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               widget.requestData['location'] as String?,
                         );
                         try {
+                          // Generate ID beforehand to use in notification
+                          final docRef = FirebaseFirestore.instance
+                              .collection('bookings')
+                              .doc();
+                          final bookingWithId = booking.copyWith(id: docRef.id);
+
+                          widget.parentContext.read<BookingCubit>().addBooking(
+                            bookingWithId,
+                          );
+
+                          // Save with the pre-generated ID
+                          await docRef.set(bookingWithId.toMap());
+
+                          // ✅ Send notification to owner
+                          await NotificationService().sendNotification(
+                            userId: bookingWithId.ownerId,
+                            title: 'طلب حجز جديد 📩',
+                            body:
+                                'لديك طلب حجز جديد لشاليه ${bookingWithId.chaletName} من ${bookingWithId.userName}. يرجى المراجعة والموافقة.',
+                            type: NotificationType.bookingRequest,
+                            relatedId: bookingWithId.id,
+                            data: {
+                              'bookingId': bookingWithId.id,
+                              'chaletId': bookingWithId.chaletId,
+                            },
+                          );
+                        } catch (e) {
+                          debugPrint('Error confirming booking: $e');
                           widget.parentContext.read<BookingCubit>().addBooking(
                             booking,
                           );
-                          _saveToFirestore(booking);
-                        } catch (_) {
-                          context.read<BookingCubit>().addBooking(booking);
                         }
                         ScaffoldMessenger.of(widget.parentContext).showSnackBar(
                           const SnackBar(

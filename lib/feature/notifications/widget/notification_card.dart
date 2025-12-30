@@ -184,6 +184,8 @@ class NotificationCard extends StatelessWidget {
         return Icons.home_rounded;
       case NotificationType.chaletRejected:
         return Icons.home_outlined;
+      case NotificationType.chaletSubmission:
+        return Icons.add_home_work_rounded;
       case NotificationType.general:
         return Icons.notifications_rounded;
     }
@@ -201,6 +203,8 @@ class NotificationCard extends StatelessWidget {
         return ColorManager.chaletActionGreen;
       case NotificationType.chaletRejected:
         return ColorManager.chaletActionRed;
+      case NotificationType.chaletSubmission:
+        return ColorManager.chaletActionBlue;
       case NotificationType.general:
         return ColorManager.chaletGalleryBlue;
     }

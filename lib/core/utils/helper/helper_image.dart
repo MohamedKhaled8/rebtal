@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 
 // ======================= HelperImage =======================
 class HelperImage {
@@ -286,6 +288,27 @@ class HelperImage {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Chalet submitted successfully')),
       );
+
+      // ✅ Send notification to admins
+      try {
+        final adminsSnapshot = await FirebaseFirestore.instance
+            .collection('Admin')
+            .get();
+        for (var adminDoc in adminsSnapshot.docs) {
+          await NotificationService().sendNotification(
+            userId: adminDoc.id,
+            title: 'شاليه جديد قيد المراجعة 🏗️',
+            body:
+                'قام ${data.merchantName} برفع شاليه جديد (${data.chaletName}) وهو بانتظار موافقتك.',
+            type: NotificationType.chaletSubmission,
+            relatedId: docRef.id,
+            data: {'chaletId': docRef.id, 'ownerId': ownerId},
+          );
+        }
+      } catch (e) {
+        debugPrint('Error sending admin notification: $e');
+      }
+
       // Close the OwnerScreen and return `true` so callers can refresh their list
       Navigator.of(context).pop(true);
     } catch (e) {

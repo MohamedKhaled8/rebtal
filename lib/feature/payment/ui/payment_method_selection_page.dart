@@ -203,20 +203,27 @@ class _PaymentMethodSelectionPageState
                       ),
                     )
                   : AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 400),
+                      duration: const Duration(milliseconds: 500),
+                      switchInCurve: Curves.easeOutBack,
+                      switchOutCurve: Curves.easeIn,
                       transitionBuilder: (child, animation) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: const Offset(0.3, 0.0),
+                          end: Offset.zero,
+                        ).animate(animation);
+
                         return FadeTransition(
                           opacity: animation,
                           child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0.1, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
+                            position: offsetAnimation,
                             child: child,
                           ),
                         );
                       },
-                      child: _buildStepContent(isDark),
+                      child: KeyedSubtree(
+                        key: ValueKey<int>(_currentStep),
+                        child: _buildStepContent(isDark),
+                      ),
                     ),
             ),
           ],
@@ -239,7 +246,6 @@ class _PaymentMethodSelectionPageState
 
   Widget _buildStepIndicator(int step, String label, bool isDark) {
     final isActive = _currentStep >= step;
-    final isCurrent = _currentStep == step;
 
     return Expanded(
       flex: 0,
@@ -400,78 +406,198 @@ class _PaymentMethodSelectionPageState
     final displayNights = nights > 0 ? nights : 1;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Color(0xFF1E2746), Color(0xFF161B30)]
-              : [Colors.white, Colors.grey.shade50],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: ColorManager.chaletAccent.withOpacity(0.15),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.grey.shade200,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: [
+            // Background Pattern/Gradient
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF2A2E4B), const Color(0xFF161B30)]
+                        : [const Color(0xFFF0F4FF), Colors.white],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
+            ),
+
+            // Subtle accent circle
+            Positioned(
+              right: -50,
+              top: -50,
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: ColorManager.chaletAccent.withOpacity(0.05),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: ColorManager.chaletAccent.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.receipt_long_rounded,
+                          color: ColorManager.chaletAccent,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Text(
+                        'ملخص الدفع',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Total Amount with Label
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'إجمالي المبلغ المستحق',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white54 : Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: _calculatedAmount),
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.easeOutExpo,
+                        builder: (context, value, child) {
+                          return Text(
+                            CurrencyFormatter.egp(value),
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : ColorManager.chaletAccent,
+                              fontSize: 34,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -1,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Detail Row ( frosted style )
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white10
+                            : Colors.black.withOpacity(0.05),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildSummaryItem(
+                          isDark,
+                          Icons.nights_stay_rounded,
+                          '$displayNights ليالي',
+                          'مدة الإقامة',
+                        ),
+                        Container(
+                          width: 1,
+                          height: 30,
+                          color: isDark ? Colors.white10 : Colors.black12,
+                        ),
+                        _buildSummaryItem(
+                          isDark,
+                          Icons.home_work_rounded,
+                          widget.booking.chaletName,
+                          'الشاليه',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'إجمالي المبلغ',
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.grey.shade600,
-                  fontSize: 16,
-                ),
+    );
+  }
+
+  Widget _buildSummaryItem(
+    bool isDark,
+    IconData icon,
+    String value,
+    String label,
+  ) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: ColorManager.chaletAccent),
+            const SizedBox(width: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: isDark ? Colors.white : Colors.black87,
               ),
-              Text(
-                CurrencyFormatter.egp(_calculatedAmount),
-                style: TextStyle(
-                  color: ColorManager.chaletAccent,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark ? Colors.white38 : Colors.grey.shade500,
           ),
-          const SizedBox(height: 16),
-          Divider(color: isDark ? Colors.white10 : Colors.grey.shade200),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Icon(
-                Icons.nights_stay_outlined,
-                size: 20,
-                color: isDark ? Colors.white60 : Colors.grey.shade500,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '$displayNights ليالي',
-                style: TextStyle(
-                  color: isDark ? Colors.white60 : Colors.grey.shade600,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                widget.booking.chaletName,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -484,45 +610,78 @@ class _PaymentMethodSelectionPageState
   ) {
     final isSelected = _selectedMethod == method;
     return GestureDetector(
-      onTap: () => setState(() => _selectedMethod = method),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() => _selectedMethod = method);
+      },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark
               ? (isSelected
-                    ? ColorManager.chaletAccent.withOpacity(0.15)
-                    : const Color(0xFF1E1E1E))
+                    ? ColorManager.chaletAccent.withOpacity(0.12)
+                    : const Color(0xFF1E2235))
               : (isSelected
-                    ? ColorManager.chaletAccent.withOpacity(0.08)
+                    ? ColorManager.chaletAccent.withOpacity(0.06)
                     : Colors.white),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isSelected
                 ? ColorManager.chaletAccent
-                : (isDark ? Colors.white12 : Colors.grey.shade200),
-            width: isSelected ? 2 : 1,
+                : (isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.05)),
+            width: isSelected ? 2.5 : 1.5,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: ColorManager.chaletAccent.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
+            // Icon Container with fixed size
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? ColorManager.chaletAccent
-                    : (isDark ? Colors.white10 : Colors.grey.shade100),
-                shape: BoxShape.circle,
+                gradient: isSelected
+                    ? LinearGradient(
+                        colors: [
+                          ColorManager.chaletAccent,
+                          ColorManager.chaletAccent.withOpacity(0.7),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : LinearGradient(
+                        colors: isDark
+                            ? [
+                                Colors.white.withOpacity(0.05),
+                                Colors.white.withOpacity(0.02),
+                              ]
+                            : [Colors.grey.shade100, Colors.grey.shade50],
+                      ),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
                 color: isSelected
                     ? Colors.white
-                    : (isDark ? Colors.white70 : Colors.grey.shade600),
-                size: 24,
+                    : (isDark ? Colors.white54 : Colors.grey.shade600),
+                size: 26,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 18),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,31 +689,50 @@ class _PaymentMethodSelectionPageState
                   Text(
                     title,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.white54 : Colors.grey.shade500,
+                      fontSize: 13,
+                      color: isDark ? Colors.white38 : Colors.grey.shade500,
                     ),
                   ),
                 ],
               ),
             ),
-            if (isSelected)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ColorManager.chaletAccent,
+            // Custom Radio-like indicator
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? ColorManager.chaletAccent
+                      : Colors.grey.withOpacity(0.3),
+                  width: 2,
                 ),
-                child: const Icon(Icons.check, size: 12, color: Colors.white),
               ),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: isSelected ? 1 : 0,
+                child: Center(
+                  child: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: ColorManager.chaletAccent,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -576,113 +754,195 @@ class _PaymentMethodSelectionPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Step Identification Card
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [ColorManager.chaletAccent, Color(0xFF00A896)],
+              borderRadius: BorderRadius.circular(30),
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF2A2D4E), const Color(0xFF161B30)]
+                    : [const Color(0xFF2E335A).withOpacity(0.05), Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorManager.chaletAccent.withOpacity(0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : ColorManager.chaletAccent.withOpacity(0.1),
+              ),
             ),
             child: Column(
               children: [
-                const Text(
-                  'المبلغ المطلوب تحويله',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  CurrencyFormatter.egp(_calculatedAmount),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ColorManager.chaletAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _selectedMethod == PaymentMethod.vodafoneCash
+                        ? Icons.phone_android
+                        : Icons.account_balance_wallet_rounded,
+                    color: ColorManager.chaletAccent,
+                    size: 32,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                Text(
+                  'تفاصيل التحويل عبر $methodTitle',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'يرجى تحويل المبلغ الموضح أدناه إلى الرقم المحدد، ثم الاحتفاظ بصورة الإيصال.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                    vertical: 16,
+                    horizontal: 24,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(30),
+                    color: ColorManager.chaletAccent,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorManager.chaletAccent.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    methodTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.receipt_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        CurrencyFormatter.egp(_calculatedAmount),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 32),
+
+          const SizedBox(height: 40),
+
           if (_selectedMethod == PaymentMethod.cashOnArrival) ...[
-            Icon(
-              Icons.check_circle_outline,
-              size: 80,
-              color: isDark ? Colors.white70 : Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'لا يتطلب تحويل مسبق',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'يمكنك الدفع نقداً عند الوصول للمالك.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDark ? Colors.white54 : Colors.grey.shade600,
-              ),
+            _buildInfoCard(
+              isDark,
+              Icons.check_circle_rounded,
+              'تأكيد الدفع نقداً',
+              'سيتم التواصل معك هاتفياً لتأكيد حضورك وموعد الاستلام.',
+              Colors.green,
             ),
           ] else ...[
-            Text(
-              'تفاصيل التحويل',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: ColorManager.chaletAccent,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'بيانات الحساب',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  _buildCopyableFieldNew(
+                    isDark,
+                    'رقم التحويل (كاش)',
+                    _adminPhone,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCopyableFieldNew(
+                    isDark,
+                    'اسم المستلم',
+                    'إدارة شاليهات ربتال',
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildCopyableField(
-              isDark,
-              'رقم التحويل',
-              _adminPhone, // TODO: Fetch from config if needed
-              Icons.copy,
             ),
           ],
           const SizedBox(height: 48),
-          ElevatedButton(
-            onPressed: _nextStep,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorManager.chaletAccent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+
+          // Action Button
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: ColorManager.chaletAccent.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            child: Text(
-              _selectedMethod == PaymentMethod.cashOnArrival
-                  ? 'تأكيد الحجز'
-                  : 'تم التحويل، متابعة',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            child: ElevatedButton(
+              onPressed: _nextStep,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorManager.chaletAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                minimumSize: const Size(double.infinity, 64),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _selectedMethod == PaymentMethod.cashOnArrival
+                        ? 'تأكيد الحجز النهائي'
+                        : 'تم التحويل بنجاح، التالي',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Icon(Icons.arrow_forward_rounded, size: 20),
+                ],
+              ),
             ),
           ),
         ],
@@ -690,20 +950,59 @@ class _PaymentMethodSelectionPageState
     );
   }
 
-  Widget _buildCopyableField(
+  Widget _buildInfoCard(
     bool isDark,
-    String label,
-    String value,
     IconData icon,
+    String title,
+    String desc,
+    Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 54, color: color),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            desc,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isDark ? Colors.white54 : Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCopyableFieldNew(bool isDark, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.grey.shade200,
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
         ),
+        boxShadow: !isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
       ),
       child: Row(
         children: [
@@ -715,30 +1014,50 @@ class _PaymentMethodSelectionPageState
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    color: isDark ? Colors.white54 : Colors.grey.shade500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   value,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w800,
                     color: isDark ? Colors.white : Colors.black87,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('تم النسخ')));
-            },
-            icon: Icon(icon, color: ColorManager.chaletAccent),
+          Material(
+            color: ColorManager.chaletAccent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                Clipboard.setData(ClipboardData(text: value));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('تم نسخ $label'),
+                    backgroundColor: ColorManager.chaletAccent,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Icon(
+                  Icons.copy_rounded,
+                  color: ColorManager.chaletAccent,
+                  size: 20,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -748,52 +1067,73 @@ class _PaymentMethodSelectionPageState
   // --- Step 3: Proof Upload / Confirmation ---
   Widget _buildProofUploadStep(bool isDark) {
     if (_selectedMethod == PaymentMethod.cashOnArrival) {
-      // Auto submit for cash on arrival or show simple button
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.check_circle,
-                size: 80,
-                color: ColorManager.chaletAccent,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'تأكيد الحجز النهائي',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'اضغط أدناه لإنهاء الحجز.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: ColorManager.chaletAccent.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 100,
+                  color: ColorManager.chaletAccent,
+                ),
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitConfirmation,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorManager.chaletAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+              const Text(
+                'جاهز لتأكيد حجزك؟',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'لقد اخترت الدفع نقداً عند الوصول. سيتم مراجعة طلبك وتأكيده من قبل الإدارة.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                  height: 1.6,
                 ),
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'إنهاء',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+              ),
+              const SizedBox(height: 48),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorManager.chaletAccent.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitConfirmation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorManager.chaletAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 22),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'إنهاء وتأكيد الحجز',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                ),
               ),
             ],
           ),
@@ -806,87 +1146,165 @@ class _PaymentMethodSelectionPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Frosted WhatsApp Card
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF1E3C29), const Color(0xFF0F1E15)]
+                    : [const Color(0xFFE8F5E9), Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: const Color(0xFF25D366).withOpacity(0.2),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 20,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                Icon(Icons.payment, size: 48, color: Colors.green),
-                const SizedBox(height: 12),
-                const Text(
-                  'إرسال إيصال التحويل',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF25D366).withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
+                  child: Icon(Icons.phone, size: 54, color: Color(0xFF25D366)),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 24),
+                const Text(
+                  'خطوة أخيرة للـتأكيد',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
                 Text(
-                  'يرجى إرسال صورة الإيصال عبر واتساب للمسؤول لتأكيد حجزك.',
+                  'يرجى إرسال لقطة شاشة (Screenshot) لإيصال التحويل عبر واتساب للمسؤول.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isDark ? Colors.white70 : Colors.green.shade900,
+                    fontSize: 15,
+                    color: isDark ? Colors.white60 : Colors.grey.shade600,
+                    height: 1.5,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () async {
-              setState(() => _whatsAppOpened = true);
-              await UriLauncherService.launchWhatsAppContact(
-                context: context,
-                phone: _adminPhone,
-                message:
-                    'مرحباً، لقد قمت بتحويل مبلغ ${CurrencyFormatter.egp(_calculatedAmount)} لحجز شاليه ${widget.booking.chaletName} رقم الحجز: ${widget.booking.id.substring(0, 8)}',
-              );
-            },
-            icon: const Icon(Icons.send_rounded),
-            label: const Text('فتح واتساب وإرسال الإيصال'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF25D366),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+
+          const SizedBox(height: 32),
+
+          // Premium WhatsApp Button
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF25D366).withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                HapticFeedback.heavyImpact();
+                setState(() => _whatsAppOpened = true);
+                await UriLauncherService.launchWhatsAppContact(
+                  context: context,
+                  phone: _adminPhone,
+                  message:
+                      'مرحباً، لقد قمت بتحويل مبلغ ${CurrencyFormatter.egp(_calculatedAmount)} لحجز شاليه ${widget.booking.chaletName} رقم الحجز: ${widget.booking.id.substring(0, 8)}',
+                );
+              },
+              icon: const Icon(Icons.send_to_mobile_rounded, size: 22),
+              label: const Text('فتح واتساب وإرسال الإيصال'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF25D366),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 0,
               ),
             ),
           ),
+
           const SizedBox(height: 48),
-          if (_whatsAppOpened) ...[
-            const Text(
-              'هل قمت بالإرسال؟',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitConfirmation,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.chaletAccent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text(
-                      'نعم، تم الإرسال وإنهاء الحجز',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+
+          // Animated confirmation box
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: _whatsAppOpened
+                ? Container(
+                    key: const ValueKey('confirmation_ui'),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: ColorManager.chaletAccent.withOpacity(0.2),
                       ),
                     ),
-            ),
-          ],
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.help_outline_rounded,
+                              color: ColorManager.chaletAccent,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'هل قمت بإرسال الإيصال؟',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _isSubmitting ? null : _submitConfirmation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorManager.chaletAccent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            minimumSize: const Size(double.infinity, 58),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: _isSubmitting
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'نعم، تم الإرسال - إنهاء الحجز',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
