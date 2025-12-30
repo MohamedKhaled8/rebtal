@@ -19,7 +19,6 @@ class BookingCard extends StatelessWidget {
       1,
       365,
     );
-
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,

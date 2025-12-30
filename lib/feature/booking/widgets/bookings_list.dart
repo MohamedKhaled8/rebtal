@@ -371,15 +371,29 @@ class BookingCard extends StatelessWidget {
   }
 
   void _confirmCancel(BuildContext context, Booking booking) {
-    // حساب عدد الأيام المتبقية للعرض (تجاهل الوقت)
+    // 1. Normalize Dates (Ignore Time) for accurate calculation
     final now = DateTime.now();
+
+    // Today at midnight
+    final dateToday = DateTime(now.year, now.month, now.day);
+
+    // Check-in at midnight
     final dateCheckIn = DateTime(
       booking.from.year,
       booking.from.month,
       booking.from.day,
     );
-    final dateToday = DateTime(now.year, now.month, now.day);
+
+    // Check-out at midnight
+    final dateCheckOut = DateTime(
+      booking.to.year,
+      booking.to.month,
+      booking.to.day,
+    );
+
+    // 2. Calculations
     final daysRemaining = dateCheckIn.difference(dateToday).inDays;
+    final actualNights = dateCheckOut.difference(dateCheckIn).inDays;
 
     // الحصول على معلومات الاسترداد
     final refundInfo = BookingHelper.calculateRefund(
@@ -450,7 +464,7 @@ class BookingCard extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // 2. حالة الحجز الحالي وتفاصيل التواريخ
+                // 2. تفاصيل الحجز (مدة الحجز + المتبقي للوصول)
                 Text(
                   'تفاصيل الحجز والتواريخ:',
                   style: TextStyle(
@@ -460,20 +474,23 @@ class BookingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 _buildDateRow(
+                  'مدة الحجز:',
+                  '$actualNights ليالٍ (${_calculateDays(booking.from, booking.to)} أيام)',
+                  isDarkMode,
+                ),
+                _buildDateRow(
                   'تاريخ الوصول:',
                   _formatDate(booking.from),
                   isDarkMode,
                 ),
                 _buildDateRow(
-                  'تاريخ اليوم:',
-                  _formatDate(DateTime.now()),
-                  isDarkMode,
-                ),
-                _buildDateRow(
-                  'الفرق:',
-                  '$daysRemaining يوم',
+                  'المتبقي للوصول:',
+                  daysRemaining < 0
+                      ? 'مضى موعد الوصول'
+                      : (daysRemaining == 0 ? 'اليوم' : '$daysRemaining يوم'),
                   isDarkMode,
                   isBold: true,
+                  valueColor: daysRemaining < 0 ? Colors.red : null,
                 ),
 
                 const SizedBox(height: 8),
@@ -636,6 +653,7 @@ class BookingCard extends StatelessWidget {
     String value,
     bool isDarkMode, {
     bool isBold = false,
+    Color? valueColor,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -654,7 +672,7 @@ class BookingCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: valueColor ?? (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
         ],
