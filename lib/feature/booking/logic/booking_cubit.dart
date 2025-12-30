@@ -436,6 +436,73 @@ class BookingCubit extends Cubit<BookingState> {
     }).toList();
   }
 
+  // ✅ إلغاء الحجز مع الاسترداد
+  Future<void> cancelBookingWithRefund(
+    String bookingId,
+    double refundAmount,
+    String refundReason,
+  ) async {
+    try {
+      // ✅ تحديث محلي
+      updateBookingStatus(bookingId, BookingStatus.cancelled);
+
+      // ✅ تحديث في Firestore
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': describeEnum(BookingStatus.cancelled),
+            'refundAmount': refundAmount,
+            'refundReason': refundReason,
+            'cancelledAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+
+      // ✅ إرسال إيميل للمستخدم
+      final booking = state.bookings.firstWhere(
+        (b) => b.id == bookingId,
+        orElse: () => Booking(
+          id: '',
+          chaletId: '',
+          chaletName: '',
+          ownerId: '',
+          ownerName: '',
+          userId: '',
+          userName: '',
+          from: DateTime.now(),
+          to: DateTime.now(),
+          status: BookingStatus.cancelled,
+          updatedAt: DateTime.now(),
+        ),
+      );
+
+      if (booking.id.isNotEmpty) {
+        // إرسال الإيميل
+        await EmailService().sendBookingCancellationEmail(
+          booking: booking,
+          refundAmount: refundAmount,
+          policyMessage: refundReason,
+        );
+
+        // ✅ إرسال إشعار للمالك
+        if (booking.ownerId.isNotEmpty) {
+          await NotificationService().sendNotification(
+            userId: booking.ownerId,
+            title: 'تم إلغاء حجز ⚠️',
+            body:
+                'قام ${booking.userName} بإلغاء حجزه. ${refundAmount > 0 ? "يستحق استرداد: $refundAmount جنية" : "لا يستحق استرداد."}',
+            type: NotificationType.general,
+            relatedId: booking.id,
+            data: {'bookingId': booking.id},
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error cancelling booking with refund: $e');
+      rethrow;
+    }
+  }
+
   // ✅ الحصول على الحجوزات حسب المستخدم
   List<Booking> getUserBookings(String userId) {
     return state.bookings.where((booking) => booking.userId == userId).toList();

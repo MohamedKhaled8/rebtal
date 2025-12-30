@@ -43,4 +43,39 @@ class BookingHelper {
 
     return '$dayName، $date - $time';
   }
+
+  static ({double refundAmount, double refundPercentage, String message})
+  calculateRefund(DateTime checkInDate, double totalAmount) {
+    final now = DateTime.now();
+    // Calculate difference in days. We use the start of the day for accurate day-diff?
+    // Or just simple difference. Let's stick to simple difference for now, or normalize to midnight if needed.
+    // For simplicity:
+    final difference = checkInDate.difference(now).inDays;
+
+    // Policy:
+    // >= 7 days: 100%
+    // 3 - 6 days: 50%
+    // < 3 days: 0%
+
+    if (difference >= 7) {
+      return (
+        refundAmount: totalAmount,
+        refundPercentage: 100.0,
+        message: 'استرداد كامل (100%) - الإلغاء قبل الموعد بـ 7 أيام أو أكثر.',
+      );
+    } else if (difference >= 3) {
+      final amount = totalAmount * 0.5;
+      return (
+        refundAmount: amount,
+        refundPercentage: 50.0,
+        message: 'استرداد جزئي (50%) - الإلغاء قبل الموعد بـ 3 إلى 7 أيام.',
+      );
+    } else {
+      return (
+        refundAmount: 0.0,
+        refundPercentage: 0.0,
+        message: 'غير مسترد (0%) - الإلغاء قبل الموعد بأقل من 3 أيام.',
+      );
+    }
+  }
 }

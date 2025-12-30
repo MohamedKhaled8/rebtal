@@ -239,4 +239,94 @@ class EmailService {
 </html>
     ''';
   }
+
+  Future<void> sendBookingCancellationEmail({
+    required Booking booking,
+    required double refundAmount,
+    required String policyMessage,
+  }) async {
+    // Check credentials
+    if (_appPassword.isEmpty ||
+        _appPassword == 'REPLACE_WITH_YOUR_APP_PASSWORD') {
+      debugPrint('⚠️ Email not sent: App Password is missing.');
+      return;
+    }
+
+    if (booking.userEmail == null || booking.userEmail!.isEmpty) {
+      debugPrint('⚠️ Email not sent: User has no email address.');
+      return;
+    }
+
+    if (kIsWeb) return;
+
+    final smtpServer = gmail(_senderEmail, _appPassword);
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'EGP',
+      decimalDigits: 0,
+    );
+
+    final message = Message()
+      ..from = Address(_senderEmail, 'Rebtal Service')
+      ..recipients.add(booking.userEmail!)
+      ..subject = 'Booking Cancellation - #${booking.id.substring(0, 8)}'
+      ..html =
+          '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background-color: #d32f2f; color: #ffffff; padding: 24px; text-align: center; } /* Red for cancellation */
+    .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+    .content { padding: 30px; }
+    .alert-box { background-color: #fdecea; border-left: 5px solid #d32f2f; padding: 15px; margin-bottom: 25px; border-radius: 4px; }
+    .alert-text { color: #d32f2f; font-weight: bold; font-size: 16px; margin: 0; }
+    .details-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+    .details-table th { text-align: left; padding: 12px; border-bottom: 1px solid #eee; color: #666; font-weight: normal; }
+    .details-table td { text-align: right; padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; color: #333; }
+    .footer { background-color: #f1f1f1; padding: 20px; text-align: center; font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Rebtal</h1>
+      <p>Booking Cancelled</p>
+    </div>
+    
+    <div class="content">
+      <p>Hello <strong>${booking.userName}</strong>,</p>
+
+      <div class="alert-box">
+        <p class="alert-text">Your booking #${booking.id.substring(0, 8)} has been cancelled.</p>
+        <p style="margin: 5px 0 0 0; font-size: 14px;">${policyMessage}</p>
+      </div>
+
+      <table class="details-table">
+        <tr><th>Chalet</th><td>${booking.chaletName}</td></tr>
+        <tr><th>Original Amount</th><td>${currencyFormat.format(booking.amount ?? 0)}</td></tr>
+        <tr><th>Refund Amount</th><td style="color: #2e7d32;">${currencyFormat.format(refundAmount)}</td></tr>
+      </table>
+
+      <p>The refund amount (if any) will be processed according to our cancellation policy.</p>
+      <p>We hope to see you again soon.</p>
+    </div>
+
+    <div class="footer">
+      <p>&copy; ${DateTime.now().year} Rebtal Services.</p>
+    </div>
+  </div>
+</body>
+</html>
+      ''';
+
+    try {
+      await send(message, smtpServer);
+      debugPrint('✅ Cancellation email sent.');
+    } catch (e) {
+      debugPrint('❌ Error sending cancellation email: $e');
+    }
+  }
 }

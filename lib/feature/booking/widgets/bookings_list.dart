@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/Router/routes.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/utils/helper/booking_helper.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -70,6 +73,7 @@ class BookingCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
+      // ... (Rest of decoration is same, we only want to change the button logic)
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: isDarkMode
@@ -92,7 +96,6 @@ class BookingCard extends StatelessWidget {
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
-          // تأثير توهج خفيف للحالات
           if (isApproved || isConfirmed)
             BoxShadow(
               color: statusColor.withOpacity(0.05),
@@ -111,7 +114,7 @@ class BookingCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
-            // زخرفة خلفية خفيفة
+            // ... (Same Stack children until ElevatedButton)
             Positioned(
               right: -20,
               top: -20,
@@ -130,11 +133,9 @@ class BookingCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // رأس البطاقة
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // أيقونة الشاليه
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -150,8 +151,6 @@ class BookingCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-
-                      // اسم الشاليه والمالك
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,8 +191,6 @@ class BookingCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      // شارة الحالة
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -220,7 +217,7 @@ class BookingCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               isConfirmed
-                                  ? 'تم الدفع بنجاح'
+                                  ? 'مؤكد'
                                   : isApproved
                                   ? 'مقبول'
                                   : isRejected
@@ -240,20 +237,14 @@ class BookingCard extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
-                  // فاصل
                   Divider(
                     color: isDarkMode
                         ? Colors.white.withOpacity(0.05)
                         : Colors.black.withOpacity(0.05),
                     height: 1,
                   ),
-
                   const SizedBox(height: 20),
-
-                  // تفاصيل الحجز
                   Row(
                     children: [
                       Expanded(
@@ -285,10 +276,7 @@ class BookingCard extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
-                  // زر الدفع أو الحالة النهائية
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -296,22 +284,22 @@ class BookingCard extends StatelessWidget {
                         backgroundColor: isApproved
                             ? const Color(0xFF1ED760)
                             : isConfirmed
-                            ? const Color(0xFF10B981) // Green for confirmed
+                            ? Colors
+                                  .redAccent
+                                  .shade400 // Red for Cancel
                             : (isDarkMode
                                   ? Colors.white.withOpacity(0.05)
                                   : Colors.grey.shade100),
                         foregroundColor: isApproved || isConfirmed
                             ? Colors
-                                  .black // Dark text on bright button
+                                  .white // White text
                             : (isDarkMode
                                   ? Colors.white54
                                   : Colors.grey.shade600),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: isApproved || isConfirmed ? 4 : 0,
                         shadowColor: isApproved || isConfirmed
-                            ? (isConfirmed
-                                  ? const Color(0xFF10B981).withOpacity(0.4)
-                                  : const Color(0xFF1ed760).withOpacity(0.4))
+                            ? Colors.black26
                             : Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -319,7 +307,9 @@ class BookingCard extends StatelessWidget {
                       ),
                       onPressed: isApproved
                           ? () => _payNow(context, booking)
-                          : null, // Disabled if confirmed or other status
+                          : isConfirmed
+                          ? () => _confirmCancel(context, booking)
+                          : null,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -329,8 +319,9 @@ class BookingCard extends StatelessWidget {
                           ],
                           if (isConfirmed) ...[
                             const Icon(
-                              Icons.check_circle_outline_rounded,
+                              Icons.cancel_outlined,
                               size: 20,
+                              color: Colors.white,
                             ),
                             const SizedBox(width: 8),
                           ],
@@ -338,7 +329,7 @@ class BookingCard extends StatelessWidget {
                             isApproved
                                 ? 'إتمام الدفع'
                                 : isConfirmed
-                                ? 'تم الدفع بنجاح'
+                                ? 'إلغاء الحجز'
                                 : isRejected
                                 ? 'تم رفض هذا الطلب'
                                 : booking.status ==
@@ -376,6 +367,243 @@ class BookingCard extends StatelessWidget {
       context,
       Routes.paymentMethodSelection,
       arguments: {'booking': booking, 'totalAmount': booking.amount ?? 0.0},
+    );
+  }
+
+  void _confirmCancel(BuildContext context, Booking booking) {
+    // حساب عدد الأيام المتبقية للعرض
+    final daysRemaining = booking.from.difference(DateTime.now()).inDays;
+
+    // الحصول على معلومات الاسترداد
+    final refundInfo = BookingHelper.calculateRefund(
+      booking.from,
+      booking.amount ?? 0.0,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDarkMode = DynamicThemeManager.isDarkMode(context);
+        return AlertDialog(
+          backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded, color: Colors.orange),
+              const SizedBox(width: 8),
+              const Text('سياسة إلغاء الحجز', style: TextStyle(fontSize: 18)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. عرض القواعد العامة
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? Colors.white10 : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDarkMode ? Colors.white24 : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'قواعد الاسترداد:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildPolicyRow(
+                        '• 7 أيام أو أكثر:',
+                        'استرداد كامل (100%)',
+                        isDarkMode,
+                      ),
+                      _buildPolicyRow(
+                        '• من 3 إلى 7 أيام:',
+                        'استرداد (50%)',
+                        isDarkMode,
+                      ),
+                      _buildPolicyRow(
+                        '• أقل من 3 أيام:',
+                        'غير مسترد (0%)',
+                        isDarkMode,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // 2. حالة الحجز الحالي
+                Text(
+                  'حالة حجزك الحالي:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'متبقي على موعد الدخول: ${daysRemaining < 0 ? 0 : daysRemaining} يوم',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white60 : Colors.grey.shade700,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  'السياسة المطبقة: استرداد ${refundInfo.refundPercentage.toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+
+                const Divider(height: 24),
+
+                // 3. الحسبة المالية
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'المبلغ المدفوع:',
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? Colors.white60
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      '${(booking.amount ?? 0).toStringAsFixed(0)} جنية',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'قيمة الخصم:',
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? Colors.white60
+                            : Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      '-${((booking.amount ?? 0) - refundInfo.refundAmount).toStringAsFixed(0)} جنية',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+
+                // المبلغ النهائي
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'المبلغ المسترد:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        '${refundInfo.refundAmount.toStringAsFixed(0)} جنية',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? Colors.white70
+                    : Colors.grey.shade700,
+              ),
+              child: const Text('تراجع'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.read<BookingCubit>().cancelBookingWithRefund(
+                  booking.id,
+                  refundInfo.refundAmount,
+                  refundInfo.message,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('تأكيد الإلغاء'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPolicyRow(String label, String value, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDarkMode ? Colors.white70 : Colors.grey.shade700,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
