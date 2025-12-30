@@ -47,10 +47,16 @@ class BookingHelper {
   static ({double refundAmount, double refundPercentage, String message})
   calculateRefund(DateTime checkInDate, double totalAmount) {
     final now = DateTime.now();
-    // Calculate difference in days. We use the start of the day for accurate day-diff?
-    // Or just simple difference. Let's stick to simple difference for now, or normalize to midnight if needed.
-    // For simplicity:
-    final difference = checkInDate.difference(now).inDays;
+
+    // Normalize to midnight to ignore hours/minutes
+    final dateCheckIn = DateTime(
+      checkInDate.year,
+      checkInDate.month,
+      checkInDate.day,
+    );
+    final dateToday = DateTime(now.year, now.month, now.day);
+
+    final difference = dateCheckIn.difference(dateToday).inDays;
 
     // Policy:
     // >= 7 days: 100%

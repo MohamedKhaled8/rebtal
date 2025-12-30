@@ -13,7 +13,12 @@
           "package_name": "com.example.rebtal"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "404434331315-9499n7jplj2fvp3520l188uh64de56tb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAm00q5_ydV9ETNo-uYcCHkwODHD1EpTnc"
@@ -21,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "404434331315-9499n7jplj2fvp3520l188uh64de56tb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

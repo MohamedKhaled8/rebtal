@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
+import 'package:geocoding/geocoding.dart';
 
-class FlutterMapLocationPicker extends StatefulWidget {
+class FlutterGoogleMapLocationPicker extends StatefulWidget {
   final String? initialAddress;
   final double? initialLat;
   final double? initialLon;
 
-  const FlutterMapLocationPicker({
+  const FlutterGoogleMapLocationPicker({
     super.key,
     this.initialAddress,
     this.initialLat,
@@ -19,12 +19,17 @@ class FlutterMapLocationPicker extends StatefulWidget {
   });
 
   @override
-  State<FlutterMapLocationPicker> createState() =>
-      _FlutterMapLocationPickerState();
+  State<FlutterGoogleMapLocationPicker> createState() =>
+      _FlutterGoogleMapLocationPickerState();
 }
 
-class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
-  final MapController _mapController = MapController();
+class _FlutterGoogleMapLocationPickerState
+    extends State<FlutterGoogleMapLocationPicker> {
+  // ✅ Google Maps Controller
+  Completer<GoogleMapController> _controller = Completer();
+
+  // ✅ Google Maps API Key (Used ONLY for Map Rendering now)
+
   final Dio _dio = Dio();
   final TextEditingController _searchController = TextEditingController();
 
@@ -34,6 +39,7 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
   bool _isSearching = false;
   List<Map<String, dynamic>> _searchSuggestions = [];
   Timer? _debounce;
+  Set<Marker> _markers = {};
 
   @override
   void initState() {
@@ -42,6 +48,9 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
       _selectedLocation = LatLng(widget.initialLat!, widget.initialLon!);
       _selectedAddress = widget.initialAddress;
       _searchController.text = widget.initialAddress ?? '';
+      _updateMarker(_selectedLocation);
+    } else {
+      _getCurrentLocation();
     }
   }
 
@@ -49,35 +58,63 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
   void dispose() {
     _debounce?.cancel();
     _searchController.dispose();
-    _mapController.dispose();
     super.dispose();
+  }
+
+  void _updateMarker(LatLng position) {
+    setState(() {
+      _markers = {
+        Marker(
+          markerId: const MarkerId('selected_location'),
+          position: position,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      };
+    });
   }
 
   Future<void> _reverseGeocode(LatLng position) async {
     setState(() => _isLoading = true);
     try {
-      final response = await _dio.get(
-        'https://nominatim.openstreetmap.org/reverse',
-        queryParameters: {
-          'lat': position.latitude,
-          'lon': position.longitude,
-          'format': 'json',
-          'zoom': 18,
-          'addressdetails': 1,
-        },
-        options: Options(headers: {'User-Agent': 'rebtal-app/1.0'}),
+      // ✅ محاولة استخدام خدمة الهاتف الداخلية (مجانية وسريعة)
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
       );
 
-      if (response.statusCode == 200) {
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        // تجميع العنوان بشكل منسق
+        String address = [
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.administrativeArea,
+          place.country,
+        ].where((element) => element != null && element.isNotEmpty).join('، ');
+
+        if (address.isEmpty) {
+          address = '${position.latitude}, ${position.longitude}';
+        }
+
         setState(() {
-          _selectedAddress = response.data['display_name'];
+          _selectedAddress = address;
           if (!_isSearching) {
-            _searchController.text = _selectedAddress ?? '';
+            _searchController.text = address;
           }
+        });
+      } else {
+        setState(() {
+          _selectedAddress =
+              'موقع محدد (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})';
         });
       }
     } catch (e) {
       debugPrint('Reverse geocode error: $e');
+      setState(() {
+        _selectedAddress =
+            'موقع محدد (${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)})';
+      });
     } finally {
       setState(() => _isLoading = false);
     }
@@ -92,27 +129,29 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
     setState(() => _isSearching = true);
 
     try {
+      // ✅ استخدام OpenStreetMap (Nominatim) للبحث المجاني والمفتوح
+      // هذا يعمل دائماً ولا يحتاج مفتاح API خاص
       final response = await _dio.get(
         'https://nominatim.openstreetmap.org/search',
         queryParameters: {
           'q': query,
           'format': 'json',
-          'limit': 8,
+          'limit': 5,
           'addressdetails': 1,
-          'countrycodes': 'eg', // Focus on Egypt
+          'countrycodes': 'eg', // التركيز على مصر
         },
         options: Options(headers: {'User-Agent': 'rebtal-app/1.0'}),
       );
 
       if (response.statusCode == 200) {
-        final List data = response.data;
+        final data = response.data as List;
         setState(() {
           _searchSuggestions = data
               .map(
                 (e) => {
                   'display': e['display_name'],
-                  'lat': double.tryParse(e['lat'] ?? '0') ?? 0,
-                  'lon': double.tryParse(e['lon'] ?? '0') ?? 0,
+                  'lat': double.parse(e['lat']),
+                  'lon': double.parse(e['lon']),
                 },
               )
               .toList();
@@ -125,6 +164,30 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
     }
   }
 
+  // دالة اختيار النتيجة وتحريك الخريطة
+  void _selectSuggestion(Map<String, dynamic> suggestion) async {
+    final lat = suggestion['lat'] as double;
+    final lon = suggestion['lon'] as double;
+    final position = LatLng(lat, lon);
+
+    // إخفاء لوحة المفاتيح
+    FocusScope.of(context).unfocus();
+
+    // تحريك كاميرا جوجل ماب
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newLatLngZoom(position, 17));
+
+    setState(() {
+      _selectedLocation = position;
+      _searchController.text = suggestion['display'];
+      _searchSuggestions = [];
+      _isSearching = false;
+      _selectedAddress = suggestion['display'];
+    });
+
+    _updateMarker(position);
+  }
+
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
@@ -132,34 +195,13 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
     });
   }
 
-  void _selectSuggestion(Map<String, dynamic> suggestion) {
-    final lat = suggestion['lat'] as double;
-    final lon = suggestion['lon'] as double;
-    final position = LatLng(lat, lon);
-
-    _mapController.move(position, 16);
-
-    setState(() {
-      _selectedLocation = position;
-      _searchSuggestions = [];
-      _searchController.text = suggestion['display'];
-      _isSearching = false;
-    });
-
-    _reverseGeocode(position);
-  }
-
   Future<void> _getCurrentLocation() async {
-    // Check and request permission
     final status = await Permission.location.request();
 
     if (status.isDenied) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('يجب السماح بالوصول للموقع'),
-            backgroundColor: Colors.orange,
-          ),
+          const SnackBar(content: Text('يجب السماح بالوصول للموقع')),
         );
       }
       return;
@@ -167,42 +209,7 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
 
     if (status.isPermanentlyDenied) {
       if (mounted) {
-        final shouldOpen = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Row(
-              children: [
-                Icon(Icons.location_off, color: Colors.orange),
-                SizedBox(width: 8),
-                Text('إذن الموقع مطلوب'),
-              ],
-            ),
-            content: const Text(
-              'يرجى تفعيل إذن الموقع من الإعدادات لاستخدام هذه الميزة',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('إلغاء'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('فتح الإعدادات'),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldOpen == true) {
-          await openAppSettings();
-        }
+        await openAppSettings();
       }
       return;
     }
@@ -213,64 +220,41 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
         ),
       );
 
       final latLng = LatLng(position.latitude, position.longitude);
 
-      _mapController.move(latLng, 16);
+      final GoogleMapController controller = await _controller.future;
+      controller.animateCamera(CameraUpdate.newLatLngZoom(latLng, 16));
 
       setState(() {
         _selectedLocation = latLng;
       });
+      _updateMarker(latLng);
 
       await _reverseGeocode(latLng);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم تحديد موقعك الحالي'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
     } catch (e) {
       debugPrint('Get location error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تعذر الحصول على الموقع. تأكد من تفعيل GPS'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _onMapTap(TapPosition tapPosition, LatLng position) {
+  void _onMapTap(LatLng position) {
     setState(() {
       _selectedLocation = position;
     });
+    _updateMarker(position);
     _reverseGeocode(position);
   }
 
   void _confirmLocation() {
-    if (_selectedAddress == null || _selectedAddress!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('الرجاء اختيار موقع أولاً'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
+    // قبول الموقع حتى لو لم يتم تحميل الاسم النصي
     Navigator.pop(context, {
-      'address': _selectedAddress,
+      'address':
+          _selectedAddress ??
+          '${_selectedLocation.latitude}, ${_selectedLocation.longitude}',
       'lat': _selectedLocation.latitude,
       'lon': _selectedLocation.longitude,
     });
@@ -281,37 +265,21 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
     return Scaffold(
       body: Stack(
         children: [
-          // Flutter Map with OpenStreetMap tiles
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _selectedLocation,
-              initialZoom: 14,
-              minZoom: 5,
-              maxZoom: 18,
-              onTap: _onMapTap,
+          // ✅ Google Map Widget
+          GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: CameraPosition(
+              target: _selectedLocation,
+              zoom: 14.4746,
             ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.rebtal',
-                maxZoom: 19,
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: _selectedLocation,
-                    width: 50,
-                    height: 50,
-                    child: const Icon(
-                      Icons.location_on,
-                      size: 50,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+            onTap: _onMapTap,
+            markers: _markers,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
           ),
 
           // Top bar with search and back button
@@ -334,7 +302,6 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                     children: [
                       Row(
                         children: [
-                          // Back button
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -353,8 +320,6 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                             ),
                           ),
                           const SizedBox(width: 12),
-
-                          // Search bar
                           Expanded(
                             child: Material(
                               elevation: 4,
@@ -407,8 +372,6 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                           ),
                         ],
                       ),
-
-                      // Search suggestions
                       if (_searchSuggestions.isNotEmpty)
                         Container(
                           margin: const EdgeInsets.only(top: 8),
@@ -431,24 +394,11 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                             itemBuilder: (context, index) {
                               final suggestion = _searchSuggestions[index];
                               return ListTile(
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.place,
-                                    color: Colors.blue,
-                                    size: 20,
-                                  ),
+                                leading: const Icon(
+                                  Icons.place,
+                                  color: Colors.blue,
                                 ),
-                                title: Text(
-                                  suggestion['display'],
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
+                                title: Text(suggestion['display']),
                                 onTap: () => _selectSuggestion(suggestion),
                               );
                             },
@@ -461,7 +411,7 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
             ),
           ),
 
-          // Selected address display at bottom
+          // Selected address display
           if (_selectedAddress != null && _selectedAddress!.isNotEmpty)
             Positioned(
               bottom: 100,
@@ -478,18 +428,7 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.place,
-                          color: Colors.blue,
-                          size: 24,
-                        ),
-                      ),
+                      const Icon(Icons.place, color: Colors.blue, size: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -500,7 +439,6 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -530,10 +468,7 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
             child: ElevatedButton.icon(
               onPressed: _confirmLocation,
               icon: const Icon(Icons.check_circle),
-              label: const Text(
-                'تأكيد الموقع',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              label: const Text('تأكيد الموقع'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
@@ -541,64 +476,103 @@ class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 8,
               ),
             ),
           ),
         ],
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton(
+          onPressed: _getCurrentLocation,
+          backgroundColor: Colors.white,
+          child: const Icon(Icons.my_location, color: Colors.blue),
+        ),
+      ),
+    );
+  }
+}
 
-      // Floating action buttons
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+/*
+// ==========================================
+// 🔴 OLD FLUTTER MAP (OPENSTREETMAP) CODE 🔴
+// ==========================================
+
+/*
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:dio/dio.dart';
+
+class FlutterMapLocationPicker extends StatefulWidget {
+  final String? initialAddress;
+  final double? initialLat;
+  final double? initialLon;
+
+  const FlutterMapLocationPicker({
+    super.key,
+    this.initialAddress,
+    this.initialLat,
+    this.initialLon,
+  });
+
+  @override
+  State<FlutterMapLocationPicker> createState() =>
+      _FlutterMapLocationPickerState();
+}
+
+class _FlutterMapLocationPickerState extends State<FlutterMapLocationPicker> {
+  final MapController _mapController = MapController();
+  final Dio _dio = Dio();
+  final TextEditingController _searchController = TextEditingController();
+
+  LatLng _selectedLocation = const LatLng(30.0444, 31.2357); // Cairo default
+  String? _selectedAddress;
+  bool _isLoading = false;
+  bool _isSearching = false;
+  List<Map<String, dynamic>> _searchSuggestions = [];
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialLat != null && widget.initialLon != null) {
+      _selectedLocation = LatLng(widget.initialLat!, widget.initialLon!);
+      _selectedAddress = widget.initialAddress;
+      _searchController.text = widget.initialAddress ?? '';
+    }
+  }
+
+  // ... (REST OF OLD CODE)
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
         children: [
-          // Current location button
-          FloatingActionButton(
-            heroTag: 'current_location',
-            onPressed: _getCurrentLocation,
-            backgroundColor: Colors.white,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.my_location, color: Colors.blue),
+          // Flutter Map with OpenStreetMap tiles
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _selectedLocation,
+              // ...
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                // ...
+              ),
+              // ...
+            ],
           ),
-          const SizedBox(height: 12),
-
-          // Zoom in button
-          FloatingActionButton(
-            heroTag: 'zoom_in',
-            mini: true,
-            onPressed: () {
-              final currentZoom = _mapController.camera.zoom;
-              _mapController.move(
-                _mapController.camera.center,
-                currentZoom + 1,
-              );
-            },
-            backgroundColor: Colors.white,
-            child: const Icon(Icons.add, color: Colors.black87),
-          ),
-          const SizedBox(height: 8),
-
-          // Zoom out button
-          FloatingActionButton(
-            heroTag: 'zoom_out',
-            mini: true,
-            onPressed: () {
-              final currentZoom = _mapController.camera.zoom;
-              _mapController.move(
-                _mapController.camera.center,
-                currentZoom - 1,
-              );
-            },
-            backgroundColor: Colors.white,
-            child: const Icon(Icons.remove, color: Colors.black87),
-          ),
+          // ...
         ],
       ),
     );
   }
 }
+*/
+*/

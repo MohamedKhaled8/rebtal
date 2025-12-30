@@ -371,8 +371,15 @@ class BookingCard extends StatelessWidget {
   }
 
   void _confirmCancel(BuildContext context, Booking booking) {
-    // حساب عدد الأيام المتبقية للعرض
-    final daysRemaining = booking.from.difference(DateTime.now()).inDays;
+    // حساب عدد الأيام المتبقية للعرض (تجاهل الوقت)
+    final now = DateTime.now();
+    final dateCheckIn = DateTime(
+      booking.from.year,
+      booking.from.month,
+      booking.from.day,
+    );
+    final dateToday = DateTime(now.year, now.month, now.day);
+    final daysRemaining = dateCheckIn.difference(dateToday).inDays;
 
     // الحصول على معلومات الاسترداد
     final refundInfo = BookingHelper.calculateRefund(
@@ -443,28 +450,45 @@ class BookingCard extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // 2. حالة الحجز الحالي
+                // 2. حالة الحجز الحالي وتفاصيل التواريخ
                 Text(
-                  'حالة حجزك الحالي:',
+                  'تفاصيل الحجز والتواريخ:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white70 : Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'متبقي على موعد الدخول: ${daysRemaining < 0 ? 0 : daysRemaining} يوم',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white60 : Colors.grey.shade700,
-                    fontSize: 13,
-                  ),
+                _buildDateRow(
+                  'تاريخ الوصول:',
+                  _formatDate(booking.from),
+                  isDarkMode,
                 ),
-                Text(
-                  'السياسة المطبقة: استرداد ${refundInfo.refundPercentage.toStringAsFixed(0)}%',
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                _buildDateRow(
+                  'تاريخ اليوم:',
+                  _formatDate(DateTime.now()),
+                  isDarkMode,
+                ),
+                _buildDateRow(
+                  'الفرق:',
+                  '$daysRemaining يوم',
+                  isDarkMode,
+                  isBold: true,
+                ),
+
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    refundInfo.message,
+                    style: const TextStyle(color: Colors.blue, fontSize: 12),
                   ),
                 ),
 
@@ -599,6 +623,37 @@ class BookingCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateRow(
+    String label,
+    String value,
+    bool isDarkMode, {
+    bool isBold = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDarkMode ? Colors.white60 : Colors.grey.shade700,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
               color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),

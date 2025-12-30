@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/rebtal_app.dart';
+import 'package:rebtal/core/utils/services/onesignal_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,9 @@ void main() async {
   } catch (e) {
     print('Error getting token: $e');
   }
+
+  // Initialize OneSignal
+  await OneSignalService().initialize();
 
   // If onboarding is needed later, read from cache here
   // final bool onboardingCompleted =

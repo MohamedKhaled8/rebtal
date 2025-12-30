@@ -6,7 +6,7 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/profile_picture_section.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
-import 'package:rebtal/feature/owner/ui/flutter_map_location_picker.dart';
+import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 
 class OwnerChaletAddScreen extends StatefulWidget {
@@ -507,7 +507,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               final selected = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => FlutterMapLocationPicker(
+                  builder: (_) => FlutterGoogleMapLocationPicker(
                     initialAddress: widget.locationController.text,
                     initialLat: null, // Will use default Cairo location
                     initialLon: null,

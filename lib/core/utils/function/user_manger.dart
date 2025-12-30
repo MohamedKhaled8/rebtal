@@ -5,6 +5,7 @@ import 'package:rebtal/feature/admin/widget/request/pending_requsted_tab.dart';
 import 'package:rebtal/feature/admin/widget/request/rejected_requests_tab.dart';
 import 'package:rebtal/feature/admin/widget/user/user_tab.dart';
 import 'package:rebtal/feature/admin/ui/admin_payments_page.dart';
+import 'package:rebtal/feature/admin/ui/admin_cancellations_page.dart';
 
 class UserManager {
   /// لون حسب الدور
@@ -179,6 +180,7 @@ class UserManager {
     UsersTab(),
     PendingRequestsTab(),
     AdminPaymentsPage(),
+    AdminCancellationsPage(), // New Tab
     ApprovedRequestsTab(),
     RejectedRequestsTab(),
   ];
@@ -187,6 +189,7 @@ class UserManager {
     'Users',
     'Pending',
     'Payments',
+    'Cancellations', // New Title
     'Approved',
     'Rejected',
   ];
@@ -195,6 +198,7 @@ class UserManager {
     Icons.people,
     Icons.pending_actions,
     Icons.payment,
+    Icons.cancel_presentation, // New Icon
     Icons.check_circle,
     Icons.cancel,
   ];

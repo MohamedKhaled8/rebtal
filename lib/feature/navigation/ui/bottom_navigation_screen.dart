@@ -6,6 +6,8 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/home/ui/home_screen.dart';
 import 'package:rebtal/feature/owner/ui/owner_chalets_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_bookings_page.dart';
+import 'package:rebtal/feature/owner/ui/owner_cancellations_page.dart';
+
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
 import 'package:rebtal/feature/favorites/ui/favorites_page.dart';
@@ -49,11 +51,13 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           screens = const [
             OwnerChaletsPage(),
             OwnerBookingsPage(),
+            OwnerCancellationsPage(),
             ProfilePage(),
           ];
           bottomNavItems = const [
             NavItem(icon: Icons.villa, label: 'الشاليهات'),
             NavItem(icon: Icons.book_online, label: 'الحجوزات'),
+            NavItem(icon: Icons.cancel_presentation, label: 'الإلغاءات'),
             NavItem(icon: Icons.person, label: 'الملف'),
           ];
         } else {

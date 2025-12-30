@@ -3,6 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/services/local_notification_service.dart';
+import 'package:rebtal/core/utils/services/onesignal_service.dart';
+
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/models/notification_model.dart';
 
@@ -191,6 +193,7 @@ class NotificationService {
   }
 
   /// Send in-app notification (creates a document in Firestore)
+  /// Also triggers a local notification for immediate display
   Future<void> sendNotification({
     required String userId,
     required String title,
@@ -212,13 +215,65 @@ class NotificationService {
         createdAt: DateTime.now(),
       );
 
+      // Save to Firestore
       await FirebaseFirestore.instance
           .collection('notifications')
           .add(notification.toFirestore());
 
-      debugPrint('Notification sent to user: $userId');
+      // Show local notification immediately for visual feedback
+      await _localNotificationService.showNotification(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        body: body,
+        payload: relatedId,
+      );
+
+      // ✅ AUTOMATICALLY SEND PUSH VIA ONESIGNAL
+      // This ensures EVERY notification sent in the app becomes a Push Notification
+      await OneSignalService().sendNotification(
+        title: title,
+        body: body,
+        targetUserId: userId,
+        data: {
+          'type': type.name,
+          'relatedId': relatedId,
+          if (data != null) ...data,
+        },
+      );
+
+      debugPrint(
+        'Notification sent to user: $userId (In-App + Local + OneSignal)',
+      );
     } catch (e) {
       debugPrint('Error sending notification: $e');
+    }
+  }
+
+  /// Send push notification to specific user via FCM tokens
+  Future<void> sendPushNotification({
+    required String userId,
+    required String title,
+    required String body,
+    required NotificationType type,
+    String? relatedId,
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      // First, save to Firestore for in-app display
+      await sendNotification(
+        userId: userId,
+        title: title,
+        body: body,
+        type: type,
+        relatedId: relatedId,
+        data: data,
+      );
+
+      // Note: Actual FCM push requires a backend server to send messages
+      // This would typically be done via Cloud Functions or your backend
+      debugPrint('Push notification queued for user: $userId');
+    } catch (e) {
+      debugPrint('Error sending push notification: $e');
     }
   }
 }
