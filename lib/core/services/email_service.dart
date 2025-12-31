@@ -101,13 +101,18 @@ class EmailService {
     .header {
       background-color: #003580; /* Booking.com like blue */
       color: #ffffff;
-      padding: 24px;
+      padding: 30px 24px;
       text-align: center;
+    }
+    .logo-img {
+      max-width: 100px;
+      margin-bottom: 15px;
     }
     .header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
+      letter-spacing: 1px;
     }
     .content {
       padding: 30px;
@@ -182,6 +187,8 @@ class EmailService {
 <body>
   <div class="container">
     <div class="header">
+      <!-- User should replace this URL with their hosted logo2.jpeg URL -->
+      <img src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Rebtal Logo" class="logo-img">
       <h1>Rebtal</h1>
       <p>Your booking is confirmed!</p>
     </div>
@@ -278,8 +285,9 @@ class EmailService {
   <style>
     body { font-family: Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; padding: 0; }
     .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .header { background-color: #d32f2f; color: #ffffff; padding: 24px; text-align: center; } /* Red for cancellation */
-    .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+    .header { background-color: #d32f2f; color: #ffffff; padding: 30px 24px; text-align: center; } /* Red for cancellation */
+    .logo-img { max-width: 80px; margin-bottom: 10px; border-radius: 10px; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 700; }
     .content { padding: 30px; }
     .alert-box { background-color: #fdecea; border-left: 5px solid #d32f2f; padding: 15px; margin-bottom: 25px; border-radius: 4px; }
     .alert-text { color: #d32f2f; font-weight: bold; font-size: 16px; margin: 0; }
@@ -292,6 +300,7 @@ class EmailService {
 <body>
   <div class="container">
     <div class="header">
+      <img src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Rebtal Logo" class="logo-img">
       <h1>Rebtal</h1>
       <p>Booking Cancelled</p>
     </div>

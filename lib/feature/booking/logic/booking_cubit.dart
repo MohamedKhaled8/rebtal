@@ -230,6 +230,13 @@ class BookingCubit extends Cubit<BookingState> {
           debugPrint('Error fetching owner details: $e');
         }
 
+        // Parse payment rejection fields
+        final paymentRejected = data['paymentRejected'] as bool? ?? false;
+        DateTime? paymentRejectedAt;
+        if (data['paymentRejectedAt'] != null) {
+          paymentRejectedAt = _parseDateTime(data['paymentRejectedAt']);
+        }
+
         return Booking(
           id: doc.id,
           chaletId: data['chaletId'] ?? '',
@@ -249,6 +256,9 @@ class BookingCubit extends Cubit<BookingState> {
           ownerEmail: ownerEmail,
           amount: (data['amount'] as num?)?.toDouble(),
           updatedAt: _parseDateTime(data['updatedAt']),
+          adminPaymentNotes: data['adminPaymentNotes'] as String?,
+          paymentRejected: paymentRejected,
+          paymentRejectedAt: paymentRejectedAt,
         );
       }).toList(),
     );

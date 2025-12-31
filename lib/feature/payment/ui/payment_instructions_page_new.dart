@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class PaymentInstructionsPage extends StatefulWidget {
   final Booking booking;
@@ -567,23 +568,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
           IconButton(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: value));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text('تم النسخ'),
-                    ],
-                  ),
-                  backgroundColor: Colors.green.shade600,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              SnackBarHelper.showSuccess(context, 'تم النسخ', icon: Icons.copy);
             },
             icon: Icon(Icons.copy, size: 20, color: ColorManager.chaletAccent),
           ),

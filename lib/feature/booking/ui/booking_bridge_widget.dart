@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class BookingBridgeWidget extends StatefulWidget {
   final BuildContext parentContext;
@@ -352,17 +353,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             selectedDate: _to,
                             onTap: () async {
                               if (_from == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text(
-                                      'يرجى اختيار تاريخ البداية أولاً',
-                                    ),
-                                    backgroundColor: Colors.orange,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
+                                SnackBarHelper.showWarning(
+                                  context,
+                                  'يرجى اختيار تاريخ البداية أولاً',
                                 );
                                 return;
                               }
@@ -505,37 +498,39 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
               const SizedBox(height: 20),
 
               // Action Buttons
-              if (!_showDecisionButtons) ...[
-                if (_from == null || _to == null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: Colors.orange[700],
-                          size: 22,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'يرجى اختيار فترة الحجز أولاً',
-                            style: TextStyle(
-                              color: Colors.orange[800],
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
+              if (_from == null || _to == null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.orange[700],
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'يرجى اختيار فترة الحجز أولاً',
+                          style: TextStyle(
+                            color: Colors.orange[800],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ] else ...[
+                ),
+              ] else ...[
+                // Hidden: WhatsApp and Call Buttons (kept for future use - set to false to hide)
+                // To show them again, change the condition below to: if (!_showDecisionButtons && false)
+                if (false && !_showDecisionButtons) ...[
                   // WhatsApp Button
                   Container(
                     decoration: BoxDecoration(
@@ -557,10 +552,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         onTap: () async {
                           final phone = await _resolvePhone();
                           if (phone == null || phone.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('رقم الهاتف غير متوفر'),
-                              ),
+                            SnackBarHelper.showWarning(
+                              context,
+                              'رقم الهاتف غير متوفر',
+                              icon: Icons.phone_disabled,
                             );
                             return;
                           }
@@ -632,8 +627,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     onPressed: () async {
                       final phone = await _resolvePhone();
                       if (phone == null || phone.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('رقم الهاتف غير متوفر')),
+                        SnackBarHelper.showWarning(
+                          context,
+                          'رقم الهاتف غير متوفر',
+                          icon: Icons.phone_disabled,
                         );
                         return;
                       }
@@ -686,8 +683,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     ),
                   ),
                 ],
-              ] else ...[
-                // Decision Buttons
+                // Decision Buttons (shown directly after selecting dates)
                 Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -826,10 +822,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             booking,
                           );
                         }
-                        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-                          const SnackBar(
-                            content: Text('تم إرسال الطلب للمالك'),
-                          ),
+                        SnackBarHelper.showSuccess(
+                          widget.parentContext,
+                          'تم إرسال الطلب للمالك',
                         );
                         await _showRatingBottomSheet();
                         if (mounted) {
@@ -890,8 +885,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     // } catch (_) {
                     //   context.read<BookingCubit>().addBooking(booking);
                     // }
-                    ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-                      const SnackBar(content: Text('تم رفض الطلب')),
+                    SnackBarHelper.showError(
+                      widget.parentContext,
+                      'تم رفض الطلب',
                     );
                     Navigator.of(context).pop();
                   },
@@ -1138,18 +1134,17 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                   );
                                   if (mounted) Navigator.pop(context);
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('شكراً لتقييمك'),
-                                      ),
+                                    SnackBarHelper.showSuccess(
+                                      context,
+                                      'شكراً لتقييمك',
+                                      icon: Icons.star,
                                     );
                                   }
                                 } catch (e) {
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('تعذر حفظ التقييم: $e'),
-                                      ),
+                                    SnackBarHelper.showError(
+                                      context,
+                                      'تعذر حفظ التقييم: $e',
                                     );
                                   }
                                 }

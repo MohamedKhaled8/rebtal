@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/auth/register/widget/custom_input_field.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
@@ -101,16 +102,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                                 ),
                                 onPressed: () {
                                   FocusScope.of(context).unfocus();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: const Color(
-                                        0xFF0EA5E9,
-                                      ).withOpacity(0.9),
-                                      content: const Text(
-                                        'If this email exists we’ll send you a reset link.',
-                                      ),
-                                    ),
-                                  );
+                                  SnackBarHelper.showInfo(context, 'If this email exists well send you a reset link.');
                                 },
                                 child: const Text(
                                   "Send reset link",

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:meta/meta.dart';
 import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 
@@ -100,14 +101,11 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Request $newStatus'),
-            backgroundColor: newStatus == 'approved'
-                ? Colors.green
-                : Colors.red,
-          ),
-        );
+        if (newStatus == 'approved') {
+          SnackBarHelper.showSuccess(context, 'Request $newStatus');
+        } else {
+          SnackBarHelper.showError(context, 'Request $newStatus');
+        }
         Navigator.pop(context);
       }
 
@@ -204,35 +202,15 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newAvailability == 'available'
-                  ? 'تم تشغيل الحجز بنجاح'
-                  : 'تم إيقاف الحجز بنجاح',
-            ),
-            backgroundColor: newAvailability == 'available'
-                ? Colors.green
-                : Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        if (newAvailability == 'available') {
+          SnackBarHelper.showSuccess(context, 'تم تشغيل الحجز بنجاح');
+        } else {
+          SnackBarHelper.showError(context, 'تم إيقاف الحجز بنجاح');
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في تحديث حالة الحجز: $e'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الحجز: $e');
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
@@ -49,9 +50,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<BookingCubit>().loadBookings();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تم تحديث البيانات')),
-              );
+              SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
             },
           ),
         ],
@@ -151,12 +150,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 context.read<BookingCubit>().loadBookings();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('تم تحديث البيانات'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
               },
               icon: const Icon(Icons.refresh),
               label: const Text('تحديث'),

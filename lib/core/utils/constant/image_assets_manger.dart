@@ -3,7 +3,7 @@ abstract class ImageAssetsManger {
 
   ///png
   static const String rootImagesPng = "assets/images/png";
-  static const String logo = "$rootImagesJpg/logo.jpg";
+  static const String logo = "$rootImagesJpg/logo2.jpeg";
 
   static const String youtube = "$rootImagesPng/youtube.png";
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
@@ -82,19 +83,7 @@ class _BookingButton extends StatelessWidget {
                 requestData: requestData,
               )
             : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'الحجز غير متاح حالياً',
-                      style: TextStyle(color: ColorManager.white),
-                    ),
-                    backgroundColor: ColorManager.chaletActionRed,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
+                SnackBarHelper.showError(context, 'الحجز غير متاح حالياً');
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: ColorManager.transparent,

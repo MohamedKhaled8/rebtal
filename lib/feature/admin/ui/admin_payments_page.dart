@@ -8,6 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/core/services/email_service.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 
 class AdminPaymentsPage extends StatefulWidget {
   const AdminPaymentsPage({super.key});
@@ -20,10 +23,13 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
   String _selectedFilter = 'all';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  // Cache for booking data to avoid reloading all cards
+  final Map<String, Booking> _bookingCache = {};
 
   @override
   void dispose() {
     _searchController.dispose();
+    _bookingCache.clear();
     super.dispose();
   }
 
@@ -56,157 +62,127 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return _buildEmptyState(isDark);
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildHeaderSection(isDark),
+                        _buildEmptyState(isDark),
+                      ],
+                    ),
+                  );
                 }
 
-                final proofs = snapshot.data!.docs
-                    .map(
-                      (doc) => PaymentProof.fromMap({
-                        ...doc.data() as Map<String, dynamic>,
-                        'id': doc.id,
-                      }),
-                    )
-                    .where((proof) {
-                      if (_selectedFilter != 'all') {
-                        if (_selectedFilter == 'pending' &&
-                            proof.status != PaymentProofStatus.pending)
-                          return false;
-                        if (_selectedFilter == 'approved' &&
-                            proof.status != PaymentProofStatus.approved)
-                          return false;
-                        if (_selectedFilter == 'rejected' &&
-                            proof.status != PaymentProofStatus.rejected)
-                          return false;
-                      }
-                      if (_searchQuery.isNotEmpty) {
-                        final query = _searchQuery.toLowerCase();
-                        return proof.bookingId.toLowerCase().contains(query) ||
-                            proof.id.toLowerCase().contains(query) ||
-                            proof.userName.toLowerCase().contains(query);
-                      }
-                      return true;
-                    })
-                    .toList();
+                // Filter documents first
+                final filteredDocs = snapshot.data!.docs.where((doc) {
+                  final proof = PaymentProof.fromMap({
+                    ...doc.data() as Map<String, dynamic>,
+                    'id': doc.id,
+                  });
 
+                  if (_selectedFilter != 'all') {
+                    if (_selectedFilter == 'pending' &&
+                        proof.status != PaymentProofStatus.pending)
+                      return false;
+                    if (_selectedFilter == 'approved' &&
+                        proof.status != PaymentProofStatus.approved)
+                      return false;
+                    if (_selectedFilter == 'rejected' &&
+                        proof.status != PaymentProofStatus.rejected)
+                      return false;
+                  }
+                  if (_searchQuery.isNotEmpty) {
+                    final query = _searchQuery.toLowerCase();
+                    return proof.bookingId.toLowerCase().contains(query) ||
+                        proof.id.toLowerCase().contains(query) ||
+                        proof.userName.toLowerCase().contains(query);
+                  }
+                  return true;
+                }).toList();
+
+                if (filteredDocs.isEmpty) {
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildHeaderSection(isDark),
+                        _buildNoResultsState(isDark),
+                      ],
+                    ),
+                  );
+                }
+
+                // Full scrollable page
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.zero,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Page Title
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: ColorManager.chaletAccent.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.payment,
-                              color: ColorManager.chaletAccent,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            'إدارة المدفوعات',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Search
-                      TextField(
-                        controller: _searchController,
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 16,
-                        ),
-                        onChanged: (value) =>
-                            setState(() => _searchQuery = value.toLowerCase()),
-                        decoration: InputDecoration(
-                          hintText: 'بحث برقم الطلب (مثال: 1A2B3C4D)...',
-                          hintStyle: TextStyle(
-                            color: isDark
-                                ? Colors.white38
-                                : Colors.grey.shade500,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            size: 24,
-                            color: isDark
-                                ? Colors.white54
-                                : Colors.grey.shade600,
-                          ),
-                          filled: true,
-                          fillColor: isDark
-                              ? const Color(0xFF1A1A2E)
-                              : Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Filters (Enhanced with Icons & Toggle Logic)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
+                      _buildHeaderSection(isDark),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                        child: Column(
                           children: [
-                            _buildFilterChip(
-                              'الكل',
-                              'all',
-                              Icons.dashboard_outlined,
-                              isDark,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildFilterChip(
-                              'قيد المراجعة',
-                              'pending',
-                              Icons.access_time,
-                              isDark,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildFilterChip(
-                              'مؤكد',
-                              'approved',
-                              Icons.check_circle_outline,
-                              isDark,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildFilterChip(
-                              'مرفوض',
-                              'rejected',
-                              Icons.cancel_outlined,
-                              isDark,
-                            ),
+                            // Payment Cards List with individual StreamBuilders
+                            ...filteredDocs.map((doc) {
+                              return StreamBuilder<DocumentSnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('payment_proofs')
+                                    .doc(doc.id)
+                                    .snapshots(),
+                                builder: (context, docSnapshot) {
+                                  if (!docSnapshot.hasData ||
+                                      !docSnapshot.data!.exists) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final data = docSnapshot.data!.data();
+                                  if (data == null) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final proof = PaymentProof.fromMap({
+                                    ...data as Map<String, dynamic>,
+                                    'id': docSnapshot.data!.id,
+                                  });
+
+                                  // Apply filters again in case status changed
+                                  if (_selectedFilter != 'all') {
+                                    if (_selectedFilter == 'pending' &&
+                                        proof.status !=
+                                            PaymentProofStatus.pending)
+                                      return const SizedBox.shrink();
+                                    if (_selectedFilter == 'approved' &&
+                                        proof.status !=
+                                            PaymentProofStatus.approved)
+                                      return const SizedBox.shrink();
+                                    if (_selectedFilter == 'rejected' &&
+                                        proof.status !=
+                                            PaymentProofStatus.rejected)
+                                      return const SizedBox.shrink();
+                                  }
+                                  if (_searchQuery.isNotEmpty) {
+                                    final query = _searchQuery.toLowerCase();
+                                    if (!proof.bookingId.toLowerCase().contains(
+                                          query,
+                                        ) &&
+                                        !proof.id.toLowerCase().contains(
+                                          query,
+                                        ) &&
+                                        !proof.userName.toLowerCase().contains(
+                                          query,
+                                        ))
+                                      return const SizedBox.shrink();
+                                  }
+
+                                  return _buildPaymentCard(
+                                    context,
+                                    proof,
+                                    isDark,
+                                  );
+                                },
+                              );
+                            }).toList(),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 32),
-
-                      // Payment Cards
-                      if (proofs.isEmpty)
-                        _buildNoResultsState(isDark)
-                      else
-                        ...proofs.map(
-                          (proof) => _buildPaymentCard(context, proof, isDark),
-                        ),
                     ],
                   ),
                 );
@@ -215,6 +191,219 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeaderSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page Title - Better spacing
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      ColorManager.chaletAccent,
+                      ColorManager.chaletAccent.withOpacity(0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorManager.chaletAccent.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.payment_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'إدارة المدفوعات',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'مراجعة واعتماد طلبات الدفع',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white70 : Colors.grey.shade600,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 28),
+
+          // Search - Better design
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _searchController,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 16,
+                height: 1.4,
+              ),
+              onChanged: (value) =>
+                  setState(() => _searchQuery = value.toLowerCase()),
+              decoration: InputDecoration(
+                hintText: 'بحث برقم الطلب أو اسم المستخدم...',
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white38 : Colors.grey.shade500,
+                  fontSize: 15,
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.search_rounded,
+                    size: 24,
+                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                  ),
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Icon(
+                              Icons.clear_rounded,
+                              size: 20,
+                              color: isDark
+                                  ? Colors.white54
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      )
+                    : null,
+                filled: true,
+                fillColor: isDark ? const Color(0xFF252540) : Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.grey.shade200,
+                    width: 1.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.grey.shade200,
+                    width: 1.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide(
+                    color: ColorManager.chaletAccent,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Filters - Better spacing
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  'الكل',
+                  'all',
+                  Icons.dashboard_outlined,
+                  isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildFilterChip(
+                  'قيد المراجعة',
+                  'pending',
+                  Icons.access_time_rounded,
+                  isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildFilterChip(
+                  'مؤكد',
+                  'approved',
+                  Icons.check_circle_outline_rounded,
+                  isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildFilterChip(
+                  'مرفوض',
+                  'rejected',
+                  Icons.cancel_outlined,
+                  isDark,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -342,120 +531,221 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     PaymentProof proof,
     bool isDark,
   ) {
-    return FutureBuilder<Booking?>(
-      future: _fetchBooking(proof.bookingId),
+    // Use StreamBuilder with cache to avoid reloading all cards
+    Booking? cachedBooking = _bookingCache[proof.bookingId];
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(proof.bookingId)
+          .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        // Use cached data if available while loading
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            cachedBooking != null) {
+          return _buildCardContent(context, proof, cachedBooking, isDark);
+        }
+
+        // Show loading only if no cached data
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            cachedBooking == null) {
           return Container(
-            margin: const EdgeInsets.only(bottom: 20),
+            margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: ColorManager.chaletAccent,
+              ),
+            ),
           );
         }
 
-        if (!snapshot.hasData) return const SizedBox.shrink();
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          // Try to use cached data if available
+          if (cachedBooking != null) {
+            return _buildCardContent(context, proof, cachedBooking, isDark);
+          }
+          return const SizedBox.shrink();
+        }
 
-        final booking = snapshot.data!;
-        final dateFormat = DateFormat('dd/MM/yyyy');
-        final nights = booking.to.difference(booking.from).inDays + 1;
+        // Parse booking from snapshot
+        final data = snapshot.data!.data();
+        if (data == null) {
+          if (cachedBooking != null) {
+            return _buildCardContent(context, proof, cachedBooking, isDark);
+          }
+          return const SizedBox.shrink();
+        }
 
-        // Use ONLY the first 8 characters for display (The "Order Number")
-        final shortId = proof.bookingId.length > 8
-            ? proof.bookingId.substring(0, 8).toUpperCase()
-            : proof.bookingId.toUpperCase();
+        final booking = _parseBookingFromData(
+          snapshot.data!.id,
+          data as Map<String, dynamic>,
+        );
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.grey.shade200,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        if (booking == null) {
+          if (cachedBooking != null) {
+            return _buildCardContent(context, proof, cachedBooking, isDark);
+          }
+          return const SizedBox.shrink();
+        }
+
+        // Update cache
+        _bookingCache[proof.bookingId] = booking;
+
+        return _buildCardContent(context, proof, booking, isDark);
+      },
+    );
+  }
+
+  Widget _buildCardContent(
+    BuildContext context,
+    PaymentProof proof,
+    Booking booking,
+    bool isDark,
+  ) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+    final nights = booking.to.difference(booking.from).inDays + 1;
+
+    // Use ONLY the first 8 characters for display (The "Order Number")
+    final shortId = proof.bookingId.length > 8
+        ? proof.bookingId.substring(0, 8).toUpperCase()
+        : proof.bookingId.toUpperCase();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.12) : Colors.grey.shade200,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.25 : 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: 0,
           ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header & Order ID
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'رقم الطلب',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.receipt_long_rounded,
+                              size: 16,
+                              color: isDark
+                                  ? Colors.white60
+                                  : Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'رقم الطلب',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? Colors.white60
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Flexible(
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: 12,
+                                  vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: ColorManager.chaletAccent.withOpacity(
-                                    0.1,
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ColorManager.chaletAccent.withOpacity(
+                                        0.15,
+                                      ),
+                                      ColorManager.chaletAccent.withOpacity(
+                                        0.08,
+                                      ),
+                                    ],
                                   ),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: ColorManager.chaletAccent
-                                        .withOpacity(0.3),
+                                        .withOpacity(0.4),
+                                    width: 1.5,
                                   ),
                                 ),
                                 child: Text(
                                   '#$shortId',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                     color: ColorManager.chaletAccent,
-                                    letterSpacing: 1.0,
+                                    letterSpacing: 1.2,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            InkWell(
-                              onTap: () {
-                                Clipboard.setData(ClipboardData(text: shortId));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'تم نسخ رقم الطلب',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    backgroundColor: Colors.green,
-                                    duration: Duration(seconds: 1),
+                            const SizedBox(width: 8),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Clipboard.setData(
+                                    ClipboardData(text: shortId),
+                                  );
+                                  SnackBarHelper.showSuccess(
+                                    context,
+                                    'تم نسخ رقم الطلب',
+                                    icon: Icons.copy_rounded,
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.1)
+                                        : Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.copy,
-                                  size: 18,
-                                  color: Colors.grey.shade500,
+                                  child: Icon(
+                                    Icons.copy_rounded,
+                                    size: 18,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.grey.shade700,
+                                  ),
                                 ),
                               ),
                             ),
@@ -464,108 +754,144 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 12),
                   _buildStatusBadge(proof.status),
                 ],
               ),
 
+              const SizedBox(height: 24),
               Divider(
-                height: 32,
-                color: isDark ? Colors.white10 : Colors.grey.shade300,
+                height: 1,
+                thickness: 1.5,
+                color: isDark
+                    ? Colors.white.withOpacity(0.12)
+                    : Colors.grey.shade300,
               ),
+              const SizedBox(height: 24),
 
               // Chalet Name
-              Text(
-                booking.chaletName,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-              Text(
-                _getTimeAgo(proof.uploadedAt),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white54 : Colors.grey.shade600,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          booking.chaletName,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                            height: 1.3,
+                          ),
+                        ),
+                        if (booking.chaletLocation != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_rounded,
+                                size: 16,
+                                color: isDark
+                                    ? Colors.white54
+                                    : Colors.grey.shade600,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  booking.chaletLocation!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.grey.shade700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: isDark
+                                  ? Colors.white54
+                                  : Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getTimeAgo(proof.uploadedAt),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? Colors.white54
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 20),
 
-              // Booking Details Grid (Arranged Icons)
+              // Booking Details - كل البيانات في سطور واضحة
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF252540) : Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  color: isDark ? const Color(0xFF2A2A3E) : Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.grey.shade200,
+                    color: isDark
+                        ? Colors.white.withOpacity(0.15)
+                        : Colors.grey.shade200,
+                    width: 1.5,
                   ),
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildArrangedIconItem(
-                            icon: Icons.calendar_today,
-                            label: 'الوصول',
-                            value: dateFormat.format(booking.from),
-                            color: Colors.blue,
-                            isDark: isDark,
-                          ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.grey.shade300,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        Expanded(
-                          child: _buildArrangedIconItem(
-                            icon: Icons.calendar_month,
-                            label: 'المغادرة',
-                            value: dateFormat.format(booking.to),
-                            color: Colors.redAccent,
-                            isDark: isDark,
-                          ),
-                        ),
-                      ],
+                    // الوصول
+                    _buildDetailRow(
+                      icon: Icons.calendar_today_rounded,
+                      label: 'تاريخ الوصول',
+                      value: dateFormat.format(booking.from),
+                      color: Colors.blue,
+                      isDark: isDark,
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(),
+                    const SizedBox(height: 16),
+                    // المغادرة
+                    _buildDetailRow(
+                      icon: Icons.calendar_month_rounded,
+                      label: 'تاريخ المغادرة',
+                      value: dateFormat.format(booking.to),
+                      color: Colors.redAccent,
+                      isDark: isDark,
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildArrangedIconItem(
-                            icon: Icons.nights_stay,
-                            label: 'المدة',
-                            value: '$nights ليالي',
-                            color: Colors.purple,
-                            isDark: isDark,
-                          ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.grey.shade300,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        Expanded(
-                          child: _buildArrangedIconItem(
-                            icon: Icons.monetization_on,
-                            label: 'المبلغ الإجمالي',
-                            value: '${booking.amount?.toInt() ?? 0} جنيه',
-                            color: Colors.green,
-                            isDark: isDark,
-                            isBold: true,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 16),
+                    // المدة
+                    _buildDetailRow(
+                      icon: Icons.nights_stay_rounded,
+                      label: 'المدة',
+                      value: '$nights ليالي',
+                      color: Colors.purple,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 16),
+                    // المبلغ
+                    _buildDetailRow(
+                      icon: Icons.monetization_on_rounded,
+                      label: 'المبلغ الإجمالي',
+                      value: '${booking.amount?.toInt() ?? 0} جنيه',
+                      color: Colors.green,
+                      isDark: isDark,
+                      isBold: true,
                     ),
                   ],
                 ),
@@ -573,56 +899,110 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
               const SizedBox(height: 24),
 
-              // Contact Info (Arranged)
-              Row(
+              // Contact Info - كل البيانات في سطور واضحة
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
+                  // معلومات الضيف
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.green.withOpacity(0.15)
+                          : Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.green.withOpacity(0.4)
+                            : Colors.green.withOpacity(0.35),
+                        width: 1.5,
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSectionTitle(
                           'معلومات الضيف',
-                          Icons.person,
+                          Icons.person_rounded,
                           Colors.green,
                           isDark,
                         ),
+                        const SizedBox(height: 16),
+                        _buildContactRowFull(
+                          icon: Icons.person_outline_rounded,
+                          label: 'الاسم',
+                          value: booking.userName ?? 'غير متوفر',
+                          isDark: isDark,
+                        ),
                         const SizedBox(height: 12),
-                        _buildContactRow(
-                          Icons.person_outline,
-                          booking.userName,
-                          isDark,
+                        _buildContactRowFull(
+                          icon: Icons.phone_iphone_rounded,
+                          label: 'رقم الهاتف',
+                          value: booking.userPhone ?? 'غير متوفر',
+                          isDark: isDark,
                         ),
-                        _buildContactRow(
-                          Icons.phone_iphone,
-                          booking.userPhone,
-                          isDark,
-                        ),
+                        if (booking.userEmail != null &&
+                            booking.userEmail!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _buildContactRowFull(
+                            icon: Icons.email_rounded,
+                            label: 'البريد الإلكتروني',
+                            value: booking.userEmail!,
+                            isDark: isDark,
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
+                  const SizedBox(height: 16),
+                  // معلومات المالك
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.orange.withOpacity(0.15)
+                          : Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.orange.withOpacity(0.4)
+                            : Colors.orange.withOpacity(0.35),
+                        width: 1.5,
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSectionTitle(
                           'معلومات المالك',
-                          Icons.business,
+                          Icons.business_rounded,
                           Colors.orange,
                           isDark,
                         ),
+                        const SizedBox(height: 16),
+                        _buildContactRowFull(
+                          icon: Icons.person_outline_rounded,
+                          label: 'الاسم',
+                          value: booking.ownerName ?? 'غير متوفر',
+                          isDark: isDark,
+                        ),
                         const SizedBox(height: 12),
-                        _buildContactRow(
-                          Icons.person_outline,
-                          booking.ownerName,
-                          isDark,
+                        _buildContactRowFull(
+                          icon: Icons.phone_iphone_rounded,
+                          label: 'رقم الهاتف',
+                          value: booking.ownerPhone ?? 'غير متوفر',
+                          isDark: isDark,
                         ),
-                        _buildContactRow(
-                          Icons.phone_iphone,
-                          booking.ownerPhone,
-                          isDark,
-                        ),
+                        if (booking.ownerEmail != null &&
+                            booking.ownerEmail!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _buildContactRowFull(
+                            icon: Icons.email_rounded,
+                            label: 'البريد الإلكتروني',
+                            value: booking.ownerEmail!,
+                            isDark: isDark,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -639,36 +1019,53 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       child: OutlinedButton.icon(
                         onPressed: () =>
                             _showProofImage(context, proof.imageUrl!),
-                        icon: const Icon(Icons.image, size: 20),
+                        icon: const Icon(Icons.image_rounded, size: 20),
                         label: const Text(
                           'عرض الإيصال',
-                          style: TextStyle(fontSize: 15),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          side: BorderSide(
+                            color: isDark
+                                ? Colors.white.withOpacity(0.25)
+                                : Colors.grey.shade300,
+                            width: 1.5,
                           ),
                         ),
                       ),
                     ),
-                  if (proof.imageUrl != null) const SizedBox(width: 12),
+                  if (proof.imageUrl != null) const SizedBox(width: 14),
                   if (proof.status == PaymentProofStatus.pending)
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () =>
-                            _showReviewDialog(context, proof, booking),
-                        icon: const Icon(Icons.check_circle, size: 20),
+                        onPressed: () {
+                          if (booking != null) {
+                            _showReviewDialog(context, proof, booking);
+                          }
+                        },
+                        icon: const Icon(Icons.check_circle_rounded, size: 20),
                         label: const Text(
                           'مراجعة',
-                          style: TextStyle(fontSize: 15),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 2,
                         ),
                       ),
                     ),
@@ -676,8 +1073,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -747,12 +1144,16 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 6),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color,
+        Flexible(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ],
@@ -782,6 +1183,97 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     );
   }
 
+  // Detail Row - كل البيانات في سطر واضح
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+    required bool isDark,
+    bool isBold = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 20, color: color),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Contact Row Full - كل البيانات باينة كاملة
+  Widget _buildContactRowFull({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isDark,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Colors.grey.shade600),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black87,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildStatusBadge(PaymentProofStatus status) {
     Color color;
     String text;
@@ -791,37 +1283,40 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       case PaymentProofStatus.pending:
         color = Colors.orange;
         text = 'قيد المراجعة';
-        icon = Icons.access_time;
+        icon = Icons.access_time_rounded;
         break;
       case PaymentProofStatus.approved:
         color = Colors.green;
         text = 'مؤكد';
-        icon = Icons.check_circle;
+        icon = Icons.check_circle_rounded;
         break;
       case PaymentProofStatus.rejected:
         color = Colors.red;
         text = 'مرفوض';
-        icon = Icons.cancel;
+        icon = Icons.cancel_rounded;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.15), color.withOpacity(0.08)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.4), width: 1.5),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
           Text(
             text,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.bold,
-              fontSize: 12,
+              fontSize: 13,
             ),
           ),
         ],
@@ -837,6 +1332,65 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     if (difference.inHours > 0) return 'منذ ${difference.inHours} ساعة';
     if (difference.inMinutes > 0) return 'منذ ${difference.inMinutes} دقيقة';
     return 'الآن';
+  }
+
+  // Parse booking from Firestore data (used by StreamBuilder)
+  Booking? _parseBookingFromData(String docId, Map<String, dynamic> data) {
+    try {
+      DateTime? parseDate(dynamic value) {
+        if (value == null) return null;
+        if (value is Timestamp) return value.toDate();
+        if (value is String) {
+          try {
+            return DateTime.parse(value);
+          } catch (e) {
+            return null;
+          }
+        }
+        return null;
+      }
+
+      final fromDate = parseDate(data['from']) ?? DateTime.now();
+      final toDate = parseDate(data['to']) ?? DateTime.now();
+
+      DateTime? parseDateField(dynamic value) {
+        if (value == null) return null;
+        if (value is Timestamp) return value.toDate();
+        if (value is String) {
+          try {
+            return DateTime.parse(value);
+          } catch (e) {
+            return null;
+          }
+        }
+        return null;
+      }
+
+      return Booking(
+        id: docId,
+        chaletId: data['chaletId'] ?? '',
+        chaletName: data['chaletName'] ?? 'شاليه',
+        ownerId: data['ownerId'] ?? '',
+        ownerName: data['ownerName'] ?? 'غير معروف',
+        userId: data['userId'] ?? '',
+        userName: data['userName'] ?? 'غير معروف',
+        from: fromDate,
+        to: toDate,
+        status: _parseStatus(data['status']),
+        amount: (data['amount'] as num?)?.toDouble() ?? 0,
+        userPhone: data['userPhone'] as String?,
+        userEmail: data['userEmail'] as String?,
+        ownerPhone: data['ownerPhone'] as String?,
+        ownerEmail: data['ownerEmail'] as String?,
+        chaletLocation: data['chaletLocation'] as String?,
+        adminPaymentNotes: data['adminPaymentNotes'] as String?,
+        paymentRejected: data['paymentRejected'] as bool? ?? false,
+        paymentRejectedAt: parseDateField(data['paymentRejectedAt']),
+      );
+    } catch (e) {
+      debugPrint('Error parsing booking: $e');
+      return null;
+    }
   }
 
   Future<Booking?> _fetchBooking(String bookingId) async {
@@ -1019,7 +1573,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _rejectPayment(proof.id, notesController.text);
+              _rejectPayment(proof.id, notesController.text, booking);
             },
             child: const Text('رفض', style: TextStyle(color: Colors.red)),
           ),
@@ -1042,6 +1596,12 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     String notes,
   ) async {
     try {
+      // Show loading indicator
+      if (mounted) {
+        SnackBarHelper.showInfo(context, 'جاري معالجة الطلب...');
+      }
+
+      // Update payment proof status
       await FirebaseFirestore.instance
           .collection('payment_proofs')
           .doc(proofId)
@@ -1051,6 +1611,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             'adminNotes': notes,
           });
 
+      // Update booking status
       await FirebaseFirestore.instance
           .collection('bookings')
           .doc(booking.id)
@@ -1061,32 +1622,64 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             'updatedAt': FieldValue.serverTimestamp(),
           });
 
+      // Update cache
+      if (_bookingCache.containsKey(booking.id)) {
+        _bookingCache[booking.id] = booking.copyWith(
+          status: BookingStatus.confirmed,
+          adminConfirmedPaymentAt: DateTime.now(),
+          adminPaymentNotes: notes,
+        );
+      }
+
       // Send Confirmation Email
       await EmailService().sendBookingConfirmationEmail(booking);
 
+      // Send notification to user
+      try {
+        await NotificationService().sendNotification(
+          userId: booking.userId,
+          title: 'تم تأكيد الدفع بنجاح! 🎉',
+          body:
+              'تم تأكيد دفعتك لحجزك في ${booking.chaletName}. نتمنى لك إقامة سعيدة!',
+          type: NotificationType.paymentConfirmed,
+          relatedId: booking.id,
+          data: {'bookingId': booking.id, 'chaletName': booking.chaletName},
+        );
+        debugPrint('✅ Notification sent to user: ${booking.userId}');
+      } catch (notificationError) {
+        debugPrint(
+          '⚠️ Error sending notification (non-critical): $notificationError',
+        );
+        // Don't fail the whole operation if notification fails
+      }
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تمت الموافقة بنجاح'),
-            backgroundColor: Colors.green,
-          ),
+        SnackBarHelper.showSuccess(
+          context,
+          'تمت الموافقة بنجاح وإرسال الإشعار للمستخدم',
+          icon: Icons.check_circle_rounded,
         );
       }
     } catch (e) {
       debugPrint('Error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ أثناء الموافقة: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarHelper.showError(context, 'حدث خطأ أثناء الموافقة: $e');
       }
     }
   }
 
-  Future<void> _rejectPayment(String proofId, String reason) async {
+  Future<void> _rejectPayment(
+    String proofId,
+    String reason,
+    Booking? booking,
+  ) async {
     try {
+      // Show loading indicator
+      if (mounted) {
+        SnackBarHelper.showInfo(context, 'جاري معالجة الطلب...');
+      }
+
+      // Update payment proof status
       await FirebaseFirestore.instance
           .collection('payment_proofs')
           .doc(proofId)
@@ -1096,16 +1689,68 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             'adminNotes': reason,
           });
 
+      // If booking is available, update it and send notification
+      if (booking != null) {
+        await FirebaseFirestore.instance
+            .collection('bookings')
+            .doc(booking.id)
+            .update({
+              'status': BookingStatus.awaitingPayment.name,
+              'adminPaymentNotes': reason,
+              'paymentRejected': true, // Mark as payment rejected
+              'paymentRejectedAt': FieldValue.serverTimestamp(),
+              'paymentProofUrl': null,
+              'paymentProofUploadedAt': null,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+
+        // Update cache
+        if (_bookingCache.containsKey(booking.id)) {
+          _bookingCache[booking.id] = booking.copyWith(
+            status: BookingStatus.awaitingPayment,
+            adminPaymentNotes: reason,
+            paymentProofUrl: null,
+            paymentProofUploadedAt: null,
+          );
+        }
+
+        // Send notification to user
+        try {
+          await NotificationService().sendNotification(
+            userId: booking.userId,
+            title: 'تم رفض إثبات الدفع ❌',
+            body:
+                'عذراً، تم رفض إثبات الدفع لحجزك في ${booking.chaletName}. يرجى إعادة رفع إثبات الدفع الصحيح.',
+            type: NotificationType.bookingRejected,
+            relatedId: booking.id,
+            data: {
+              'bookingId': booking.id,
+              'chaletName': booking.chaletName,
+              'reason': reason,
+            },
+          );
+          debugPrint(
+            '✅ Rejection notification sent to user: ${booking.userId}',
+          );
+        } catch (notificationError) {
+          debugPrint(
+            '⚠️ Error sending rejection notification (non-critical): $notificationError',
+          );
+        }
+      }
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم الرفض'),
-            backgroundColor: Colors.orange,
-          ),
+        SnackBarHelper.showWarning(
+          context,
+          'تم الرفض وإرسال الإشعار للمستخدم',
+          icon: Icons.cancel_rounded,
         );
       }
     } catch (e) {
       debugPrint('Error: $e');
+      if (mounted) {
+        SnackBarHelper.showError(context, 'حدث خطأ أثناء الرفض: $e');
+      }
     }
   }
 }

@@ -11,6 +11,7 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 // ======================= HelperImage =======================
 class HelperImage {
@@ -95,37 +96,25 @@ class HelperImage {
         Navigator.of(context).pop();
 
         if (validationErrors.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                source == ImageSource.gallery
-                    ? 'Chalet photos added successfully!'
-                    : 'Chalet photo added successfully!',
-              ),
-              backgroundColor: ColorManager.green,
-            ),
+          SnackBarHelper.showSuccess(
+            context,
+            source == ImageSource.gallery
+                ? 'Chalet photos added successfully!'
+                : 'Chalet photo added successfully!',
           );
         } else {
           // Show validation errors
           final errorMessage = validationErrors.join('\n');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Some images were not added:\n$errorMessage'),
-              backgroundColor: ColorManager.red,
-              duration: const Duration(seconds: 5),
-            ),
+          SnackBarHelper.showError(
+            context,
+            'Some images were not added:\n$errorMessage',
           );
         }
       } else {
         await context.read<OwnerCubit>().addProfileImage(source);
         Navigator.of(context).pop();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile picture updated successfully!'),
-            backgroundColor: ColorManager.green,
-          ),
-        );
+        SnackBarHelper.showSuccess(context, 'Profile picture updated successfully!');
       }
     } catch (e) {
       if (Navigator.canPop(context)) Navigator.of(context).pop();
@@ -137,18 +126,7 @@ class HelperImage {
         errorMessage = 'Plugin connection error. Please restart the app.';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: ColorManager.red,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'Retry',
-            textColor: ColorManager.white,
-            onPressed: () => _pickImage(source, isChaletPhoto, context),
-          ),
-        ),
-      );
+      SnackBarHelper.showError(context, errorMessage);
 
       print('Image picker error: $e');
     }
@@ -166,9 +144,7 @@ class HelperImage {
     if (!formKey.currentState!.validate()) return;
 
     if (data.profileImage == null || data.uploadedImages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Upload profile & chalet images')),
-      );
+      SnackBarHelper.showWarning(context, 'Upload profile & chalet images');
       return;
     }
     if ((data.chaletName?.isEmpty ?? true) ||
@@ -176,9 +152,7 @@ class HelperImage {
         (data.phoneNumber?.isEmpty ?? true) ||
         (data.selectedLocation.isEmpty) ||
         (data.chaletArea?.isEmpty ?? true)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Fill all fields')));
+      SnackBarHelper.showWarning(context, 'Fill all fields');
       return;
     }
 
@@ -199,9 +173,7 @@ class HelperImage {
       final ownerId = context.read<AuthCubit>().getCurrentUser()?.uid;
       if (ownerId == null) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: Owner ID not found')),
-        );
+        SnackBarHelper.showError(context, 'Error: Owner ID not found');
         return;
       }
 
@@ -285,9 +257,7 @@ class HelperImage {
       });
 
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Chalet submitted successfully')),
-      );
+      SnackBarHelper.showSuccess(context, 'Chalet submitted successfully');
 
       // ✅ Send notification to admins
       try {
@@ -312,9 +282,7 @@ class HelperImage {
       // Close the OwnerScreen and return `true` so callers can refresh their list
       Navigator.of(context).pop(true);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      SnackBarHelper.showError(context, "Error: $e");
     }
   }
 

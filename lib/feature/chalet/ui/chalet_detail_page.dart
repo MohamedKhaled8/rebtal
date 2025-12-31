@@ -11,6 +11,7 @@ import 'package:rebtal/feature/chalet/widget/services_section.dart';
 import 'package:rebtal/feature/chalet/widget/action_buttons.dart';
 import 'package:rebtal/feature/chalet/widget/availability_card.dart';
 import 'package:rebtal/feature/chalet/widget/image_gallery_card.dart';
+import 'package:rebtal/feature/chalet/widget/location_map_card.dart';
 import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
 import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
@@ -122,6 +123,18 @@ class ChaletDetailPage extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 24),
                                     ],
+
+                                    // Location Map Section
+                                    LocationMapCard(
+                                      location: location,
+                                      latitude: requestData['lat'] != null
+                                          ? (requestData['lat'] as num).toDouble()
+                                          : null,
+                                      longitude: requestData['lon'] != null
+                                          ? (requestData['lon'] as num).toDouble()
+                                          : null,
+                                    ),
+                                    const SizedBox(height: 24),
 
                                     // Role-based Sections
                                     if (role == 'user' || role == 'owner') ...[

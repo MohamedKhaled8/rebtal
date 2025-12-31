@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -64,16 +65,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   tooltip: 'تحديد الكل كمقروء',
                   onPressed: () {
                     context.read<NotificationCubit>().markAllAsRead(userId);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('تم تحديد جميع الإشعارات كمقروءة'),
-                        backgroundColor: ColorManager.chaletActionGreen,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    );
+                    SnackBarHelper.showSuccess(context, 'تم تحديد جميع الإشعارات كمقروءة');
                   },
                 );
               }
@@ -164,16 +156,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             context
                                 .read<NotificationCubit>()
                                 .deleteNotification(notification.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('تم حذف الإشعار'),
-                                backgroundColor: ColorManager.chaletActionRed,
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            );
+                            SnackBarHelper.showSuccess(context, 'تم حذف الإشعار');
                           },
                           onMarkAsRead: () {
                             context.read<NotificationCubit>().markAsRead(
@@ -401,16 +384,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             onPressed: () {
               Navigator.pop(context);
               context.read<NotificationCubit>().clearAll(userId);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('تم حذف جميع الإشعارات'),
-                  backgroundColor: ColorManager.chaletActionRed,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
+              SnackBarHelper.showSuccess(context, 'تم حذف جميع الإشعارات');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorManager.chaletActionRed,

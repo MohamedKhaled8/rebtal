@@ -78,7 +78,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     verticalSpace(1),
                     Text(
                       "Welcome to Rebtal",
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
                           ),
@@ -86,9 +87,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     verticalSpace(0.5),
                     Text(
                       "Rent and showcase beautiful chalets with a couple of taps.",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                      ),
+                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
                     ),
                     verticalSpace(5),
                     Expanded(
@@ -97,32 +96,33 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         itemCount: _slides.length,
                         itemBuilder: (_, index) {
                           final slide = _slides[index];
-                          return _OnboardingCard(slide: slide, page: _currentPage, index: index);
+                          return _OnboardingCard(
+                            slide: slide,
+                            page: _currentPage,
+                            index: index,
+                          );
                         },
                       ),
                     ),
                     verticalSpace(2),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        _slides.length,
-                        (index) {
-                          final isActive =
-                              (_currentPage.roundToDouble() - index).abs() < 0.5;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                            width: isActive ? 32 : 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.4),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          );
-                        },
-                      ),
+                      children: List.generate(_slides.length, (index) {
+                        final isActive =
+                            (_currentPage.roundToDouble() - index).abs() < 0.5;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          width: isActive ? 32 : 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        );
+                      }),
                     ),
                     verticalSpace(3),
                     SizedBox(
@@ -180,10 +180,7 @@ class _WelcomeBackground extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFF0F172A),
-            Color(0xFF1E40AF),
-          ],
+          colors: [Color(0xFF0F172A), Color(0xFF1E40AF)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -288,16 +285,14 @@ class _OnboardingCard extends StatelessWidget {
           Text(
             slide.title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFF0F172A),
-                  fontWeight: FontWeight.w700,
-                ),
+              color: const Color(0xFF0F172A),
+              fontWeight: FontWeight.w700,
+            ),
           ),
           verticalSpace(0.5),
           Text(
             slide.description,
-            style: const TextStyle(
-              color: Color(0xFF475569),
-            ),
+            style: const TextStyle(color: Color(0xFF475569)),
           ),
         ],
       ),
@@ -316,4 +311,3 @@ class _OnboardingSlide {
     required this.asset,
   });
 }
-

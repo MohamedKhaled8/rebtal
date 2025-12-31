@@ -180,6 +180,8 @@ class NotificationCard extends StatelessWidget {
         return Icons.check_circle_rounded;
       case NotificationType.bookingRejected:
         return Icons.cancel_rounded;
+      case NotificationType.paymentConfirmed:
+        return Icons.payment_rounded;
       case NotificationType.chaletApproved:
         return Icons.home_rounded;
       case NotificationType.chaletRejected:
@@ -199,6 +201,8 @@ class NotificationCard extends StatelessWidget {
         return ColorManager.chaletActionGreen;
       case NotificationType.bookingRejected:
         return ColorManager.chaletActionRed;
+      case NotificationType.paymentConfirmed:
+        return ColorManager.chaletActionGreen;
       case NotificationType.chaletApproved:
         return ColorManager.chaletActionGreen;
       case NotificationType.chaletRejected:

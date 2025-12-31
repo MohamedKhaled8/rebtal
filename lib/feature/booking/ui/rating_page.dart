@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class RatingPage extends StatefulWidget {
   final Booking booking;
@@ -57,12 +58,7 @@ class _RatingPageState extends State<RatingPage> {
 
   Future<void> _submitRating() async {
     if (_rating == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('يرجى اختيار تقييم'),
-          backgroundColor: Colors.orange.shade600,
-        ),
-      );
+      SnackBarHelper.showWarning(context, 'يرجى اختيار تقييم');
       return;
     }
 
@@ -108,33 +104,13 @@ class _RatingPageState extends State<RatingPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('شكراً لتقييمك!'),
-              ],
-            ),
-            backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        SnackBarHelper.showSuccess(context, 'شكراً لتقييمك!', icon: Icons.star);
 
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ: $e'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
+        SnackBarHelper.showError(context, 'خطأ: $e');
       }
     } finally {
       if (mounted) {

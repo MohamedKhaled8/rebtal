@@ -20,6 +20,7 @@ import 'package:rebtal/feature/profile/ui/about_us_page.dart';
 import 'package:rebtal/feature/profile/ui/privacy_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/delivery_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
+import 'package:rebtal/feature/localization/language_selection_page.dart';
 
 class ProfileContent extends StatelessWidget {
   final UserModel user;
@@ -413,8 +414,23 @@ class ProfileContent extends StatelessWidget {
                         ModernActionTile(
                           icon: Icons.translate,
                           title: 'اللغة',
-                          subtitle: 'اختيار لغة العرض',
+                          subtitle: 'اختيار لغة العرض | Language',
                           color: const Color(0xFFEAB308),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const LanguageSelectionPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        ModernActionTile(
+                          icon: Icons.receipt_long_outlined,
+                          title: 'الفواتير',
+                          subtitle: 'عرض وتتبع فواتيرك ومدفوعاتك',
+                          color: const Color(0xFF10B981),
                           onTap: () {
                             Navigator.push(
                               context,

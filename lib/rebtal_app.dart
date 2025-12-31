@@ -27,7 +27,6 @@ class RebtalApp extends StatelessWidget {
       ],
       child: ScreenGo(
         materialApp: true,
-
         builder: (context, deviceInfo) {
           return BlocBuilder<ThemeCubit, ThemeState>(
             builder: (context, state) {

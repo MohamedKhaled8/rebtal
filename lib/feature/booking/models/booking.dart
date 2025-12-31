@@ -58,6 +58,8 @@ class Booking {
   final DateTime? paymentProofUploadedAt;
   final DateTime? adminConfirmedPaymentAt;
   final String? adminPaymentNotes;
+  final bool? paymentRejected; // True if payment proof was rejected by admin
+  final DateTime? paymentRejectedAt;
   final double? amountPaidToOwner;
   final DateTime? ownerPaidAt;
   final double? refundAmount;
@@ -95,6 +97,8 @@ class Booking {
     this.paymentProofUploadedAt,
     this.adminConfirmedPaymentAt,
     this.adminPaymentNotes,
+    this.paymentRejected,
+    this.paymentRejectedAt,
     this.amountPaidToOwner,
     this.ownerPaidAt,
     this.refundAmount,
@@ -133,6 +137,8 @@ class Booking {
     DateTime? paymentProofUploadedAt,
     DateTime? adminConfirmedPaymentAt,
     String? adminPaymentNotes,
+    bool? paymentRejected,
+    DateTime? paymentRejectedAt,
     double? amountPaidToOwner,
     DateTime? ownerPaidAt,
     double? refundAmount,
@@ -172,6 +178,8 @@ class Booking {
       adminConfirmedPaymentAt:
           adminConfirmedPaymentAt ?? this.adminConfirmedPaymentAt,
       adminPaymentNotes: adminPaymentNotes ?? this.adminPaymentNotes,
+      paymentRejected: paymentRejected ?? this.paymentRejected,
+      paymentRejectedAt: paymentRejectedAt ?? this.paymentRejectedAt,
       amountPaidToOwner: amountPaidToOwner ?? this.amountPaidToOwner,
       ownerPaidAt: ownerPaidAt ?? this.ownerPaidAt,
       refundAmount: refundAmount ?? this.refundAmount,
@@ -215,6 +223,8 @@ class Booking {
       paymentProofUploadedAt: _parseDate(json['paymentProofUploadedAt']),
       adminConfirmedPaymentAt: _parseDate(json['adminConfirmedPaymentAt']),
       adminPaymentNotes: json['adminPaymentNotes'] as String?,
+      paymentRejected: json['paymentRejected'] as bool?,
+      paymentRejectedAt: _parseDate(json['paymentRejectedAt']),
       amountPaidToOwner: (json['amountPaidToOwner'] as num?)?.toDouble(),
       ownerPaidAt: _parseDate(json['ownerPaidAt']),
       refundAmount: (json['refundAmount'] as num?)?.toDouble(),

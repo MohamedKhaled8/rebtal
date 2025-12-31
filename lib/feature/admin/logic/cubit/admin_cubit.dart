@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/feature/admin/ui/dashboard.dart';
 import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
@@ -134,14 +135,11 @@ class AdminCubit extends Cubit<AdminState> {
       }
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Request $newStatus'),
-            backgroundColor: newStatus == 'approved'
-                ? Colors.green
-                : Colors.red,
-          ),
-        );
+        if (newStatus == 'approved') {
+          SnackBarHelper.showSuccess(context, 'Request $newStatus');
+        } else {
+          SnackBarHelper.showError(context, 'Request $newStatus');
+        }
         Navigator.pop(context);
       }
 

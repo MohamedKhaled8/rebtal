@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -444,12 +445,7 @@ class ApprovedRequestCard extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('تم إكمال الحجز بنجاح'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              SnackBarHelper.showSuccess(context, 'تم إكمال الحجز بنجاح');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,

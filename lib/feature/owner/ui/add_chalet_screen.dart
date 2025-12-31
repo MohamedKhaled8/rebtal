@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/feature/owner/logic/cubit/add_chalet_cubit.dart';
@@ -49,16 +50,10 @@ class _AddChaletViewState extends State<_AddChaletView> {
       body: BlocListener<AddChaletCubit, AddChaletState>(
         listener: (context, state) {
           if (state is AddChaletSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Chalet added successfully! Pending approval."),
-              ),
-            );
+            SnackBarHelper.showSuccess(context, "Chalet added successfully! Pending approval.");
             Navigator.pop(context);
           } else if (state is AddChaletFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.error)));
+            SnackBarHelper.showError(context, state.error);
           }
         },
         child: SingleChildScrollView(

@@ -2,6 +2,7 @@ enum NotificationType {
   bookingRequest('booking_request'),
   bookingApproved('booking_approved'),
   bookingRejected('booking_rejected'),
+  paymentConfirmed('payment_confirmed'),
   chaletSubmission('chalet_submission'),
   chaletApproved('chalet_approved'),
   chaletRejected('chalet_rejected'),
@@ -25,6 +26,8 @@ enum NotificationType {
         return 'تم قبول الحجز';
       case NotificationType.bookingRejected:
         return 'تم رفض الحجز';
+      case NotificationType.paymentConfirmed:
+        return 'تم تأكيد الدفع';
       case NotificationType.chaletSubmission:
         return 'شاليه جديد قيد المراجعة';
       case NotificationType.chaletApproved:

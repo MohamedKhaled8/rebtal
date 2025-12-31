@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 import 'package:rebtal/feature/booking/widgets/bookings_list.dart';
 import 'package:rebtal/feature/booking/widgets/empty_bookings_state.dart';
@@ -76,16 +77,7 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
               onPressed: () {
                 if (currentUid.isNotEmpty) {
                   context.read<BookingCubit>().loadUserBookings(currentUid);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('تم تحديث البيانات'),
-                      backgroundColor: Colors.green.shade600,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
+                  SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
                 }
               },
             ),

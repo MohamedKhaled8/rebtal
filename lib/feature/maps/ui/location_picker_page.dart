@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart' as l;
 import 'package:latlong2/latlong.dart';
@@ -169,9 +170,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
         await _reverseGeocode(p);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تعذر تحديد موقعك. حاول مرة أخرى.')),
-          );
+          SnackBarHelper.showError(context, 'تعذر تحديد موقعك. حاول مرة أخرى.');
         }
       }
     } catch (_) {

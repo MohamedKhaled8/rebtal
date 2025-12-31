@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class PaymentMethodSelectionPage extends StatefulWidget {
   final Booking booking;
@@ -140,9 +141,7 @@ class _PaymentMethodSelectionPageState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ: $e'), backgroundColor: Colors.red),
-        );
+        SnackBarHelper.showError(context, 'حدث خطأ: $e');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -1037,16 +1036,7 @@ class _PaymentMethodSelectionPageState
               onTap: () {
                 HapticFeedback.mediumImpact();
                 Clipboard.setData(ClipboardData(text: value));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('تم نسخ $label'),
-                    backgroundColor: ColorManager.chaletAccent,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                );
+                SnackBarHelper.showSuccess(context, 'تم نسخ $label', icon: Icons.copy);
               },
               borderRadius: BorderRadius.circular(12),
               child: Padding(

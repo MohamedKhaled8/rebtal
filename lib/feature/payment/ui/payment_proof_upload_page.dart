@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -51,10 +52,9 @@ class _PaymentProofUploadPageState extends State<PaymentProofUploadPage> {
         if (await canLaunchUrl(webUrl)) {
           await launchUrl(webUrl, mode: LaunchMode.externalApplication);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تعذر فتح واتساب. يرجى التأكد من تثبيت التطبيق.'),
-            ),
+          SnackBarHelper.showWarning(
+            context,
+            'تعذر فتح واتساب. يرجى التأكد من تثبيت التطبيق.',
           );
         }
       }
@@ -93,9 +93,7 @@ class _PaymentProofUploadPageState extends State<PaymentProofUploadPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ: $e'), backgroundColor: Colors.red),
-        );
+        SnackBarHelper.showError(context, 'حدث خطأ: $e');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

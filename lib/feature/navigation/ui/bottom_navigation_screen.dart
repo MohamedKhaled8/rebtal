@@ -7,6 +7,7 @@ import 'package:rebtal/feature/home/ui/home_screen.dart';
 import 'package:rebtal/feature/owner/ui/owner_chalets_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_bookings_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_cancellations_page.dart';
+import 'package:rebtal/feature/admin/ui/dashboard.dart';
 
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
@@ -47,7 +48,24 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         final List<Widget> screens;
         final List<NavItem> bottomNavItems;
 
-        if (role == 'owner') {
+        if (role == 'admin') {
+          screens = const [
+            HomeScreen(),
+            FavoritesPage(),
+            NotificationsPage(),
+            UserBookingsPage(),
+            AdminDashboard(),
+            ProfilePage(),
+          ];
+          bottomNavItems = const [
+            NavItem(icon: Icons.home, label: 'الرئيسية'),
+            NavItem(icon: Icons.favorite, label: 'المفضلة'),
+            NavItem(icon: Icons.notifications, label: 'الإشعارات'),
+            NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
+            NavItem(icon: Icons.admin_panel_settings, label: 'الإدارة'),
+            NavItem(icon: Icons.person, label: 'الملف'),
+          ];
+        } else if (role == 'owner') {
           screens = const [
             OwnerChaletsPage(),
             OwnerBookingsPage(),

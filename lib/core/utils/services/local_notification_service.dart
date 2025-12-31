@@ -1,4 +1,4 @@
-  import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -71,6 +71,8 @@ class LocalNotificationService {
         showWhen: true,
         enableVibration: true,
         playSound: true,
+        // استخدام أيقونة التطبيق كأيقونة كبيرة (ملونة)
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -113,6 +115,8 @@ class LocalNotificationService {
         channelDescription: 'Notifications for Rebtal app',
         importance: Importance.high,
         priority: Priority.high,
+        // استخدام أيقونة التطبيق كأيقونة كبيرة (ملونة)
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
       );
 
       const iosDetails = DarwinNotificationDetails();

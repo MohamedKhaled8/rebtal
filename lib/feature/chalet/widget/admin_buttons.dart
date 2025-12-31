@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
@@ -14,35 +15,13 @@ class AdminButtons extends StatelessWidget {
     return BlocConsumer<ActionButtonsCubit, ActionButtonsState>(
       listener: (context, state) {
         if (state is ActionButtonsSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.message,
-                style: const TextStyle(color: ColorManager.white),
-              ),
-              backgroundColor: state.newStatus == 'rejected'
-                  ? ColorManager.chaletActionRed
-                  : ColorManager.chaletActionGreen,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
+          if (state.newStatus == 'rejected') {
+            SnackBarHelper.showError(context, state.message);
+          } else {
+            SnackBarHelper.showSuccess(context, state.message);
+          }
         } else if (state is ActionButtonsError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.message,
-                style: const TextStyle(color: ColorManager.white),
-              ),
-              backgroundColor: ColorManager.chaletActionRed,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
+          SnackBarHelper.showError(context, state.message);
         }
       },
       builder: (context, state) {
@@ -153,19 +132,7 @@ class AdminButtons extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text(
-                            'Request already processed',
-                            style: TextStyle(color: ColorManager.white),
-                          ),
-                          backgroundColor: ColorManager.chaletGrey800,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
+                      SnackBarHelper.showWarning(context, 'Request already processed');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorManager.transparent,

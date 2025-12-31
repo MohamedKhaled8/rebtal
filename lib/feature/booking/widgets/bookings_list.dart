@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
+import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -52,16 +53,24 @@ class BookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = DynamicThemeManager.isDarkMode(context);
+    // Check if payment was rejected (awaitingPayment with paymentRejected flag or adminPaymentNotes)
+    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+        (booking.paymentRejected == true ||
+            (booking.adminPaymentNotes != null &&
+                booking.adminPaymentNotes!.isNotEmpty));
     final isApproved =
         booking.status == BookingStatus.approved ||
-        booking.status == BookingStatus.awaitingPayment;
+        (booking.status == BookingStatus.awaitingPayment && !isPaymentRejected);
     final isConfirmed = booking.status == BookingStatus.confirmed;
     final isRejected =
         booking.status == BookingStatus.rejected ||
-        booking.status == BookingStatus.cancelled;
+        booking.status == BookingStatus.cancelled ||
+        isPaymentRejected;
 
     // ألوان الحالة
-    final Color statusColor = isConfirmed
+    final Color statusColor = isPaymentRejected
+        ? const Color(0xFFEF4444) // Red for payment rejected
+        : isConfirmed
         ? const Color(0xFF10B981) // Green for confirmed
         : isApproved
         ? const Color(0xFF10B981) // Green for approved/accepted
@@ -221,7 +230,7 @@ class BookingCard extends StatelessWidget {
                                   : isApproved
                                   ? 'مقبول'
                                   : isRejected
-                                  ? 'مرفوض'
+                                  ? (isPaymentRejected ? 'مرفوض' : 'مرفوض')
                                   : booking.status ==
                                         BookingStatus.paymentUnderReview
                                   ? 'قيد المراجعة'
@@ -277,74 +286,192 @@ class BookingCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isApproved
-                            ? const Color(0xFF1ED760)
-                            : isConfirmed
-                            ? Colors
-                                  .redAccent
-                                  .shade400 // Red for Cancel
-                            : (isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.grey.shade100),
-                        foregroundColor: isApproved || isConfirmed
-                            ? Colors
-                                  .white // White text
-                            : (isDarkMode
-                                  ? Colors.white54
-                                  : Colors.grey.shade600),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: isApproved || isConfirmed ? 4 : 0,
-                        shadowColor: isApproved || isConfirmed
-                            ? Colors.black26
-                            : Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  // Show contact buttons if payment was rejected
+                  if (isPaymentRejected) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.3),
+                          width: 1.5,
                         ),
                       ),
-                      onPressed: isApproved
-                          ? () => _payNow(context, booking)
-                          : isConfirmed
-                          ? () => _confirmCancel(context, booking)
-                          : null,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (isApproved) ...[
-                            const Icon(Icons.payment_rounded, size: 20),
-                            const SizedBox(width: 8),
-                          ],
-                          if (isConfirmed) ...[
-                            const Icon(
-                              Icons.cancel_outlined,
-                              size: 20,
-                              color: Colors.white,
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                color: Colors.red.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'تم رفض إثبات الدفع',
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (booking.adminPaymentNotes != null &&
+                              booking.adminPaymentNotes!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'السبب: ${booking.adminPaymentNotes}',
+                              style: TextStyle(
+                                color: isDarkMode
+                                    ? Colors.white70
+                                    : Colors.grey.shade700,
+                                fontSize: 12,
+                              ),
                             ),
-                            const SizedBox(width: 8),
                           ],
-                          Text(
-                            isApproved
-                                ? 'إتمام الدفع'
-                                : isConfirmed
-                                ? 'إلغاء الحجز'
-                                : isRejected
-                                ? 'تم رفض هذا الطلب'
-                                : booking.status ==
-                                      BookingStatus.paymentUnderReview
-                                ? 'جاري مراجعة الدفع'
-                                : 'بانتظار موافقة المضيف',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    UriLauncherService.launchWhatsAppContact(
+                                      context: context,
+                                      phone: '201008422234',
+                                      message:
+                                          'مرحباً، تم رفض إثبات الدفع لحجز رقم: ${booking.id.substring(0, 8)}',
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.chat_rounded,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'واتساب',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF25D366),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    UriLauncherService.launchPhoneCall(
+                                      context,
+                                      '201008422234',
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.phone_rounded,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'اتصال',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue.shade600,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Show contact buttons if payment was rejected, otherwise show normal button
+                  if (isPaymentRejected)
+                    const SizedBox.shrink() // Contact buttons already shown above
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isApproved
+                              ? const Color(0xFF1ED760)
+                              : isConfirmed
+                              ? Colors.redAccent.shade400
+                              : (isDarkMode
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.grey.shade100),
+                          foregroundColor: isApproved || isConfirmed
+                              ? Colors.white
+                              : (isDarkMode
+                                  ? Colors.white54
+                                  : Colors.grey.shade600),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: isApproved || isConfirmed ? 4 : 0,
+                          shadowColor: isApproved || isConfirmed
+                              ? Colors.black26
+                              : Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: isApproved
+                            ? () => _payNow(context, booking)
+                            : isConfirmed
+                            ? () => _confirmCancel(context, booking)
+                            : null,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isApproved) ...[
+                              const Icon(Icons.payment_rounded, size: 20),
+                              const SizedBox(width: 8),
+                            ],
+                            if (isConfirmed) ...[
+                              const Icon(
+                                Icons.cancel_outlined,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            Text(
+                              isApproved
+                                  ? 'إتمام الدفع'
+                                  : isConfirmed
+                                  ? 'إلغاء الحجز'
+                                  : isRejected
+                                  ? 'تم رفض هذا الطلب'
+                                  : booking.status ==
+                                        BookingStatus.paymentUnderReview
+                                  ? 'جاري مراجعة الدفع'
+                                  : 'بانتظار موافقة المضيف',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

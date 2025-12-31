@@ -6,6 +6,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_status_chip.dart';
 import 'package:rebtal/feature/owner/ui/widgets/guest_info_card.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -184,6 +185,7 @@ class BookingCard extends StatelessWidget {
                     child: BookingStatusChip(
                       status: booking.status,
                       isDark: isDark,
+                      booking: booking,
                     ),
                   ),
                 ],
@@ -399,25 +401,10 @@ class BookingCard extends StatelessWidget {
                                 ClipboardData(text: booking.id),
                               );
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Row(
-                                      children: [
-                                        Icon(
-                                          Icons.check_circle,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text('تم نسخ رقم الحجز'),
-                                      ],
-                                    ),
-                                    backgroundColor: Colors.green.shade600,
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    duration: const Duration(seconds: 2),
-                                  ),
+                                SnackBarHelper.showSuccess(
+                                  context,
+                                  'تم نسخ رقم الحجز',
+                                  icon: Icons.copy,
                                 );
                               }
                             },
@@ -624,36 +611,15 @@ class BookingCard extends StatelessWidget {
 
       if (context.mounted) {
         final isApproved = status == BookingStatus.approved;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(
-                  isApproved ? Icons.check_circle : Icons.info,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 12),
-                Text(isApproved ? 'تم قبول الحجز بنجاح' : 'تم رفض الحجز'),
-              ],
-            ),
-            backgroundColor: isApproved
-                ? Colors.green.shade600
-                : Colors.red.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        if (isApproved) {
+          SnackBarHelper.showSuccess(context, 'تم قبول الحجز بنجاح');
+        } else {
+          SnackBarHelper.showError(context, 'تم رفض الحجز', icon: Icons.info);
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ: $e'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
+        SnackBarHelper.showError(context, 'خطأ: $e');
       }
     }
   }

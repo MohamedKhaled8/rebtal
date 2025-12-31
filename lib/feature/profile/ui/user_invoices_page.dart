@@ -129,6 +129,16 @@ class _InvoiceCard extends StatelessWidget {
   const _InvoiceCard({required this.booking, required this.isDark});
 
   Color _getStatusColor() {
+    // Check if payment was rejected
+    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+        (booking.paymentRejected == true ||
+            (booking.adminPaymentNotes != null &&
+                booking.adminPaymentNotes!.isNotEmpty));
+    
+    if (isPaymentRejected) {
+      return Colors.red;
+    }
+    
     switch (booking.status) {
       case BookingStatus.confirmed:
       case BookingStatus.completed:
@@ -147,6 +157,16 @@ class _InvoiceCard extends StatelessWidget {
   }
 
   String _getStatusText() {
+    // Check if payment was rejected
+    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+        (booking.paymentRejected == true ||
+            (booking.adminPaymentNotes != null &&
+                booking.adminPaymentNotes!.isNotEmpty));
+    
+    if (isPaymentRejected) {
+      return 'مرفوض';
+    }
+    
     switch (booking.status) {
       case BookingStatus.confirmed:
         return 'مؤكد';

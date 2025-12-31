@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class UriLauncherService {
   UriLauncherService._();
@@ -75,8 +76,6 @@ class UriLauncherService {
   }
 
   static void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
-    );
+    SnackBarHelper.showError(context, message);
   }
 }

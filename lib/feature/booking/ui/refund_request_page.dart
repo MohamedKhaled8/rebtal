@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -302,12 +303,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     if (_reasonController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('يرجى إدخال سبب الإلغاء'),
-                          backgroundColor: Colors.orange.shade600,
-                        ),
-                      );
+                      SnackBarHelper.showWarning(context, 'يرجى إدخال سبب الإلغاء');
                       return;
                     }
 
@@ -319,35 +315,13 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       );
 
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.white),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text('تم تقديم طلب الاسترداد بنجاح'),
-                                ),
-                              ],
-                            ),
-                            backgroundColor: Colors.green.shade600,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        );
+                        SnackBarHelper.showSuccess(context, 'تم تقديم طلب الاسترداد بنجاح');
 
                         Navigator.pop(context);
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('خطأ: $e'),
-                            backgroundColor: Colors.red.shade600,
-                          ),
-                        );
+                        SnackBarHelper.showError(context, 'خطأ: $e');
                       }
                     }
                   },

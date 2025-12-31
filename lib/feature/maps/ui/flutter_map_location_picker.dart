@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class FlutterGoogleMapLocationPicker extends StatefulWidget {
   final String? initialAddress;
@@ -200,9 +201,7 @@ class _FlutterGoogleMapLocationPickerState
 
     if (status.isDenied) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('يجب السماح بالوصول للموقع')),
-        );
+        SnackBarHelper.showWarning(context, 'يجب السماح بالوصول للموقع');
       }
       return;
     }

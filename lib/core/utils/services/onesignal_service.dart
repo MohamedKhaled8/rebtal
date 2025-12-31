@@ -88,6 +88,9 @@ class OneSignalService {
           },
           'target_channel': 'push',
           'data': data,
+          // ✅ Added App Logo for Notifications
+          'large_icon':
+              'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=200',
           // Android specific settings for sound and priority
           'android_channel_id': 'rebtal_channel_id',
           'priority': 10,

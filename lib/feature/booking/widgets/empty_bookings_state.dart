@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -118,16 +119,7 @@ class EmptyBookingsState extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       context.read<BookingCubit>().loadBookings();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('تم تحديث البيانات'),
-                          backgroundColor: Colors.green.shade600,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
+                      SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
                     },
                     icon: const Icon(Icons.refresh_rounded, size: 20),
                     label: const Text(

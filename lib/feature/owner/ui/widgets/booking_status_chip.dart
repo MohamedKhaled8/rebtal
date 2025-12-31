@@ -4,11 +4,13 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 class BookingStatusChip extends StatelessWidget {
   final BookingStatus status;
   final bool isDark;
+  final Booking? booking; // Add booking to check paymentRejected
 
   const BookingStatusChip({
     super.key,
     required this.status,
     required this.isDark,
+    this.booking,
   });
 
   @override
@@ -61,10 +63,19 @@ class BookingStatusChip extends StatelessWidget {
           'icon': Icons.check_circle,
         };
       case BookingStatus.awaitingPayment:
+        // Check if payment was rejected
+        final isPaymentRejected = booking != null &&
+            (booking!.paymentRejected == true ||
+                (booking!.adminPaymentNotes != null &&
+                    booking!.adminPaymentNotes!.isNotEmpty));
         return {
-          'color': Colors.blue.shade600,
-          'text': 'في انتظار الدفع',
-          'icon': Icons.payment,
+          'color': isPaymentRejected
+              ? Colors.red.shade600
+              : Colors.blue.shade600,
+          'text': isPaymentRejected
+              ? 'في انتظار الدفع - مرفوض'
+              : 'في انتظار الدفع',
+          'icon': isPaymentRejected ? Icons.cancel : Icons.payment,
         };
       case BookingStatus.paymentUnderReview:
         return {

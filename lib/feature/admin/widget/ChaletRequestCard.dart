@@ -1,5 +1,6 @@
 // Chalet Request Card
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -292,25 +293,15 @@ class ChaletRequestCard extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newVisibility
-                  ? 'تم إظهار الشاليه بنجاح'
-                  : 'تم إخفاء الشاليه بنجاح',
-            ),
-            backgroundColor: newVisibility ? Colors.green : Colors.orange,
-          ),
-        );
+        if (newVisibility) {
+          SnackBarHelper.showSuccess(context, 'تم إظهار الشاليه بنجاح');
+        } else {
+          SnackBarHelper.showWarning(context, 'تم إخفاء الشاليه بنجاح');
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في تحديث حالة الشاليه: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الشاليه: $e');
       }
     }
   }
@@ -329,27 +320,15 @@ class ChaletRequestCard extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newAvailability == 'available'
-                  ? 'تم تشغيل الحجز بنجاح'
-                  : 'تم إيقاف الحجز بنجاح',
-            ),
-            backgroundColor: newAvailability == 'available'
-                ? Colors.green
-                : Colors.red,
-          ),
-        );
+        if (newAvailability == 'available') {
+          SnackBarHelper.showSuccess(context, 'تم تشغيل الحجز بنجاح');
+        } else {
+          SnackBarHelper.showError(context, 'تم إيقاف الحجز بنجاح');
+        }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في تحديث حالة الحجز: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الحجز: $e');
       }
     }
   }
