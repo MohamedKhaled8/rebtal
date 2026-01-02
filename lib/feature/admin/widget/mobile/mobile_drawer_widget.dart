@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 class MobileDrawerWidget extends StatelessWidget {
   final int selectedIndex;
@@ -24,11 +23,11 @@ class MobileDrawerWidget extends StatelessWidget {
     const Color darkB = Color(0xFF0F2546);
     const Color accent = Color(0xFF6C5CE7);
 
-    return BlocBuilder<ThemeCubit, ThemeState>(
-      builder: (context, themeState) {
+    return BlocBuilder<AppCubit, AppState>(
+      builder: (context, appState) {
         final isDark =
-            themeState.themeMode == ThemeMode.dark ||
-            (themeState.themeMode == ThemeMode.system &&
+            (appState.themeMode == ThemeMode.dark) ||
+            (appState.themeMode == ThemeMode.system &&
                 MediaQuery.of(context).platformBrightness == Brightness.dark);
 
         final textColor = isDark ? Colors.white : Colors.black87;
@@ -180,7 +179,7 @@ class MobileDrawerWidget extends StatelessWidget {
                     ),
                     onTap: () async {
                       final navigator = Navigator.of(context);
-                      final authCubit = context.read<AuthCubit>();
+                      final authCubit = context.read<AppCubit>().authCubit;
 
                       // Close the drawer immediately
                       navigator.pop();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
@@ -39,8 +39,11 @@ class AdminCancellationsPage extends StatelessWidget {
       // Let's keep it for now but maybe remove AppBar if it duplicates the Dashboard Header.
       // Actually, standard practice for these tabs might be just body.
       // I'll keep the Scaffold for safety but remove Elevation/Background to blend in.
-      body: BlocBuilder<BookingCubit, BookingState>(
+      body: BlocBuilder<AppCubit, AppState>(
         builder: (context, state) {
+          if (state is! AppAuthenticated) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final cancelledBookings = state.bookings
               .where((b) => b.status == BookingStatus.cancelled)
               .toList();
@@ -191,7 +194,9 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletTextPrimaryLight,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -211,7 +216,9 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                       '#${booking.id.substring(0, 6)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey400,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey400,
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -263,7 +270,9 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                         : ColorManager.grey50,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey200,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey200,
                     ),
                   ),
                   child: Column(
@@ -404,7 +413,11 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: textColor ?? (isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
+                  color:
+                      textColor ??
+                      (isDark
+                          ? ColorManager.white
+                          : ColorManager.chaletTextPrimaryLight),
                   fontWeight: FontWeight.w500,
                   height: 1.3,
                 ),

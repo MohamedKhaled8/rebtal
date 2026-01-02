@@ -3,7 +3,7 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -76,7 +76,7 @@ class _PaymentProofUploadPageState extends State<PaymentProofUploadPage> {
     try {
       // Send simplified confirmation without transaction details
       // We pass a special flag or message as transaction number to indicate WhatsApp method
-      await context.read<BookingCubit>().uploadPaymentProof(
+      await context.read<AppCubit>().bookingCubit.uploadPaymentProof(
         bookingId: widget.booking.id,
         proofImageUrl: null,
         transactionNumber: 'SENT_VIA_WHATSAPP',

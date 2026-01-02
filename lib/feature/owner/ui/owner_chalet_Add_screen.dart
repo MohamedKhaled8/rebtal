@@ -1,13 +1,13 @@
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
 import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+// import 'package:rebtal/feature/auth/cubit/auth_cubit.dart'; // Accessed via AppCubit
 
 class OwnerChaletAddScreen extends StatefulWidget {
   const OwnerChaletAddScreen({super.key});
@@ -38,12 +38,11 @@ class _OwnerChaletAddScreenState extends State<OwnerChaletAddScreen> {
   void _autoFillUserData(BuildContext context) {
     if (!_isInitialized && mounted) {
       try {
-        final authCubit = context.read<AuthCubit>();
-        final currentUser = authCubit.getCurrentUser();
+        final appCubit = context.read<AppCubit>();
+        final currentUser = appCubit.authCubit.getCurrentUser();
 
         if (currentUser != null) {
-          // We need to access the cubit safely here
-          final cubit = _localCubit ?? context.read<OwnerCubit>();
+          final cubit = appCubit.ownerCubit;
 
           // Auto-fill name and email
           if (_nameController.text.isEmpty) {
@@ -69,69 +68,25 @@ class _OwnerChaletAddScreenState extends State<OwnerChaletAddScreen> {
     }
   }
 
-  // Manage Cubit lifecycle
-  OwnerCubit? _localCubit;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Check if Cubit is provided from above
-    try {
-      context.read<OwnerCubit>();
-    } catch (e) {
-      // If not provided, create a local one if not already created
-      _localCubit ??= OwnerCubit();
-    }
-  }
-
-  @override
-  void dispose() {
-    _localCubit?.close();
-    // ... dispose controllers ...
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    // If we have a local cubit, provide it. Otherwise, assume it's provided from above.
-    if (_localCubit != null) {
-      return BlocProvider.value(
-        value: _localCubit!,
-        child: _OwnerScreenContent(
-          formKey: _formKey,
-          chaletNameController: _chaletNameController,
-          nameController: _nameController,
-          descriptionController: _descriptionController,
-          phoneController: _phoneController,
-          locationController: _locationController,
-          priceController: _priceController,
-          chaletAreaController: _chaletAreaController,
-          bedroomsController: _bedroomsController,
-          bathroomsController: _bathroomsController,
-          emailController: _emailController,
-          childrenCountController: _childrenCountController,
-          discountValueController: _discountValueController,
-          autoFillCallback: _autoFillUserData,
-        ),
-      );
-    } else {
-      return _OwnerScreenContent(
-        formKey: _formKey,
-        chaletNameController: _chaletNameController,
-        nameController: _nameController,
-        descriptionController: _descriptionController,
-        phoneController: _phoneController,
-        locationController: _locationController,
-        priceController: _priceController,
-        chaletAreaController: _chaletAreaController,
-        bedroomsController: _bedroomsController,
-        bathroomsController: _bathroomsController,
-        emailController: _emailController,
-        childrenCountController: _childrenCountController,
-        discountValueController: _discountValueController,
-        autoFillCallback: _autoFillUserData,
-      );
-    }
+    // Use AppCubit provided directly
+    return _OwnerScreenContent(
+      formKey: _formKey,
+      chaletNameController: _chaletNameController,
+      nameController: _nameController,
+      descriptionController: _descriptionController,
+      phoneController: _phoneController,
+      locationController: _locationController,
+      priceController: _priceController,
+      chaletAreaController: _chaletAreaController,
+      bedroomsController: _bedroomsController,
+      bathroomsController: _bathroomsController,
+      emailController: _emailController,
+      childrenCountController: _childrenCountController,
+      discountValueController: _discountValueController,
+      autoFillCallback: _autoFillUserData,
+    );
   }
 }
 
@@ -178,11 +133,11 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   void _autoFillUserData(BuildContext context) {
     if (!_isInitialized && mounted) {
       try {
-        final authCubit = context.read<AuthCubit>();
-        final currentUser = authCubit.getCurrentUser();
+        final appCubit = context.read<AppCubit>();
+        final currentUser = appCubit.authCubit.getCurrentUser();
 
         if (currentUser != null) {
-          final ownerCubit = context.read<OwnerCubit>();
+          final ownerCubit = appCubit.ownerCubit;
 
           if (widget.nameController.text.isEmpty) {
             widget.nameController.text = currentUser.name;
@@ -219,11 +174,24 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorManager.grey50,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildModernAppBar(),
-      body: BlocBuilder<OwnerCubit, OwnerState>(
+      body: BlocBuilder<AppCubit, AppState>(
+        buildWhen: (previous, current) {
+          return current is AppAuthenticated &&
+              (previous is! AppAuthenticated ||
+                  current.ownerFormData != previous.ownerFormData);
+        },
         builder: (context, state) {
-          final data = context.read<OwnerCubit>().currentData;
+          final ownerData = (state is AppAuthenticated)
+              ? state.ownerFormData
+              : null;
+
+          // If strictly data-driven, use ownerData.
+          // Fallback to cubit.currentData if state isn't populated yet (though it should be).
+          final data =
+              ownerData ?? context.read<AppCubit>().ownerCubit.currentData;
 
           // Sync controllers with state
           _syncControllers(data);
@@ -249,8 +217,10 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                     child: ImageUploadSection(
                       images: data.uploadedImages,
                       onAdd: () => HelperImage().addSampleImages(context),
-                      onRemove: (index) =>
-                          context.read<OwnerCubit>().removeChaletImage(index),
+                      onRemove: (index) => context
+                          .read<AppCubit>()
+                          .ownerCubit
+                          .removeChaletImage(index),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -285,16 +255,20 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                   const SizedBox(height: 20),
 
                   // Availability
-                  _buildAvailabilitySection(context, state),
+                  _buildAvailabilitySection(context, data),
                   const SizedBox(height: 20),
 
                   // Amenities
                   AmenitiesSelectionSection(
                     selectedAmenities: context
-                        .read<OwnerCubit>()
+                        .read<AppCubit>()
+                        .ownerCubit
                         .getAmenitiesMap(),
                     onAmenityChanged: (key, value) {
-                      context.read<OwnerCubit>().updateAmenity(key, value);
+                      context.read<AppCubit>().ownerCubit.updateAmenity(
+                        key,
+                        value,
+                      );
                     },
                   ),
                   const SizedBox(height: 32),
@@ -471,7 +445,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             hint: 'Enter chalet name',
             validator: (v) =>
                 (v == null || v.isEmpty) ? 'Please enter chalet name' : null,
-            onChanged: (v) => context.read<OwnerCubit>().updateChaletName(v),
+            onChanged: (v) =>
+                context.read<AppCubit>().ownerCubit.updateChaletName(v),
           ),
           const SizedBox(height: 16),
           _buildModernTextField(
@@ -483,7 +458,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             maxLines: 5,
             validator: (v) =>
                 (v == null || v.isEmpty) ? 'Please enter description' : null,
-            onChanged: (v) => context.read<OwnerCubit>().updateDescription(v),
+            onChanged: (v) =>
+                context.read<AppCubit>().ownerCubit.updateDescription(v),
           ),
         ],
       ),
@@ -522,7 +498,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                 if (addr != null && addr.isNotEmpty) {
                   widget.locationController.text = addr;
                   if (mounted) {
-                    context.read<OwnerCubit>().updateGeo(
+                    context.read<AppCubit>().ownerCubit.updateGeo(
                       lat: lat ?? 0,
                       lon: lon ?? 0,
                       address: addr,
@@ -532,7 +508,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               } else if (selected is String && selected.isNotEmpty) {
                 widget.locationController.text = selected;
                 if (mounted) {
-                  context.read<OwnerCubit>().updateLocation(selected);
+                  context.read<AppCubit>().ownerCubit.updateLocation(selected);
                 }
               }
             },
@@ -582,7 +558,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             keyboardType: TextInputType.number,
             validator: (v) =>
                 (v == null || v.isEmpty) ? 'Please enter price' : null,
-            onChanged: (v) => context.read<OwnerCubit>().updatePrice(v),
+            onChanged: (v) =>
+                context.read<AppCubit>().ownerCubit.updatePrice(v),
           ),
           const SizedBox(height: 16),
           // Chalet Area Field
@@ -594,7 +571,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             keyboardType: TextInputType.number,
             validator: (v) =>
                 (v == null || v.isEmpty) ? 'Please enter area' : null,
-            onChanged: (v) => context.read<OwnerCubit>().updateChaletArea(v),
+            onChanged: (v) =>
+                context.read<AppCubit>().ownerCubit.updateChaletArea(v),
           ),
           const SizedBox(height: 24),
           Row(
@@ -610,7 +588,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       (v == null || v.isEmpty) ? 'Required' : null,
                   onChanged: (v) {
                     final value = int.tryParse(v) ?? 0;
-                    context.read<OwnerCubit>().updateBedrooms(value);
+                    context.read<AppCubit>().ownerCubit.updateBedrooms(value);
                   },
                 ),
               ),
@@ -626,7 +604,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       (v == null || v.isEmpty) ? 'Required' : null,
                   onChanged: (v) {
                     final value = int.tryParse(v) ?? 0;
-                    context.read<OwnerCubit>().updateBathrooms(value);
+                    context.read<AppCubit>().ownerCubit.updateBathrooms(value);
                   },
                 ),
               ),
@@ -658,7 +636,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               Switch(
                 value: data.discountEnabled,
                 onChanged: (value) {
-                  context.read<OwnerCubit>().updateDiscountEnabled(value);
+                  context.read<AppCubit>().ownerCubit.updateDiscountEnabled(
+                    value,
+                  );
                 },
                 activeColor: ColorManager.kPrimaryGradient.colors.first,
               ),
@@ -711,7 +691,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       },
                     );
                     if (picked != null) {
-                      context.read<OwnerCubit>().updateAvailableFrom(picked);
+                      context.read<AppCubit>().ownerCubit.updateAvailableFrom(
+                        picked,
+                      );
                     }
                   },
                 ),
@@ -749,7 +731,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       },
                     );
                     if (picked != null) {
-                      context.read<OwnerCubit>().updateAvailableTo(picked);
+                      context.read<AppCubit>().ownerCubit.updateAvailableTo(
+                        picked,
+                      );
                     }
                   },
                 ),
@@ -893,7 +877,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               return null;
             },
             onChanged: (v) {
-              context.read<OwnerCubit>().updateDiscountValue(v);
+              context.read<AppCubit>().ownerCubit.updateDiscountValue(v);
             },
           ),
           const SizedBox(height: 24),
@@ -971,7 +955,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   }) {
     return GestureDetector(
       onTap: () {
-        context.read<OwnerCubit>().updateDiscountType(value);
+        context.read<AppCubit>().ownerCubit.updateDiscountType(value);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -1032,7 +1016,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             },
             onChanged: (v) {
               final value = int.tryParse(v);
-              context.read<OwnerCubit>().updateChildrenCount(value);
+              context.read<AppCubit>().ownerCubit.updateChildrenCount(value);
             },
           ),
         ],
@@ -1090,7 +1074,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               final isSelected = data.features.contains(featureName);
               return GestureDetector(
                 onTap: () {
-                  context.read<OwnerCubit>().toggleFeature(featureName);
+                  context.read<AppCubit>().ownerCubit.toggleFeature(
+                    featureName,
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -1171,7 +1157,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                             ? Icons.check_circle_rounded
                             : Icons.radio_button_unchecked,
                         size: 20,
-                        color: isSelected ? ColorManager.white : ColorManager.grey400,
+                        color: isSelected
+                            ? ColorManager.white
+                            : ColorManager.grey400,
                       ),
                     ],
                   ),

@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/services/invoice_service.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/booking/widgets/booking_ticket_widget.dart';
 import 'package:intl/intl.dart' as intl;
@@ -15,19 +15,23 @@ class UserInvoicesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final user = context.read<AuthCubit>().state is AuthSuccess
-        ? (context.read<AuthCubit>().state as AuthSuccess).user
-        : null;
+    final appCubit = context.read<AppCubit>();
+    final user = appCubit.getCurrentUser();
 
     if (user == null) {
       return Scaffold(
-        backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorManager.darkBackground121212
+            : ColorManager.white,
         body: const Center(child: Text('Please login first')),
       );
     }
 
+    // Trigger booking load
+    appCubit.bookingCubit.loadUserBookings(user.uid);
+
     return BlocProvider.value(
-      value: context.read<BookingCubit>()..loadUserBookings(user.uid),
+      value: appCubit,
       child: Scaffold(
         backgroundColor: isDark
             ? ColorManager.darkBackground121212
@@ -35,9 +39,13 @@ class UserInvoicesPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('فواتير الحجز'),
           centerTitle: true,
-          backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+          backgroundColor: isDark
+              ? ColorManager.transparent
+              : ColorManager.white,
           elevation: 0,
-          leading: BackButton(color: isDark ? ColorManager.white : ColorManager.black),
+          leading: BackButton(
+            color: isDark ? ColorManager.white : ColorManager.black,
+          ),
           titleTextStyle: TextStyle(
             color: isDark ? ColorManager.white : ColorManager.black,
             fontSize: 20,
@@ -53,17 +61,27 @@ class UserInvoicesPage extends StatelessWidget {
             ),
           ),
         ),
-        body: BlocBuilder<BookingCubit, BookingState>(
+        body: BlocBuilder<AppCubit, AppState>(
           builder: (context, state) {
-            if (state.isLoading) {
+            bool isLoading = false;
+            List<Booking> bookings = [];
+
+            if (state is AppAuthenticated) {
+              isLoading = state.isBookingsLoading;
+              bookings = state.bookings;
+            }
+
+            if (isLoading) {
               return Center(
                 child: CircularProgressIndicator(
-                  color: isDark ? ColorManager.white : ColorManager.primaryColor,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.primaryColor,
                 ),
               );
             }
 
-            final bookings = state.bookings;
+            // final bookings = state.bookings; // Already assigned above
 
             if (bookings.isEmpty) {
               return Center(
@@ -81,7 +99,9 @@ class UserInvoicesPage extends StatelessWidget {
                       child: Icon(
                         Icons.receipt_long_outlined,
                         size: 64,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey400,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey400,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -89,7 +109,9 @@ class UserInvoicesPage extends StatelessWidget {
                       'لا توجد فواتير حجز حالياً',
                       style: TextStyle(
                         fontSize: 18,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -98,7 +120,9 @@ class UserInvoicesPage extends StatelessWidget {
                       'ستظهر فواتيرك هنا بعد إتمام الحجوزات',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey700,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey700,
                       ),
                     ),
                   ],
@@ -130,15 +154,16 @@ class _InvoiceCard extends StatelessWidget {
 
   Color _getStatusColor() {
     // Check if payment was rejected
-    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+    final isPaymentRejected =
+        booking.status == BookingStatus.awaitingPayment &&
         (booking.paymentRejected == true ||
             (booking.adminPaymentNotes != null &&
                 booking.adminPaymentNotes!.isNotEmpty));
-    
+
     if (isPaymentRejected) {
       return ColorManager.red;
     }
-    
+
     switch (booking.status) {
       case BookingStatus.confirmed:
       case BookingStatus.completed:
@@ -158,15 +183,16 @@ class _InvoiceCard extends StatelessWidget {
 
   String _getStatusText() {
     // Check if payment was rejected
-    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+    final isPaymentRejected =
+        booking.status == BookingStatus.awaitingPayment &&
         (booking.paymentRejected == true ||
             (booking.adminPaymentNotes != null &&
                 booking.adminPaymentNotes!.isNotEmpty));
-    
+
     if (isPaymentRejected) {
       return 'مرفوض';
     }
-    
+
     switch (booking.status) {
       case BookingStatus.confirmed:
         return 'مؤكد';
@@ -243,7 +269,9 @@ class _InvoiceCard extends StatelessWidget {
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isDark ? ColorManager.grey800 : ColorManager.white,
+                          color: isDark
+                              ? ColorManager.grey800
+                              : ColorManager.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -255,7 +283,9 @@ class _InvoiceCard extends StatelessWidget {
                         child: IconButton(
                           icon: Icon(
                             Icons.close_rounded,
-                            color: isDark ? ColorManager.white : ColorManager.black,
+                            color: isDark
+                                ? ColorManager.white
+                                : ColorManager.black,
                           ),
                           onPressed: () => Navigator.pop(ctx),
                         ),
@@ -281,7 +311,9 @@ class _InvoiceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+                        color: isDark
+                            ? ColorManager.darkSurface1E1E1E
+                            : ColorManager.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -394,7 +426,9 @@ class _InvoiceCard extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletTextPrimaryLight,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -484,13 +518,17 @@ class _InvoiceCard extends StatelessWidget {
                         Icon(
                           Icons.calendar_today_rounded,
                           size: 16,
-                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                          color: isDark
+                              ? ColorManager.white70
+                              : ColorManager.grey600,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           intl.DateFormat('dd/MM/yyyy').format(booking.from),
                           style: TextStyle(
-                            color: isDark ? ColorManager.white70 : ColorManager.grey700,
+                            color: isDark
+                                ? ColorManager.white70
+                                : ColorManager.grey700,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),

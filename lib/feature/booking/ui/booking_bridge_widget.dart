@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
@@ -796,10 +796,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               .doc();
                           final bookingWithId = booking.copyWith(id: docRef.id);
 
-                          widget.parentContext.read<BookingCubit>().addBooking(
-                            bookingWithId,
-                          );
-
+                          widget.parentContext
+                              .read<AppCubit>()
+                              .bookingCubit
+                              .addBooking(bookingWithId);
                           // Save with the pre-generated ID
                           await docRef.set(bookingWithId.toMap());
 
@@ -818,9 +818,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           );
                         } catch (e) {
                           debugPrint('Error confirming booking: $e');
-                          widget.parentContext.read<BookingCubit>().addBooking(
-                            booking,
-                          );
+                          widget.parentContext
+                              .read<AppCubit>()
+                              .bookingCubit
+                              .addBooking(booking);
                         }
                         SnackBarHelper.showSuccess(
                           widget.parentContext,
@@ -878,12 +879,12 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     //   status: BookingStatus.rejected,
                     // );
                     // try {
-                    //   widget.parentContext.read<BookingCubit>().addBooking(
+                    //   widget.parentContext.read<AppCubit>().bookingCubit.addBooking(
                     //     booking,
                     //   );
                     //   _saveToFirestore(booking);
                     // } catch (_) {
-                    //   context.read<BookingCubit>().addBooking(booking);
+                    //   context.read<AppCubit>().bookingCubit.addBooking(booking);
                     // }
                     SnackBarHelper.showError(
                       widget.parentContext,

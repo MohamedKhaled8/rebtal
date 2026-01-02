@@ -6,8 +6,8 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
-import 'package:rebtal/core/utils/validation/auth_validator.dart';
-import 'package:rebtal/core/utils/failure.dart';
+import 'package:rebtal/core/utils/validators/auth_validator.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 
 import 'package:rebtal/feature/auth/domain/usecases/register_usecase.dart';

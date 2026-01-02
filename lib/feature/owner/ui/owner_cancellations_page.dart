@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
@@ -25,8 +25,17 @@ class OwnerCancellationsPage extends StatelessWidget {
         elevation: 0,
         foregroundColor: isDark ? ColorManager.white : ColorManager.black,
       ),
-      body: BlocBuilder<BookingCubit, BookingState>(
+      body: BlocBuilder<AppCubit, AppState>(
+        buildWhen: (previous, current) {
+          if (current is AppAuthenticated && previous is AppAuthenticated) {
+            return current.bookings != previous.bookings;
+          }
+          return true;
+        },
         builder: (context, state) {
+          if (state is! AppAuthenticated) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final cancelledBookings = state.bookings
               .where((b) => b.status == BookingStatus.cancelled)
               .toList();
@@ -167,7 +176,9 @@ class _CancelledBookingCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorManager.white
+                        : ColorManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -224,7 +235,9 @@ class _CancelledBookingCard extends StatelessWidget {
                         : ColorManager.grey50,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey200,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey200,
                     ),
                   ),
                   child: Column(
@@ -337,7 +350,11 @@ class _CancelledBookingCard extends StatelessWidget {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: textColor ?? (isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
+                  color:
+                      textColor ??
+                      (isDark
+                          ? ColorManager.white
+                          : ColorManager.chaletTextPrimaryLight),
                   fontWeight: FontWeight.w500,
                 ),
               ),

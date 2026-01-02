@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/home/ui/home_screen.dart';
@@ -32,11 +33,16 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthCubit, AuthState>(
+    // Access AuthCubit through AppCubit
+    final appCubit = context.read<AppCubit>();
+    final authCubit = appCubit.authCubit;
+
+    return BlocBuilder(
+      bloc: authCubit,
       builder: (context, state) {
         final currentUser = (state is AuthSuccess)
             ? state.user
-            : context.read<AuthCubit>().getCurrentUser();
+            : authCubit.getCurrentUser();
 
         if (currentUser == null) {
           return const Scaffold(
@@ -44,7 +50,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           );
         }
 
-        final role = context.read<AuthCubit>().getCurrentRole();
+        final role = authCubit.getCurrentRole();
         final List<Widget> screens;
         final List<NavItem> bottomNavItems;
 
@@ -122,6 +128,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 }
               },
               child: Scaffold(
+                resizeToAvoidBottomInset: false,
                 backgroundColor: Colors.transparent,
                 body: screens[safeIndex],
 

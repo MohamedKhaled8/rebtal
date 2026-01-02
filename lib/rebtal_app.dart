@@ -1,12 +1,9 @@
 import 'package:rebtal/core/Router/app_router.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
-import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:screen_go/screen_go.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/core/utils/theme/app_theme.dart';
 
 import 'package:flutter/foundation.dart';
@@ -19,25 +16,24 @@ class RebtalApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => AuthCubit(getIt())),
-        BlocProvider(create: (context) => BookingCubit()),
-        BlocProvider(create: (context) => ThemeCubit()),
-        BlocProvider(create: (context) => NotificationCubit()),
-      ],
+    // ✅ SINGLE BlocProvider - provides AppCubit which coordinates all app state
+    return BlocProvider<AppCubit>(
+      create: (context) => getIt<AppCubit>(),
       child: ScreenGo(
         materialApp: true,
         builder: (context, deviceInfo) {
-          return BlocBuilder<ThemeCubit, ThemeState>(
-            builder: (context, state) {
+          // ✅ Listen to AppCubit for theme changes
+          return BlocBuilder<AppCubit, AppState>(
+            builder: (context, appState) {
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
-                theme: AppTheme.getLightTheme(primaryColor: state.primaryColor),
-                darkTheme: AppTheme.getDarkTheme(
-                  primaryColor: state.primaryColor,
+                theme: AppTheme.getLightTheme(
+                  primaryColor: appState.primaryColor,
                 ),
-                themeMode: state.themeMode,
+                darkTheme: AppTheme.getDarkTheme(
+                  primaryColor: appState.primaryColor,
+                ),
+                themeMode: appState.themeMode,
                 // On web, go directly to login to avoid splash auth timing issues
                 initialRoute: kIsWeb ? Routes.loginScreen : Routes.splashScreen,
                 onGenerateRoute: appRouter.generateRoute,

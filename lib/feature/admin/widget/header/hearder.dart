@@ -4,7 +4,7 @@ import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 class HeaderAdmin extends StatelessWidget {
   const HeaderAdmin({super.key});
@@ -14,11 +14,11 @@ class HeaderAdmin extends StatelessWidget {
     final isLargeScreen = MediaQuery.of(context).size.width > 800;
     final cubit = context.read<AdminCubit>();
 
-    return BlocBuilder<ThemeCubit, ThemeState>(
-      builder: (context, themeState) {
+    return BlocBuilder<AppCubit, AppState>(
+      builder: (context, appState) {
         final isDark =
-            themeState.themeMode == ThemeMode.dark ||
-            (themeState.themeMode == ThemeMode.system &&
+            (appState.themeMode == ThemeMode.dark) ||
+            (appState.themeMode == ThemeMode.system &&
                 MediaQuery.of(context).platformBrightness == Brightness.dark);
 
         return Container(

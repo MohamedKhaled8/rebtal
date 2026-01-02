@@ -3,7 +3,7 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 class EmptyBookingsState extends StatelessWidget {
   const EmptyBookingsState({super.key});
@@ -118,7 +118,7 @@ class EmptyBookingsState extends StatelessWidget {
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      context.read<BookingCubit>().loadBookings();
+                      context.read<AppCubit>().bookingCubit.loadBookings();
                       SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
                     },
                     icon: const Icon(Icons.refresh_rounded, size: 20),

@@ -7,12 +7,37 @@ import 'package:rebtal/feature/auth/domain/usecases/login_usecase.dart';
 import 'package:rebtal/feature/auth/domain/usecases/register_usecase.dart';
 import 'package:rebtal/feature/auth/domain/usecases/resend_email_verification_usecase.dart';
 import 'package:rebtal/feature/auth/domain/usecases/save_user_usecase.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
+import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 
 final GetIt getIt = GetIt.instance;
 
+/// Composition Root - Where all dependencies are wired together
+///
+/// This is the ONLY place where:
+/// - Dependencies are created
+/// - Dependencies are injected
+/// - Object graph is composed
+///
+/// Following Clean Architecture and Dependency Inversion Principle:
+/// - High-level modules (AppCubit) depend on abstractions
+/// - Low-level modules (Feature Cubits) are injected
+/// - Dependencies point inward (toward business logic)
 Future<void> setupGetIt() async {
+  // ============================================================
+  // INFRASTRUCTURE LAYER
+  // ============================================================
+
   // Register CacheHelper
   getIt.registerLazySingleton<CacheHelper>(() => CacheHelper());
+
+  // ============================================================
+  // DATA LAYER
+  // ============================================================
 
   // Register OnboardingRepository
   getIt.registerLazySingleton<OnboardingRepository>(
@@ -21,6 +46,10 @@ Future<void> setupGetIt() async {
 
   // Register AuthRepository
   getIt.registerLazySingleton<BaseAuthRepository>(() => AuthRepository());
+
+  // ============================================================
+  // DOMAIN LAYER (Use Cases)
+  // ============================================================
 
   // Register UseCases
   getIt.registerLazySingleton<LoginUseCase>(
@@ -34,5 +63,35 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<SaveUserUseCase>(
     () => SaveUserUseCase(getIt<BaseAuthRepository>()),
+  );
+
+  // ============================================================
+  // PRESENTATION LAYER (Feature Cubits)
+  // ============================================================
+
+  getIt.registerLazySingleton<AuthCubit>(
+    () => AuthCubit(getIt<BaseAuthRepository>()),
+  );
+
+  getIt.registerLazySingleton<BookingCubit>(() => BookingCubit());
+
+  getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit());
+
+  getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
+
+  getIt.registerLazySingleton<OwnerCubit>(() => OwnerCubit());
+
+  // ============================================================
+  // APPLICATION LAYER (App Coordinator)
+  // ============================================================
+
+  getIt.registerLazySingleton<AppCubit>(
+    () => AppCubit(
+      authCubit: getIt<AuthCubit>(),
+      bookingCubit: getIt<BookingCubit>(),
+      themeCubit: getIt<ThemeCubit>(),
+      notificationCubit: getIt<NotificationCubit>(),
+      ownerCubit: getIt<OwnerCubit>(),
+    ),
   );
 }

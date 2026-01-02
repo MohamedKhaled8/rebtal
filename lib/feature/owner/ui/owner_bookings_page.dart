@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_card.dart';
@@ -19,19 +18,14 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthCubit>().state;
-      if (authState is AuthSuccess) {
-        context.read<BookingCubit>().loadOwnerBookings(authState.user.uid);
-      }
-    });
+    // AppCubit manages booking loading via listeners
+    // but explicit refresh can be triggered if needed.
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    String ownerUid = '';
-    if (authState is AuthSuccess) ownerUid = authState.user.uid;
+    final appCubit = context.read<AppCubit>();
+    // final authState = appCubit.state; // We check state in builder usually
 
     final isDark = DynamicThemeManager.isDarkMode(context);
 
@@ -47,7 +41,9 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
             floating: true,
             pinned: false,
             elevation: 0,
-            backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+            backgroundColor: isDark
+                ? ColorManager.transparent
+                : ColorManager.white,
             title: const Text(
               'حجوزاتي',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -61,8 +57,13 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
                 ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
-                  if (ownerUid.isNotEmpty) {
-                    context.read<BookingCubit>().loadOwnerBookings(ownerUid);
+                  final state = appCubit.state;
+                  if (state is AppAuthenticated) {
+                    // Since AppCubit already listens to booking cubit changes,
+                    // we just need to trigger the fetch in the underlying cubit.
+                    // AppCubit doesn't expose `loadOwnerBookings` directly in facade yet,
+                    // but we can access the cubit via getter.
+                    appCubit.bookingCubit.loadOwnerBookings(state.user.uid);
                   }
                 },
               ),
@@ -70,9 +71,22 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
           ),
 
           // المحتوى
-          BlocBuilder<BookingCubit, BookingState>(
+          BlocBuilder<AppCubit, AppState>(
+            buildWhen: (previous, current) {
+              if (current is AppAuthenticated && previous is AppAuthenticated) {
+                return current.bookings != previous.bookings ||
+                    current.isBookingsLoading != previous.isBookingsLoading;
+              }
+              return true;
+            },
             builder: (context, state) {
-              if (state.isLoading) {
+              if (state is! AppAuthenticated) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (state.isBookingsLoading) {
                 return const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
                 );

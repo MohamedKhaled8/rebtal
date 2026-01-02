@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_state.dart';
@@ -12,7 +13,7 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AuthCubit>().getCurrentUser();
+    final user = context.read<AppCubit>().authCubit.getCurrentUser();
     if (user == null) {
       return const Center(child: CircularProgressIndicator());
     }

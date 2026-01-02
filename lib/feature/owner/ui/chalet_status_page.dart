@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/owner/widget/owner_chalets_list.dart';
 
 class ChaletStatusPage extends StatelessWidget {
@@ -11,7 +11,7 @@ class ChaletStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = context.read<AuthCubit>().getCurrentUser();
+    final currentUser = context.read<AppCubit>().authCubit.getCurrentUser();
     final ownerId = currentUser?.uid;
 
     String title;

@@ -3,6 +3,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/logic/cubit/add_chalet_cubit.dart';
 import 'package:rebtal/core/utils/constant/app_constants.dart';
 
@@ -47,7 +48,15 @@ class _AddChaletViewState extends State<_AddChaletView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add New Chalet")),
+      appBar: AppBar(
+        backgroundColor: DynamicThemeManager.isDarkMode(context)
+            ? ColorManager.profileSurfaceDark
+            : ColorManager.white,
+        title: const Text(
+          "Add New Chalet",
+          style: TextStyle(color: Colors.red),
+        ),
+      ),
       body: BlocListener<AddChaletCubit, AddChaletState>(
         listener: (context, state) {
           if (state is AddChaletSuccess) {
@@ -235,7 +244,7 @@ class _AddChaletViewState extends State<_AddChaletView> {
                       child: InkWell(
                         onTap: () =>
                             context.read<AddChaletCubit>().removeImage(index),
-                        child:  CircleAvatar(
+                        child: CircleAvatar(
                           radius: 10,
                           backgroundColor: ColorManager.red,
                           child: Icon(

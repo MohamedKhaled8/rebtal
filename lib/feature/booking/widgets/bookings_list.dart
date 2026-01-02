@@ -4,7 +4,7 @@ import 'package:rebtal/core/Router/routes.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 
@@ -54,7 +54,8 @@ class BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDarkMode = DynamicThemeManager.isDarkMode(context);
     // Check if payment was rejected (awaitingPayment with paymentRejected flag or adminPaymentNotes)
-    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+    final isPaymentRejected =
+        booking.status == BookingStatus.awaitingPayment &&
         (booking.paymentRejected == true ||
             (booking.adminPaymentNotes != null &&
                 booking.adminPaymentNotes!.isNotEmpty));
@@ -416,13 +417,13 @@ class BookingCard extends StatelessWidget {
                               : isConfirmed
                               ? Colors.redAccent.shade400
                               : (isDarkMode
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.grey.shade100),
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.grey.shade100),
                           foregroundColor: isApproved || isConfirmed
                               ? Colors.white
                               : (isDarkMode
-                                  ? Colors.white54
-                                  : Colors.grey.shade600),
+                                    ? Colors.white54
+                                    : Colors.grey.shade600),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: isApproved || isConfirmed ? 4 : 0,
                           shadowColor: isApproved || isConfirmed
@@ -728,7 +729,7 @@ class BookingCard extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                context.read<BookingCubit>().cancelBookingWithRefund(
+                context.read<AppCubit>().bookingCubit.cancelBookingWithRefund(
                   booking.id,
                   refundInfo.refundAmount,
                   refundInfo.message,

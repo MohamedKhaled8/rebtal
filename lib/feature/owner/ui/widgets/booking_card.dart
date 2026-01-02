@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_status_chip.dart';
@@ -135,7 +135,7 @@ class BookingCard extends StatelessWidget {
                               children: [
                                 Text(
                                   booking.chaletName,
-                                  style:  TextStyle(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: ColorManager.white,
@@ -609,7 +609,7 @@ class BookingCard extends StatelessWidget {
 
   void _updateStatus(BuildContext context, BookingStatus status) async {
     try {
-      await context.read<BookingCubit>().updateBookingStatus(
+      await context.read<AppCubit>().bookingCubit.updateBookingStatus(
         booking.id,
         status,
       );

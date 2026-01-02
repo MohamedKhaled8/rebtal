@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/profile/widget/profile_content.dart';
 import 'package:rebtal/feature/owner/ui/chalet_status_page.dart';
 
@@ -10,34 +10,39 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
-      // listenWhen: (prev, curr) => prev.runtimeType != curr.runtimeType,
+    return BlocConsumer<AppCubit, AppState>(
       listener: (context, state) {
-        if (state is AuthInitial) {
+        if (state is AppUnauthenticated) {
           Navigator.pushNamedAndRemoveUntil(
             context,
             Routes.loginScreen,
             (route) => false,
           );
-        } else if (state is AuthFailure) {
+        } else if (state is AppError) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(state.error)));
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       builder: (context, state) {
-        if (state is AuthSuccess) {
+        if (state is AppAuthenticated) {
           return ProfileContent(
             user: state.user,
             onLogout: () => _showLogoutDialog(context),
             onNavigateToChalets: _navigateToChalets,
           );
-        } else if (state is AuthLoading) {
+        } else if (state is AppInitial) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
-        } else {
+        } else if (state is AppUnauthenticated) {
+          // Should have navigated away, but show placeholder
           return const Scaffold(body: Center(child: Text('يرجى تسجيل الدخول')));
+        } else {
+          // Fallback
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
       },
     );
@@ -73,7 +78,7 @@ class ProfilePage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              context.read<AuthCubit>().logout();
+              context.read<AppCubit>().logout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),

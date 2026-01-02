@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
@@ -40,7 +41,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
   void initState() {
     super.initState();
     try {
-      final user = context.read<AuthCubit>().getCurrentUser();
+      final user = context.read<AppCubit>().authCubit.getCurrentUser();
       _userId = user?.uid;
     } catch (_) {}
     _checkFavoriteInitial();
@@ -369,7 +370,9 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           Text(
                             '4.8', // Placeholder rating
                             style: TextStyle(
-                              color: isDark ? ColorManager.white : ColorManager.chaletGrey800,
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletGrey800,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -531,8 +534,12 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? ColorManager.white : ColorManager.black,
-                        foregroundColor: isDark ? ColorManager.black : ColorManager.white,
+                        backgroundColor: isDark
+                            ? ColorManager.white
+                            : ColorManager.black,
+                        foregroundColor: isDark
+                            ? ColorManager.black
+                            : ColorManager.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -621,11 +628,18 @@ class PublicChaletsList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: ColorManager.chaletUnavailableRed),
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: ColorManager.chaletUnavailableRed,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'خطأ في تحميل الشاليهات',
-                  style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: ColorManager.chaletGrey500,
+                  ),
                 ),
               ],
             ),
@@ -644,7 +658,10 @@ class PublicChaletsList extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   emptyTitle ?? 'لا توجد شاليهات متاحة',
-                  style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: ColorManager.chaletGrey500,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -719,7 +736,10 @@ class PublicChaletsList extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       emptyTitle ?? 'لا توجد شاليهات متاحة',
-                      style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: ColorManager.chaletGrey500,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

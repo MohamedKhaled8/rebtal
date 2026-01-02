@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+// import 'package:rebtal/feature/auth/cubit/auth_cubit.dart'; // Accessed via AppCubit
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+// import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart'; // Accessed via AppState
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/painter/pattern_painter.dart';
 import 'package:rebtal/feature/profile/ui/user_invoices_page.dart';
@@ -327,8 +328,7 @@ class ProfileContent extends StatelessWidget {
                   const SizedBox(height: 16),
                   // Only show Chalet Management if the user is an Owner AND is in Owner View Mode
                   if (user.role.toLowerCase() == 'owner' &&
-                      context.read<AuthCubit>().getCurrentRole() ==
-                          'owner') ...[
+                      context.read<AppCubit>().getCurrentRole() == 'owner') ...[
                     Container(
                       decoration: BoxDecoration(
                         color: ColorManager.getProfileSurfaceAlt(isDark),
@@ -448,7 +448,7 @@ class ProfileContent extends StatelessWidget {
                           Builder(
                             builder: (context) {
                               final currentRole = context
-                                  .read<AuthCubit>()
+                                  .read<AppCubit>()
                                   .getCurrentRole();
                               final isOwnerView = currentRole == 'owner';
                               return ModernActionTile(
@@ -464,15 +464,15 @@ class ProfileContent extends StatelessWidget {
                                 color: ColorManager.blue2563EB,
                                 onTap: () {
                                   bottomNavIndex.value = 0;
-                                  context.read<AuthCubit>().toggleViewMode();
+                                  context.read<AppCubit>().toggleViewMode();
                                 },
                               );
                             },
                           ),
-                        BlocBuilder<ThemeCubit, ThemeState>(
-                          builder: (context, themeState) {
+                        BlocBuilder<AppCubit, AppState>(
+                          builder: (context, appState) {
                             final isDarkMode =
-                                themeState.themeMode == ThemeMode.dark;
+                                appState.themeMode == ThemeMode.dark;
                             return SwitchActionTile(
                               icon: isDarkMode
                                   ? Icons.dark_mode
@@ -486,7 +486,7 @@ class ProfileContent extends StatelessWidget {
                               color: ColorManager.profileAccent,
                               value: isDarkMode,
                               onChanged: (value) {
-                                context.read<ThemeCubit>().toggleTheme();
+                                context.read<AppCubit>().toggleTheme();
                               },
                             );
                           },

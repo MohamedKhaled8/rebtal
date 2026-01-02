@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rebtal/core/utils/failure.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
-import 'package:rebtal/core/utils/validation/auth_validator.dart';
+import 'package:rebtal/core/utils/validators/auth_validator.dart';
 
 import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
 

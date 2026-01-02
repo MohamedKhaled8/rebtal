@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
-import 'package:rebtal/feature/notifications/logic/notification_state.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+// import 'package:rebtal/feature/auth/cubit/auth_cubit.dart'; // Unused
+// import 'package:rebtal/feature/notifications/logic/notification_cubit.dart'; // Unused
+// import 'package:rebtal/feature/notifications/logic/notification_state.dart'; // Unused
 
 class NotificationIconButton extends StatelessWidget {
   const NotificationIconButton({super.key});
@@ -14,14 +15,18 @@ class NotificationIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return BlocBuilder<NotificationCubit, NotificationState>(
+    return BlocBuilder<AppCubit, AppState>(
+      // Only rebuild if notification count changes (or auth state)
+      buildWhen: (previous, current) {
+        if (current is AppAuthenticated && previous is AppAuthenticated) {
+          return current.unreadNotifications != previous.unreadNotifications;
+        }
+        return current is AppAuthenticated != previous is AppAuthenticated;
+      },
       builder: (context, state) {
-        // Start listening to notifications if user is logged in
-        final authState = context.read<AuthCubit>().state;
-        if (authState is AuthSuccess) {
-          context.read<NotificationCubit>().listenToNotifications(
-            authState.user.uid,
-          );
+        int unreadCount = 0;
+        if (state is AppAuthenticated) {
+          unreadCount = state.unreadNotifications;
         }
 
         return Stack(
@@ -53,7 +58,7 @@ class NotificationIconButton extends StatelessWidget {
             ),
 
             // Badge
-            if (state is NotificationLoaded && state.unreadCount > 0)
+            if (unreadCount > 0)
               Positioned(
                 top: 6,
                 right: 6,
@@ -72,7 +77,7 @@ class NotificationIconButton extends StatelessWidget {
                     minHeight: 18,
                   ),
                   child: Text(
-                    state.unreadCount > 9 ? '9+' : '${state.unreadCount}',
+                    unreadCount > 9 ? '9+' : '$unreadCount',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

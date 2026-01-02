@@ -6,7 +6,7 @@ import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 import 'package:rebtal/feature/admin/widget/desktop/desktop_sidebar_widget.dart';
 import 'package:rebtal/feature/admin/widget/header/hearder.dart';
 import 'package:rebtal/feature/admin/widget/mobile/mobile_drawer_widget.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 // small shared search notifier used by lists (no constructor changes to tabs)
 class AdminSearch {
@@ -23,11 +23,11 @@ class AdminDashboard extends StatelessWidget {
 
     return BlocProvider(
       create: (context) => AdminCubit(),
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (context, themeState) {
+      child: BlocBuilder<AppCubit, AppState>(
+        builder: (context, appState) {
           final isDark =
-              themeState.themeMode == ThemeMode.dark ||
-              (themeState.themeMode == ThemeMode.system &&
+              (appState.themeMode == ThemeMode.dark) ||
+              (appState.themeMode == ThemeMode.system &&
                   MediaQuery.of(context).platformBrightness == Brightness.dark);
 
           return BlocBuilder<AdminCubit, AdminState>(

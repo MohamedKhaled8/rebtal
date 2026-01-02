@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:rebtal/core/utils/failure.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
 
 class ResendEmailVerificationUseCase {

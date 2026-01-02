@@ -5,7 +5,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
@@ -125,7 +125,7 @@ class _PaymentMethodSelectionPageState
     setState(() => _isSubmitting = true);
 
     try {
-      await context.read<BookingCubit>().uploadPaymentProof(
+      await context.read<AppCubit>().bookingCubit.uploadPaymentProof(
         bookingId: widget.booking.id,
         proofImageUrl: null,
         transactionNumber: 'SENT_VIA_WHATSAPP',
@@ -169,7 +169,9 @@ class _PaymentMethodSelectionPageState
                     onPressed: _prevStep,
                     icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                      color: isDark
+                          ? ColorManager.white
+                          : ColorManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const Spacer(),
@@ -178,7 +180,9 @@ class _PaymentMethodSelectionPageState
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                      color: isDark
+                          ? ColorManager.white
+                          : ColorManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const Spacer(),
@@ -275,7 +279,9 @@ class _PaymentMethodSelectionPageState
                     child: Text(
                       '${step + 1}',
                       style: TextStyle(
-                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey600,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -288,7 +294,9 @@ class _PaymentMethodSelectionPageState
               fontSize: 12,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               color: isActive
-                  ? (isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight)
+                  ? (isDark
+                        ? ColorManager.white
+                        : ColorManager.chaletTextPrimaryLight)
                   : (isDark ? ColorManager.white70 : ColorManager.grey),
             ),
             child: Text(label),
@@ -341,7 +349,9 @@ class _PaymentMethodSelectionPageState
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+              color: isDark
+                  ? ColorManager.white
+                  : ColorManager.chaletTextPrimaryLight,
             ),
           ),
           const SizedBox(height: 16),
@@ -426,8 +436,14 @@ class _PaymentMethodSelectionPageState
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isDark
-                        ? [ColorManager.darkBlue2A2E4B, ColorManager.darkBlue161B30]
-                        : [ColorManager.chaletIconBackgroundLight, ColorManager.white],
+                        ? [
+                            ColorManager.darkBlue2A2E4B,
+                            ColorManager.darkBlue161B30,
+                          ]
+                        : [
+                            ColorManager.chaletIconBackgroundLight,
+                            ColorManager.white,
+                          ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -473,7 +489,9 @@ class _PaymentMethodSelectionPageState
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                          color: isDark
+                              ? ColorManager.white70
+                              : ColorManager.grey600,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -489,7 +507,9 @@ class _PaymentMethodSelectionPageState
                         'إجمالي المبلغ المستحق',
                         style: TextStyle(
                           fontSize: 14,
-                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                          color: isDark
+                              ? ColorManager.white70
+                              : ColorManager.grey600,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -545,7 +565,9 @@ class _PaymentMethodSelectionPageState
                         Container(
                           width: 1,
                           height: 30,
-                          color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                          color: isDark
+                              ? ColorManager.white10
+                              : ColorManager.grey300,
                         ),
                         _buildSummaryItem(
                           isDark,
@@ -583,7 +605,9 @@ class _PaymentMethodSelectionPageState
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorManager.white
+                    : ColorManager.chaletTextPrimaryLight,
               ),
             ),
           ],
@@ -698,7 +722,9 @@ class _PaymentMethodSelectionPageState
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: isDark ? ColorManager.white70 : ColorManager.grey700,
+                      color: isDark
+                          ? ColorManager.white70
+                          : ColorManager.grey700,
                     ),
                   ),
                 ],
@@ -761,7 +787,10 @@ class _PaymentMethodSelectionPageState
               gradient: LinearGradient(
                 colors: isDark
                     ? [ColorManager.darkBlue2A2D4E, ColorManager.darkBlue161B30]
-                    : [ColorManager.darkBlue2E335A.withOpacity(0.05), ColorManager.white],
+                    : [
+                        ColorManager.darkBlue2E335A.withOpacity(0.05),
+                        ColorManager.white,
+                      ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -793,7 +822,9 @@ class _PaymentMethodSelectionPageState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorManager.white
+                        : ColorManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -879,7 +910,9 @@ class _PaymentMethodSelectionPageState
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                          color: isDark
+                              ? ColorManager.white
+                              : ColorManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -988,10 +1021,14 @@ class _PaymentMethodSelectionPageState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.white.withOpacity(0.03) : ColorManager.white,
+        color: isDark
+            ? ColorManager.white.withOpacity(0.03)
+            : ColorManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? ColorManager.white10 : ColorManager.black.withOpacity(0.05),
+          color: isDark
+              ? ColorManager.white10
+              : ColorManager.black.withOpacity(0.05),
         ),
         boxShadow: !isDark
             ? [
@@ -1022,7 +1059,9 @@ class _PaymentMethodSelectionPageState
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorManager.white
+                        : ColorManager.chaletTextPrimaryLight,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -1036,7 +1075,11 @@ class _PaymentMethodSelectionPageState
               onTap: () {
                 HapticFeedback.mediumImpact();
                 Clipboard.setData(ClipboardData(text: value));
-                SnackBarHelper.showSuccess(context, 'تم نسخ $label', icon: Icons.copy);
+                SnackBarHelper.showSuccess(
+                  context,
+                  'تم نسخ $label',
+                  icon: Icons.copy,
+                );
               },
               borderRadius: BorderRadius.circular(12),
               child: Padding(
@@ -1115,7 +1158,9 @@ class _PaymentMethodSelectionPageState
                     elevation: 0,
                   ),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator(color: ColorManager.white)
+                      ? const CircularProgressIndicator(
+                          color: ColorManager.white,
+                        )
                       : const Text(
                           'إنهاء وتأكيد الحجز',
                           style: TextStyle(
@@ -1142,7 +1187,10 @@ class _PaymentMethodSelectionPageState
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [ColorManager.darkGreen1E3C29, ColorManager.darkGreen0F1E15]
+                    ? [
+                        ColorManager.darkGreen1E3C29,
+                        ColorManager.darkGreen0F1E15,
+                      ]
                     : [ColorManager.lightGreenE8F5E9, ColorManager.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -1167,7 +1215,11 @@ class _PaymentMethodSelectionPageState
                     color: ColorManager.whatsappGreen.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.phone, size: 54, color: ColorManager.whatsappGreen),
+                  child: Icon(
+                    Icons.phone,
+                    size: 54,
+                    color: ColorManager.whatsappGreen,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -1261,7 +1313,9 @@ class _PaymentMethodSelectionPageState
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                                color: isDark
+                                    ? ColorManager.white
+                                    : ColorManager.chaletTextPrimaryLight,
                               ),
                             ),
                           ],

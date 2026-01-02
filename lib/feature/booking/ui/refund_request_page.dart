@@ -3,7 +3,7 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 class RefundRequestPage extends StatefulWidget {
   final Booking booking;
@@ -78,7 +78,9 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+                  color: isDark
+                      ? ColorManager.darkSurface1E1E1E
+                      : ColorManager.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isDark ? ColorManager.white10 : ColorManager.grey300,
@@ -100,7 +102,9 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                            color: isDark
+                                ? ColorManager.white
+                                : ColorManager.chaletTextPrimaryLight,
                           ),
                         ),
                       ],
@@ -131,7 +135,10 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _refundPercentage > 0
-                        ? [ColorManager.green, ColorManager.chaletActionDarkGreen]
+                        ? [
+                            ColorManager.green,
+                            ColorManager.chaletActionDarkGreen,
+                          ]
                         : [ColorManager.red, ColorManager.chaletActionDarkRed],
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -238,17 +245,23 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 decoration: InputDecoration(
                   hintText: 'يرجى توضيح سبب إلغاء الحجز...',
                   filled: true,
-                  fillColor: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+                  fillColor: isDark
+                      ? ColorManager.darkSurface1E1E1E
+                      : ColorManager.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey300,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey300,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -259,7 +272,11 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     ),
                   ),
                 ),
-                style: TextStyle(color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
+                style: TextStyle(
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -271,7 +288,9 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                   decoration: BoxDecoration(
                     color: ColorManager.red.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: ColorManager.red.withOpacity(0.3)),
+                    border: Border.all(
+                      color: ColorManager.red.withOpacity(0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -303,19 +322,25 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     if (_reasonController.text.trim().isEmpty) {
-                      SnackBarHelper.showWarning(context, 'يرجى إدخال سبب الإلغاء');
+                      SnackBarHelper.showWarning(
+                        context,
+                        'يرجى إدخال سبب الإلغاء',
+                      );
                       return;
                     }
 
                     try {
-                      await context.read<BookingCubit>().requestRefund(
+                      await context.read<AppCubit>().bookingCubit.requestRefund(
                         bookingId: widget.booking.id,
                         reason: _reasonController.text.trim(),
                         refundAmount: _refundAmount,
                       );
 
                       if (context.mounted) {
-                        SnackBarHelper.showSuccess(context, 'تم تقديم طلب الاسترداد بنجاح');
+                        SnackBarHelper.showSuccess(
+                          context,
+                          'تم تقديم طلب الاسترداد بنجاح',
+                        );
 
                         Navigator.pop(context);
                       }

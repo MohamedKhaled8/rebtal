@@ -8,8 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
@@ -32,7 +31,7 @@ class HelperImage {
   ) async {
     final parentContext = context;
     final isDark = DynamicThemeManager.isDarkMode(context);
-    
+
     showDialog(
       context: context,
       barrierColor: ColorManager.black.withOpacity(0.6),
@@ -103,7 +102,9 @@ class HelperImage {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isChaletPhoto ? 'إضافة صور الشاليه' : 'تغيير الصورة الشخصية',
+                              isChaletPhoto
+                                  ? 'إضافة صور الشاليه'
+                                  : 'تغيير الصورة الشخصية',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
@@ -132,7 +133,9 @@ class HelperImage {
                       IconButton(
                         icon: Icon(
                           Icons.close_rounded,
-                          color: isDark ? ColorManager.white70 : ColorManager.chaletGrey500,
+                          color: isDark
+                              ? ColorManager.white70
+                              : ColorManager.chaletGrey500,
                         ),
                         onPressed: () => Navigator.pop(context),
                         padding: EdgeInsets.zero,
@@ -141,7 +144,7 @@ class HelperImage {
                     ],
                   ),
                 ),
-                
+
                 // Options
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -164,7 +167,11 @@ class HelperImage {
                         isDark: isDark,
                         onTap: () {
                           Navigator.pop(context);
-                          _pickImage(ImageSource.camera, isChaletPhoto, parentContext);
+                          _pickImage(
+                            ImageSource.camera,
+                            isChaletPhoto,
+                            parentContext,
+                          );
                         },
                       ),
                       const SizedBox(height: 16),
@@ -185,7 +192,11 @@ class HelperImage {
                         isDark: isDark,
                         onTap: () {
                           Navigator.pop(context);
-                          _pickImage(ImageSource.gallery, isChaletPhoto, parentContext);
+                          _pickImage(
+                            ImageSource.gallery,
+                            isChaletPhoto,
+                            parentContext,
+                          );
                         },
                       ),
                     ],
@@ -243,11 +254,7 @@ class HelperImage {
                     ),
                   ],
                 ),
-                child: Icon(
-                  icon,
-                  color: ColorManager.white,
-                  size: 32,
-                ),
+                child: Icon(icon, color: ColorManager.white, size: 32),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -307,7 +314,8 @@ class HelperImage {
 
       if (isChaletPhoto) {
         final validationErrors = await context
-            .read<OwnerCubit>()
+            .read<AppCubit>()
+            .ownerCubit // Access via AppCubit
             .addChaletImage(source);
         Navigator.of(context).pop();
 
@@ -329,7 +337,7 @@ class HelperImage {
       } else {
         // Profile picture - pick image directly
         Navigator.of(context).pop();
-        
+
         // Check permissions
         bool hasPermission = await _checkAndRequestPermissions(source);
         if (!hasPermission) {
@@ -357,11 +365,11 @@ class HelperImage {
 
           try {
             final profileUrl = await _uploadToCloudinary(File(pickedFile.path));
-            
+
             // Save to Firestore in Users/Owners collection
-            final authCubit = context.read<AuthCubit>();
+            final authCubit = context.read<AppCubit>().authCubit;
             final currentUser = authCubit.getCurrentUser();
-            
+
             if (currentUser != null) {
               String collectionName = 'Users';
               if (currentUser.role.toLowerCase().trim() == 'owner') {
@@ -380,7 +388,10 @@ class HelperImage {
             }
 
             Navigator.of(context).pop();
-            SnackBarHelper.showSuccess(context, 'تم تحديث الصورة الشخصية بنجاح!');
+            SnackBarHelper.showSuccess(
+              context,
+              'تم تحديث الصورة الشخصية بنجاح!',
+            );
           } catch (e) {
             Navigator.of(context).pop();
             SnackBarHelper.showError(context, 'خطأ في رفع الصورة: $e');
@@ -447,7 +458,7 @@ class HelperImage {
     BuildContext context,
     GlobalKey<FormState> formKey,
   ) async {
-    final data = context.read<OwnerCubit>().currentData;
+    final data = context.read<AppCubit>().ownerCubit.currentData;
     if (!formKey.currentState!.validate()) return;
 
     if (data.uploadedImages.isEmpty) {
@@ -475,7 +486,7 @@ class HelperImage {
         data.uploadedImages.map((img) => _uploadToCloudinary(img)),
       );
 
-      final ownerId = context.read<AuthCubit>().getCurrentUser()?.uid;
+      final ownerId = context.read<AppCubit>().getCurrentUser()?.uid;
       if (ownerId == null) {
         Navigator.of(context).pop();
         SnackBarHelper.showError(context, 'Error: Owner ID not found');

@@ -7,6 +7,7 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/firebase_index_creator.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
 
@@ -82,8 +83,9 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      // Otherwise check auth state
-      final authCubit = context.read<AuthCubit>();
+      // Access AuthCubit through AppCubit
+      final appCubit = context.read<AppCubit>();
+      final authCubit = appCubit.authCubit;
 
       if (authCubit.state is AuthSuccess) {
         _navigateBasedOnRole();
@@ -117,7 +119,11 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
+    // Access AuthCubit through AppCubit
+    final authCubit = context.read<AppCubit>().authCubit;
+
+    return BlocListener(
+      bloc: authCubit,
       listener: (context, state) {
         if (state is AuthSuccess) {
           _navigateBasedOnRole();

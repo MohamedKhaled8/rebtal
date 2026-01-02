@@ -5,7 +5,7 @@ import 'package:rebtal/core/utils/helper/extensions.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/services/invoice_service.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/model/chat_model.dart';
 
@@ -29,7 +29,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
   @override
   void initState() {
     super.initState();
-    final authCubit = context.read<AuthCubit>();
+    final authCubit = context.read<AppCubit>().authCubit;
     final user = authCubit.getCurrentUser();
     if (user != null) {
       // keep lightweight logging for debugging
@@ -76,7 +76,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorManager.darkBackground121212
+          : ColorManager.white,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -90,7 +92,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -120,7 +124,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       icon: const Icon(Icons.print),
                       label: const Text('طباعة'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                        foregroundColor: isDark
+                            ? ColorManager.white
+                            : ColorManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
@@ -146,7 +152,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       icon: const Icon(Icons.save_alt),
                       label: const Text('حفظ'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                        foregroundColor: isDark
+                            ? ColorManager.white
+                            : ColorManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
@@ -168,7 +176,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white70
+                      : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 48),
@@ -318,7 +328,11 @@ class BookingRequestCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 14, color: ColorManager.grey),
+                const Icon(
+                  Icons.calendar_today,
+                  size: 14,
+                  color: ColorManager.grey,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'تاريخ الطلب: ${_formatDate(chat.createdAt)}',
@@ -329,7 +343,11 @@ class BookingRequestCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 14, color: ColorManager.grey),
+                const Icon(
+                  Icons.access_time,
+                  size: 14,
+                  color: ColorManager.grey,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'آخر تحديث: ${_formatTime(chat.lastMessageTime)}',

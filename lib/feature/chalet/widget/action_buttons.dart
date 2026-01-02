@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 import 'package:rebtal/feature/chalet/widget/admin_buttons.dart';
 import 'package:rebtal/feature/chalet/widget/owner_buttons.dart';
@@ -22,11 +22,11 @@ class ActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ActionButtonsCubit(),
-      child: BlocBuilder<AuthCubit, AuthState>(
-        builder: (context, authState) {
-          if (authState is AuthSuccess) {
+      child: BlocBuilder<AppCubit, AppState>(
+        builder: (context, appState) {
+          if (appState is AppAuthenticated) {
             // ✅ Use getCurrentRole() to respect view mode switching
-            final role = context.read<AuthCubit>().getCurrentRole();
+            final role = context.read<AppCubit>().getCurrentRole();
 
             if (role == 'admin') {
               return AdminButtons(status: status, docId: docId);

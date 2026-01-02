@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:rebtal/core/utils/failure.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 
 abstract class BaseAuthRepository {

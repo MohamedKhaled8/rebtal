@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:rebtal/feature/chalet/widget/about_us_section.dart';
 import 'package:rebtal/feature/chalet/widget/fixed_bottom_bar.dart';
@@ -41,12 +41,12 @@ class ChaletDetailPage extends StatelessWidget {
           return <String>[];
         },
         builder: (context, images) {
-          return BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, authState) {
+          return BlocBuilder<AppCubit, AppState>(
+            builder: (context, appState) {
               // ✅ Use getCurrentRole() to respect view mode switching
               String role = 'guest';
-              if (authState is AuthSuccess) {
-                role = context.read<AuthCubit>().getCurrentRole();
+              if (appState is AppAuthenticated) {
+                role = context.read<AppCubit>().getCurrentRole();
               }
 
               final isDark = DynamicThemeManager.isDarkMode(context);
@@ -128,10 +128,12 @@ class ChaletDetailPage extends StatelessWidget {
                                     LocationMapCard(
                                       location: location,
                                       latitude: requestData['lat'] != null
-                                          ? (requestData['lat'] as num).toDouble()
+                                          ? (requestData['lat'] as num)
+                                                .toDouble()
                                           : null,
                                       longitude: requestData['lon'] != null
-                                          ? (requestData['lon'] as num).toDouble()
+                                          ? (requestData['lon'] as num)
+                                                .toDouble()
                                           : null,
                                     ),
                                     const SizedBox(height: 24),

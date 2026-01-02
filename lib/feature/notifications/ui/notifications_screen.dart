@@ -3,8 +3,8 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -30,16 +30,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       // إعادة تحميل الحجوزات عند حدوث تغيير
       if (mounted) {
         debugPrint('Firestore change detected, reloading bookings...');
-        context.read<BookingCubit>().loadBookings();
+        context.read<AppCubit>().bookingCubit.loadBookings();
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
+    final appState = context.read<AppCubit>().state;
     String currentUid = '';
-    if (authState is AuthSuccess) currentUid = authState.user.uid;
+    if (appState is AppAuthenticated) currentUid = appState.user.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -54,14 +54,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              context.read<BookingCubit>().loadBookings();
+              context.read<AppCubit>().bookingCubit.loadBookings();
               SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
             },
           ),
         ],
       ),
-      body: BlocBuilder<BookingCubit, BookingState>(
+      body: BlocBuilder<AppCubit, AppState>(
         builder: (context, state) {
+          if (state is! AppAuthenticated) {
+            return const Center(child: CircularProgressIndicator());
+          }
           // تصفية الحجوزات التي تحتوي على إشعارات للمستخدم الحالي
           final notifications = state.bookings.where((b) {
             // تطبيع معرف المستخدم للمقارنة
@@ -106,7 +109,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [ColorManager.chaletActionBlue.withOpacity(0.2), ColorManager.chaletActionBlue.withOpacity(0.1)],
+                  colors: [
+                    ColorManager.chaletActionBlue.withOpacity(0.2),
+                    ColorManager.chaletActionBlue.withOpacity(0.1),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -154,7 +160,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             // زر التحديث
             ElevatedButton.icon(
               onPressed: () {
-                context.read<BookingCubit>().loadBookings();
+                context.read<AppCubit>().bookingCubit.loadBookings();
                 SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
               },
               icon: const Icon(Icons.refresh),
@@ -187,12 +193,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [ColorManager.chaletActionBlue.withOpacity(0.1), ColorManager.chaletActionBlue.withOpacity(0.2)],
+              colors: [
+                ColorManager.chaletActionBlue.withOpacity(0.1),
+                ColorManager.chaletActionBlue.withOpacity(0.2),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: ColorManager.chaletActionBlue.withOpacity(0.4)),
+            border: Border.all(
+              color: ColorManager.chaletActionBlue.withOpacity(0.4),
+            ),
           ),
           child: Row(
             children: [
@@ -277,9 +288,8 @@ class _NotificationCard extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
           BoxShadow(
-            color: (isApproved ? ColorManager.green : ColorManager.red).withValues(
-              alpha: 0.1,
-            ),
+            color: (isApproved ? ColorManager.green : ColorManager.red)
+                .withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -306,8 +316,14 @@ class _NotificationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isApproved
-                          ? [ColorManager.chaletAvailableGreen, ColorManager.chaletActionDarkGreen]
-                          : [ColorManager.chaletUnavailableRed, ColorManager.chaletActionDarkRed],
+                          ? [
+                              ColorManager.chaletAvailableGreen,
+                              ColorManager.chaletActionDarkGreen,
+                            ]
+                          : [
+                              ColorManager.chaletUnavailableRed,
+                              ColorManager.chaletActionDarkRed,
+                            ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -355,8 +371,14 @@ class _NotificationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isApproved
-                          ? [ColorManager.chaletAvailableGreen, ColorManager.chaletActionDarkGreen]
-                          : [ColorManager.chaletUnavailableRed, ColorManager.chaletActionDarkRed],
+                          ? [
+                              ColorManager.chaletAvailableGreen,
+                              ColorManager.chaletActionDarkGreen,
+                            ]
+                          : [
+                              ColorManager.chaletUnavailableRed,
+                              ColorManager.chaletActionDarkRed,
+                            ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -383,9 +405,8 @@ class _NotificationCard extends StatelessWidget {
                 color: ColorManager.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (isApproved ? ColorManager.green : ColorManager.red).withValues(
-                    alpha: 0.3,
-                  ),
+                  color: (isApproved ? ColorManager.green : ColorManager.red)
+                      .withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -470,7 +491,9 @@ class _NotificationCard extends StatelessWidget {
                               ? 'مبروك! تم قبول حجزك'
                               : 'تم رفض طلب الحجز',
                           style: TextStyle(
-                            color: isApproved ? ColorManager.green : ColorManager.red,
+                            color: isApproved
+                                ? ColorManager.green
+                                : ColorManager.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),

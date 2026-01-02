@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 
 class UserButtons extends StatelessWidget {
@@ -32,7 +32,7 @@ class _BookingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = context.read<AuthCubit>();
+    final authCubit = context.read<AppCubit>().authCubit;
     final currentUser = authCubit.getCurrentUser();
     final cubit = context.read<ActionButtonsCubit>();
 

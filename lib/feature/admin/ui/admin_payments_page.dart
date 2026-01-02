@@ -6,7 +6,7 @@ import 'package:rebtal/feature/payment/models/payment_proof.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/services/email_service.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
@@ -35,11 +35,11 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeState>(
-      builder: (context, themeState) {
+    return BlocBuilder<AppCubit, AppState>(
+      builder: (context, state) {
         final isDark =
-            themeState.themeMode == ThemeMode.dark ||
-            (themeState.themeMode == ThemeMode.system &&
+            state.themeMode == ThemeMode.dark ||
+            (state.themeMode == ThemeMode.system &&
                 MediaQuery.of(context).platformBrightness == Brightness.dark);
 
         return Scaffold(
@@ -257,7 +257,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                        color: isDark
+                            ? ColorManager.white
+                            : ColorManager.chaletTextPrimaryLight,
                         height: 1.2,
                       ),
                     ),
@@ -266,7 +268,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       'مراجعة واعتماد طلبات الدفع',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey600,
                         height: 1.3,
                       ),
                     ),
@@ -294,7 +298,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             child: TextField(
               controller: _searchController,
               style: TextStyle(
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorManager.white
+                    : ColorManager.chaletTextPrimaryLight,
                 fontSize: 16,
                 height: 1.4,
               ),
@@ -338,7 +344,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       )
                     : null,
                 filled: true,
-                fillColor: isDark ? ColorManager.darkGrey252540 : ColorManager.white,
+                fillColor: isDark
+                    ? ColorManager.darkGrey252540
+                    : ColorManager.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide(
@@ -449,12 +457,16 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           }
         });
       },
-      backgroundColor: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorManager.darkBlue1A1A2E
+          : ColorManager.white,
       selectedColor: activeColor,
       labelStyle: TextStyle(
         color: isSelected
             ? ColorManager.white
-            : (isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight),
+            : (isDark
+                  ? ColorManager.white70
+                  : ColorManager.chaletTextPrimaryLight),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         fontSize: 14,
       ),
@@ -635,7 +647,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
         color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? ColorManager.white.withOpacity(0.12) : ColorManager.grey200,
+          color: isDark
+              ? ColorManager.white.withOpacity(0.12)
+              : ColorManager.grey200,
           width: 1.5,
         ),
         boxShadow: [
@@ -788,7 +802,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                            color: isDark
+                                ? ColorManager.white
+                                : ColorManager.chaletTextPrimaryLight,
                             height: 1.3,
                           ),
                         ),
@@ -852,7 +868,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: isDark ? ColorManager.darkGrey2A2A3E : ColorManager.grey50,
+                  color: isDark
+                      ? ColorManager.darkGrey2A2A3E
+                      : ColorManager.grey50,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: isDark
@@ -1054,7 +1072,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           _showReviewDialog(context, proof, booking);
-                                                },
+                        },
                         icon: const Icon(Icons.check_circle_rounded, size: 20),
                         label: const Text(
                           'مراجعة',
@@ -1177,7 +1195,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               value ?? 'غير متوفر',
               style: TextStyle(
                 fontSize: 13,
-                color: isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorManager.white70
+                    : ColorManager.chaletTextPrimaryLight,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1227,7 +1247,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
                   height: 1.3,
                 ),
               ),
@@ -1268,7 +1290,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
                   height: 1.3,
                 ),
               ),
@@ -1587,7 +1611,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               Navigator.pop(context);
               _approvePayment(proof.id, booking, notesController.text);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: ColorManager.green),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorManager.green,
+            ),
             child: const Text('موافقة'),
           ),
         ],

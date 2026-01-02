@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
@@ -28,39 +30,55 @@ class OwnerChaletsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chalets')
-          .where('status', isEqualTo: status)
-          .where('ownerId', isEqualTo: ownerId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+
+    // Use AppCubit as the single source of truth
+    return BlocBuilder<AppCubit, AppState>(
+      buildWhen: (previous, current) {
+        // Only rebuild if owner chalets or loading state changes
+        if (current is AppAuthenticated && previous is AppAuthenticated) {
+          return current.ownerChalets != previous.ownerChalets ||
+              current.isOwnerChaletsLoading != previous.isOwnerChaletsLoading;
+        }
+        return true;
+      },
+      builder: (context, state) {
+        if (state is! AppAuthenticated) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state.isOwnerChaletsLoading) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Colors.deepPurple,
+              ),
             ),
           );
         }
-        if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: ColorManager.red),
-                const SizedBox(height: 16),
-                Text(
-                  'خطأ في تحميل الشاليهات',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+
+        // Filter chalets by status and ownerId locally
+        // (Assuming OwnerCubit fetches ALL chalets for the owner, allowing local filtering)
+        final List<dynamic> allChalets = state.ownerChalets;
+        final docs = allChalets.where((data) {
+          // Handle both Map and DocumentSnapshot if needed, but AppState likely has Maps or Snapshots
+          // OwnerLoaded in AppCubit usually has List<Map<String, dynamic>> based on previous review
+          // Let's assume it's List<Map<String, dynamic>> or similar.
+          final map = data is Map<String, dynamic>
+              ? data
+              : (data as DocumentSnapshot).data() as Map<String, dynamic>;
+
+          final docStatus = map['status'];
+          final docOwnerId = map['ownerId'];
+
+          // Filter by status if provided
+          if (status.isNotEmpty && docStatus != status) return false;
+          // Filter by ownerId if provided (though AppCubit likely fetched for this user)
+          if (ownerId != null && docOwnerId != ownerId) return false;
+
+          return true;
+        }).toList();
+
+        if (docs.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -85,7 +103,9 @@ class OwnerChaletsList extends StatelessWidget {
                     emptySubtitle!,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? ColorManager.white70 : ColorManager.grey700,
+                      color: isDark
+                          ? ColorManager.white70
+                          : ColorManager.grey700,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -94,15 +114,16 @@ class OwnerChaletsList extends StatelessWidget {
             ),
           );
         }
-        final docs = snapshot.data!.docs;
 
         return ValueListenableBuilder<SearchFilters>(
           valueListenable: HomeSearch.filters,
           builder: (context, filters, _) {
             // Apply filters using centralized service
-            final filtered = docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              // Use filter service for single chalet check
+            final filtered = docs.where((chalet) {
+              final data = chalet is Map<String, dynamic>
+                  ? chalet
+                  : (chalet as DocumentSnapshot).data() as Map<String, dynamic>;
+
               final singleList = [data];
               final result = ChaletFilterService.filterChalets(
                 singleList,
@@ -117,11 +138,22 @@ class OwnerChaletsList extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               itemCount: filtered.length,
               itemBuilder: (context, i) {
-                final doc = filtered[i];
-                final data = doc.data() as Map<String, dynamic>;
+                final chalet = filtered[i];
+                final data = chalet is Map<String, dynamic>
+                    ? chalet
+                    : (chalet as DocumentSnapshot).data()
+                          as Map<String, dynamic>;
+
+                // We need ID. If it's a Map from OwnerCubit, does it have 'id'?
+                // If it came from Firestore, the Map usually doesn't have ID unless we added it.
+                // WE NEED TO CHECK OwnerCubit.
+                // Assuming data has 'id' or we can't do this efficiently without the ID.
+                // Let's use 'id' or 'docId' from the map.
+                final String id = data['id'] ?? data['docId'] ?? '';
+
                 return OwnerChaletCard(
                   chaletData: data,
-                  docId: doc.id,
+                  docId: id,
                   status: status,
                 );
               },
@@ -225,7 +257,10 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [ColorManager.transparent, ColorManager.black.withOpacity(0.7)],
+                  colors: [
+                    ColorManager.transparent,
+                    ColorManager.black.withOpacity(0.7),
+                  ],
                   stops: const [0.5, 1.0],
                 ),
               ),

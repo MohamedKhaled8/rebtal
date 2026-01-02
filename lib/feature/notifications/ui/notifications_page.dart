@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
 import 'package:rebtal/feature/notifications/logic/notification_state.dart';
 import 'package:rebtal/feature/notifications/widget/notification_card.dart';
@@ -25,9 +26,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   void _loadNotifications() {
-    final authState = context.read<AuthCubit>().state;
+    final authState = context.read<AppCubit>().authCubit.state;
     if (authState is AuthSuccess) {
-      context.read<NotificationCubit>().listenToNotifications(
+      context.read<AppCubit>().notificationCubit.listenToNotifications(
         authState.user.uid,
       );
     }
@@ -36,7 +37,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final authState = context.read<AuthCubit>().state;
+    final authState = context.read<AppCubit>().authCubit.state;
     String userId = '';
     if (authState is AuthSuccess) userId = authState.user.uid;
 
@@ -49,23 +50,27 @@ class _NotificationsPageState extends State<NotificationsPage> {
           'الإشعارات',
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
         ),
-        backgroundColor: isDark
-            ? ColorManager.transparent
-            : ColorManager.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         foregroundColor: isDark
             ? ColorManager.chaletTextPrimaryDark
             : ColorManager.chaletTextPrimaryLight,
         elevation: 0,
         actions: [
           BlocBuilder<NotificationCubit, NotificationState>(
+            bloc: context.read<AppCubit>().notificationCubit,
             builder: (context, state) {
               if (state is NotificationLoaded && state.unreadCount > 0) {
                 return IconButton(
                   icon: const Icon(Icons.done_all_rounded),
                   tooltip: 'تحديد الكل كمقروء',
                   onPressed: () {
-                    context.read<NotificationCubit>().markAllAsRead(userId);
-                    SnackBarHelper.showSuccess(context, 'تم تحديد جميع الإشعارات كمقروءة');
+                    context.read<AppCubit>().notificationCubit.markAllAsRead(
+                      userId,
+                    );
+                    SnackBarHelper.showSuccess(
+                      context,
+                      'تم تحديد جميع الإشعارات كمقروءة',
+                    );
                   },
                 );
               }
@@ -95,6 +100,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ],
       ),
       body: BlocBuilder<NotificationCubit, NotificationState>(
+        bloc: context.read<AppCubit>().notificationCubit,
         builder: (context, state) {
           if (state is NotificationLoading) {
             return _buildLoadingState();
@@ -154,14 +160,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           },
                           onDelete: () {
                             context
-                                .read<NotificationCubit>()
+                                .read<AppCubit>()
+                                .notificationCubit
                                 .deleteNotification(notification.id);
-                            SnackBarHelper.showSuccess(context, 'تم حذف الإشعار');
+                            SnackBarHelper.showSuccess(
+                              context,
+                              'تم حذف الإشعار',
+                            );
                           },
                           onMarkAsRead: () {
-                            context.read<NotificationCubit>().markAsRead(
-                              notification.id,
-                            );
+                            context
+                                .read<AppCubit>()
+                                .notificationCubit
+                                .markAsRead(notification.id);
                           },
                         );
                       },
@@ -383,7 +394,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<NotificationCubit>().clearAll(userId);
+              context.read<AppCubit>().notificationCubit.clearAll(userId);
               SnackBarHelper.showSuccess(context, 'تم حذف جميع الإشعارات');
             },
             style: ElevatedButton.styleFrom(

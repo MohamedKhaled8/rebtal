@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 import 'package:rebtal/feature/booking/widgets/bookings_list.dart';
@@ -21,19 +20,22 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
   @override
   void initState() {
     super.initState();
+    // AppCubit automatically loads user data on auth success,
+    // but we can trigger a refresh if needed or rely on existing state.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthCubit>().state;
-      if (authState is AuthSuccess) {
-        context.read<BookingCubit>().loadUserBookings(authState.user.uid);
+      final appState = context.read<AppCubit>().state;
+      if (appState is AppAuthenticated) {
+        // Data should already be loading/loaded by AppCubit's listener
+        // But we can ensure it:
+        // context.read<AppCubit>().bookingCubit.loadUserBookings(appState.user.uid);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    String currentUid = '';
-    if (authState is AuthSuccess) currentUid = authState.user.uid;
+    // Access user via AppCubit state
+    final appCubit = context.read<AppCubit>();
 
     return Scaffold(
       backgroundColor: DynamicThemeManager.isDarkMode(context)
@@ -75,8 +77,10 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
                 ),
               ),
               onPressed: () {
-                if (currentUid.isNotEmpty) {
-                  context.read<BookingCubit>().loadUserBookings(currentUid);
+                final state = appCubit.state;
+                if (state is AppAuthenticated) {
+                  // Trigger refresh via exposed cubit or method
+                  appCubit.bookingCubit.loadUserBookings(state.user.uid);
                   SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
                 }
               },
@@ -84,9 +88,22 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
           ),
         ],
       ),
-      body: BlocBuilder<BookingCubit, BookingState>(
+      // Use AppCubit for reactive state
+      body: BlocBuilder<AppCubit, AppState>(
+        buildWhen: (previous, current) {
+          if (current is AppAuthenticated && previous is AppAuthenticated) {
+            return current.bookings != previous.bookings ||
+                current.isBookingsLoading != previous.isBookingsLoading;
+          }
+          return true;
+        },
         builder: (context, state) {
-          if (state.isLoading) {
+          if (state is! AppAuthenticated) {
+            // Not authenticated yet or error
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.isBookingsLoading) {
             return const Center(
               child: CircularProgressIndicator(
                 color: ColorManager.primaryColor,
@@ -94,45 +111,40 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
             );
           }
 
-          // تصفية جميع الحجوزات للمستخدم الحالي
-          // Since we are filtering at source, we can just use state.bookings
-          // But keeping client-side filter for safety is okay.
+          // Filter bookings (if needed, though AppCubit loads specific user bookings)
+          final currentUid = state.user.uid;
+          final userBookings =
+              state.bookings; // AppCubit maintains filtered list usually?
+
+          // However, BookingCubit might hold ALL bookings if not careful.
+          // AppCubit calls loadUserBookings() which updates state.bookings with that specific list.
+          // So state.bookings SHOULD be correct.
+          // But to be safe and match previous logic:
+          final myBookings = userBookings
+              .where((b) => b.userId == currentUid)
+              .toList();
+
           debugPrint(
-            '🎨 UserBookingsPage Build: Total Bookings in State: ${state.bookings.length}',
+            '🎨 UserBookingsPage Build: Total Bookings: ${state.bookings.length} -> Mine: ${myBookings.length}',
           );
 
-          final userBookings = state.bookings.where((b) {
-            // تطبيع معرف المستخدم للمقارنة
-            final normalizedUserId = b.userId.trim();
-            final normalizedCurrentUid = currentUid.trim();
-
-            // مطابقة دقيقة فقط
-            final isMatch = normalizedUserId == normalizedCurrentUid;
-            if (!isMatch) {
-              debugPrint(
-                '❌ Filter Mismatch: Booking ${b.id} has UserID "$normalizedUserId" vs Current "$normalizedCurrentUid"',
-              );
-            }
-            return isMatch;
-          }).toList();
-
-          debugPrint('✅ Final Bookings for UI: ${userBookings.length}');
+          if (myBookings.isEmpty) {
+            return const EmptyBookingsState();
+          }
 
           // فصل الحجوزات حسب الحالة
           final pendingBookings =
-              userBookings
+              myBookings
                   .where((b) => b.status == BookingStatus.pending)
                   .toList()
                 ..sort((a, b) {
-                  // Fallback chain: createdAt -> updatedAt -> Now (assumed new)
                   final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
                   final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
                   return dateB.compareTo(dateA);
                 });
 
-          // Approved bookings now encompass the entire active lifecycle after approval
           final approvedBookings =
-              userBookings
+              myBookings
                   .where(
                     (b) =>
                         b.status == BookingStatus.approved ||
@@ -143,7 +155,6 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
                   )
                   .toList()
                 ..sort((a, b) {
-                  // Prioritize payment under review and approved
                   int getPriority(BookingStatus status) {
                     switch (status) {
                       case BookingStatus.paymentUnderReview:
@@ -167,14 +178,13 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
                     return priorityA.compareTo(priorityB);
                   }
 
-                  // Fallback chain: createdAt -> updatedAt -> Now
                   final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
                   final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
                   return dateB.compareTo(dateA);
                 });
 
           final rejectedBookings =
-              userBookings
+              myBookings
                   .where(
                     (b) =>
                         b.status == BookingStatus.rejected ||
@@ -182,15 +192,10 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
                   )
                   .toList()
                 ..sort((a, b) {
-                  // Fallback chain: createdAt -> updatedAt -> Now
                   final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
                   final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
                   return dateB.compareTo(dateA);
                 });
-
-          if (userBookings.isEmpty) {
-            return const EmptyBookingsState();
-          }
 
           return BookingsList(
             pendingBookings: pendingBookings,

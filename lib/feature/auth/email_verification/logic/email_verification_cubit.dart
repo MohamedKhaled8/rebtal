@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/domain/usecases/resend_email_verification_usecase.dart';
 import 'package:rebtal/feature/auth/domain/usecases/save_user_usecase.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
@@ -150,7 +150,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
             await getIt<CacheHelper>().removeData(key: 'justRegistered');
 
             // ✅ Notify AuthCubit via reloading
-            final authCubit = context.read<AuthCubit>();
+            final authCubit = context.read<AppCubit>().authCubit;
             await authCubit.reloadUserData();
 
             QuickAlert.show(
@@ -184,7 +184,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
   }
 
   Future<void> logout(BuildContext context) async {
-    final authCubit = context.read<AuthCubit>();
+    final authCubit = context.read<AppCubit>().authCubit;
     await authCubit.logout();
     Navigator.of(
       context,

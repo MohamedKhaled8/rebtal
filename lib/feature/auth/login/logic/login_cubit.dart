@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
@@ -12,11 +12,11 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
-import 'package:rebtal/core/utils/failure.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/feature/auth/domain/usecases/login_usecase.dart';
-import 'package:rebtal/core/utils/validation/auth_validator.dart';
+import 'package:rebtal/core/utils/validators/auth_validator.dart';
 
 part 'login_state.dart';
 
@@ -259,7 +259,7 @@ class LoginCubit extends Cubit<LoginState> {
 
       // Reload AuthCubit data since we essentially logged in
       try {
-        context.read<AuthCubit>().reloadUserData();
+        context.read<AppCubit>().authCubit.reloadUserData();
       } catch (e) {
         debugPrint('Failed to reload AuthCubit: $e');
       }
