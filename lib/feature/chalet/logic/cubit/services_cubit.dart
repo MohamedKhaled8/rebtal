@@ -16,11 +16,6 @@ class ServicesCubit extends Cubit<ServicesState> {
         'icon': Icons.fitness_center,
       },
       {'label': 'WiFi', 'key': 'hasWifi', 'icon': Icons.wifi},
-      {
-        'label': '${requestData['bedrooms'] ?? 'N/A'} Bedrooms',
-        'key': 'bedrooms',
-        'icon': Icons.bed,
-      },
       {'label': 'Bar', 'key': 'hasBars', 'icon': Icons.local_bar},
       {'label': 'Playground', 'key': 'hasPlayground', 'icon': Icons.child_care},
       {
@@ -52,11 +47,21 @@ class ServicesCubit extends Cubit<ServicesState> {
 
     final enabledAmenities = amenitiesList.where((item) {
       final key = item['key'] as String;
-      if (key == 'bedrooms') return true;
+
+      // 1. Check direct boolean property (e.g. hasWifi: true)
+      if (requestData[key] == true) return true;
+
+      // 2. Check in amenities list (support both 'hasWifi' and 'wifi')
       if (requestData['amenities'] is List) {
-        return (requestData['amenities'] as List).contains(key);
+        final list = requestData['amenities'] as List;
+        // Check exact match or short version (remove 'has' prefix)
+        final shortKey = key.startsWith('has')
+            ? key.substring(3).toLowerCase()
+            : key;
+
+        return list.contains(key) || list.contains(shortKey);
       }
-      return requestData[key] == true;
+      return false;
     }).toList();
 
     emit(ServicesLoaded(enabledAmenities));

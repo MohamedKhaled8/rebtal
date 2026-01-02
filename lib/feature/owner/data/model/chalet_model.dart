@@ -1,56 +1,32 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 
-enum ChaletStatus {
-  pending,
-  approved,
-  rejected,
-  hidden,
-}
-
-enum BookingAvailability {
-  available,
-  unavailable,
-}
-
-class ChaletModel {
-  final String id;
-  final String chaletName;
-  final String location;
-  final String description;
-  final String ownerId;
-  final String ownerName;
-  final double price;
-  final int bedrooms;
-  final int bathrooms;
-  final List<String> images;
-  final List<String> amenities;
-  final double? latitude;
-  final double? longitude;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final ChaletStatus status;
-  final BookingAvailability bookingAvailability;
-  final bool isVisible;
-
-  ChaletModel({
-    required this.id,
-    required this.chaletName,
-    required this.location,
-    required this.description,
-    required this.ownerId,
-    required this.ownerName,
-    required this.price,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.images,
-    required this.amenities,
-    this.latitude,
-    this.longitude,
-    required this.createdAt,
-    required this.updatedAt,
-    this.status = ChaletStatus.pending,
-    this.bookingAvailability = BookingAvailability.available,
-    this.isVisible = true,
+class ChaletModel extends ChaletEntity {
+  const ChaletModel({
+    required super.id,
+    required super.chaletName,
+    required super.location,
+    required super.description,
+    required super.ownerId,
+    required super.ownerName,
+    required super.price,
+    required super.bedrooms,
+    required super.bathrooms,
+    required super.images,
+    required super.amenities,
+    super.latitude,
+    super.longitude,
+    required super.createdAt,
+    required super.updatedAt,
+    super.status = ChaletStatus.pending,
+    super.bookingAvailability = BookingAvailability.available,
+    super.isVisible = true,
+    super.chaletArea,
+    super.childrenCount,
+    super.discountEnabled,
+    super.discountType,
+    super.discountValue,
+    super.features,
   });
 
   factory ChaletModel.fromMap(Map<String, dynamic> map, String id) {
@@ -71,8 +47,18 @@ class ChaletModel {
       createdAt: _parseDateTime(map['createdAt']),
       updatedAt: _parseDateTime(map['updatedAt']),
       status: _parseChaletStatus(map['status']),
-      bookingAvailability: _parseBookingAvailability(map['bookingAvailability']),
+      bookingAvailability: _parseBookingAvailability(
+        map['bookingAvailability'],
+      ),
       isVisible: map['isVisible'] ?? true,
+      chaletArea: map['chaletArea']?.toString(),
+      childrenCount: map['childrenCount'],
+      discountEnabled: map['discountEnabled'],
+      discountType: map['discountType'],
+      discountValue: map['discountValue'],
+      features: map['features'] != null
+          ? List<String>.from(map['features'])
+          : null,
     );
   }
 
@@ -95,6 +81,12 @@ class ChaletModel {
       'status': status.name,
       'bookingAvailability': bookingAvailability.name,
       'isVisible': isVisible,
+      'chaletArea': chaletArea,
+      'childrenCount': childrenCount,
+      'discountEnabled': discountEnabled,
+      'discountType': discountType,
+      'discountValue': discountValue,
+      'features': features,
     };
   }
 
@@ -117,6 +109,12 @@ class ChaletModel {
     ChaletStatus? status,
     BookingAvailability? bookingAvailability,
     bool? isVisible,
+    String? chaletArea,
+    int? childrenCount,
+    bool? discountEnabled,
+    String? discountType,
+    String? discountValue,
+    List<String>? features,
   }) {
     return ChaletModel(
       id: id ?? this.id,
@@ -137,12 +135,18 @@ class ChaletModel {
       status: status ?? this.status,
       bookingAvailability: bookingAvailability ?? this.bookingAvailability,
       isVisible: isVisible ?? this.isVisible,
+      chaletArea: chaletArea ?? this.chaletArea,
+      childrenCount: childrenCount ?? this.childrenCount,
+      discountEnabled: discountEnabled ?? this.discountEnabled,
+      discountType: discountType ?? this.discountType,
+      discountValue: discountValue ?? this.discountValue,
+      features: features ?? this.features,
     );
   }
 
   static DateTime _parseDateTime(dynamic dateTime) {
     if (dateTime == null) return DateTime.now();
-    
+
     try {
       if (dateTime is Timestamp) {
         return dateTime.toDate();
@@ -152,15 +156,15 @@ class ChaletModel {
         return dateTime;
       }
     } catch (e) {
-      print('Error parsing datetime: $e');
+      // print('Error parsing datetime: $e');
     }
-    
+
     return DateTime.now();
   }
 
   static ChaletStatus _parseChaletStatus(dynamic status) {
     if (status == null) return ChaletStatus.pending;
-    
+
     try {
       final statusString = status.toString().toLowerCase();
       switch (statusString) {
@@ -176,14 +180,13 @@ class ChaletModel {
           return ChaletStatus.pending;
       }
     } catch (e) {
-      print('Error parsing chalet status: $e');
       return ChaletStatus.pending;
     }
   }
 
   static BookingAvailability _parseBookingAvailability(dynamic availability) {
     if (availability == null) return BookingAvailability.available;
-    
+
     try {
       final availabilityString = availability.toString().toLowerCase();
       switch (availabilityString) {
@@ -195,7 +198,6 @@ class ChaletModel {
           return BookingAvailability.available;
       }
     } catch (e) {
-      print('Error parsing booking availability: $e');
       return BookingAvailability.available;
     }
   }

@@ -2,25 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/owner/ui/widgets/booking_card.dart';
+import 'package:rebtal/feature/owner/widget/booking_card.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 
-class OwnerBookingsPage extends StatefulWidget {
+class OwnerBookingsPage extends StatelessWidget {
   const OwnerBookingsPage({super.key});
-
-  @override
-  State<OwnerBookingsPage> createState() => _OwnerBookingsPageState();
-}
-
-class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
-  @override
-  void initState() {
-    super.initState();
-    // AppCubit manages booking loading via listeners
-    // but explicit refresh can be triggered if needed.
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,51 +82,9 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
 
               final all = state.bookings;
 
-              // Filter bookings
-              // We rely on the query to filter by ownerId.
-              // Just filter by valid status to exclude temp/corrupt records if any.
-              final bookings = all.where((b) {
-                return b.status != null;
-              }).toList();
-
-              // Sort bookings: Pending/Action Required first, then by date (newest first)
-              bookings.sort((a, b) {
-                // Priority logic:
-                // 1. Pending (requires approval)
-                // 2. Payment Under Review (requires verification)
-                // 3. Awaiting Payment
-                // 4. Approved
-                // 5. Others (Completed, Cancelled, Rejected)
-
-                int getPriority(BookingStatus status) {
-                  switch (status) {
-                    case BookingStatus.pending:
-                      return 0;
-                    case BookingStatus.paymentUnderReview:
-                      return 1;
-                    case BookingStatus.awaitingPayment:
-                      return 2;
-                    case BookingStatus.approved:
-                      return 3;
-                    default:
-                      return 4;
-                  }
-                }
-
-                final priorityA = getPriority(a.status);
-                final priorityB = getPriority(b.status);
-
-                if (priorityA != priorityB) {
-                  return priorityA.compareTo(priorityB);
-                }
-
-                // If same priority, sort by createdAt (newest first)
-                // Fallback to ancient date if createdAt is null so they appear last
-                final dateA = a.createdAt ?? DateTime(2000);
-                final dateB = b.createdAt ?? DateTime(2000);
-                // Reverse compare for descending order
-                return dateB.compareTo(dateA);
-              });
+              // Filter and sort bookings using helper
+              final validBookings = OwnerHelper.filterValidBookings(all);
+              final bookings = OwnerHelper.sortBookings(validBookings);
 
               if (bookings.isEmpty) {
                 return SliverFillRemaining(

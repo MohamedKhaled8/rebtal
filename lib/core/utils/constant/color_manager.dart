@@ -118,6 +118,7 @@ abstract class ColorManager {
   static const chaletGrey200 = Color(0xFFE5E7EB);
   static const chaletGrey400 = Color(0xFF9CA3AF);
   static const chaletGrey500 = Color(0xFF6B7280);
+  static const chaletGrey600 = Color(0xFF4B5563);
   static const chaletGrey800 = Color(0xFF1F2937);
   static const chaletGrey50 = Color(0xFFF9FAFB);
 
@@ -206,4 +207,5 @@ abstract class ColorManager {
   static const orangeF59E0B = Color(0xFFF59E0B);
   static const cyan00C9FF = Color(0xFF00C9FF);
   static const green92FE9D = Color(0xFF92FE9D);
+  static const redFF3B30 = Color(0xFFFF3B30);
 }

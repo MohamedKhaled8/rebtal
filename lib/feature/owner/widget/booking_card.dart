@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
-import 'package:rebtal/feature/owner/ui/widgets/booking_status_chip.dart';
-import 'package:rebtal/feature/owner/ui/widgets/guest_info_card.dart';
+import 'package:rebtal/feature/owner/widget/booking_status_chip.dart';
+import 'package:rebtal/feature/owner/widget/guest_info_card.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 

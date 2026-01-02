@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_app_check/firebase_app_check.dart'; // ✅ Import App Check
+import 'package:firebase_storage/firebase_storage.dart'; // ✅ Import Storage
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,7 +27,30 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  // );
+  // ✅ 1. Check Storage Configuration
+  try {
+    print('\n📦 ========================================');
+    print('📦 Storage Bucket: ${FirebaseStorage.instance.bucket}');
+    print('📦 ========================================\n');
+  } catch (e) {
+    print('⚠️ Failed to get storage bucket: $e');
+  }
+
+  // ✅ 2. Activate App Check (Force Debug Provider for Development)
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.debug,
+      appleProvider: AppleProvider.debug,
+    );
+    // Auto-refresh tokens to avoid stale token issues
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+    print('✅ Firebase App Check Activated (Debug Mode)');
+  } catch (e) {
+    print('⚠️ Firebase App Check Failed: $e');
+    print('⚠️ Continuing without App Check - this may cause storage upload issues');
+    // Don't fail the app startup if App Check fails
+    // The app will continue but storage might have issues
+  }
 
   setupGetIt();
   await getIt<CacheHelper>().init();
@@ -47,10 +72,6 @@ void main() async {
 
   // Initialize OneSignal
   await OneSignalService().initialize();
-
-  // If onboarding is needed later, read from cache here
-  // final bool onboardingCompleted =
-  //     getIt<CacheHelper>().getData(key: 'onboardingCompleted') ?? false;
 
   runApp(RebtalApp(appRouter: AppRouter()));
 }

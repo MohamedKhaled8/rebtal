@@ -11,217 +11,247 @@ class OwnerInformationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Extract data with null safety
-    final merchantName = requestData['merchantName'] ?? 'Not provided';
-    final email = requestData['email'] ?? 'No email';
-    final phoneNumber = requestData['phoneNumber'] ?? 'No phone';
-    final ownerId = requestData['ownerId'] ?? '';
+    final ownerId = requestData['ownerId'] ?? requestData['id'] ?? '';
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark
-            ? ColorManager.chaletCardDark
-            : ColorManager.chaletCardLight,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    // Initial fallback values from requestData
+    // We use these while loading or if fetch fails
+    String initialMerchantName =
+        requestData['merchantName'] ??
+        requestData['ownerName'] ??
+        'Not provided';
+
+    // Clean up initial name if it's generic
+    if (initialMerchantName == 'غير محدد') initialMerchantName = 'Not provided';
+
+    String initialEmail =
+        requestData['email'] ??
+        requestData['ownerEmail'] ??
+        requestData['userEmail'] ??
+        '';
+
+    String initialPhone =
+        requestData['phoneNumber'] ??
+        requestData['ownerPhone'] ??
+        requestData['userPhone'] ??
+        requestData['phone'] ??
+        '';
+
+    String? initialProfileImage =
+        requestData['profileImage'] ?? requestData['profileImageUrl'];
+
+    return FutureBuilder<DocumentSnapshot?>(
+      future: _getOwnerData(ownerId),
+      builder: (context, snapshot) {
+        String merchantName = initialMerchantName;
+        String email = initialEmail;
+        String phoneNumber = initialPhone;
+        String? profileImageUrl = initialProfileImage;
+
+        // Override with fetched data if available
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+
+          // Try to get a better name if we don't have one
+          final fetchedName =
+              data['name'] ?? data['userName'] ?? data['merchantName'];
+          if (fetchedName != null && fetchedName.toString().isNotEmpty) {
+            // Only override if current is generic or empty, OR if we trust the doc more
+            if (merchantName == 'Not provided' || merchantName.isEmpty) {
+              merchantName = fetchedName;
+            }
+          }
+
+          // Always try to fill missing contact info
+          if (email.isEmpty || email == 'No email' || email == 'غير متوفر') {
+            email = data['email'] ?? '';
+          }
+
+          if (phoneNumber.isEmpty ||
+              phoneNumber == 'No phone' ||
+              phoneNumber == 'غير متوفر') {
+            phoneNumber = data['phoneNumber'] ?? data['phone'] ?? '';
+          }
+
+          if (profileImageUrl == null || profileImageUrl.isEmpty) {
+            profileImageUrl = data['profileImageUrl'] ?? data['image'];
+          }
+        }
+
+        // Final Display Check
+        if (email.isEmpty) email = 'No email';
+        if (phoneNumber.isEmpty) phoneNumber = 'No phone';
+
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: isDark
+                ? ColorManager.chaletCardDark
+                : ColorManager.chaletCardLight,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Owner Profile Picture instead of icon
-              if (ownerId.isNotEmpty)
-                FutureBuilder<DocumentSnapshot?>(
-                  future: _getOwnerProfileImage(ownerId),
-                  builder: (context, snapshot) {
-                    String? profileImageUrl;
-                    if (snapshot.hasData && snapshot.data?.exists == true) {
-                      final data = snapshot.data!.data() as Map<String, dynamic>?;
-                      profileImageUrl = data?['profileImageUrl'] as String?;
-                    }
-                    
-                    return GestureDetector(
-                      onTap: profileImageUrl != null && profileImageUrl.isNotEmpty
-                          ? () => _showFullScreenImage(context, profileImageUrl!)
-                          : null,
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: ColorManager.chaletActionBlue.withOpacity(0.3),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ColorManager.chaletActionBlue.withOpacity(0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: profileImageUrl != null && profileImageUrl.isNotEmpty
+                        ? () => _showFullScreenImage(context, profileImageUrl!)
+                        : null,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: ColorManager.chaletActionBlue.withOpacity(0.3),
+                          width: 2,
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: profileImageUrl != null && profileImageUrl.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: profileImageUrl,
-                                  fit: BoxFit.cover,
-                                  width: 48,
-                                  height: 48,
-                                  memCacheWidth: 200,
-                                  memCacheHeight: 200,
-                                  maxWidthDiskCache: 400,
-                                  maxHeightDiskCache: 400,
-                                  cacheKey: 'owner_profile_$ownerId',
-                                  fadeInDuration: const Duration(milliseconds: 300),
-                                  fadeOutDuration: const Duration(milliseconds: 100),
-                                  httpHeaders: const {
-                                    'Cache-Control': 'max-age=31536000',
-                                  },
-                                  placeholder: (context, url) => Container(
-                                    color: isDark
-                                        ? ColorManager.chaletIconBackgroundDark
-                                        : ColorManager.chaletGrey50,
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            ColorManager.chaletActionBlue,
-                                          ),
-                                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorManager.chaletActionBlue.withOpacity(
+                              0.15,
+                            ),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child:
+                            profileImageUrl != null &&
+                                profileImageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: profileImageUrl,
+                                fit: BoxFit.cover,
+                                width: 48,
+                                height: 48,
+                                placeholder: (context, url) => Container(
+                                  color: isDark
+                                      ? ColorManager.chaletIconBackgroundDark
+                                      : ColorManager.chaletGrey50,
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
                                       ),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: isDark
-                                        ? ColorManager.chaletIconBackgroundDark
-                                        : ColorManager.chaletGrey50,
-                                    child: Icon(
-                                      Icons.person_rounded,
-                                      size: 24,
-                                      color: ColorManager.chaletActionBlue.withOpacity(0.5),
-                                    ),
-                                  ),
-                                  // Retry on error with exponential backoff
-                                  errorListener: (exception) {
-                                    // Log error but don't show to user
-                                    debugPrint('Error loading owner profile image: $exception');
-                                  },
-                                )
-                              : Container(
-                                  color: isDark
-                                      ? ColorManager.chaletIconBackgroundDark
-                                      : ColorManager.greyF9FAFB,
-                                  child: Icon(
-                                    Icons.person_rounded,
-                                    size: 24,
-                                    color: ColorManager.indigo6366F1.withOpacity(0.5),
-                                  ),
                                 ),
-                        ),
+                                errorWidget: (context, url, error) =>
+                                    _buildPlaceholderIcon(isDark),
+                              )
+                            : _buildPlaceholderIcon(isDark),
                       ),
-                    );
-                  },
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: ColorManager.chaletActionBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: ColorManager.chaletActionBlue,
-                    size: 24,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Owner Information',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? ColorManager.chaletTextPrimaryDark
+                            : ColorManager.chaletTextPrimaryLight,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? ColorManager.chaletIconBackgroundDark
+                      : const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? ColorManager.white10
+                        : ColorManager.chaletGrey100,
                   ),
                 ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Owner Information',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? ColorManager.chaletTextPrimaryDark
-                        : ColorManager.chaletTextPrimaryLight,
-                    letterSpacing: 0.5,
-                  ),
+                child: Column(
+                  children: [
+                    OwnerInfoRow(
+                      icon: Icons.account_circle_outlined,
+                      label: "Name",
+                      value: merchantName,
+                      isDark: isDark,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(
+                        height: 1,
+                        color: isDark
+                            ? ColorManager.white10
+                            : ColorManager.chaletGrey200,
+                      ),
+                    ),
+                    OwnerInfoRow(
+                      icon: Icons.email_outlined,
+                      label: "Email",
+                      value: email,
+                      isDark: isDark,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(
+                        height: 1,
+                        color: isDark
+                            ? ColorManager.white10
+                            : ColorManager.chaletGrey200,
+                      ),
+                    ),
+                    OwnerInfoRow(
+                      icon: Icons.phone_outlined,
+                      label: "Phone",
+                      value: phoneNumber,
+                      isDark: isDark,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? ColorManager.chaletIconBackgroundDark
-                  : const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? ColorManager.white10 : ColorManager.chaletGrey100,
-              ),
-            ),
-            child: Column(
-              children: [
-                OwnerInfoRow(
-                  icon: Icons.account_circle_outlined,
-                  label: "Name",
-                  value: merchantName,
-                  isDark: isDark,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(
-                    height: 1,
-                    color: isDark ? ColorManager.white10 : ColorManager.chaletGrey200,
-                  ),
-                ),
-                OwnerInfoRow(
-                  icon: Icons.email_outlined,
-                  label: "Email",
-                  value: email,
-                  isDark: isDark,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(
-                    height: 1,
-                    color: isDark ? ColorManager.white10 : ColorManager.chaletGrey200,
-                  ),
-                ),
-                OwnerInfoRow(
-                  icon: Icons.phone_outlined,
-                  label: "Phone",
-                  value: phoneNumber,
-                  isDark: isDark,
-                ),
-              ],
-            ),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPlaceholderIcon(bool isDark) {
+    return Container(
+      color: isDark
+          ? ColorManager.chaletIconBackgroundDark
+          : ColorManager.greyF9FAFB,
+      child: Icon(
+        Icons.person_rounded,
+        size: 24,
+        color: ColorManager.indigo6366F1.withOpacity(0.5),
       ),
     );
   }
 
-  Future<DocumentSnapshot?> _getOwnerProfileImage(String ownerId) async {
+  Future<DocumentSnapshot?> _getOwnerData(String ownerId) async {
     if (ownerId.isEmpty) return null;
-    
+
     try {
       // Try Owners collection first with timeout
       var doc = await FirebaseFirestore.instance
@@ -229,58 +259,36 @@ class OwnerInformationCard extends StatelessWidget {
           .doc(ownerId)
           .get(const GetOptions(source: Source.serverAndCache))
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 5),
             onTimeout: () {
-              // Try cache only if server times out
               return FirebaseFirestore.instance
                   .collection('Owners')
                   .doc(ownerId)
                   .get(const GetOptions(source: Source.cache));
             },
           );
-      
-      if (doc.exists) {
-        return doc;
-      }
-      
-      // Try Users collection with timeout
+
+      if (doc.exists) return doc;
+
+      // Try Users collection
       doc = await FirebaseFirestore.instance
           .collection('Users')
           .doc(ownerId)
           .get(const GetOptions(source: Source.serverAndCache))
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 5),
             onTimeout: () {
-              // Try cache only if server times out
               return FirebaseFirestore.instance
                   .collection('Users')
                   .doc(ownerId)
                   .get(const GetOptions(source: Source.cache));
             },
           );
-      
+
       return doc.exists ? doc : null;
     } catch (e) {
-      // If all fails, try cache only as last resort
-      try {
-        var cachedDoc = await FirebaseFirestore.instance
-            .collection('Owners')
-            .doc(ownerId)
-            .get(const GetOptions(source: Source.cache));
-        
-        if (cachedDoc.exists) {
-          return cachedDoc;
-        }
-        
-        cachedDoc = await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(ownerId)
-            .get(const GetOptions(source: Source.cache));
-        
-        return cachedDoc.exists ? cachedDoc : null;
-      } catch (_) {
-        return null;
-      }
+      debugPrint('Error fetching owner data: $e');
+      return null;
     }
   }
 
@@ -300,18 +308,8 @@ class OwnerInformationCard extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  memCacheWidth: 1200,
-                  memCacheHeight: 1200,
-                  maxWidthDiskCache: 2000,
-                  maxHeightDiskCache: 2000,
-                  fadeInDuration: const Duration(milliseconds: 300),
-                  httpHeaders: const {
-                    'Cache-Control': 'max-age=31536000',
-                  },
                   placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(
-                      color: ColorManager.white,
-                    ),
+                    child: CircularProgressIndicator(color: ColorManager.white),
                   ),
                   errorWidget: (context, url, error) => const Center(
                     child: Icon(

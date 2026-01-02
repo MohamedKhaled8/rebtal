@@ -1,16 +1,95 @@
 import 'dart:io';
+import 'package:equatable/equatable.dart';
 
-abstract class OwnerState {
-  const OwnerState();
+enum OwnerStatus { initial, loading, loaded, error }
+
+class OwnerState extends Equatable {
+  // Dashboard / List State
+  final OwnerStatus status;
+  // List of chalets as raw Maps to preserve all Firestore fields
+  final List<dynamic> chalets;
+  final String? errorMessage;
+
+  // Add/Edit Form State
+  final ChaletDraft draft;
+  final bool isFormSubmitting;
+  final String? formError;
+  final bool isFormSuccess;
+
+  // Location Search State
+  final List<Map<String, dynamic>> locationResults;
+  final bool isLocationLoading;
+
+  const OwnerState({
+    this.status = OwnerStatus.initial,
+    this.chalets = const [],
+    this.errorMessage,
+    required this.draft,
+    this.isFormSubmitting = false,
+    this.formError,
+    this.isFormSuccess = false,
+    this.locationResults = const [],
+    this.isLocationLoading = false,
+  });
+
+  factory OwnerState.initial() {
+    return OwnerState(draft: ChaletDraft.initial());
+  }
+
+  OwnerState copyWith({
+    OwnerStatus? status,
+    List<dynamic>? chalets,
+    String? errorMessage,
+    ChaletDraft? draft,
+    bool? isFormSubmitting,
+    String? formError,
+    bool? isFormSuccess,
+    List<Map<String, dynamic>>? locationResults,
+    bool? isLocationLoading,
+  }) {
+    return OwnerState(
+      status: status ?? this.status,
+      chalets: chalets ?? this.chalets,
+      errorMessage: errorMessage ?? this.errorMessage,
+      draft: draft ?? this.draft,
+      isFormSubmitting: isFormSubmitting ?? this.isFormSubmitting,
+      formError: formError ?? this.formError,
+      isFormSuccess: isFormSuccess ?? this.isFormSuccess,
+      locationResults: locationResults ?? this.locationResults,
+      isLocationLoading: isLocationLoading ?? this.isLocationLoading,
+    );
+  }
+
+  /// Helper to clear form error/success state
+  OwnerState resetFormState() {
+    return copyWith(
+      isFormSubmitting: false,
+      isFormSuccess: false,
+      formError: null,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    status,
+    chalets,
+    errorMessage,
+    draft,
+    isFormSubmitting,
+    formError,
+    isFormSuccess,
+    locationResults,
+    isLocationLoading,
+  ];
 }
 
-class OwnerInitial extends OwnerState {}
-
-class OwnerData extends OwnerState {
+class ChaletDraft extends Equatable {
   final List<File> uploadedImages;
   final File? profileImage;
   final String selectedLocation;
   final bool isAvailable;
+
+  // Amenities
   final bool hasWifi;
   final bool hasPool;
   final bool hasAirConditioning;
@@ -23,41 +102,36 @@ class OwnerData extends OwnerState {
   final bool hasGym;
   final bool hasKitchen;
   final bool hasTV;
+
   final String status;
   final String? phoneNumber;
   final String? email;
   final String? chaletName;
   final String? description;
-
-  // 🆕
   final String? merchantName;
-  final String price; // 🆕
-  final String? chaletArea; // 🆕 Area in sqm
+  final String price;
+  final String? chaletArea;
   final int? bedrooms;
   final int? bathrooms;
 
-  // 🆕 التواريخ
   final DateTime? availableFrom;
   final DateTime? availableTo;
-  // Geo
+
   final double? latitude;
   final double? longitude;
-  // 🆕 Children Count
-  final int? childrenCount;
-  // 🆕 Discount
-  final bool discountEnabled;
-  final String? discountType; // 'percentage' or 'fixed'
-  final String? discountValue;
-  // 🆕 Features
-  final List<String> features; // Pool, Sea, Family Gathering, Luxury, Mountain
 
-  const OwnerData({
-    required this.uploadedImages,
+  final int? childrenCount;
+  final bool discountEnabled;
+  final String? discountType;
+  final String? discountValue;
+  final List<String> features;
+
+  const ChaletDraft({
+    this.uploadedImages = const [],
     this.profileImage,
-    this.email,
-    required this.selectedLocation,
-    required this.isAvailable,
-    required this.hasWifi,
+    this.selectedLocation = 'Sharm El Sheikh',
+    this.isAvailable = true,
+    this.hasWifi = false,
     this.hasPool = false,
     this.hasAirConditioning = false,
     this.hasParking = false,
@@ -69,12 +143,13 @@ class OwnerData extends OwnerState {
     this.hasGym = false,
     this.hasKitchen = false,
     this.hasTV = false,
-    this.status = "pending",
+    this.status = 'pending',
     this.phoneNumber,
+    this.email,
     this.chaletName,
     this.description,
     this.merchantName,
-    required this.price,
+    this.price = '',
     this.chaletArea,
     this.bedrooms,
     this.bathrooms,
@@ -89,7 +164,9 @@ class OwnerData extends OwnerState {
     this.features = const [],
   });
 
-  OwnerData copyWith({
+  factory ChaletDraft.initial() => const ChaletDraft();
+
+  ChaletDraft copyWith({
     List<File>? uploadedImages,
     File? profileImage,
     String? selectedLocation,
@@ -108,15 +185,14 @@ class OwnerData extends OwnerState {
     bool? hasTV,
     String? status,
     String? phoneNumber,
+    String? email,
     String? chaletName,
     String? description,
     String? merchantName,
-    String? email,
     String? price,
     String? chaletArea,
     int? bedrooms,
     int? bathrooms,
-    bool clearProfileImage = false,
     DateTime? availableFrom,
     DateTime? availableTo,
     double? latitude,
@@ -126,12 +202,13 @@ class OwnerData extends OwnerState {
     String? discountType,
     String? discountValue,
     List<String>? features,
+    bool clearProfileImage = false,
   }) {
-    return OwnerData(
+    return ChaletDraft(
       uploadedImages: uploadedImages ?? this.uploadedImages,
       profileImage: clearProfileImage
           ? null
-          : profileImage ?? this.profileImage,
+          : (profileImage ?? this.profileImage),
       selectedLocation: selectedLocation ?? this.selectedLocation,
       isAvailable: isAvailable ?? this.isAvailable,
       hasWifi: hasWifi ?? this.hasWifi,
@@ -148,12 +225,12 @@ class OwnerData extends OwnerState {
       hasTV: hasTV ?? this.hasTV,
       status: status ?? this.status,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      email: email ?? this.email,
       chaletName: chaletName ?? this.chaletName,
       description: description ?? this.description,
       merchantName: merchantName ?? this.merchantName,
       price: price ?? this.price,
       chaletArea: chaletArea ?? this.chaletArea,
-      email: email ?? this.email,
       bedrooms: bedrooms ?? this.bedrooms,
       bathrooms: bathrooms ?? this.bathrooms,
       availableFrom: availableFrom ?? this.availableFrom,
@@ -167,16 +244,43 @@ class OwnerData extends OwnerState {
       features: features ?? this.features,
     );
   }
-}
 
-final class OwnerLoading extends OwnerState {}
-
-final class OwnerLoaded extends OwnerState {
-  final List<Map<String, dynamic>> chalets;
-  OwnerLoaded(this.chalets);
-}
-
-final class OwnerError extends OwnerState {
-  final String message;
-  OwnerError(this.message);
+  @override
+  List<Object?> get props => [
+    uploadedImages,
+    profileImage,
+    selectedLocation,
+    isAvailable,
+    hasWifi,
+    hasPool,
+    hasAirConditioning,
+    hasParking,
+    hasGarden,
+    hasBBQ,
+    hasBeachView,
+    hasHousekeeping,
+    hasPetsAllowed,
+    hasGym,
+    hasKitchen,
+    hasTV,
+    status,
+    phoneNumber,
+    email,
+    chaletName,
+    description,
+    merchantName,
+    price,
+    chaletArea,
+    bedrooms,
+    bathrooms,
+    availableFrom,
+    availableTo,
+    latitude,
+    longitude,
+    childrenCount,
+    discountEnabled,
+    discountType,
+    discountValue,
+    features,
+  ];
 }

@@ -26,23 +26,27 @@ final class ChaletDetailLoaded extends ChaletDetailState {
   final List<String> images;
   final int currentImageIndex;
   final bool isDescriptionExpanded;
+  final List<DateTime>? bookedDates;
 
   ChaletDetailLoaded({
     required this.images,
     this.currentImageIndex = 0,
     this.isDescriptionExpanded = false,
+    this.bookedDates,
   });
 
   ChaletDetailLoaded copyWith({
     List<String>? images,
     int? currentImageIndex,
     bool? isDescriptionExpanded,
+    List<DateTime>? bookedDates,
   }) {
     return ChaletDetailLoaded(
       images: images ?? this.images,
       currentImageIndex: currentImageIndex ?? this.currentImageIndex,
       isDescriptionExpanded:
           isDescriptionExpanded ?? this.isDescriptionExpanded,
+      bookedDates: bookedDates ?? this.bookedDates,
     );
   }
 }

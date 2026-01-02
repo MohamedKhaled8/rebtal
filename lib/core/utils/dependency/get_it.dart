@@ -13,6 +13,10 @@ import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
+import 'package:rebtal/feature/owner/domain/repository/base_owner_repository.dart';
+import 'package:rebtal/feature/owner/data/repository/owner_repository_impl.dart';
+import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
+import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -47,6 +51,9 @@ Future<void> setupGetIt() async {
   // Register AuthRepository
   getIt.registerLazySingleton<BaseAuthRepository>(() => AuthRepository());
 
+  // Register OwnerRepository
+  getIt.registerLazySingleton<BaseOwnerRepository>(() => OwnerRepositoryImpl());
+
   // ============================================================
   // DOMAIN LAYER (Use Cases)
   // ============================================================
@@ -65,6 +72,14 @@ Future<void> setupGetIt() async {
     () => SaveUserUseCase(getIt<BaseAuthRepository>()),
   );
 
+  // Register Owner UseCases
+  getIt.registerLazySingleton<AddChaletUseCase>(
+    () => AddChaletUseCase(getIt<BaseOwnerRepository>()),
+  );
+  getIt.registerLazySingleton<GetOwnerChaletsUseCase>(
+    () => GetOwnerChaletsUseCase(getIt<BaseOwnerRepository>()),
+  );
+
   // ============================================================
   // PRESENTATION LAYER (Feature Cubits)
   // ============================================================
@@ -79,7 +94,12 @@ Future<void> setupGetIt() async {
 
   getIt.registerLazySingleton<NotificationCubit>(() => NotificationCubit());
 
-  getIt.registerLazySingleton<OwnerCubit>(() => OwnerCubit());
+  getIt.registerLazySingleton<OwnerCubit>(
+    () => OwnerCubit(
+      addChaletUseCase: getIt<AddChaletUseCase>(),
+      getOwnerChaletsUseCase: getIt<GetOwnerChaletsUseCase>(),
+    ),
+  );
 
   // ============================================================
   // APPLICATION LAYER (App Coordinator)

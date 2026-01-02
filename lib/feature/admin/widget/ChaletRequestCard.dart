@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
 
@@ -27,9 +28,23 @@ class ChaletRequestCard extends StatelessWidget {
     final price = requestData['price']?.toString() ?? 'N/A';
     final bedrooms = requestData['bedrooms']?.toString() ?? 'N/A';
     final bathrooms = requestData['bathrooms']?.toString() ?? 'N/A';
+    final chaletArea = requestData['chaletArea']?.toString() ?? '';
+    final childrenCount = requestData['childrenCount']?.toString() ?? '';
     final isVisible = requestData['isVisible'] ?? true;
     final bookingAvailability =
         requestData['bookingAvailability'] ?? 'available';
+
+    // Owner information
+    final ownerId = requestData['ownerId'] ?? '';
+    final ownerName = requestData['ownerName'] ?? 'غير محدد';
+
+    // Debug: Print data to verify
+    print('📋 ChaletRequestCard - Data received:');
+    print('   - ownerId: $ownerId');
+    print('   - ownerName: $ownerName');
+    print('   - bookingAvailability: $bookingAvailability');
+    print('   - status: ${requestData['status']}');
+
     // final city = requestData['city'] ?? 'Unknown City';
     final image =
         (requestData['images'] is List && requestData['images'].isNotEmpty)
@@ -132,14 +147,57 @@ class ChaletRequestCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        '\$$price / Night',
-                        style: TextStyle(
-                          color: ColorManager.kPrimaryGradient.colors.first,
-                          fontSize: 17.sp,
-                          fontWeight: FontWeight.bold,
+                      if (requestData['discountEnabled'] == true &&
+                          requestData['discountValue'] != null) ...[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '\$$price',
+                              style: TextStyle(
+                                color: ColorManager.gray,
+                                fontSize: 13.sp,
+                                decoration: TextDecoration.lineThrough,
+                                decorationColor: ColorManager.red,
+                              ),
+                            ),
+                            Text(
+                              (() {
+                                final p =
+                                    double.tryParse(price.toString()) ?? 0;
+                                final val =
+                                    double.tryParse(
+                                      requestData['discountValue'].toString(),
+                                    ) ??
+                                    0;
+                                double finalPrice = p;
+                                if (requestData['discountType'] ==
+                                    'percentage') {
+                                  finalPrice = p - (p * (val / 100));
+                                } else {
+                                  finalPrice = p - val;
+                                }
+                                return '\$${finalPrice.toStringAsFixed(0)} / Night';
+                              })(),
+                              style: TextStyle(
+                                color:
+                                    ColorManager.kPrimaryGradient.colors.first,
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ] else ...[
+                        Text(
+                          '\$$price / Night',
+                          style: TextStyle(
+                            color: ColorManager.kPrimaryGradient.colors.first,
+                            fontSize: 17.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
 
@@ -159,41 +217,66 @@ class ChaletRequestCard extends StatelessWidget {
 
                   verticalSpace(2),
 
-                  // Property Details
-                  Row(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.bed, size: 18.sp, color: Colors.grey),
-                          horizintalSpace(1),
-                          Text('$bedrooms Beds'),
-                        ],
-                      ),
-                      horizintalSpace(5),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.bathtub_outlined,
-                            size: 18.sp,
-                            color: Colors.grey,
-                          ),
-                          horizintalSpace(1),
-                          Text('$bathrooms Baths'),
-                        ],
-                      ),
-                      horizintalSpace(5),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.price_change_outlined,
-                            size: 18.sp,
-                            color: Colors.grey,
-                          ),
+                  // Owner Information
+                  // Owner Information section removed as requested
+                  if (ownerName.isNotEmpty && ownerName != 'غير محدد')
+                    verticalSpace(2),
 
-                          Text('$price price'),
+                  // Property Details
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.bed, size: 18.sp, color: Colors.grey),
+                            horizintalSpace(1),
+                            Text('$bedrooms Beds'),
+                          ],
+                        ),
+                        horizintalSpace(3),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.bathtub_outlined,
+                              size: 18.sp,
+                              color: Colors.grey,
+                            ),
+                            horizintalSpace(1),
+                            Text('$bathrooms Baths'),
+                          ],
+                        ),
+                        if (childrenCount.isNotEmpty) ...[
+                          horizintalSpace(3),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.child_care_rounded,
+                                size: 18.sp,
+                                color: Colors.grey,
+                              ),
+                              horizintalSpace(1),
+                              Text('$childrenCount Child'),
+                            ],
+                          ),
                         ],
-                      ),
-                    ],
+                        if (chaletArea.isNotEmpty) ...[
+                          horizintalSpace(3),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.square_foot_rounded,
+                                size: 18.sp,
+                                color: Colors.grey,
+                              ),
+                              horizintalSpace(1),
+                              Text('$chaletArea m²'),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
 
                   verticalSpace(2),

@@ -145,19 +145,14 @@ class AppCubit extends Cubit<AppState> {
   void _handleOwnerStateChange(OwnerState ownerState) {
     final currentState = state;
     if (currentState is AppAuthenticated) {
-      if (ownerState is OwnerLoaded) {
-        emit(
-          currentState.copyWith(
-            ownerChalets: ownerState.chalets,
-            isOwnerChaletsLoading: false,
-          ),
-        );
-      } else if (ownerState is OwnerLoading) {
-        emit(currentState.copyWith(isOwnerChaletsLoading: true));
-      } else if (ownerState is OwnerData) {
-        // Form Data updated
-        emit(currentState.copyWith(ownerFormData: ownerState));
-      }
+      // New OwnerState is composite - contains both list and form draft
+      emit(
+        currentState.copyWith(
+          ownerChalets: ownerState.chalets,
+          isOwnerChaletsLoading: ownerState.status == OwnerStatus.loading,
+          ownerFormData: ownerState.draft,
+        ),
+      );
     }
   }
 
@@ -189,7 +184,7 @@ class AppCubit extends Cubit<AppState> {
 
     if (role == 'owner') {
       _bookingCubit.loadOwnerBookings(user.uid);
-      _ownerCubit.fetchChalets();
+      _ownerCubit.fetchChalets(user.uid);
     } else if (role == 'user') {
       _bookingCubit.loadUserBookings(user.uid);
     } else if (role == 'admin') {
@@ -215,21 +210,12 @@ class AppCubit extends Cubit<AppState> {
   void changePrimaryColor(Color color) => _themeCubit.changeColor(color);
 
   // --- Owner (Chalets) ---
-  Future<void> fetchOwnerChalets() => _ownerCubit.fetchChalets();
-
-  /// Expose the raw OwnerCubit ONLY for limited scopes where passing it
-  /// explicitly to a complex widget (like a wizard) is cleaner than
-  /// wrapping every method. But prefer using App state/methods.
-  ///
-  /// The user asked to remove direct usage, but for simple migration,
-  /// we might still need to specific sub-methods.
-  /// Ideally, we expose specific methods for the "Add" screen.
-
-  // Update Owner Form Data
-  void updateOwnerFormData(OwnerData data) {
-    // This assumes OwnerCubit has a way to update state directly or specific methods
-    // We might need to look at OwnerCubit to see how to drive it.
-    // For now, assuming standard flow.
+  Future<void> fetchOwnerChalets() {
+    final user = getCurrentUser();
+    if (user != null) {
+      return _ownerCubit.fetchChalets(user.uid);
+    }
+    return Future.value();
   }
 
   // But we can expose getters for the *Instances* if absolutely necessary for internal routing,

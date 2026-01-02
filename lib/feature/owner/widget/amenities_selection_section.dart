@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 
 /// Modern amenities selection widget with icon-based cards
 class AmenitiesSelectionSection extends StatelessWidget {
@@ -12,95 +14,26 @@ class AmenitiesSelectionSection extends StatelessWidget {
     required this.onAmenityChanged,
   });
 
-  static const List<Map<String, dynamic>> allAmenities = [
-    {
-      'key': 'hasWifi',
-      'label': 'WiFi',
-      'icon': Icons.wifi,
-      'color': ColorManager.chaletActionBlue,
-    },
-    {
-      'key': 'hasPool',
-      'label': 'Pool',
-      'icon': Icons.pool,
-      'color': ColorManager.cyan06B6D4,
-    },
-    {
-      'key': 'hasAirConditioning',
-      'label': 'Air Conditioning',
-      'icon': Icons.ac_unit,
-      'color': ColorManager.bookingsWarningOrange,
-    },
-    {
-      'key': 'hasParking',
-      'label': 'Parking',
-      'icon': Icons.local_parking,
-      'color': ColorManager.purple8B5CF6,
-    },
-    {
-      'key': 'hasGarden',
-      'label': 'Garden',
-      'icon': Icons.local_florist,
-      'color': ColorManager.chaletActionGreen,
-    },
-    {
-      'key': 'hasBBQ',
-      'label': 'BBQ Area',
-      'icon': Icons.outdoor_grill,
-      'color': ColorManager.chaletUnavailableRed,
-    },
-    {
-      'key': 'hasBeachView',
-      'label': 'Beach View',
-      'icon': Icons.beach_access,
-      'color': ColorManager.skyBlue0EA5E9,
-    },
-    {
-      'key': 'hasHousekeeping',
-      'label': 'Housekeeping',
-      'icon': Icons.cleaning_services,
-      'color': ColorManager.indigo6366F1,
-    },
-    {
-      'key': 'hasPetsAllowed',
-      'label': 'Pets Allowed',
-      'icon': Icons.pets,
-      'color': ColorManager.chaletGalleryPink,
-    },
-    {
-      'key': 'hasGym',
-      'label': 'Gym',
-      'icon': Icons.fitness_center,
-      'color': ColorManager.teal,
-    },
-    {
-      'key': 'hasKitchen',
-      'label': 'Kitchen',
-      'icon': Icons.kitchen,
-      'color': ColorManager.orange,
-    },
-    {
-      'key': 'hasTV',
-      'label': 'TV',
-      'icon': Icons.tv,
-      'color': ColorManager.indigo6366F1,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final selectedCount = selectedAmenities.values.where((v) => v).length;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: ColorManager.gray.withOpacity(0.2),
-          width: 1,
+          color: isDark
+              ? ColorManager.grey800.withOpacity(0.3)
+              : ColorManager.grey200,
         ),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.05),
+            color: isDark
+                ? ColorManager.black.withOpacity(0.3)
+                : ColorManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -109,18 +42,19 @@ class AmenitiesSelectionSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: ColorManager.kPrimaryGradient.colors.first.withOpacity(0.1),
+                  color: ColorManager.purple764BA2.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.room_service,
-                  color: ColorManager.kPrimaryGradient.colors.first,
-                  size: 24,
+                child: const Icon(
+                  Icons.star_rounded,
+                  color: ColorManager.purple764BA2,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: 12),
@@ -129,27 +63,59 @@ class AmenitiesSelectionSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Amenities & Services',
+                      'المرافق والخدمات',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: ColorManager.black,
+                        color: isDark ? ColorManager.white : ColorManager.black,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      'Select all available amenities',
+                      'اختر جميع المرافق المتوفرة',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: ColorManager.gray,
+                        fontSize: 12,
+                        color: isDark
+                            ? ColorManager.grey400
+                            : ColorManager.grey600,
                       ),
                     ),
                   ],
                 ),
               ),
+              if (selectedCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorManager.purple764BA2.withOpacity(0.2),
+                        ColorManager.blue2563EB.withOpacity(0.2),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: ColorManager.purple764BA2.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    '$selectedCount محدد',
+                    style: const TextStyle(
+                      color: ColorManager.purple764BA2,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 20),
+
+          // Amenities Grid
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -157,22 +123,23 @@ class AmenitiesSelectionSection extends StatelessWidget {
               crossAxisCount: 3,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 1.1,
+              childAspectRatio: 1.0,
             ),
-            itemCount: allAmenities.length,
+            itemCount: OwnerHelper.allAmenities.length,
             itemBuilder: (context, index) {
-              final amenity = allAmenities[index];
+              final amenity = OwnerHelper.allAmenities[index];
               final key = amenity['key'] as String;
               final isSelected = selectedAmenities[key] ?? false;
               final color = amenity['color'] as Color;
               final icon = amenity['icon'] as IconData;
               final label = amenity['label'] as String;
 
-              return _AmenityCard(
+              return _BouncyAmenityCard(
                 label: label,
                 icon: icon,
                 color: color,
                 isSelected: isSelected,
+                isDark: isDark,
                 onTap: () => onAmenityChanged(key, !isSelected),
               );
             },
@@ -183,102 +150,186 @@ class AmenitiesSelectionSection extends StatelessWidget {
   }
 }
 
-class _AmenityCard extends StatelessWidget {
+class _BouncyAmenityCard extends StatefulWidget {
   final String label;
   final IconData icon;
   final Color color;
   final bool isSelected;
+  final bool isDark;
   final VoidCallback onTap;
 
-  const _AmenityCard({
+  const _BouncyAmenityCard({
     required this.label,
     required this.icon,
     required this.color,
     required this.isSelected,
+    required this.isDark,
     required this.onTap,
   });
 
   @override
+  State<_BouncyAmenityCard> createState() => _BouncyAmenityCardState();
+}
+
+class _BouncyAmenityCardState extends State<_BouncyAmenityCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100), // Quick bounce
+      lowerBound: 0.0,
+      upperBound: 0.1,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() async {
+    await _controller.forward();
+    widget.onTap();
+    await _controller.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withOpacity(0.15)
-              : ColorManager.grey50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? color : ColorManager.grey300,
-            width: isSelected ? 2 : 1,
+      onTap: _handleTap,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            gradient: widget.isSelected
+                ? LinearGradient(
+                    colors: [
+                      widget.color.withOpacity(0.2),
+                      widget.color.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: widget.isSelected
+                ? null
+                : (widget.isDark
+                      ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
+                      : ColorManager.grey50),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: widget.isSelected
+                  ? widget.color
+                  : (widget.isDark
+                        ? ColorManager.grey800.withOpacity(0.3)
+                        : ColorManager.grey300),
+              width: widget.isSelected ? 2 : 1,
+            ),
+            boxShadow: widget.isSelected
+                ? [
+                    BoxShadow(
+                      color: widget.color.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? color.withOpacity(0.2)
-                        : ColorManager.grey200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? color : ColorManager.grey600,
-                    size: 24,
-                  ),
-                ),
-                if (isSelected)
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: ColorManager.green,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: ColorManager.white,
-                        size: 12,
-                      ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon Container
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: widget.isSelected
+                          ? widget.color.withOpacity(0.2)
+                          : (widget.isDark
+                                ? ColorManager.grey800.withOpacity(0.3)
+                                : ColorManager.grey200),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.icon,
+                      color: widget.isSelected
+                          ? widget.color
+                          : (widget.isDark
+                                ? ColorManager.grey400
+                                : ColorManager.grey600),
+                      size: 24,
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? color : ColorManager.grey700,
+                  // Checkmark Badge
+                  if (widget.isSelected)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: widget.color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: widget.isDark
+                                ? ColorManager.darkBlue1A1A2E
+                                : ColorManager.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: ColorManager.white,
+                          size: 10,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+
+              const SizedBox(height: 8),
+
+              // Label
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  widget.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: widget.isSelected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    color: widget.isSelected
+                        ? widget.color
+                        : (widget.isDark
+                              ? ColorManager.grey300
+                              : ColorManager.grey700),
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-

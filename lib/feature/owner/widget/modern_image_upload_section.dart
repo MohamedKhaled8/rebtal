@@ -1,14 +1,14 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
-class ImageUploadSection extends StatelessWidget {
+class ModernImageUploadSection extends StatelessWidget {
   final List<File> images;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
-  const ImageUploadSection({
+
+  const ModernImageUploadSection({
     super.key,
     required this.images,
     required this.onAdd,
@@ -70,7 +70,7 @@ class ImageUploadSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'صور الشاليه',
+                      'Chalet Photos',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -79,7 +79,7 @@ class ImageUploadSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'أضف 3 صور عالية الجودة على الأقل',
+                      'Add at least 3 high-quality photos',
                       style: TextStyle(
                         color: isDark
                             ? ColorManager.grey400
@@ -200,7 +200,7 @@ class ImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    images.isEmpty ? 'أضف صورتك الأولى' : 'أضف المزيد من الصور',
+                    images.isEmpty ? 'Add Your First Photo' : 'Add More Photos',
                     style: TextStyle(
                       color: isDark ? ColorManager.white : ColorManager.black,
                       fontSize: 15,
@@ -209,7 +209,7 @@ class ImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'اضغط للاختيار من المعرض',
+                    'Tap to select from gallery',
                     style: TextStyle(
                       color: isDark
                           ? ColorManager.grey400
@@ -302,7 +302,7 @@ class _ImageCard extends StatelessWidget {
                   Icon(Icons.star_rounded, color: ColorManager.white, size: 12),
                   SizedBox(width: 4),
                   Text(
-                    'غلاف',
+                    'Cover',
                     style: TextStyle(
                       color: ColorManager.white,
                       fontSize: 10,

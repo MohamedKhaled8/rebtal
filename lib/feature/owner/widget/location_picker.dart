@@ -1,164 +1,168 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
+import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
-class LocationPicker extends StatefulWidget {
+class LocationPicker extends StatelessWidget {
   const LocationPicker({super.key});
 
   @override
-  State<LocationPicker> createState() => _LocationPickerState();
-}
-
-class _LocationPickerState extends State<LocationPicker> {
-  final TextEditingController _query = TextEditingController();
-  final Dio _dio = Dio();
-  Timer? _debounce;
-  List<Map<String, dynamic>> _results = [];
-  LatLng? _selected;
-
-  @override
-  void dispose() {
-    _query.dispose();
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _search(String text) async {
-    if (text.trim().isEmpty) {
-      setState(() => _results = []);
-      return;
-    }
-    try {
-      final res = await _dio.get(
-        'https://nominatim.openstreetmap.org/search',
-        queryParameters: {'q': text, 'format': 'json', 'limit': 5},
-        options: Options(headers: {'User-Agent': 'rebtal-app/1.0'}),
-      );
-      final List data = res.data as List;
-      setState(() {
-        _results = data
-            .map(
-              (e) => {
-                'display': e['display_name'],
-                'lat': double.tryParse(e['lat'] ?? '0') ?? 0,
-                'lon': double.tryParse(e['lon'] ?? '0') ?? 0,
-              },
-            )
-            .toList();
-      });
-    } catch (_) {}
-  }
-
-  void _onDebounced(String text) {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () => _search(text));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _query,
-          decoration: InputDecoration(
-            hintText: 'ابحث عن الموقع (مثال: الرياض، السعودية)',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          onChanged: _onDebounced,
-          textInputAction: TextInputAction.search,
-        ),
-        const SizedBox(height: 8),
-        if (_results.isNotEmpty)
-          Container(
-            constraints: const BoxConstraints(maxHeight: 180),
-            decoration: BoxDecoration(
-              color: ColorManager.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(color: ColorManager.black.withOpacity(0.05), blurRadius: 8),
-              ],
-            ),
-            child: ListView.builder(
-              itemCount: _results.length,
-              itemBuilder: (context, i) {
-                final item = _results[i];
-                return ListTile(
-                  dense: true,
-                  leading: Icon(Icons.place, color: ColorManager.primaryColor),
-                  title: Text(
-                    item['display'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _selected = LatLng(item['lat'], item['lon']);
-                      _results = [];
-                      _query.text = item['display'];
-                    });
-                    context.read<OwnerCubit>().updateLocation(_query.text);
-                  },
-                );
+    // Access cubit via AppCubit as per project pattern
+    final ownerCubit = context.read<AppCubit>().ownerCubit;
+    Timer? debounce;
+
+    return BlocBuilder<OwnerCubit, OwnerState>(
+      bloc: ownerCubit,
+      builder: (context, state) {
+        final selectedLatLng =
+            (state.draft.latitude != null && state.draft.longitude != null)
+            ? LatLng(state.draft.latitude!, state.draft.longitude!)
+            : null;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'ابحث عن الموقع (مثال: الرياض، السعودية)',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: state.isLocationLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onChanged: (text) {
+                debounce?.cancel();
+                debounce = Timer(const Duration(milliseconds: 500), () {
+                  ownerCubit.searchLocation(text);
+                });
               },
+              textInputAction: TextInputAction.search,
             ),
-          ),
-        const SizedBox(height: 12),
-        if (_selected != null)
-          SizedBox(
-            height: 180,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: FlutterMap(
-                options: MapOptions(
-                  initialCenter: _selected!,
-                  initialZoom: 14,
-                  onTap: (tapPos, latlng) {
-                    setState(() => _selected = latlng);
+            const SizedBox(height: 8),
+            if (state.locationResults.isNotEmpty)
+              Container(
+                constraints: const BoxConstraints(maxHeight: 180),
+                decoration: BoxDecoration(
+                  color: ColorManager.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorManager.black.withOpacity(0.05),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: state.locationResults.length,
+                  itemBuilder: (context, i) {
+                    final item = state.locationResults[i];
+                    return ListTile(
+                      dense: true,
+                      leading: Icon(
+                        Icons.place,
+                        color: ColorManager.primaryColor,
+                      ),
+                      title: Text(
+                        item['display'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        ownerCubit.updateGeo(
+                          lat: item['lat'],
+                          lon: item['lon'],
+                          address: item['display'],
+                        );
+                        ownerCubit.clearLocationResults();
+                        FocusScope.of(context).unfocus();
+                      },
+                    );
                   },
                 ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.example.rebtal',
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        width: 40,
-                        height: 40,
-                        point: _selected!,
-                        child: const Icon(
-                          Icons.location_on,
-                          color: ColorManager.red,
-                          size: 36,
-                        ),
+              ),
+            const SizedBox(height: 12),
+            if (selectedLatLng != null)
+              SizedBox(
+                height: 180,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: selectedLatLng,
+                      initialZoom: 14,
+                      onTap: (tapPos, latlng) {
+                        ownerCubit.reverseGeocode(
+                          lat: latlng.latitude,
+                          lon: latlng.longitude,
+                        );
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.rebtal',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            width: 40,
+                            height: 40,
+                            point: selectedLatLng,
+                            child: const Icon(
+                              Icons.location_on,
+                              color: ColorManager.red,
+                              size: 36,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ),
+            const SizedBox(height: 12),
+            if (selectedLatLng != null ||
+                state.draft.selectedLocation.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ColorManager.grey50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  state.draft.selectedLocation,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.check),
+                label: const Text('تأكيد الموقع'),
               ),
             ),
-          ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.check),
-            label: const Text('تأكيد الموقع'),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

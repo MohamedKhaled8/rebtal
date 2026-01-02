@@ -57,6 +57,69 @@ class ServicesSection extends StatelessWidget {
                     );
                   },
                 ),
+
+                // Additional Features (Dynamic Tags)
+                if (requestData['features'] != null &&
+                    (requestData['features'] as List).isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Divider(
+                    height: 1,
+                    color: isDark ? ColorManager.white10 : ColorManager.grey200,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Additional Features',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? ColorManager.chaletTextPrimaryDark
+                          : ColorManager.chaletTextPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: (requestData['features'] as List).map((feature) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? ColorManager.chaletIconBackgroundDark
+                              : ColorManager.greyF3F4F6,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check,
+                              size: 16,
+                              color: isDark
+                                  ? ColorManager.white.withOpacity(0.8)
+                                  : ColorManager.chaletActionGreen,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              feature.toString(),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? ColorManager.chaletTextSecondaryDark
+                                    : ColorManager.grey374151,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             );
           }

@@ -20,8 +20,70 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
 
   void initialize(Map<String, dynamic> requestData) {
     final images = _extractImagesFromRequestData(requestData);
-    emit(ChaletDetailLoaded(images: images));
+    final bookingDates = requestData['bookedDates'];
+    List<DateTime>? initialDates;
+
+    if (bookingDates != null && bookingDates is List) {
+      initialDates = bookingDates.map((e) {
+        if (e is Timestamp) return e.toDate();
+        if (e is String) return DateTime.tryParse(e) ?? DateTime.now();
+        return DateTime.now();
+      }).toList();
+    }
+
+    emit(ChaletDetailLoaded(images: images, bookedDates: initialDates));
     _startAutoPlay();
+
+    // Fetch latest bookings
+    final chaletId = requestData['id'] ?? requestData['chaletId'];
+    if (chaletId != null) {
+      _fetchBookedDates(chaletId.toString());
+    }
+  }
+
+  Future<void> _fetchBookedDates(String chaletId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('chaletId', isEqualTo: chaletId)
+          .where(
+            'status',
+            whereIn: [
+              'approved',
+              'confirmed',
+              'completed',
+              'awaitingPayment',
+              'paymentUnderReview',
+            ],
+          )
+          .get();
+
+      final List<DateTime> bookedDates = [];
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final from = (data['from'] as Timestamp?)?.toDate();
+        final to = (data['to'] as Timestamp?)?.toDate();
+
+        if (from != null && to != null) {
+          // Add all dates in range
+          DateTime current = from;
+          while (current.isBefore(to) || current.isAtSameMomentAs(to)) {
+            bookedDates.add(current);
+            current = current.add(const Duration(days: 1));
+          }
+        }
+      }
+
+      bookedDates.sort();
+
+      final currentState = state;
+      if (currentState is ChaletDetailLoaded) {
+        emit(currentState.copyWith(bookedDates: bookedDates));
+      }
+    } catch (e) {
+      debugPrint('Error fetching booked dates: $e');
+    }
   }
 
   List<String> _extractImagesFromRequestData(Map<String, dynamic> data) {

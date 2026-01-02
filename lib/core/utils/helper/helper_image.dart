@@ -458,7 +458,7 @@ class HelperImage {
     BuildContext context,
     GlobalKey<FormState> formKey,
   ) async {
-    final data = context.read<AppCubit>().ownerCubit.currentData;
+    final data = context.read<AppCubit>().ownerCubit.state.draft;
     if (!formKey.currentState!.validate()) return;
 
     if (data.uploadedImages.isEmpty) {

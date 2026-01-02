@@ -127,14 +127,20 @@ class ChaletDetailPage extends StatelessWidget {
                                     // Location Map Section
                                     LocationMapCard(
                                       location: location,
-                                      latitude: requestData['lat'] != null
-                                          ? (requestData['lat'] as num)
+                                      latitude: requestData['latitude'] != null
+                                          ? (requestData['latitude'] as num)
                                                 .toDouble()
-                                          : null,
-                                      longitude: requestData['lon'] != null
-                                          ? (requestData['lon'] as num)
+                                          : (requestData['lat'] != null
+                                              ? (requestData['lat'] as num)
+                                                    .toDouble()
+                                              : null),
+                                      longitude: requestData['longitude'] != null
+                                          ? (requestData['longitude'] as num)
                                                 .toDouble()
-                                          : null,
+                                          : (requestData['lon'] != null
+                                              ? (requestData['lon'] as num)
+                                                    .toDouble()
+                                              : null),
                                     ),
                                     const SizedBox(height: 24),
 

@@ -37,7 +37,7 @@ class AppAuthenticated extends AppState {
   final bool isOwnerChaletsLoading;
   final List<Booking> bookings;
   final bool isBookingsLoading;
-  final OwnerData? ownerFormData;
+  final ChaletDraft? ownerFormData;
 
   const AppAuthenticated({
     required this.user,
@@ -60,7 +60,7 @@ class AppAuthenticated extends AppState {
     bool? isOwnerChaletsLoading,
     List<Booking>? bookings,
     bool? isBookingsLoading,
-    OwnerData? ownerFormData,
+    ChaletDraft? ownerFormData,
   }) {
     return AppAuthenticated(
       user: user ?? this.user,

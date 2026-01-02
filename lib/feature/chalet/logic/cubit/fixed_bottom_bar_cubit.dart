@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
@@ -76,7 +76,9 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     required String docId,
     required Map<String, dynamic> requestData,
   }) {
-    final authCubit = context.read<AuthCubit>();
+    // Access AuthCubit through AppCubit
+    final appCubit = context.read<AppCubit>();
+    final authCubit = appCubit.authCubit;
     final currentUser = authCubit.getCurrentUser();
     if (currentUser == null) return;
 

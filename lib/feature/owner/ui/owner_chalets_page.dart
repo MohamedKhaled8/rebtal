@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
-import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
+
 import 'package:rebtal/feature/owner/widget/owner_chalets_list.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart';

@@ -1,454 +1,600 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
+import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
+import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
+import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 
 class OwnerCubit extends Cubit<OwnerState> {
+  final AddChaletUseCase addChaletUseCase;
+  final GetOwnerChaletsUseCase getOwnerChaletsUseCase;
   final ImagePicker _imagePicker = ImagePicker();
+  final Dio _dio = Dio();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  OwnerCubit() : super(OwnerInitial()) {
-    _initializeState();
+  OwnerCubit({
+    required this.addChaletUseCase,
+    required this.getOwnerChaletsUseCase,
+  }) : super(OwnerState.initial()) {
+    // Optionally load chalets on init if we have user ID available
+    // But usually fetchChalets is called with ID.
   }
 
-  void _initializeState() {
-    emit(
-      const OwnerData(
-        uploadedImages: [],
-        profileImage: null,
-        selectedLocation: 'Sharm El Sheikh',
-        isAvailable: true,
-        hasWifi: false,
-        status: "pending",
-        // 🆕
-        hasPool: false,
-        hasAirConditioning: false,
-        hasParking: false,
-        hasGarden: false,
-        hasBBQ: false,
-        hasBeachView: false,
-        hasHousekeeping: false,
-        hasPetsAllowed: false,
-        hasGym: false,
-        hasKitchen: false,
-        hasTV: false,
-        price: '',
-        chaletArea: '',
-        latitude: null,
-        longitude: null,
-        childrenCount: null,
-        discountEnabled: false,
-        discountType: null,
-        discountValue: null,
-        features: [],
-      ),
-    );
-  }
+  // ==========================================
+  // Form Updates (Draft Management)
+  // ==========================================
 
-  // Get current data state
-  OwnerData get currentData {
-    final state = this.state;
-    if (state is OwnerData) {
-      return state;
-    }
-    return const OwnerData(
-      uploadedImages: [],
-      profileImage: null,
-      selectedLocation: 'Sharm El Sheikh',
-      isAvailable: true,
-      hasWifi: false,
-
-      // 🆕
-      hasPool: false,
-      hasAirConditioning: false,
-      hasParking: false,
-      price: '',
-      chaletArea: '',
-      latitude: null,
-      longitude: null,
-      childrenCount: null,
-      discountEnabled: false,
-      discountType: null,
-      discountValue: null,
-      features: [],
-    );
-  }
-
-  // Location management
   void updateLocation(String location) {
-    emit(currentData.copyWith(selectedLocation: location));
+    emit(
+      state.copyWith(draft: state.draft.copyWith(selectedLocation: location)),
+    );
   }
 
   void updateGeo({required double lat, required double lon, String? address}) {
     emit(
-      currentData.copyWith(
-        latitude: lat,
-        longitude: lon,
-        selectedLocation: address ?? currentData.selectedLocation,
+      state.copyWith(
+        draft: state.draft.copyWith(
+          latitude: lat,
+          longitude: lon,
+          selectedLocation: address ?? state.draft.selectedLocation,
+        ),
       ),
     );
   }
 
-  // Availability management
   void updateAvailability(bool isAvailable) {
-    emit(currentData.copyWith(isAvailable: isAvailable));
+    emit(state.copyWith(draft: state.draft.copyWith(isAvailable: isAvailable)));
   }
 
-  // WiFi management
-  void updateWifiStatus(bool hasWifi) {
-    emit(currentData.copyWith(hasWifi: hasWifi));
-  }
-
-  // 🆕 Pool management
-  void updatePoolStatus(bool hasPool) {
-    emit(currentData.copyWith(hasPool: hasPool));
-  }
-
-  // 🆕 Air conditioning management
-  void updateAirConditioningStatus(bool hasAirConditioning) {
-    emit(currentData.copyWith(hasAirConditioning: hasAirConditioning));
-  }
-
-  // 🆕 Parking management
-  void updateParkingStatus(bool hasParking) {
-    emit(currentData.copyWith(hasParking: hasParking));
-  }
-
-  // Extended amenities management
+  // Amenities
   void updateAmenity(String amenityKey, bool value) {
+    ChaletDraft newDraft;
     switch (amenityKey) {
       case 'hasWifi':
-        emit(currentData.copyWith(hasWifi: value));
+        newDraft = state.draft.copyWith(hasWifi: value);
         break;
       case 'hasPool':
-        emit(currentData.copyWith(hasPool: value));
+        newDraft = state.draft.copyWith(hasPool: value);
         break;
       case 'hasAirConditioning':
-        emit(currentData.copyWith(hasAirConditioning: value));
+        newDraft = state.draft.copyWith(hasAirConditioning: value);
         break;
       case 'hasParking':
-        emit(currentData.copyWith(hasParking: value));
+        newDraft = state.draft.copyWith(hasParking: value);
         break;
       case 'hasGarden':
-        emit(currentData.copyWith(hasGarden: value));
+        newDraft = state.draft.copyWith(hasGarden: value);
         break;
       case 'hasBBQ':
-        emit(currentData.copyWith(hasBBQ: value));
+        newDraft = state.draft.copyWith(hasBBQ: value);
         break;
       case 'hasBeachView':
-        emit(currentData.copyWith(hasBeachView: value));
+        newDraft = state.draft.copyWith(hasBeachView: value);
         break;
       case 'hasHousekeeping':
-        emit(currentData.copyWith(hasHousekeeping: value));
+        newDraft = state.draft.copyWith(hasHousekeeping: value);
         break;
       case 'hasPetsAllowed':
-        emit(currentData.copyWith(hasPetsAllowed: value));
+        newDraft = state.draft.copyWith(hasPetsAllowed: value);
         break;
       case 'hasGym':
-        emit(currentData.copyWith(hasGym: value));
+        newDraft = state.draft.copyWith(hasGym: value);
         break;
       case 'hasKitchen':
-        emit(currentData.copyWith(hasKitchen: value));
+        newDraft = state.draft.copyWith(hasKitchen: value);
         break;
       case 'hasTV':
-        emit(currentData.copyWith(hasTV: value));
+        newDraft = state.draft.copyWith(hasTV: value);
         break;
+      default:
+        newDraft = state.draft;
     }
-  }
-
-  // Get all amenities as a map
-  Map<String, bool> getAmenitiesMap() {
-    final data = currentData;
-    return {
-      'hasWifi': data.hasWifi,
-      'hasPool': data.hasPool,
-      'hasAirConditioning': data.hasAirConditioning,
-      'hasParking': data.hasParking,
-      'hasGarden': data.hasGarden,
-      'hasBBQ': data.hasBBQ,
-      'hasBeachView': data.hasBeachView,
-      'hasHousekeeping': data.hasHousekeeping,
-      'hasPetsAllowed': data.hasPetsAllowed,
-      'hasGym': data.hasGym,
-      'hasKitchen': data.hasKitchen,
-      'hasTV': data.hasTV,
-    };
+    emit(state.copyWith(draft: newDraft));
   }
 
   void updatePhoneNumber(String phone) =>
-      emit(currentData.copyWith(phoneNumber: phone));
+      emit(state.copyWith(draft: state.draft.copyWith(phoneNumber: phone)));
+
   void updateChaletName(String name) =>
-      emit(currentData.copyWith(chaletName: name));
+      emit(state.copyWith(draft: state.draft.copyWith(chaletName: name)));
+
   void updateDescription(String desc) =>
-      emit(currentData.copyWith(description: desc));
+      emit(state.copyWith(draft: state.draft.copyWith(description: desc)));
 
-  void updateEmail(String email) => emit(currentData.copyWith(email: email));
-  // Add profile image
-  Future<void> addProfileImage(ImageSource source) async {
-    try {
-      bool hasPermission = await _checkAndRequestPermissions(source);
-      if (!hasPermission) {
-        throw Exception(
-          'Permission denied. Please grant camera/gallery access in settings.',
-        );
-      }
-
-      final XFile? pickedFile = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 80,
-        maxWidth: 1200,
-        maxHeight: 1200,
-      );
-
-      if (pickedFile != null) {
-        emit(currentData.copyWith(profileImage: File(pickedFile.path)));
-      }
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // Add chalet images - supports multiple selection
-  Future<List<String>> addChaletImage(ImageSource source) async {
-    try {
-      bool hasPermission = await _checkAndRequestPermissions(source);
-      if (!hasPermission) {
-        throw Exception(
-          'Permission denied. Please grant camera/gallery access in settings.',
-        );
-      }
-
-      const int maxTotalImages = 20; // Maximum total images allowed
-      final currentCount = currentData.uploadedImages.length;
-
-      if (currentCount >= maxTotalImages) {
-        return ['Maximum of $maxTotalImages images allowed'];
-      }
-
-      List<File> validImages = [];
-      Set<String> validationErrors = {}; // Use Set to deduplicate errors
-
-      if (source == ImageSource.gallery) {
-        // For gallery, allow multiple selection
-        final List<XFile> pickedFiles = await _imagePicker.pickMultiImage(
-          imageQuality: 80,
-          maxWidth: 1200,
-          maxHeight: 1200,
-        );
-
-        // Check if adding these images would exceed the limit
-        final remainingSlots = maxTotalImages - currentCount;
-        final filesToProcess = pickedFiles.length > remainingSlots
-            ? pickedFiles.take(remainingSlots).toList()
-            : pickedFiles;
-
-        if (pickedFiles.length > remainingSlots) {
-          validationErrors.add(
-            'Only $remainingSlots more image(s) can be added (max $maxTotalImages total)',
-          );
-        }
-
-        for (var pickedFile in filesToProcess) {
-          final validationResult = _validateImage(File(pickedFile.path));
-          if (validationResult == null) {
-            validImages.add(File(pickedFile.path));
-          } else {
-            validationErrors.add(validationResult);
-          }
-        }
-      } else {
-        // For camera, single image only
-        if (currentCount >= maxTotalImages) {
-          return ['Maximum of $maxTotalImages images allowed'];
-        }
-
-        final XFile? pickedFile = await _imagePicker.pickImage(
-          source: source,
-          imageQuality: 80,
-          maxWidth: 1200,
-          maxHeight: 1200,
-        );
-
-        if (pickedFile != null) {
-          final validationResult = _validateImage(File(pickedFile.path));
-          if (validationResult == null) {
-            validImages.add(File(pickedFile.path));
-          } else {
-            validationErrors.add(validationResult);
-          }
-        }
-      }
-
-      if (validImages.isNotEmpty) {
-        final updatedImages = List<File>.from(currentData.uploadedImages)
-          ..addAll(validImages);
-        emit(currentData.copyWith(uploadedImages: updatedImages));
-      }
-
-      return validationErrors.toList();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // Validate image file
-  String? _validateImage(File imageFile) {
-    const int maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-
-    // Check file size
-    final fileSize = imageFile.lengthSync();
-    if (fileSize > maxSizeInBytes) {
-      return 'Image size exceeds 5MB limit';
-    }
-
-    // Check file extension
-    // Check file extension - REMOVED to allow all formats
-    // final fileName = imageFile.path.toLowerCase();
-    // final hasValidExtension = allowedExtensions.any(
-    //   (ext) => fileName.endsWith('.$ext'),
-    // );
-    // if (!hasValidExtension) {
-    //   return 'Only JPG, JPEG, and PNG formats are allowed';
-    // }
-
-    return null; // Valid
-  }
-
-  // Remove chalet image
-  void removeChaletImage(int index) {
-    final updatedImages = List<File>.from(currentData.uploadedImages);
-    if (index < updatedImages.length) {
-      updatedImages.removeAt(index);
-      emit(currentData.copyWith(uploadedImages: updatedImages));
-    }
-  }
-
-  Future<bool> _checkAndRequestPermissions(ImageSource source) async {
-    if (source == ImageSource.camera) {
-      PermissionStatus cameraStatus = await Permission.camera.status;
-      if (cameraStatus.isDenied) {
-        cameraStatus = await Permission.camera.request();
-      }
-      return cameraStatus.isGranted;
-    } else {
-      // On Android there are two common gallery permission sets:
-      // - older devices: READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE (Permission.storage)
-      // - Android 13+: separate media permissions (Permission.photos maps to READ_MEDIA_IMAGES)
-      // We'll try storage first, then photos, to cover both cases.
-      if (Platform.isAndroid) {
-        PermissionStatus storageStatus = await Permission.storage.status;
-        if (storageStatus.isDenied) {
-          storageStatus = await Permission.storage.request();
-        }
-        if (storageStatus.isGranted) return true;
-
-        // Fallback / Android 13+
-        PermissionStatus photosStatus = await Permission.photos.status;
-        if (photosStatus.isDenied) {
-          photosStatus = await Permission.photos.request();
-        }
-        return photosStatus.isGranted;
-      } else {
-        // iOS: request photos permission
-        PermissionStatus photosStatus = await Permission.photos.status;
-        if (photosStatus.isDenied) {
-          photosStatus = await Permission.photos.request();
-        }
-        return photosStatus.isGranted;
-      }
-    }
-  }
+  void updateEmail(String email) =>
+      emit(state.copyWith(draft: state.draft.copyWith(email: email)));
 
   void updateMerchantName(String name) =>
-      emit(currentData.copyWith(merchantName: name));
+      emit(state.copyWith(draft: state.draft.copyWith(merchantName: name)));
 
-  void updatePrice(String price) => emit(currentData.copyWith(price: price));
+  void updatePrice(String price) =>
+      emit(state.copyWith(draft: state.draft.copyWith(price: price)));
 
   void updateChaletArea(String area) =>
-      emit(currentData.copyWith(chaletArea: area));
+      emit(state.copyWith(draft: state.draft.copyWith(chaletArea: area)));
 
   void updateBedrooms(int bedrooms) =>
-      emit(currentData.copyWith(bedrooms: bedrooms));
+      emit(state.copyWith(draft: state.draft.copyWith(bedrooms: bedrooms)));
 
   void updateBathrooms(int bathrooms) =>
-      emit(currentData.copyWith(bathrooms: bathrooms));
-  // 🆕 تحديث التواريخ
+      emit(state.copyWith(draft: state.draft.copyWith(bathrooms: bathrooms)));
+
   void updateAvailableFrom(DateTime date) =>
-      emit(currentData.copyWith(availableFrom: date));
+      emit(state.copyWith(draft: state.draft.copyWith(availableFrom: date)));
 
   void updateAvailableTo(DateTime date) =>
-      emit(currentData.copyWith(availableTo: date));
+      emit(state.copyWith(draft: state.draft.copyWith(availableTo: date)));
 
-  // 🆕 Children Count management
   void updateChildrenCount(int? count) =>
-      emit(currentData.copyWith(childrenCount: count));
+      emit(state.copyWith(draft: state.draft.copyWith(childrenCount: count)));
 
-  // 🆕 Discount management
   void updateDiscountEnabled(bool enabled) => emit(
-    currentData.copyWith(
-      discountEnabled: enabled,
-      discountType: enabled ? currentData.discountType : null,
-      discountValue: enabled ? currentData.discountValue : null,
-    ),
+    state.copyWith(draft: state.draft.copyWith(discountEnabled: enabled)),
   );
 
   void updateDiscountType(String? type) =>
-      emit(currentData.copyWith(discountType: type));
+      emit(state.copyWith(draft: state.draft.copyWith(discountType: type)));
 
   void updateDiscountValue(String? value) =>
-      emit(currentData.copyWith(discountValue: value));
+      emit(state.copyWith(draft: state.draft.copyWith(discountValue: value)));
 
-  // 🆕 Features management
   void toggleFeature(String feature) {
-    final currentFeatures = List<String>.from(currentData.features);
+    final currentFeatures = List<String>.from(state.draft.features);
     if (currentFeatures.contains(feature)) {
       currentFeatures.remove(feature);
     } else {
       currentFeatures.add(feature);
     }
-    emit(currentData.copyWith(features: currentFeatures));
+    emit(
+      state.copyWith(draft: state.draft.copyWith(features: currentFeatures)),
+    );
   }
 
-  // Fetch chalets from the database
-  Future<void> fetchChalets() async {
-    if (isClosed) return;
-    emit(OwnerLoading());
+  // ==========================================
+  // Date Selection
+  // ==========================================
+
+  void selectAvailableFromDate(DateTime date) {
+    emit(state.copyWith(draft: state.draft.copyWith(availableFrom: date)));
+  }
+
+  void selectAvailableToDate(DateTime date) {
+    emit(state.copyWith(draft: state.draft.copyWith(availableTo: date)));
+  }
+
+  // ==========================================
+  // Form Management
+  // ==========================================
+
+  void resetForm() {
+    emit(
+      state.copyWith(
+        draft: ChaletDraft.initial(),
+        isFormSubmitting: false,
+        formError: null,
+        isFormSuccess: false,
+      ),
+    );
+  }
+
+  void initializeFormWithUserData({
+    required String ownerName,
+    required String email,
+    required String phone,
+  }) {
+    emit(
+      state.copyWith(
+        draft: state.draft.copyWith(
+          merchantName: ownerName,
+          email: email,
+          phoneNumber: phone,
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // Location & Geocoding
+  // ==========================================
+
+  Future<void> searchLocation(String query) async {
+    if (query.trim().isEmpty) {
+      emit(state.copyWith(locationResults: []));
+      return;
+    }
+
+    emit(state.copyWith(isLocationLoading: true));
     try {
-      // Simulate fetching data from a database
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (isClosed) return;
-
-      final List<Map<String, dynamic>> chalets = [
-        {
-          'chaletName': 'شاليه البحر',
-          'location': 'جدة',
-          'price': 500,
-          'status': 'approved',
-          'images': ['https://example.com/chalet1.jpg'],
-        },
-        {
-          'chaletName': 'شاليه الجبل',
-          'location': 'الطائف',
-          'price': 300,
-          'status': 'pending',
-          'images': ['https://example.com/chalet2.jpg'],
-        },
-      ];
-
-      if (isClosed) return;
-      emit(OwnerLoaded(chalets));
-    } catch (e) {
-      if (isClosed) return;
-      emit(OwnerError(e.toString()));
+      final res = await _dio.get(
+        'https://nominatim.openstreetmap.org/search',
+        queryParameters: {'q': query, 'format': 'json', 'limit': 5},
+        options: Options(headers: {'User-Agent': 'rebtal-app/1.0'}),
+      );
+      final List data = res.data as List;
+      final results = data
+          .map(
+            (e) => {
+              'display': e['display_name'],
+              'lat': double.tryParse(e['lat'] ?? '0') ?? 0,
+              'lon': double.tryParse(e['lon'] ?? '0') ?? 0,
+            },
+          )
+          .toList();
+      emit(state.copyWith(locationResults: results, isLocationLoading: false));
+    } catch (_) {
+      emit(state.copyWith(isLocationLoading: false));
     }
   }
 
-  // 🆕 Add getter for current user ID
-  String? get currentUserId {
-    // Replace this with the actual logic to fetch the current user ID
-    // For example, if using FirebaseAuth:
-    // return FirebaseAuth.instance.currentUser?.uid;
-    return null; // Placeholder
+  Future<void> reverseGeocode({
+    required double lat,
+    required double lon,
+  }) async {
+    emit(state.copyWith(isLocationLoading: true));
+    try {
+      final res = await _dio.get(
+        'https://nominatim.openstreetmap.org/reverse',
+        queryParameters: {'lat': lat, 'lon': lon, 'format': 'json', 'zoom': 16},
+        options: Options(headers: {'User-Agent': 'rebtal-app/1.0'}),
+      );
+      final display = res.data['display_name'] as String?;
+      if (display != null) {
+        updateGeo(lat: lat, lon: lon, address: display);
+      }
+      emit(state.copyWith(isLocationLoading: false));
+    } catch (_) {
+      emit(state.copyWith(isLocationLoading: false));
+    }
+  }
+
+  void clearLocationResults() {
+    emit(state.copyWith(locationResults: []));
+  }
+
+  // ==========================================
+  // Management Actions
+  // ==========================================
+
+  Future<void> toggleChaletVisibility(
+    String chaletId,
+    bool currentVisibility,
+  ) async {
+    try {
+      await _firestore.collection('chalets').doc(chaletId).update({
+        'isVisible': !currentVisibility,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      // Optionally re-fetch
+    } catch (_) {
+      // Handle error
+    }
+  }
+
+  Future<void> toggleBookingAvailability(
+    String chaletId,
+    String currentAvailability,
+  ) async {
+    try {
+      final newAvailability = currentAvailability == 'available'
+          ? 'unavailable'
+          : 'available';
+      await _firestore.collection('chalets').doc(chaletId).update({
+        'bookingAvailability': newAvailability,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      // Optionally re-fetch
+    } catch (_) {
+      // Handle error
+    }
+  }
+
+  // ==========================================
+  // Image Management
+  // ==========================================
+
+  Future<void> addProfileImage(ImageSource source) async {
+    try {
+      bool hasPermission = await _checkAndRequestPermissions(source);
+      if (!hasPermission) {
+        throw Exception('Permission denied');
+      }
+
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
+
+      if (pickedFile != null) {
+        emit(
+          state.copyWith(
+            draft: state.draft.copyWith(profileImage: File(pickedFile.path)),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error (maybe set formError?)
+    }
+  }
+
+  Future<List<String>> addChaletImage(ImageSource source) async {
+    try {
+      bool hasPermission = await _checkAndRequestPermissions(source);
+      if (!hasPermission) throw Exception('Permission denied');
+
+      final currentImages = state.draft.uploadedImages;
+      if (currentImages.length >= 20) return ['Max images reached'];
+
+      List<File> newImages = [];
+      if (source == ImageSource.gallery) {
+        final pickedFiles = await _imagePicker.pickMultiImage(imageQuality: 80);
+        newImages = pickedFiles.map((e) => File(e.path)).toList();
+      } else {
+        final pickedFile = await _imagePicker.pickImage(
+          source: source,
+          imageQuality: 80,
+        );
+        if (pickedFile != null) newImages.add(File(pickedFile.path));
+      }
+
+      if (newImages.isNotEmpty) {
+        emit(
+          state.copyWith(
+            draft: state.draft.copyWith(
+              uploadedImages: [...currentImages, ...newImages],
+            ),
+          ),
+        );
+      }
+      return [];
+    } catch (e) {
+      return [e.toString()];
+    }
+  }
+
+  void removeChaletImage(int index) {
+    final currentImages = List<File>.from(state.draft.uploadedImages);
+    if (index < currentImages.length) {
+      currentImages.removeAt(index);
+      emit(
+        state.copyWith(
+          draft: state.draft.copyWith(uploadedImages: currentImages),
+        ),
+      );
+    }
+  }
+
+  Future<bool> _checkAndRequestPermissions(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      return await Permission.camera.request().isGranted;
+    }
+    return await Permission.photos.request().isGranted ||
+        await Permission.storage.request().isGranted;
+  }
+
+  // ==========================================
+  // Use Case Interactions
+  // ==========================================
+
+  StreamSubscription? _chaletsSubscription;
+
+  Future<void> fetchChalets(String ownerId) async {
+    emit(state.copyWith(status: OwnerStatus.loading));
+
+    // Cancel any existing subscription
+    await _chaletsSubscription?.cancel();
+
+    _chaletsSubscription = getOwnerChaletsUseCase
+        .stream(ownerId)
+        .listen(
+          (chalets) {
+            emit(state.copyWith(status: OwnerStatus.loaded, chalets: chalets));
+          },
+          onError: (error) {
+            emit(
+              state.copyWith(
+                status: OwnerStatus.error,
+                errorMessage: error.toString(),
+              ),
+            );
+          },
+        );
+  }
+
+  @override
+  Future<void> close() {
+    _chaletsSubscription?.cancel();
+    return super.close();
+  }
+
+  Future<void> submitChalet(String ownerId, String ownerName) async {
+    emit(
+      state.copyWith(
+        isFormSubmitting: true,
+        formError: null,
+        isFormSuccess: false,
+      ),
+    );
+
+    // Comprehensive Validation - All fields are required
+    if (state.draft.chaletName == null || state.draft.chaletName!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "اسم الشاليه مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.description == null || state.draft.description!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "وصف الشاليه مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.price.isEmpty ||
+        double.tryParse(state.draft.price) == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "السعر مطلوب ويجب أن يكون رقماً صحيحاً",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.selectedLocation.isEmpty) {
+      emit(state.copyWith(isFormSubmitting: false, formError: "الموقع مطلوب"));
+      return;
+    }
+
+    if (state.draft.bedrooms == null || state.draft.bedrooms! <= 0) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "عدد غرف النوم مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.bathrooms == null || state.draft.bathrooms! <= 0) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "عدد الحمامات مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.uploadedImages.isEmpty &&
+        state.draft.profileImage == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "يجب إضافة صورة واحدة على الأقل",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.availableFrom == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "تاريخ البداية مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.availableTo == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "تاريخ النهاية مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.phoneNumber == null || state.draft.phoneNumber!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "رقم الهاتف مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.email == null || state.draft.email!.isEmpty) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "البريد الإلكتروني مطلوب",
+        ),
+      );
+      return;
+    }
+
+    // Construct Entity
+    // Collect amenities list with full keys (hasWifi, hasPool, etc.)
+    final amenitiesList = <String>[];
+    if (state.draft.hasWifi) amenitiesList.add('hasWifi');
+    if (state.draft.hasPool) amenitiesList.add('hasPool');
+    if (state.draft.hasAirConditioning) amenitiesList.add('hasAirConditioning');
+    if (state.draft.hasParking) amenitiesList.add('hasParking');
+    if (state.draft.hasGarden) amenitiesList.add('hasGarden');
+    if (state.draft.hasBBQ) amenitiesList.add('hasBBQ');
+    if (state.draft.hasBeachView) amenitiesList.add('hasBeachView');
+    if (state.draft.hasHousekeeping) amenitiesList.add('hasHousekeeping');
+    if (state.draft.hasPetsAllowed) amenitiesList.add('hasPetsAllowed');
+    if (state.draft.hasGym) amenitiesList.add('hasGym');
+    if (state.draft.hasKitchen) amenitiesList.add('hasKitchen');
+    if (state.draft.hasTV) amenitiesList.add('hasTV');
+
+    final chalet = ChaletEntity(
+      id: '', // Will be generated by Repo
+      chaletName: state.draft.chaletName!,
+      location: state.draft.selectedLocation,
+      description: state.draft.description ?? '',
+      ownerId: ownerId,
+      ownerName: ownerName,
+      price: double.tryParse(state.draft.price) ?? 0.0,
+      bedrooms: state.draft.bedrooms ?? 0,
+      bathrooms: state.draft.bathrooms ?? 0,
+      images: [], // Will be filled by Repo
+      amenities: amenitiesList, // Should map boolean flags to list strings
+      latitude: state.draft.latitude,
+      longitude: state.draft.longitude,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      status: ChaletStatus.pending,
+      isVisible: true,
+      chaletArea: state.draft.chaletArea,
+      childrenCount: state.draft.childrenCount,
+      discountEnabled: state.draft.discountEnabled,
+      discountType: state.draft.discountType,
+      discountValue: state.draft.discountValue,
+      features: state.draft.features,
+    );
+
+    final result = await addChaletUseCase(
+      AddChaletParams(
+        chalet: chalet,
+        images: state.draft.uploadedImages,
+        profileImage: state.draft.profileImage,
+        phoneNumber: state.draft.phoneNumber,
+        email: state.draft.email,
+        merchantName: state.draft.merchantName,
+        isAvailable: state.draft.isAvailable,
+        availableFrom: state.draft.availableFrom,
+        availableTo: state.draft.availableTo,
+        chaletArea: state.draft.chaletArea,
+        childrenCount: state.draft.childrenCount,
+        discountEnabled: state.draft.discountEnabled,
+        discountType: state.draft.discountType,
+        discountValue: state.draft.discountValue,
+        features: state.draft.features,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(isFormSubmitting: false, formError: failure.message),
+      ),
+      (success) {
+        emit(
+          state.copyWith(
+            isFormSubmitting: false,
+            isFormSuccess: true,
+            draft: ChaletDraft.initial(), // Reset form
+          ),
+        );
+        fetchChalets(ownerId); // Refresh list
+      },
+    );
   }
 }

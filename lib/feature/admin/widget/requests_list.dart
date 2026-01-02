@@ -23,12 +23,19 @@ class RequestsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Build query based on whether ownerId is provided
+    Query query = FirebaseFirestore.instance
+        .collection('chalets')
+        .where('status', isEqualTo: status);
+    
+    // Only filter by ownerId if it's provided (for owner view)
+    // Admin should see all requests without ownerId filter
+    if (ownerId != null && ownerId!.isNotEmpty) {
+      query = query.where('ownerId', isEqualTo: ownerId);
+    }
+    
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chalets')
-          .where('status', isEqualTo: status)
-          .where('ownerId', isEqualTo: ownerId)
-          .snapshots(),
+      stream: query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(

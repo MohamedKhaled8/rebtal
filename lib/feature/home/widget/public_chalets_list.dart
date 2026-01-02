@@ -8,9 +8,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
@@ -296,6 +294,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Name and Location
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,107 +345,89 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         ],
                       ),
                     ),
+                  ],
+                ),
 
-                    // Rating
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                const SizedBox(height: 12),
+
+                // DETAILS: Bedrooms, Bathrooms, Children
+                Row(
+                  children: [
+                    // Bedrooms
+                    _buildInfoBadge(
+                      context,
+                      icon: Icons.bed_outlined,
+                      text: '${widget.chaletData['bedrooms'] ?? 0} غرف',
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Bathrooms
+                    _buildInfoBadge(
+                      context,
+                      icon: Icons.bathtub_outlined,
+                      text: '${widget.chaletData['bathrooms'] ?? 0} حمام',
+                      isDark: isDark,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Children
+                    if (widget.chaletData['childrenCount'] != null &&
+                        (widget.chaletData['childrenCount'] as int) > 0) ...[
+                      _buildInfoBadge(
+                        context,
+                        icon: Icons.child_care_outlined,
+                        text: '${widget.chaletData['childrenCount']} أطفال',
+                        isDark: isDark,
                       ),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? ColorManager.white.withOpacity(0.1)
-                            : ColorManager.chaletGrey200.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                      const SizedBox(width: 12),
+                    ],
+
+                    // Chalet Area
+                    if (widget.chaletData['chaletArea'] != null &&
+                        widget.chaletData['chaletArea'].toString().isNotEmpty)
+                      _buildInfoBadge(
+                        context,
+                        icon: Icons.square_foot_rounded,
+                        text: '${widget.chaletData['chaletArea']} م²',
+                        isDark: isDark,
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            color: ColorManager.yellow,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '4.8', // Placeholder rating
-                            style: TextStyle(
-                              color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletGrey800,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // STAR RATING
+                Row(
+                  children: [
+                    ...List.generate(5, (index) {
+                      // Mock rating calculation: 4.5
+                      // In real app, bind to widget.chaletData['rating']
+                      const double rating = 4.5;
+                      IconData icon = Icons.star_border;
+                      Color color = ColorManager.chaletGrey400;
+                      if (index < rating.floor()) {
+                        icon = Icons.star;
+                        color = Colors.amber;
+                      } else if (index < rating && (rating - index) >= 0.5) {
+                        icon = Icons.star_half;
+                        color = Colors.amber;
+                      }
+                      return Icon(icon, size: 18, color: color);
+                    }),
+                    const SizedBox(width: 6),
+                    Text(
+                      '4.5 (24 تقييم)', // Placeholder
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 16),
-
-                // Features
-                if (widget.chaletData['features'] != null &&
-                    (widget.chaletData['features'] as List).isNotEmpty) ...[
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: (widget.chaletData['features'] as List)
-                        .take(3)
-                        .map(
-                          (feature) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? ColorManager.white.withOpacity(0.1)
-                                  : ColorManager.chaletGrey200.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              feature.toString(),
-                              style: TextStyle(
-                                color: isDark
-                                    ? ColorManager.white.withOpacity(0.9)
-                                    : ColorManager.chaletGrey800,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                // Children Count
-                if (widget.chaletData['childrenCount'] != null) ...[
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.child_care_rounded,
-                        size: 14,
-                        color: isDark
-                            ? ColorManager.white.withOpacity(0.6)
-                            : ColorManager.chaletGrey500,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Children: ${widget.chaletData['childrenCount']}',
-                        style: TextStyle(
-                          color: isDark
-                              ? ColorManager.white.withOpacity(0.6)
-                              : ColorManager.chaletGrey500,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
 
                 // Price and Action
                 Row(
@@ -455,68 +436,77 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'السعر لليلة',
-                          style: TextStyle(
-                            color: isDark
-                                ? ColorManager.white.withOpacity(0.5)
-                                : ColorManager.chaletGrey500,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        if (widget.chaletData['discountEnabled'] == true &&
-                            widget.chaletData['discountValue'] != null) ...[
+                        if (_hasDiscount()) ...[
                           Text(
-                            CurrencyFormatter.egp(
-                              (price is num)
-                                  ? price
-                                  : double.tryParse(
-                                          (price ?? '').toString().replaceAll(
-                                            RegExp('[^0-9.]'),
-                                            '',
-                                          ),
-                                        ) ??
-                                        0,
-                              withSuffixPerNight: false,
-                            ),
+                            '$price جنيه',
                             style: TextStyle(
                               color: isDark
                                   ? ColorManager.white.withOpacity(0.5)
                                   : ColorManager.chaletGrey500,
                               fontSize: 14,
                               decoration: TextDecoration.lineThrough,
+                              decorationColor:
+                                  ColorManager.chaletUnavailableRed,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _calculateDiscountedPrice(widget.chaletData),
-                            style: const TextStyle(
-                              color: ColorManager.chaletAvailableGreen,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                _calculateDiscountedPrice(),
+                                style: TextStyle(
+                                  color: ColorManager
+                                      .kPrimaryGradient
+                                      .colors
+                                      .first,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'جنيه / ليلة',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? ColorManager.white.withOpacity(0.7)
+                                      : ColorManager.chaletGrey600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                        ] else
-                          Text(
-                            CurrencyFormatter.egp(
-                              (price is num)
-                                  ? price
-                                  : double.tryParse(
-                                          (price ?? '').toString().replaceAll(
-                                            RegExp('[^0-9.]'),
-                                            '',
-                                          ),
-                                        ) ??
-                                        0,
-                              withSuffixPerNight: false,
-                            ),
-                            style: const TextStyle(
-                              color: ColorManager.chaletAvailableGreen,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ] else ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                '$price',
+                                style: TextStyle(
+                                  color: ColorManager
+                                      .kPrimaryGradient
+                                      .colors
+                                      .first,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'جنيه / ليلة',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? ColorManager.white.withOpacity(0.7)
+                                      : ColorManager.chaletGrey600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
+                        ],
                       ],
                     ),
 
@@ -567,28 +557,73 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     );
   }
 
-  String _calculateDiscountedPrice(Map<String, dynamic> data) {
-    final basePrice = (data['price'] is num)
-        ? data['price'].toDouble()
+  bool _hasDiscount() {
+    final discountEnabled = widget.chaletData['discountEnabled'] ?? false;
+    final discountValue = widget.chaletData['discountValue'];
+    return discountEnabled == true &&
+        discountValue != null &&
+        discountValue.toString().isNotEmpty;
+  }
+
+  String _calculateDiscountedPrice() {
+    final price = widget.chaletData['price'];
+    final discountType = widget.chaletData['discountType'];
+    final discountValue = widget.chaletData['discountValue'];
+
+    if (!_hasDiscount() || price == null) return price?.toString() ?? '0';
+
+    final originalPrice = (price is num)
+        ? price.toDouble()
+        : double.tryParse(price.toString().replaceAll(RegExp('[^0-9.]'), '')) ??
+              0.0;
+
+    final value = (discountValue is num)
+        ? discountValue.toDouble()
         : double.tryParse(
-                (data['price'] ?? '').toString().replaceAll(
-                  RegExp('[^0-9.]'),
-                  '',
-                ),
+                discountValue.toString().replaceAll(RegExp('[^0-9.]'), ''),
               ) ??
               0.0;
-    final discountType = data['discountType'];
-    final discountValue = double.tryParse(data['discountValue'] ?? '0') ?? 0.0;
 
-    double finalPrice = basePrice;
-    if (discountType == 'percentage' && discountValue > 0) {
-      finalPrice = basePrice * (1 - discountValue / 100);
-    } else if (discountType == 'fixed' && discountValue > 0) {
-      finalPrice = basePrice - discountValue;
-      if (finalPrice < 0) finalPrice = 0;
+    double discountedPrice = originalPrice;
+
+    if (discountType == 'percentage') {
+      discountedPrice = originalPrice - (originalPrice * (value / 100));
+    } else {
+      discountedPrice = originalPrice - value;
     }
 
-    return CurrencyFormatter.egp(finalPrice, withSuffixPerNight: false);
+    if (discountedPrice < 0) discountedPrice = 0;
+    return discountedPrice.toStringAsFixed(0);
+  }
+
+  Widget _buildInfoBadge(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+    required bool isDark,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: isDark
+              ? ColorManager.white.withOpacity(0.7)
+              : ColorManager.grey,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark
+                ? ColorManager.white.withOpacity(0.7)
+                : Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 }
 
