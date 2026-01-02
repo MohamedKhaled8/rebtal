@@ -50,8 +50,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
         ),
         backgroundColor: isDark
-            ? ColorManager.chaletCardDark
-            : ColorManager.chaletCardLight,
+            ? ColorManager.transparent
+            : ColorManager.white,
         foregroundColor: isDark
             ? ColorManager.chaletTextPrimaryDark
             : ColorManager.chaletTextPrimaryLight,

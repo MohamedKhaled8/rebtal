@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class StatCard extends StatelessWidget {
   final IconData icon;
@@ -22,12 +23,12 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111614) : Colors.white,
+        color: isDark ? ColorManager.profileSurfaceAltDark : ColorManager.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.1),
+              ? ColorManager.white.withOpacity(0.06)
+              : ColorManager.black.withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -46,7 +47,7 @@ class StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: isDark ? Colors.white : Colors.black,
+              color: isDark ? ColorManager.white : ColorManager.black,
             ),
           ),
           const SizedBox(height: 4),
@@ -55,8 +56,8 @@ class StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               color: isDark
-                  ? Colors.white.withOpacity(0.6)
-                  : Colors.black.withOpacity(0.6),
+                  ? ColorManager.white.withOpacity(0.6)
+                  : ColorManager.black.withOpacity(0.6),
             ),
           ),
         ],

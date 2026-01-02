@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class ThemeState {
   final ThemeMode themeMode;
@@ -8,7 +9,7 @@ class ThemeState {
 
   const ThemeState(
     this.themeMode, {
-    this.primaryColor = const Color(0xFF1ED760),
+    this.primaryColor = ColorManager.profileAccent,
   });
 
   ThemeState copyWith({ThemeMode? themeMode, Color? primaryColor}) {
@@ -38,7 +39,7 @@ class ThemeCubit extends Cubit<ThemeState> {
       mode = ThemeMode.values[savedThemeIndex];
     }
 
-    Color color = const Color(0xFF1ED760);
+    Color color = ColorManager.profileAccent;
     if (savedColorValue != null) {
       color = Color(savedColorValue);
     }

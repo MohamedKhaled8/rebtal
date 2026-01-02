@@ -163,8 +163,9 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
 
                   final priorityA = getPriority(a.status);
                   final priorityB = getPriority(b.status);
-                  if (priorityA != priorityB)
+                  if (priorityA != priorityB) {
                     return priorityA.compareTo(priorityB);
+                  }
 
                   // Fallback chain: createdAt -> updatedAt -> Now
                   final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();

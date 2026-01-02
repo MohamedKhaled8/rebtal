@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/helper/extensions.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/services/invoice_service.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
@@ -47,8 +48,8 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
       appBar: AppBar(
         title: const Text('طلبات الحجز الخاصة بي'),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: ColorManager.white,
+        foregroundColor: ColorManager.chaletTextPrimaryLight,
         elevation: 1,
       ),
       body: SafeArea(
@@ -75,21 +76,21 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+      backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 80),
+              Icon(Icons.check_circle, color: ColorManager.green, size: 80),
               const SizedBox(height: 24),
               Text(
                 'تم استلام طلبك بنجاح',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -119,12 +120,12 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       icon: const Icon(Icons.print),
                       label: const Text('طباعة'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        foregroundColor: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.black12,
+                              ? ColorManager.white.withOpacity(0.3)
+                              : ColorManager.grey300,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -145,12 +146,12 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       icon: const Icon(Icons.save_alt),
                       label: const Text('حفظ'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        foregroundColor: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.black12,
+                              ? ColorManager.white.withOpacity(0.3)
+                              : ColorManager.grey300,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -167,7 +168,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDark ? Colors.white70 : Colors.black87,
+                  color: isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 48),
@@ -182,12 +183,12 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: ColorManager.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(
                     'العودة للرئيسية',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: TextStyle(color: ColorManager.white, fontSize: 18),
                   ),
                 ),
               ),
@@ -212,13 +213,13 @@ class _EmptyRequestsView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: ColorManager.grey100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.event_available,
               size: 64,
-              color: Colors.blue.shade700,
+              color: ColorManager.chaletActionDarkBlue,
             ),
           ),
           const SizedBox(height: 18),
@@ -230,7 +231,7 @@ class _EmptyRequestsView extends StatelessWidget {
           const Text(
             'عند استلام طلبات جديدة ستظهر هنا. يمكنك تحديث الصفحة أو التواصل مع الدعم.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black54),
+            style: TextStyle(color: ColorManager.grey600),
           ),
           const SizedBox(height: 18),
           Row(
@@ -241,7 +242,7 @@ class _EmptyRequestsView extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: const Text('تحديث'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
+                  backgroundColor: ColorManager.chaletActionDarkBlue,
                 ),
               ),
               const SizedBox(width: 12),
@@ -281,13 +282,13 @@ class BookingRequestCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 26,
-                  backgroundColor: Colors.blue.shade50,
+                  backgroundColor: ColorManager.chaletIconBackgroundLight,
                   child: Text(
                     (chat.chaletName.isNotEmpty ? chat.chaletName[0] : 'ش'),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: ColorManager.primaryColor,
                     ),
                   ),
                 ),
@@ -317,7 +318,7 @@ class BookingRequestCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                const Icon(Icons.calendar_today, size: 14, color: ColorManager.grey),
                 const SizedBox(width: 8),
                 Text(
                   'تاريخ الطلب: ${_formatDate(chat.createdAt)}',
@@ -328,7 +329,7 @@ class BookingRequestCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                const Icon(Icons.access_time, size: 14, color: ColorManager.grey),
                 const SizedBox(width: 8),
                 Text(
                   'آخر تحديث: ${_formatTime(chat.lastMessageTime)}',
@@ -357,7 +358,7 @@ class BookingRequestCard extends StatelessWidget {
                       icon: const Icon(Icons.cancel),
                       label: const Text('إلغاء الطلب'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
+                        backgroundColor: ColorManager.red,
                       ),
                     ),
                   ),
@@ -427,19 +428,19 @@ class _StatusChip extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
-        return Colors.orange.shade800;
+        return ColorManager.orange;
       case 'approved':
-        return Colors.green.shade700;
+        return ColorManager.chaletActionGreen;
       case 'rejected':
-        return Colors.red.shade700;
+        return ColorManager.chaletActionDarkRed;
       case 'cancelled':
-        return Colors.red.shade400;
+        return ColorManager.red;
       case 'completed':
-        return Colors.blue.shade700;
+        return ColorManager.chaletActionDarkBlue;
       case 'paymentUnderReview':
-        return Colors.purple.shade700;
+        return ColorManager.purple;
       default:
-        return Colors.grey.shade700;
+        return ColorManager.grey700;
     }
   }
 

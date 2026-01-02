@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../utils/home_search_notifier.dart';
-import '../utils/number_parser.dart';
-import '../utils/text_normalizer.dart';
+import '../home_search_notifier.dart';
+import '../number_parser.dart';
+import '../text_normalizer.dart';
 
 /// Service for filtering chalets based on search criteria
 /// Implements the complete search logic with AND/OR rules

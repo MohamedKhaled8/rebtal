@@ -55,14 +55,14 @@ class PropertyFeaturesCard extends StatelessWidget {
             children: [
               FeatureItem(
                 icon: Icons.bed_rounded,
-                color: const Color(0xFF3B82F6),
+                color: ColorManager.chaletActionBlue,
                 value: bedrooms,
                 label: 'Bedrooms',
                 isDark: isDark,
               ),
               FeatureItem(
                 icon: Icons.bathtub_rounded,
-                color: const Color(0xFF8B5CF6),
+                color: ColorManager.purple8B5CF6,
                 value: bathrooms,
                 label: 'Bathrooms',
                 isDark: isDark,
@@ -70,7 +70,7 @@ class PropertyFeaturesCard extends StatelessWidget {
               if (chaletArea != null && chaletArea.isNotEmpty)
                 FeatureItem(
                   icon: Icons.square_foot_rounded,
-                  color: const Color(0xFFF59E0B),
+                  color: ColorManager.orangeF59E0B,
                   value: '$chaletArea m²',
                   label: 'Area',
                   isDark: isDark,
@@ -78,7 +78,7 @@ class PropertyFeaturesCard extends StatelessWidget {
               if (childrenCount != null)
                 FeatureItem(
                   icon: Icons.child_care_rounded,
-                  color: const Color(0xFFEC4899),
+                  color: ColorManager.chaletGalleryPink,
                   value: childrenCount,
                   label: 'Children',
                   isDark: isDark,
@@ -92,7 +92,7 @@ class PropertyFeaturesCard extends StatelessWidget {
             const SizedBox(height: 24),
             Divider(
               height: 1,
-              color: isDark ? ColorManager.white10 : const Color(0xFFEEEEEE),
+              color: isDark ? ColorManager.white10 : ColorManager.grey200,
             ),
             const SizedBox(height: 24),
             Text(
@@ -119,7 +119,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isDark
                             ? ColorManager.chaletIconBackgroundDark
-                            : const Color(0xFFF3F4F6),
+                            : ColorManager.greyF3F4F6,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: ColorManager.transparent),
                       ),
@@ -129,7 +129,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                           const Icon(
                             Icons.check_circle_rounded,
                             size: 18,
-                            color: Color(0xFF10B981),
+                            color: ColorManager.chaletActionGreen,
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -139,7 +139,7 @@ class PropertyFeaturesCard extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: isDark
                                   ? ColorManager.chaletTextSecondaryDark
-                                  : const Color(0xFF374151),
+                                  : ColorManager.grey374151,
                             ),
                           ),
                         ],
@@ -212,7 +212,7 @@ class FeatureItem extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                     color: isDark
                         ? ColorManager.chaletTextPrimaryDark
-                        : const Color(0xFF1F2937),
+                        : ColorManager.grey1F2937,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

@@ -171,10 +171,10 @@ class _RatingPageState extends State<RatingPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0A0E27)
-          : const Color(0xFFF5F7FA),
+          ? ColorManager.darkBackground0A0E27
+          : ColorManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         elevation: 0,
         title: Text(
           widget.isOwnerRating ? 'تقييم المستأجر' : 'تقييم الشاليه',
@@ -193,7 +193,7 @@ class _RatingPageState extends State<RatingPage> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [ColorManager.chaletAccent, Color(0xFF00A896)],
+                    colors: [ColorManager.chaletAccent, ColorManager.teal00A896],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -201,7 +201,7 @@ class _RatingPageState extends State<RatingPage> {
                   children: [
                     Icon(
                       widget.isOwnerRating ? Icons.person : Icons.villa,
-                      color: Colors.white,
+                      color: ColorManager.white,
                       size: 48,
                     ),
                     const SizedBox(height: 12),
@@ -212,7 +212,7 @@ class _RatingPageState extends State<RatingPage> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: ColorManager.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -223,7 +223,7 @@ class _RatingPageState extends State<RatingPage> {
                           : 'كيف كانت تجربتك في الشاليه؟',
                       style: const TextStyle(
                         fontSize: 14,
-                        color: Colors.white70,
+                        color: ColorManager.white70,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -239,7 +239,7 @@ class _RatingPageState extends State<RatingPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -258,7 +258,7 @@ class _RatingPageState extends State<RatingPage> {
                       child: Icon(
                         index < _rating ? Icons.star : Icons.star_border,
                         size: 48,
-                        color: Colors.amber.shade600,
+                        color: ColorManager.yellowEAB308,
                       ),
                     );
                   }),
@@ -287,7 +287,7 @@ class _RatingPageState extends State<RatingPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -303,7 +303,7 @@ class _RatingPageState extends State<RatingPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -315,17 +315,17 @@ class _RatingPageState extends State<RatingPage> {
                 decoration: InputDecoration(
                   hintText: 'شاركنا تجربتك...',
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  fillColor: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -336,7 +336,7 @@ class _RatingPageState extends State<RatingPage> {
                     ),
                   ),
                 ),
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                style: TextStyle(color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
               ),
 
               const SizedBox(height: 32),
@@ -352,7 +352,7 @@ class _RatingPageState extends State<RatingPage> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                            valueColor: AlwaysStoppedAnimation(ColorManager.white),
                           ),
                         )
                       : const Icon(Icons.send, size: 20),
@@ -365,13 +365,13 @@ class _RatingPageState extends State<RatingPage> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorManager.chaletAccent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: ColorManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
-                    disabledBackgroundColor: Colors.grey.shade400,
+                    disabledBackgroundColor: ColorManager.grey400,
                   ),
                 ),
               ),
@@ -387,7 +387,7 @@ class _RatingPageState extends State<RatingPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? Colors.white12 : Colors.grey.shade300,

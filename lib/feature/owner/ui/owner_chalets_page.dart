@@ -49,7 +49,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
         builder: (context, state) {
           return Scaffold(
             backgroundColor: isDark
-                ? const Color(0xFF0B0F0D)
+                ? ColorManager.profileSurfaceDark
                 : ColorManager.white,
             body: CustomScrollView(
               slivers: [
@@ -59,9 +59,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                   floating: false,
                   pinned: true,
                   elevation: 0,
-                  backgroundColor: isDark
-                      ? const Color(0xFF0B0F0D)
-                      : const Color(0xFF1A1A2E),
+                  backgroundColor: ColorManager.transparent,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Container(
                       decoration: BoxDecoration(
@@ -70,13 +68,13 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                           end: Alignment.bottomRight,
                           colors: isDark
                               ? [
-                                  const Color(0xFF0B0F0D),
-                                  const Color(0xFF1A1A2E),
+                                  ColorManager.profileSurfaceDark,
+                                  ColorManager.darkBlue1A1A2E,
                                 ]
                               : [
-                                  const Color(0xFF1A1A2E), // Dark Blue
-                                  const Color(0xFF16213E), // Darker Blue
-                                  const Color(0xFF0F3460), // Navy Blue
+                                  ColorManager.darkBlue1A1A2E, // Dark Blue
+                                  ColorManager.darkBlue16213E, // Darker Blue
+                                  ColorManager.navyBlue0F3460, // Navy Blue
                                 ],
                         ),
                       ),
@@ -97,7 +95,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                   const Text(
                                     'شاليهاتي',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: ColorManager.white,
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -111,19 +109,19 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                 height: 50,
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? Colors.white.withOpacity(0.05)
-                                      : Colors.white,
+                                      ? ColorManager.white.withOpacity(0.05)
+                                      : ColorManager.white,
                                   borderRadius: BorderRadius.circular(25),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: ColorManager.black.withOpacity(0.1),
                                       blurRadius: 15,
                                       offset: const Offset(0, 5),
                                     ),
                                   ],
                                   border: isDark
                                       ? Border.all(
-                                          color: Colors.white.withOpacity(0.1),
+                                          color: ColorManager.white.withOpacity(0.1),
                                         )
                                       : null,
                                 ),
@@ -133,8 +131,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                     Icon(
                                       Icons.search,
                                       color: isDark
-                                          ? Colors.white70
-                                          : Colors.grey[600],
+                                          ? ColorManager.white70
+                                          : ColorManager.grey600,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 12),
@@ -149,8 +147,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                                     HomeSearch.updateQuery(v),
                                                 style: TextStyle(
                                                   color: isDark
-                                                      ? Colors.white
-                                                      : Colors.black87,
+                                                      ? ColorManager.white
+                                                      : ColorManager.chaletTextPrimaryLight,
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w500,
                                                 ),
@@ -159,8 +157,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                                       'ابحث عن الشاليهات...',
                                                   hintStyle: TextStyle(
                                                     color: isDark
-                                                        ? Colors.white38
-                                                        : Colors.grey[400],
+                                                        ? ColorManager.white70
+                                                        : ColorManager.grey400,
                                                     fontSize: 14,
                                                   ),
                                                   border: InputBorder.none,
@@ -204,8 +202,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFE94560),
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: ColorManager.redE94560,
+                                    foregroundColor: ColorManager.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 14,
@@ -235,10 +233,10 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                       return RefreshIndicator(
                         onRefresh: () =>
                             context.read<OwnerCubit>().fetchChalets(),
-                        color: const Color(0xFFE94560),
+                        color: ColorManager.redE94560,
                         backgroundColor: isDark
-                            ? const Color(0xFF1A1A2E)
-                            : Colors.white,
+                            ? ColorManager.darkBlue1A1A2E
+                            : ColorManager.white,
                         child: Padding(
                           padding: const EdgeInsets.only(
                             left: 20,

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class LocationPicker extends StatefulWidget {
   const LocationPicker({super.key});
@@ -78,10 +79,10 @@ class _LocationPickerState extends State<LocationPicker> {
           Container(
             constraints: const BoxConstraints(maxHeight: 180),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ColorManager.white,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+                BoxShadow(color: ColorManager.black.withOpacity(0.05), blurRadius: 8),
               ],
             ),
             child: ListView.builder(
@@ -90,7 +91,7 @@ class _LocationPickerState extends State<LocationPicker> {
                 final item = _results[i];
                 return ListTile(
                   dense: true,
-                  leading: const Icon(Icons.place, color: Colors.blue),
+                  leading: Icon(Icons.place, color: ColorManager.primaryColor),
                   title: Text(
                     item['display'],
                     maxLines: 1,
@@ -136,7 +137,7 @@ class _LocationPickerState extends State<LocationPicker> {
                         point: _selected!,
                         child: const Icon(
                           Icons.location_on,
-                          color: Colors.red,
+                          color: ColorManager.red,
                           size: 36,
                         ),
                       ),

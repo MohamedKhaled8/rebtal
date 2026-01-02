@@ -1,10 +1,17 @@
 import "package:rebtal/core/Router/export_routes.dart";
 import "package:rebtal/core/Router/routes.dart";
 import "package:rebtal/core/utils/dependency/get_it.dart";
+import "package:rebtal/feature/auth/domain/usecases/login_usecase.dart";
+import "package:rebtal/feature/auth/domain/usecases/register_usecase.dart";
+import "package:rebtal/feature/auth/domain/usecases/resend_email_verification_usecase.dart";
+import "package:rebtal/feature/auth/domain/usecases/save_user_usecase.dart";
 import "package:rebtal/feature/auth/login/ui/login_screen.dart";
+import "package:rebtal/feature/auth/login/logic/login_cubit.dart";
 import "package:rebtal/feature/auth/email_verification/ui/email_verification_screen.dart";
+import "package:rebtal/feature/auth/email_verification/logic/email_verification_cubit.dart";
 import "package:rebtal/feature/auth/register/ui/resgister_screen.dart";
-import "package:rebtal/feature/auth/welcome/ui/welcome_screen.dart";
+import "package:rebtal/feature/auth/register/logic/register_cubit.dart";
+import "package:rebtal/feature/welcome/ui/welcome_screen.dart";
 import "package:rebtal/feature/admin/ui/dashboard.dart";
 import "package:rebtal/feature/home/ui/home_screen.dart";
 import "package:rebtal/feature/navigation/ui/bottom_navigation_screen.dart";
@@ -28,6 +35,7 @@ import "package:rebtal/feature/booking/ui/cancellation_policy_page.dart";
 import "package:rebtal/feature/booking/ui/refund_request_page.dart";
 import "package:rebtal/feature/booking/ui/rating_page.dart";
 import "package:rebtal/feature/booking/ui/transaction_history_page.dart";
+import "package:rebtal/core/utils/model/user_model.dart";
 
 class AppRouter {
   Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -57,18 +65,31 @@ class AppRouter {
         );
       case Routes.registerScreen:
         return _buildAnimatedRoute(
-          const RegisterScreen(),
+          BlocProvider(
+            create: (context) => RegisterCubit(getIt<RegisterUseCase>()),
+            child: const RegisterScreen(),
+          ),
           beginOffset: const Offset(0.1, 0),
         );
       case Routes.loginScreen:
         return _buildAnimatedRoute(
-          const LoginScreen(),
+          BlocProvider(
+            create: (context) => LoginCubit(getIt<LoginUseCase>()),
+            child: const LoginScreen(),
+          ),
           beginOffset: const Offset(-0.1, 0),
         );
       case Routes.emailVerification:
-        final email = settings.arguments as String?;
+        final user = settings.arguments as UserModel;
         return MaterialPageRoute(
-          builder: (_) => EmailVerificationScreen(email: email ?? ''),
+          builder: (_) => BlocProvider(
+            create: (context) => EmailVerificationCubit(
+              userModel: user,
+              resendUseCase: getIt<ResendEmailVerificationUseCase>(),
+              saveUserUseCase: getIt<SaveUserUseCase>(),
+            ),
+            child: EmailVerificationScreen(email: user.email),
+          ),
         );
       case Routes.homeScreen:
         return MaterialPageRoute(builder: (_) => HomeScreen());

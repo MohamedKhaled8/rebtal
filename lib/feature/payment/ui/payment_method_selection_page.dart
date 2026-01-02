@@ -152,8 +152,8 @@ class _PaymentMethodSelectionPageState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark
-        ? const Color(0xFF0A0E27)
-        : const Color(0xFFF5F7FA);
+        ? ColorManager.darkBackground0A0E27
+        : ColorManager.lightBackgroundF5F7FA;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -169,7 +169,7 @@ class _PaymentMethodSelectionPageState
                     onPressed: _prevStep,
                     icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const Spacer(),
@@ -178,7 +178,7 @@ class _PaymentMethodSelectionPageState
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const Spacer(),
@@ -258,7 +258,7 @@ class _PaymentMethodSelectionPageState
               shape: BoxShape.circle,
               color: isActive
                   ? ColorManager.chaletAccent
-                  : (isDark ? Colors.white10 : Colors.grey.shade300),
+                  : (isDark ? ColorManager.white10 : ColorManager.grey300),
               boxShadow: isActive
                   ? [
                       BoxShadow(
@@ -270,12 +270,12 @@ class _PaymentMethodSelectionPageState
                   : [],
             ),
             child: isActive
-                ? const Icon(Icons.check, size: 18, color: Colors.white)
+                ? const Icon(Icons.check, size: 18, color: ColorManager.white)
                 : Center(
                     child: Text(
                       '${step + 1}',
                       style: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.grey.shade600,
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -288,8 +288,8 @@ class _PaymentMethodSelectionPageState
               fontSize: 12,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
               color: isActive
-                  ? (isDark ? Colors.white : Colors.black87)
-                  : (isDark ? Colors.white38 : Colors.grey),
+                  ? (isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight)
+                  : (isDark ? ColorManager.white70 : ColorManager.grey),
             ),
             child: Text(label),
           ),
@@ -307,7 +307,7 @@ class _PaymentMethodSelectionPageState
         decoration: BoxDecoration(
           color: isActive
               ? ColorManager.chaletAccent
-              : (isDark ? Colors.white10 : Colors.grey.shade300),
+              : (isDark ? ColorManager.white10 : ColorManager.grey300),
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -341,7 +341,7 @@ class _PaymentMethodSelectionPageState
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
             ),
           ),
           const SizedBox(height: 16),
@@ -381,14 +381,14 @@ class _PaymentMethodSelectionPageState
             onPressed: _selectedMethod == null ? null : _nextStep,
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorManager.chaletAccent,
-              foregroundColor: Colors.white,
+              foregroundColor: ColorManager.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               disabledBackgroundColor: isDark
-                  ? Colors.white10
-                  : Colors.grey.shade300,
+                  ? ColorManager.white10
+                  : ColorManager.grey300,
             ),
             child: const Text(
               'متابعة',
@@ -426,8 +426,8 @@ class _PaymentMethodSelectionPageState
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isDark
-                        ? [const Color(0xFF2A2E4B), const Color(0xFF161B30)]
-                        : [const Color(0xFFF0F4FF), Colors.white],
+                        ? [ColorManager.darkBlue2A2E4B, ColorManager.darkBlue161B30]
+                        : [ColorManager.chaletIconBackgroundLight, ColorManager.white],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -473,7 +473,7 @@ class _PaymentMethodSelectionPageState
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.black54,
+                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -489,7 +489,7 @@ class _PaymentMethodSelectionPageState
                         'إجمالي المبلغ المستحق',
                         style: TextStyle(
                           fontSize: 14,
-                          color: isDark ? Colors.white54 : Colors.grey.shade600,
+                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -502,7 +502,7 @@ class _PaymentMethodSelectionPageState
                             CurrencyFormatter.egp(value),
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.white
+                                  ? ColorManager.white
                                   : ColorManager.chaletAccent,
                               fontSize: 34,
                               fontWeight: FontWeight.w900,
@@ -524,13 +524,13 @@ class _PaymentMethodSelectionPageState
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.03),
+                          ? ColorManager.white.withOpacity(0.05)
+                          : ColorManager.black.withOpacity(0.03),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white10
-                            : Colors.black.withOpacity(0.05),
+                            ? ColorManager.white10
+                            : ColorManager.black.withOpacity(0.05),
                       ),
                     ),
                     child: Row(
@@ -545,7 +545,7 @@ class _PaymentMethodSelectionPageState
                         Container(
                           width: 1,
                           height: 30,
-                          color: isDark ? Colors.white10 : Colors.black12,
+                          color: isDark ? ColorManager.white10 : ColorManager.grey300,
                         ),
                         _buildSummaryItem(
                           isDark,
@@ -583,7 +583,7 @@ class _PaymentMethodSelectionPageState
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
               ),
             ),
           ],
@@ -593,7 +593,7 @@ class _PaymentMethodSelectionPageState
           label,
           style: TextStyle(
             fontSize: 11,
-            color: isDark ? Colors.white38 : Colors.grey.shade500,
+            color: isDark ? ColorManager.white70 : ColorManager.grey700,
           ),
         ),
       ],
@@ -622,17 +622,17 @@ class _PaymentMethodSelectionPageState
           color: isDark
               ? (isSelected
                     ? ColorManager.chaletAccent.withOpacity(0.12)
-                    : const Color(0xFF1E2235))
+                    : ColorManager.darkBlue1E2235)
               : (isSelected
                     ? ColorManager.chaletAccent.withOpacity(0.06)
-                    : Colors.white),
+                    : ColorManager.white),
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: isSelected
                 ? ColorManager.chaletAccent
                 : (isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.05)),
+                      ? ColorManager.white.withOpacity(0.05)
+                      : ColorManager.black.withOpacity(0.05)),
             width: isSelected ? 2.5 : 1.5,
           ),
           boxShadow: isSelected
@@ -665,18 +665,18 @@ class _PaymentMethodSelectionPageState
                     : LinearGradient(
                         colors: isDark
                             ? [
-                                Colors.white.withOpacity(0.05),
-                                Colors.white.withOpacity(0.02),
+                                ColorManager.white.withOpacity(0.05),
+                                ColorManager.white.withOpacity(0.02),
                               ]
-                            : [Colors.grey.shade100, Colors.grey.shade50],
+                            : [ColorManager.grey100, ColorManager.grey50],
                       ),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white54 : Colors.grey.shade600),
+                    ? ColorManager.white
+                    : (isDark ? ColorManager.white70 : ColorManager.grey600),
                 size: 26,
               ),
             ),
@@ -690,7 +690,7 @@ class _PaymentMethodSelectionPageState
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 17,
-                      color: isDark ? Colors.white : Colors.black,
+                      color: isDark ? ColorManager.white : ColorManager.black,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -698,7 +698,7 @@ class _PaymentMethodSelectionPageState
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: isDark ? Colors.white38 : Colors.grey.shade500,
+                      color: isDark ? ColorManager.white70 : ColorManager.grey700,
                     ),
                   ),
                 ],
@@ -713,7 +713,7 @@ class _PaymentMethodSelectionPageState
                 border: Border.all(
                   color: isSelected
                       ? ColorManager.chaletAccent
-                      : Colors.grey.withOpacity(0.3),
+                      : ColorManager.grey.withOpacity(0.3),
                   width: 2,
                 ),
               ),
@@ -760,14 +760,14 @@ class _PaymentMethodSelectionPageState
               borderRadius: BorderRadius.circular(30),
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF2A2D4E), const Color(0xFF161B30)]
-                    : [const Color(0xFF2E335A).withOpacity(0.05), Colors.white],
+                    ? [ColorManager.darkBlue2A2D4E, ColorManager.darkBlue161B30]
+                    : [ColorManager.darkBlue2E335A.withOpacity(0.05), ColorManager.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
+                    ? ColorManager.white.withOpacity(0.08)
                     : ColorManager.chaletAccent.withOpacity(0.1),
               ),
             ),
@@ -793,7 +793,7 @@ class _PaymentMethodSelectionPageState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -802,7 +802,7 @@ class _PaymentMethodSelectionPageState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                     height: 1.5,
                   ),
                 ),
@@ -828,14 +828,14 @@ class _PaymentMethodSelectionPageState
                     children: [
                       const Icon(
                         Icons.receipt_rounded,
-                        color: Colors.white,
+                        color: ColorManager.white,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         CurrencyFormatter.egp(_calculatedAmount),
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: ColorManager.white,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                         ),
@@ -855,7 +855,7 @@ class _PaymentMethodSelectionPageState
               Icons.check_circle_rounded,
               'تأكيد الدفع نقداً',
               'سيتم التواصل معك هاتفياً لتأكيد حضورك وموعد الاستلام.',
-              Colors.green,
+              ColorManager.green,
             ),
           ] else ...[
             Padding(
@@ -879,7 +879,7 @@ class _PaymentMethodSelectionPageState
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -918,7 +918,7 @@ class _PaymentMethodSelectionPageState
               onPressed: _nextStep,
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorManager.chaletAccent,
-                foregroundColor: Colors.white,
+                foregroundColor: ColorManager.white,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 minimumSize: const Size(double.infinity, 64),
                 shape: RoundedRectangleBorder(
@@ -988,15 +988,15 @@ class _PaymentMethodSelectionPageState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        color: isDark ? ColorManager.white.withOpacity(0.03) : ColorManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+          color: isDark ? ColorManager.white10 : ColorManager.black.withOpacity(0.05),
         ),
         boxShadow: !isDark
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: ColorManager.black.withOpacity(0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1013,7 +1013,7 @@ class _PaymentMethodSelectionPageState
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? Colors.white54 : Colors.grey.shade500,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey700,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1022,7 +1022,7 @@ class _PaymentMethodSelectionPageState
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -1086,7 +1086,7 @@ class _PaymentMethodSelectionPageState
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                   height: 1.6,
                 ),
               ),
@@ -1107,7 +1107,7 @@ class _PaymentMethodSelectionPageState
                   onPressed: _isSubmitting ? null : _submitConfirmation,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorManager.chaletAccent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: ColorManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 22),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -1115,7 +1115,7 @@ class _PaymentMethodSelectionPageState
                     elevation: 0,
                   ),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: ColorManager.white)
                       : const Text(
                           'إنهاء وتأكيد الحجز',
                           style: TextStyle(
@@ -1142,18 +1142,18 @@ class _PaymentMethodSelectionPageState
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF1E3C29), const Color(0xFF0F1E15)]
-                    : [const Color(0xFFE8F5E9), Colors.white],
+                    ? [ColorManager.darkGreen1E3C29, ColorManager.darkGreen0F1E15]
+                    : [ColorManager.lightGreenE8F5E9, ColorManager.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: const Color(0xFF25D366).withOpacity(0.2),
+                color: ColorManager.whatsappGreen.withOpacity(0.2),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: ColorManager.black.withOpacity(0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 5),
                 ),
@@ -1164,10 +1164,10 @@ class _PaymentMethodSelectionPageState
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF25D366).withOpacity(0.1),
+                    color: ColorManager.whatsappGreen.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.phone, size: 54, color: Color(0xFF25D366)),
+                  child: Icon(Icons.phone, size: 54, color: ColorManager.whatsappGreen),
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -1180,7 +1180,7 @@ class _PaymentMethodSelectionPageState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
-                    color: isDark ? Colors.white60 : Colors.grey.shade600,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                     height: 1.5,
                   ),
                 ),
@@ -1196,7 +1196,7 @@ class _PaymentMethodSelectionPageState
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF25D366).withOpacity(0.25),
+                  color: ColorManager.whatsappGreen.withOpacity(0.25),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1216,8 +1216,8 @@ class _PaymentMethodSelectionPageState
               icon: const Icon(Icons.send_to_mobile_rounded, size: 22),
               label: const Text('فتح واتساب وإرسال الإيصال'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF25D366),
-                foregroundColor: Colors.white,
+                backgroundColor: ColorManager.whatsappGreen,
+                foregroundColor: ColorManager.white,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -1238,8 +1238,8 @@ class _PaymentMethodSelectionPageState
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.white,
+                          ? ColorManager.white.withOpacity(0.05)
+                          : ColorManager.white,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: ColorManager.chaletAccent.withOpacity(0.2),
@@ -1261,7 +1261,7 @@ class _PaymentMethodSelectionPageState
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
+                                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                               ),
                             ),
                           ],
@@ -1271,7 +1271,7 @@ class _PaymentMethodSelectionPageState
                           onPressed: _isSubmitting ? null : _submitConfirmation,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ColorManager.chaletAccent,
-                            foregroundColor: Colors.white,
+                            foregroundColor: ColorManager.white,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             minimumSize: const Size(double.infinity, 58),
                             shape: RoundedRectangleBorder(
@@ -1280,7 +1280,7 @@ class _PaymentMethodSelectionPageState
                           ),
                           child: _isSubmitting
                               ? const CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                 )
                               : const Text(
                                   'نعم، تم الإرسال - إنهاء الحجز',

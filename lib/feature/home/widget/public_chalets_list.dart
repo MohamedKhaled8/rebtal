@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +12,8 @@ import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
-import 'package:rebtal/core/services/chalet_filter_service.dart';
+import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
+import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 
 class PublicChaletCard extends StatefulWidget {
   final Map<String, dynamic> chaletData;
@@ -30,6 +33,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
   bool _isFavorite = false;
   String? _userId;
   int _currentImageIndex = 0;
+  PageController? _pageController;
+  Timer? _autoPlayTimer;
 
   @override
   void initState() {
@@ -39,6 +44,38 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
       _userId = user?.uid;
     } catch (_) {}
     _checkFavoriteInitial();
+    _initImageCarousel();
+  }
+
+  void _initImageCarousel() {
+    final images = _collectChaletImages(widget.chaletData);
+    if (images.length > 1) {
+      _pageController = PageController();
+      _startAutoPlay(images.length);
+    }
+  }
+
+  void _startAutoPlay(int imageCount) {
+    _autoPlayTimer?.cancel();
+    if (imageCount > 1) {
+      _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        if (_pageController?.hasClients == true) {
+          final nextIndex = (_currentImageIndex + 1) % imageCount;
+          _pageController?.animateToPage(
+            nextIndex,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel();
+    _pageController?.dispose();
+    super.dispose();
   }
 
   Future<void> _checkFavoriteInitial() async {
@@ -119,7 +156,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
         if (s.isNotEmpty && s != profile) {
           result.add(s);
         }
-        if (result.length >= 5) break;
+        // Removed the limit - show all images
       }
     }
 
@@ -142,18 +179,18 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 24, left: 20, right: 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        color: isDark ? ColorManager.chaletBackgroundDark : ColorManager.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.grey.withOpacity(0.1),
+              ? ColorManager.white.withOpacity(0.05)
+              : ColorManager.chaletGrey200.withOpacity(0.1),
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : Colors.black.withOpacity(0.05),
+                ? ColorManager.black.withOpacity(0.2)
+                : ColorManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -171,17 +208,32 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                 ),
                 child: SizedBox(
                   height: 240,
-                  child: PageView.builder(
-                    itemCount: images.length,
-                    onPageChanged: (index) {
-                      setState(() => _currentImageIndex = index);
-                    },
-                    itemBuilder: (context, index) {
-                      return AppImageHelper(
-                        path: images[index],
-                        fit: BoxFit.cover,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Open full screen gallery when tapping on image
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenImageGallery(
+                            images: images,
+                            initialIndex: _currentImageIndex,
+                          ),
+                        ),
                       );
                     },
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: images.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentImageIndex = index);
+                      },
+                      itemBuilder: (context, index) {
+                        return AppImageHelper(
+                          path: images[index],
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -195,14 +247,14 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
+                      color: ColorManager.black.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       _isFavorite ? Icons.favorite : Icons.favorite_border,
                       color: _isFavorite
-                          ? const Color(0xFFEF4444)
-                          : Colors.white,
+                          ? ColorManager.chaletUnavailableRed
+                          : ColorManager.white,
                       size: 24,
                     ),
                   ),
@@ -226,8 +278,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         height: _currentImageIndex == index ? 8 : 6,
                         decoration: BoxDecoration(
                           color: _currentImageIndex == index
-                              ? Colors.white
-                              : Colors.white.withOpacity(0.5),
+                              ? ColorManager.white
+                              : ColorManager.white.withOpacity(0.5),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -255,8 +307,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                             chaletName,
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1A1A2E),
+                                  ? ColorManager.white
+                                  : ColorManager.chaletBackgroundDark,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               height: 1.2,
@@ -271,8 +323,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                                 Icons.location_on_outlined,
                                 size: 14,
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.6)
-                                    : Colors.grey[600],
+                                    ? ColorManager.white.withOpacity(0.6)
+                                    : ColorManager.chaletGrey500,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
@@ -280,8 +332,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                                   location,
                                   style: TextStyle(
                                     color: isDark
-                                        ? Colors.white.withOpacity(0.6)
-                                        : Colors.grey[600],
+                                        ? ColorManager.white.withOpacity(0.6)
+                                        : ColorManager.chaletGrey500,
                                     fontSize: 13,
                                   ),
                                   maxLines: 1,
@@ -302,22 +354,22 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                       ),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.grey.withOpacity(0.1),
+                            ? ColorManager.white.withOpacity(0.1)
+                            : ColorManager.chaletGrey200.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             Icons.star,
-                            color: Color(0xFFFFD700),
+                            color: ColorManager.yellow,
                             size: 14,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '4.8', // Placeholder rating
                             style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: isDark ? ColorManager.white : ColorManager.chaletGrey800,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -346,16 +398,16 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                             ),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.1),
+                                  ? ColorManager.white.withOpacity(0.1)
+                                  : ColorManager.chaletGrey200.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               feature.toString(),
                               style: TextStyle(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.9)
-                                    : Colors.black87,
+                                    ? ColorManager.white.withOpacity(0.9)
+                                    : ColorManager.chaletGrey800,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -375,16 +427,16 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         Icons.child_care_rounded,
                         size: 14,
                         color: isDark
-                            ? Colors.white.withOpacity(0.6)
-                            : Colors.grey[600],
+                            ? ColorManager.white.withOpacity(0.6)
+                            : ColorManager.chaletGrey500,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Children: ${widget.chaletData['childrenCount']}',
                         style: TextStyle(
                           color: isDark
-                              ? Colors.white.withOpacity(0.6)
-                              : Colors.grey[600],
+                              ? ColorManager.white.withOpacity(0.6)
+                              : ColorManager.chaletGrey500,
                           fontSize: 12,
                         ),
                       ),
@@ -404,8 +456,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           'السعر لليلة',
                           style: TextStyle(
                             color: isDark
-                                ? Colors.white.withOpacity(0.5)
-                                : Colors.grey[500],
+                                ? ColorManager.white.withOpacity(0.5)
+                                : ColorManager.chaletGrey500,
                             fontSize: 11,
                           ),
                         ),
@@ -427,8 +479,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                             ),
                             style: TextStyle(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.5)
-                                  : Colors.grey[500],
+                                  ? ColorManager.white.withOpacity(0.5)
+                                  : ColorManager.chaletGrey500,
                               fontSize: 14,
                               decoration: TextDecoration.lineThrough,
                             ),
@@ -437,7 +489,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           Text(
                             _calculateDiscountedPrice(widget.chaletData),
                             style: const TextStyle(
-                              color: Color(0xFF10B981),
+                              color: ColorManager.chaletAvailableGreen,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -457,7 +509,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                               withSuffixPerNight: false,
                             ),
                             style: const TextStyle(
-                              color: Color(0xFF10B981),
+                              color: ColorManager.chaletAvailableGreen,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -479,8 +531,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? Colors.white : Colors.black,
-                        foregroundColor: isDark ? Colors.black : Colors.white,
+                        backgroundColor: isDark ? ColorManager.white : ColorManager.black,
+                        foregroundColor: isDark ? ColorManager.black : ColorManager.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -569,11 +621,11 @@ class PublicChaletsList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                Icon(Icons.error_outline, size: 64, color: ColorManager.chaletUnavailableRed),
                 const SizedBox(height: 16),
                 Text(
                   'خطأ في تحميل الشاليهات',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
                 ),
               ],
             ),
@@ -587,12 +639,12 @@ class PublicChaletsList extends StatelessWidget {
                 Icon(
                   emptyIcon ?? Icons.home_outlined,
                   size: 72,
-                  color: Colors.grey[400],
+                  color: ColorManager.chaletGrey400,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   emptyTitle ?? 'لا توجد شاليهات متاحة',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -662,12 +714,12 @@ class PublicChaletsList extends StatelessWidget {
                     Icon(
                       emptyIcon ?? Icons.home_outlined,
                       size: 72,
-                      color: Colors.grey[400],
+                      color: ColorManager.chaletGrey400,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       emptyTitle ?? 'لا توجد شاليهات متاحة',
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 18, color: ColorManager.chaletGrey500),
                       textAlign: TextAlign.center,
                     ),
                   ],

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
 import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class RegisterActionButton extends StatelessWidget {
   final bool isTablet;
@@ -30,8 +31,6 @@ class RegisterActionButton extends StatelessWidget {
     return isLoading
         ? LoadingButton()
         : RegisterButton(
-          
-
             selectedRole: selectedRole,
             validateForm: _validateForm,
           );
@@ -39,17 +38,19 @@ class RegisterActionButton extends StatelessWidget {
 
   /// التحقق من الفورم
   bool _validateForm(BuildContext context) {
-    final authCubit = context.read<AuthCubit>();
+    // We can rely on the Cubit validation instead,
+    // or use the passed controllers if we really want to check here.
+    // Given the props, we should use them.
 
-    if (authCubit.nameController.text.trim().isEmpty) {
+    if (nameController.text.trim().isEmpty) {
       SnackBarHelper.showWarning(context, 'Please enter your name');
       return false;
     }
-    if (authCubit.emailController.text.trim().isEmpty) {
+    if (emailController.text.trim().isEmpty) {
       SnackBarHelper.showWarning(context, 'Please enter your email');
       return false;
     }
-    if (authCubit.passwordController.text.trim().isEmpty) {
+    if (passwordController.text.trim().isEmpty) {
       SnackBarHelper.showWarning(context, 'Please enter a password');
       return false;
     }
@@ -59,20 +60,19 @@ class RegisterActionButton extends StatelessWidget {
 
 /// زر التحميل
 class LoadingButton extends StatelessWidget {
-
-  const LoadingButton({super.key,});
+  const LoadingButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height:20.h,
+      height: 20.h,
       decoration: BoxDecoration(
-        color: const Color(0xFF0EA5E9),
+        color: ColorManager.skyBlue0EA5E9,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0EA5E9).withOpacity(0.3),
+            color: ColorManager.skyBlue0EA5E9.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -83,7 +83,7 @@ class LoadingButton extends StatelessWidget {
           width: 20,
           height: 20,
           child: CircularProgressIndicator(
-            color: Colors.white,
+            color: ColorManager.white,
             strokeWidth: 2.5,
           ),
         ),
@@ -104,39 +104,33 @@ class RegisterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authCubit = context.read<AuthCubit>();
+    final registerCubit = context.read<RegisterCubit>();
 
     return Container(
       width: double.infinity,
-      height:20.h,
+      height: 20.h,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0EA5E9), Color(0xFF3B82F6)],
+          colors: [ColorManager.skyBlue0EA5E9, ColorManager.chaletActionBlue],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0EA5E9).withOpacity(0.4),
+            color: ColorManager.skyBlue0EA5E9.withOpacity(0.4),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: ColorManager.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
             if (validateForm(context)) {
-              authCubit.register(
-                email: authCubit.emailController.text.trim(),
-                password: authCubit.passwordController.text.trim(),
-                name: authCubit.nameController.text.trim(),
-                phone: authCubit.phoneController.text.trim(),
-                role: selectedRole.toLowerCase(),
-              );
+              registerCubit.register();
             }
           },
           child: Center(
@@ -145,15 +139,15 @@ class RegisterButton extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.rocket_launch_rounded,
-                  color: Colors.white,
+                  color: ColorManager.white,
                   size: 20,
                 ),
                 const SizedBox(width: 10),
                 Text(
                   'Create My Account',
                   style: TextStyle(
-                    color: Colors.white,
-                  fontSize:15.sp,
+                    color: ColorManager.white,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
                   ),

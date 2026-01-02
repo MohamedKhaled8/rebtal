@@ -10,15 +10,15 @@ class DeliveryPolicyPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
       appBar: AppBar(
         title: const Text('Booking & Confirmation'),
-        backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
         titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
+          color: isDark ? ColorManager.white : ColorManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -33,7 +33,7 @@ class DeliveryPolicyPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 32),
@@ -124,7 +124,7 @@ class DeliveryPolicyPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -133,7 +133,7 @@ class DeliveryPolicyPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? Colors.white70 : Colors.black54,
+                      color: isDark ? ColorManager.white70 : ColorManager.grey600,
                     ),
                   ),
                 ],
@@ -172,7 +172,7 @@ class DeliveryPolicyPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 8),

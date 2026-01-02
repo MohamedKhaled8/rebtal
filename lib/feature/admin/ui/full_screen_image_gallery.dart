@@ -38,22 +38,18 @@ class FullScreenImageGallery extends StatelessWidget {
                     centerTitle: true,
                   )
                 : null,
-            body: GestureDetector(
-              onTap: () => cubit.toggleAppBar(),
-              child: PageView.builder(
-                controller: cubit.galleryController,
-                itemCount: images.length,
-                onPageChanged: (i) => cubit.changeImageIndex(i),
-                itemBuilder: (context, i) => InteractiveViewer(
-                  child: Center(
-                    child: AppImageHelper(
-                      height: double.infinity,
-                      path: images[i],
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              ),
+            body: PageView.builder(
+              controller: cubit.galleryController,
+              itemCount: images.length,
+              onPageChanged: (i) => cubit.changeImageIndex(i),
+              physics: const PageScrollPhysics(),
+              itemBuilder: (context, i) {
+                return _ZoomableImage(
+                  imageUrl: images[i],
+                  onTap: () => cubit.toggleAppBar(),
+                  pageController: cubit.galleryController,
+                );
+              },
             ),
             bottomNavigationBar: cubit.showAppBar && images.length > 1
                 ? Container(
@@ -85,5 +81,99 @@ class FullScreenImageGallery extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+// Zoomable Image Widget with better zoom support
+class _ZoomableImage extends StatefulWidget {
+  final String imageUrl;
+  final VoidCallback onTap;
+  final PageController? pageController;
+
+  const _ZoomableImage({
+    required this.imageUrl,
+    required this.onTap,
+    this.pageController,
+  });
+
+  @override
+  State<_ZoomableImage> createState() => _ZoomableImageState();
+}
+
+class _ZoomableImageState extends State<_ZoomableImage> {
+  final TransformationController _transformationController =
+      TransformationController();
+  bool _isZoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformationController.addListener(_onTransformationChanged);
+  }
+
+  void _onTransformationChanged() {
+    final scale = _transformationController.value.getMaxScaleOnAxis();
+    final wasZoomed = _isZoomed;
+    final isNowZoomed = scale > 1.1;
+    
+    if (wasZoomed != isNowZoomed) {
+      setState(() => _isZoomed = isNowZoomed);
+    }
+  }
+
+  @override
+  void dispose() {
+    _transformationController.removeListener(_onTransformationChanged);
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // If zoomed, reset zoom. Otherwise, toggle app bar
+        if (_isZoomed) {
+          _resetZoom();
+        } else {
+          widget.onTap();
+        }
+      },
+      onDoubleTap: () {
+        // Double tap to zoom in/out
+        if (_isZoomed) {
+          _resetZoom();
+        } else {
+          _zoomIn();
+        }
+      },
+      child: InteractiveViewer(
+        transformationController: _transformationController,
+        minScale: 0.5,
+        maxScale: 4.0,
+        // Disable pan when zoomed to allow page view scrolling
+        panEnabled: !_isZoomed,
+        scaleEnabled: true,
+        child: Center(
+          child: AppImageHelper(
+            height: double.infinity,
+            path: widget.imageUrl,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
+  }
+
+  void _zoomIn() {
+    final size = MediaQuery.of(context).size;
+    _transformationController.value = Matrix4.identity()
+      ..translate(-size.width / 2, -size.height / 2)
+      ..scale(2.0)
+      ..translate(size.width / 2, size.height / 2);
   }
 }

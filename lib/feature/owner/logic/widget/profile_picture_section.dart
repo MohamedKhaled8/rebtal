@@ -58,7 +58,7 @@ class ProfilePictureSection extends StatelessWidget {
                 height: 120,
                 decoration: BoxDecoration(
                   color: profileImage != null
-                      ? Colors.transparent
+                      ? ColorManager.transparent
                       : ColorManager.kPrimaryGradient.colors.first.withOpacity(
                           0.1,
                         ),

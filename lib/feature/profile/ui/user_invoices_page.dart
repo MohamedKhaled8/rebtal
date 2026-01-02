@@ -21,7 +21,7 @@ class UserInvoicesPage extends StatelessWidget {
 
     if (user == null) {
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+        backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
         body: const Center(child: Text('Please login first')),
       );
     }
@@ -30,16 +30,16 @@ class UserInvoicesPage extends StatelessWidget {
       value: context.read<BookingCubit>()..loadUserBookings(user.uid),
       child: Scaffold(
         backgroundColor: isDark
-            ? const Color(0xFF121212)
-            : const Color(0xFFF5F7FA),
+            ? ColorManager.darkBackground121212
+            : ColorManager.lightBackgroundF5F7FA,
         appBar: AppBar(
           title: const Text('فواتير الحجز'),
           centerTitle: true,
-          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
           elevation: 0,
-          leading: BackButton(color: isDark ? Colors.white : Colors.black),
+          leading: BackButton(color: isDark ? ColorManager.white : ColorManager.black),
           titleTextStyle: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
+            color: isDark ? ColorManager.white : ColorManager.black,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -48,8 +48,8 @@ class UserInvoicesPage extends StatelessWidget {
             child: Container(
               height: 1,
               color: isDark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
+                  ? ColorManager.white.withOpacity(0.1)
+                  : ColorManager.black.withOpacity(0.05),
             ),
           ),
         ),
@@ -58,7 +58,7 @@ class UserInvoicesPage extends StatelessWidget {
             if (state.isLoading) {
               return Center(
                 child: CircularProgressIndicator(
-                  color: isDark ? Colors.white : ColorManager.primaryColor,
+                  color: isDark ? ColorManager.white : ColorManager.primaryColor,
                 ),
               );
             }
@@ -74,14 +74,14 @@ class UserInvoicesPage extends StatelessWidget {
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.grey.shade100,
+                            ? ColorManager.white.withOpacity(0.05)
+                            : ColorManager.grey100,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.receipt_long_outlined,
                         size: 64,
-                        color: isDark ? Colors.white38 : Colors.grey[400],
+                        color: isDark ? ColorManager.white70 : ColorManager.grey400,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -89,7 +89,7 @@ class UserInvoicesPage extends StatelessWidget {
                       'لا توجد فواتير حجز حالياً',
                       style: TextStyle(
                         fontSize: 18,
-                        color: isDark ? Colors.white70 : Colors.grey[600],
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -98,7 +98,7 @@ class UserInvoicesPage extends StatelessWidget {
                       'ستظهر فواتيرك هنا بعد إتمام الحجوزات',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.white54 : Colors.grey[500],
+                        color: isDark ? ColorManager.white70 : ColorManager.grey700,
                       ),
                     ),
                   ],
@@ -136,23 +136,23 @@ class _InvoiceCard extends StatelessWidget {
                 booking.adminPaymentNotes!.isNotEmpty));
     
     if (isPaymentRejected) {
-      return Colors.red;
+      return ColorManager.red;
     }
     
     switch (booking.status) {
       case BookingStatus.confirmed:
       case BookingStatus.completed:
-        return Colors.green;
+        return ColorManager.green;
       case BookingStatus.paymentUnderReview:
-        return Colors.blue;
+        return ColorManager.primaryColor;
       case BookingStatus.pending:
       case BookingStatus.awaitingPayment:
-        return Colors.orange;
+        return ColorManager.orange;
       case BookingStatus.rejected:
       case BookingStatus.cancelled:
-        return Colors.red;
+        return ColorManager.red;
       default:
-        return Colors.grey;
+        return ColorManager.grey;
     }
   }
 
@@ -211,20 +211,20 @@ class _InvoiceCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.3)
-                : Colors.black.withOpacity(0.08),
+                ? ColorManager.black.withOpacity(0.3)
+                : ColorManager.black.withOpacity(0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: ColorManager.transparent,
         child: InkWell(
           onTap: () {
             final GlobalKey repaintKey = GlobalKey();
@@ -232,7 +232,7 @@ class _InvoiceCard extends StatelessWidget {
             showDialog(
               context: context,
               builder: (ctx) => Dialog(
-                backgroundColor: Colors.transparent,
+                backgroundColor: ColorManager.transparent,
                 insetPadding: const EdgeInsets.all(16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -243,11 +243,11 @@ class _InvoiceCard extends StatelessWidget {
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.grey.shade800 : Colors.white,
+                          color: isDark ? ColorManager.grey800 : ColorManager.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: ColorManager.black.withOpacity(0.2),
                               blurRadius: 8,
                             ),
                           ],
@@ -255,7 +255,7 @@ class _InvoiceCard extends StatelessWidget {
                         child: IconButton(
                           icon: Icon(
                             Icons.close_rounded,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: isDark ? ColorManager.white : ColorManager.black,
                           ),
                           onPressed: () => Navigator.pop(ctx),
                         ),
@@ -281,11 +281,11 @@ class _InvoiceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: ColorManager.black.withOpacity(0.1),
                             blurRadius: 10,
                           ),
                         ],
@@ -305,12 +305,12 @@ class _InvoiceCard extends StatelessWidget {
                               label: const Text('طباعة'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: isDark
-                                    ? Colors.white
-                                    : Colors.black87,
+                                    ? ColorManager.white
+                                    : ColorManager.chaletTextPrimaryLight,
                                 side: BorderSide(
                                   color: isDark
-                                      ? Colors.white.withOpacity(0.3)
-                                      : Colors.black12,
+                                      ? ColorManager.white.withOpacity(0.3)
+                                      : ColorManager.grey300,
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
@@ -335,7 +335,7 @@ class _InvoiceCard extends StatelessWidget {
                               label: const Text('حفظ'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: ColorManager.chaletAccent,
-                                foregroundColor: Colors.white,
+                                foregroundColor: ColorManager.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 12,
                                 ),
@@ -394,7 +394,7 @@ class _InvoiceCard extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -406,16 +406,16 @@ class _InvoiceCard extends StatelessWidget {
                                 Icons.confirmation_number_outlined,
                                 size: 14,
                                 color: isDark
-                                    ? Colors.white54
-                                    : Colors.grey[600],
+                                    ? ColorManager.white70
+                                    : ColorManager.grey600,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '#${booking.id.substring(0, 8)}',
                                 style: TextStyle(
                                   color: isDark
-                                      ? Colors.white54
-                                      : Colors.grey[600],
+                                      ? ColorManager.white70
+                                      : ColorManager.grey600,
                                   fontSize: 12,
                                 ),
                               ),
@@ -445,7 +445,7 @@ class _InvoiceCard extends StatelessWidget {
                       child: Text(
                         _getStatusText(),
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: ColorManager.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -462,11 +462,11 @@ class _InvoiceCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.transparent,
+                        ColorManager.transparent,
                         isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.black.withOpacity(0.05),
-                        Colors.transparent,
+                            ? ColorManager.white.withOpacity(0.1)
+                            : ColorManager.black.withOpacity(0.05),
+                        ColorManager.transparent,
                       ],
                     ),
                   ),
@@ -484,13 +484,13 @@ class _InvoiceCard extends StatelessWidget {
                         Icon(
                           Icons.calendar_today_rounded,
                           size: 16,
-                          color: isDark ? Colors.white54 : Colors.grey[600],
+                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           intl.DateFormat('dd/MM/yyyy').format(booking.from),
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.grey[700],
+                            color: isDark ? ColorManager.white70 : ColorManager.grey700,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),

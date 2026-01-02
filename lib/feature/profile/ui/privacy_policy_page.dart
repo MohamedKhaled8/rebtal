@@ -10,15 +10,15 @@ class PrivacyPolicyPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
       appBar: AppBar(
         title: const Text('Privacy Policy'),
-        backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
         titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
+          color: isDark ? ColorManager.white : ColorManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -33,7 +33,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 8),
@@ -41,7 +41,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               'Last updated: ${DateTime.now().year}',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? Colors.white60 : Colors.black45,
+                color: isDark ? ColorManager.white70 : ColorManager.grey600,
               ),
             ),
             const SizedBox(height: 32),
@@ -138,7 +138,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                       'By using our services, you agree to this Privacy Policy.',
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? Colors.white70 : Colors.black54,
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                       ),
                     ),
                   ),

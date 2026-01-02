@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class OwnerChaletsList extends StatelessWidget {
   final String status;
@@ -34,7 +35,7 @@ class OwnerChaletsList extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              valueColor: AlwaysStoppedAnimation<Color>(ColorManager.purple),
             ),
           );
         }
@@ -43,11 +44,11 @@ class OwnerChaletsList extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                Icon(Icons.error_outline, size: 64, color: ColorManager.red),
                 const SizedBox(height: 16),
                 Text(
                   'خطأ في تحميل الشاليهات',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18, color: ColorManager.grey600),
                 ),
               ],
             ),
@@ -61,19 +62,19 @@ class OwnerChaletsList extends StatelessWidget {
                 Icon(
                   emptyIcon ?? Icons.home_outlined,
                   size: 72,
-                  color: Colors.grey[400],
+                  color: ColorManager.grey400,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   emptyTitle ?? 'لا توجد شاليهات',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18, color: ColorManager.grey600),
                   textAlign: TextAlign.center,
                 ),
                 if (emptySubtitle != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     emptySubtitle!,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 14, color: ColorManager.grey700),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -190,7 +191,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: ColorManager.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -214,7 +215,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [ColorManager.transparent, ColorManager.black.withOpacity(0.7)],
                   stops: const [0.5, 1.0],
                 ),
               ),
@@ -223,7 +224,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
             // Clickable Area
             Positioned.fill(
               child: Material(
-                color: Colors.transparent,
+                color: ColorManager.transparent,
                 child: InkWell(
                   onTap: () => _navigateToChaletDetails(
                     context,
@@ -254,14 +255,14 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                           ),
                           decoration: BoxDecoration(
                             color: _isBookingAvailable
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFEF4444),
+                                ? ColorManager.chaletActionGreen
+                                : ColorManager.chaletUnavailableRed,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             _isBookingAvailable ? 'متاح' : 'مغلق',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: ColorManager.white,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -276,14 +277,14 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                           ),
                           decoration: BoxDecoration(
                             color: _isVisible
-                                ? const Color(0xFF3B82F6)
-                                : const Color(0xFF6B7280),
+                                ? ColorManager.chaletActionBlue
+                                : ColorManager.chaletActionGrey,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             _isVisible ? 'مرئي' : 'مخفي',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: ColorManager.white,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -303,7 +304,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                           children: [
                             const Icon(
                               Icons.location_on,
-                              color: Colors.white,
+                              color: ColorManager.white,
                               size: 16,
                             ),
                             const SizedBox(width: 4),
@@ -311,7 +312,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                               child: Text(
                                 location,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -328,7 +329,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                         Text(
                           chaletName,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: ColorManager.white,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -354,7 +355,7 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                             withSuffixPerNight: true,
                           ),
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: ColorManager.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -373,8 +374,8 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                                     : Icons.visibility_off,
                                 label: _isVisible ? 'إخفاء' : 'إظهار',
                                 color: _isVisible
-                                    ? Colors.orange
-                                    : Colors.green,
+                                    ? ColorManager.orange
+                                    : ColorManager.green,
                                 onPressed: _toggleVisibility,
                               ),
                             ),
@@ -390,8 +391,8 @@ class _OwnerChaletCardState extends State<OwnerChaletCard> {
                                     ? 'إيقاف الحجز'
                                     : 'تشغيل الحجز',
                                 color: _isBookingAvailable
-                                    ? Colors.red
-                                    : Colors.green,
+                                    ? ColorManager.red
+                                    : ColorManager.green,
                                 onPressed: _toggleBookingAvailability,
                               ),
                             ),

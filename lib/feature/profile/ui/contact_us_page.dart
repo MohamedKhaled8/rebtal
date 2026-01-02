@@ -35,15 +35,15 @@ class ContactUsPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
       appBar: AppBar(
         title: const Text('Contact Us'),
-        backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
         titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
+          color: isDark ? ColorManager.white : ColorManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -81,7 +81,7 @@ class ContactUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 8),
@@ -89,7 +89,7 @@ class ContactUsPage extends StatelessWidget {
               'We\'re here to help! Reach out to us through any of the following methods.',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? Colors.white70 : Colors.black54,
+                color: isDark ? ColorManager.white70 : ColorManager.grey600,
               ),
             ),
             const SizedBox(height: 32),
@@ -143,7 +143,7 @@ class ContactUsPage extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF0A2A1D).withValues(alpha: 0.5)
+                    ? ColorManager.darkGreen0A2A1D.withValues(alpha: 0.5)
                     : ColorManager.profileAccent.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
@@ -168,7 +168,7 @@ class ContactUsPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -178,7 +178,7 @@ class ContactUsPage extends StatelessWidget {
                     'We\'re available to assist you 24/7',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? Colors.white70 : Colors.black54,
+                      color: isDark ? ColorManager.white70 : ColorManager.grey600,
                     ),
                   ),
                 ],
@@ -203,24 +203,24 @@ class ContactUsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark
             ? const Color(0xFF0A2A1D).withValues(alpha: 0.5)
-            : Colors.white,
+            : ColorManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.05),
+              ? ColorManager.white.withValues(alpha: 0.1)
+              : ColorManager.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: ColorManager.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: ColorManager.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
@@ -249,7 +249,7 @@ class ContactUsPage extends StatelessWidget {
                         title,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? Colors.white60 : Colors.black45,
+                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -259,7 +259,7 @@ class ContactUsPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -270,7 +270,7 @@ class ContactUsPage extends StatelessWidget {
                   icon: Icon(
                     Icons.copy,
                     size: 20,
-                    color: isDark ? Colors.white54 : Colors.black45,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                   ),
                   tooltip: 'Copy',
                 ),
@@ -278,7 +278,7 @@ class ContactUsPage extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: isDark ? Colors.white38 : Colors.black26,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey400,
                   ),
               ],
             ),

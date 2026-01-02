@@ -4,39 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
-import 'package:rebtal/feature/auth/repository/auth_repository.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 
+import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
+
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit() : super(AuthInitial()) {
+  AuthCubit(this.authRepository) : super(AuthInitial()) {
     _loadSavedViewMode(); // ✅ Load saved view mode first
     _checkCurrentUser(); // ✅ Then check current user
   }
-  final AuthRepository authRepository = AuthRepository();
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-
-  bool obscurePassword = true;
-  String selectedRole = "user";
+  final BaseAuthRepository authRepository;
 
   String? currentViewRole;
-
-  void togglePasswordVisibility() {
-    obscurePassword = !obscurePassword;
-    emit(AuthInitial());
-  }
-
-  void setRole(String role) {
-    selectedRole = role;
-    emit(RoleChanged(role));
-  }
 
   /// Returns the role that should be used for UI rendering
   String getCurrentRole() {
@@ -101,22 +84,35 @@ class AuthCubit extends Cubit<AuthState> {
 
     if (currentUser != null) {
       try {
+        // 1. Check if the last login process completed successfully
+        final isLoginComplete =
+            getIt<CacheHelper>().getData(key: 'is_login_complete') ?? true;
+
+        // If login wasn't completed (e.g. app killed during loading), force logout
+        if (isLoginComplete == false) {
+          debugPrint('⚠️ Login process was incomplete. Forcing logout.');
+          await logout();
+          return;
+        }
+
         DocumentSnapshot? doc;
-        for (String col in ["Users", "Owners", "Admin"]) {
+
+        // 2. Parallelize Firestore lookups
+        final futures = ["Users", "Owners", "Admin"].map((col) async {
           try {
-            doc = await FirebaseFirestore.instance
+            final d = await FirebaseFirestore.instance
                 .collection(col)
                 .doc(currentUser.uid)
                 .get()
                 .timeout(const Duration(seconds: 10));
-            if (doc.exists) {
-              break;
-            }
+            return d.exists ? d : null;
           } catch (e) {
-            // Continue to next collection if one fails
-            continue;
+            return null;
           }
-        }
+        });
+
+        final results = await Future.wait(futures);
+        doc = results.firstWhere((d) => d != null, orElse: () => null);
 
         if (doc != null && doc.exists) {
           final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
@@ -202,275 +198,41 @@ class AuthCubit extends Cubit<AuthState> {
     return (state is AuthSuccess) ? (state as AuthSuccess).user : null;
   }
 
-  Future<void> register({
-    required String email,
-    required String password,
-    required String name,
-    required String phone,
-    required String role,
-  }) async {
-    // Input validation
-    if (name.trim().isEmpty) {
-      emit(AuthValidationError("Please enter your name"));
-      return;
-    }
-    if (email.trim().isEmpty) {
-      emit(AuthValidationError("Please enter your email"));
-      return;
-    }
-    if (password.isEmpty) {
-      emit(AuthValidationError("Please enter a password"));
-      return;
-    }
-    if (password.length < 6) {
-      emit(AuthValidationError("Password must be at least 6 characters long"));
-      return;
-    }
-    if (phone.trim().isEmpty) {
-      emit(AuthValidationError("Please enter your phone number"));
-      return;
-    }
-
-    emit(AuthLoading());
-
-    try {
-      final user = await authRepository.register(
-        email: email.trim(),
-        password: password,
-        name: name.trim(),
-        role: role,
-        phone: phone.trim(),
-      );
-
-      // ✅ Emit registration success to trigger OTP verification
-      emit(AuthRegistrationSuccess(user: user, phoneNumber: phone.trim()));
-
-      // ✅ Save role locally
-      await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
-
-      // ✅ Mark as just registered to enforce email verification
-      await getIt<CacheHelper>().saveData(key: 'justRegistered', value: 'true');
-    } catch (e) {
-      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
-      final isOffline = FirebaseErrorHandler.isOfflineError(e);
-      final isRetryable = FirebaseErrorHandler.isRetryableError(e);
-
-      if (isOffline) {
-        emit(
-          AuthOfflineWarning(
-            'Unable to create account. Please check your internet connection.',
-          ),
-        );
-      } else {
-        emit(
-          AuthFailure(
-            errorMessage,
-            errorCode: e is FirebaseException || e is FirebaseAuthException
-                ? (e as dynamic).code
-                : null,
-            isRetryable: isRetryable,
-            isOffline: isOffline,
-          ),
-        );
-      }
-
-      FirebaseErrorHandler.logError(e, context: 'Register');
-    }
-  }
-
-  // ✅ New method to verify email status manually
-  Future<void> confirmEmailVerification() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.reload(); // Reload to get fresh data
-        if (user.emailVerified) {
-          // Find user in Firestore collections
-          DocumentSnapshot? doc;
-          for (String col in ["Users", "Owners", "Admin"]) {
-            try {
-              doc = await FirebaseFirestore.instance
-                  .collection(col)
-                  .doc(user.uid)
-                  .get();
-              if (doc.exists) {
-                break;
-              }
-            } catch (e) {
-              continue;
-            }
-          }
-
-          if (doc != null && doc.exists) {
-            final userModel = UserModel.fromMap(
-              doc.data() as Map<String, dynamic>,
-            );
-            // ✅ Save role locally
-            await getIt<CacheHelper>().saveData(
-              key: 'userRole',
-              value: userModel.role,
-            );
-
-            // ✅ Clear the just registered flag
-            await getIt<CacheHelper>().removeData(key: 'justRegistered');
-
-            // ✅ Restore view mode for owners if needed
-            if (userModel.role.toLowerCase().trim() == 'owner') {
-              // ... handle view mode restoration if needed
-            }
-
-            emit(AuthSuccess(userModel));
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Error confirming email verification: $e");
-    }
-  }
-
-  Future<void> login({required String email, required String password}) async {
-    // Input validation
-    if (email.trim().isEmpty) {
-      emit(AuthValidationError("Please enter your email"));
-      return;
-    }
-    if (password.isEmpty) {
-      emit(AuthValidationError("Please enter your password"));
-      return;
-    }
-
-    emit(AuthLoading());
-
-    try {
-      // ✅ Special admin login handling
-      if (email.trim().toLowerCase() == "admin@admin.com" &&
-          password == "admin123") {
-        try {
-          // Sign in with FirebaseAuth
-          final userCredential = await FirebaseAuth.instance
-              .signInWithEmailAndPassword(
-                email: email.trim(),
-                password: password,
-              )
-              .timeout(const Duration(seconds: 10));
-
-          final uid = userCredential.user?.uid;
-          if (uid == null) {
-            throw Exception('Failed to get user ID');
-          }
-
-          // Read from Firestore with timeout
-          DocumentSnapshot? doc;
+  // Reload user data from Firestore
+  Future<void> reloadUserData() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      try {
+        DocumentSnapshot? doc;
+        for (String col in ["Users", "Owners", "Admin"]) {
           try {
             doc = await FirebaseFirestore.instance
-                .collection("Admin")
-                .doc(uid)
+                .collection(col)
+                .doc(currentUser.uid)
                 .get()
                 .timeout(const Duration(seconds: 10));
-          } catch (e) {
-            // If Firestore fails, create admin user
-            if (FirebaseErrorHandler.isOfflineError(e)) {
-              throw Exception('Cannot create admin account in offline mode');
+            if (doc.exists) {
+              break;
             }
+          } catch (e) {
+            continue;
           }
-
-          if (doc != null && doc.exists) {
-            final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
-            // ✅ Save role locally
-            await getIt<CacheHelper>().saveData(
-              key: 'userRole',
-              value: user.role,
-            );
-            emit(AuthSuccess(user));
-          } else {
-            // Create admin user if not exists
-            final adminUser = UserModel(
-              uid: uid,
-              name: "Admin",
-              email: email.trim(),
-              role: "admin",
-              phone: "",
-              password: password,
-              createdAt: DateTime.now(),
-            );
-            await FirebaseFirestore.instance
-                .collection("Admin")
-                .doc(uid)
-                .set(adminUser.toMap())
-                .timeout(const Duration(seconds: 10));
-            // ✅ Save role locally
-            await getIt<CacheHelper>().saveData(
-              key: 'userRole',
-              value: adminUser.role,
-            );
-            emit(AuthSuccess(adminUser));
-          }
-          return;
-        } catch (e) {
-          final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
-          final isOffline = FirebaseErrorHandler.isOfflineError(e);
-
-          if (isOffline) {
-            emit(
-              AuthOfflineWarning(
-                'Unable to sign in. Please check your internet connection.',
-              ),
-            );
-          } else {
-            emit(
-              AuthFailure(
-                errorMessage,
-                errorCode: e is FirebaseException || e is FirebaseAuthException
-                    ? (e as dynamic).code
-                    : null,
-                isRetryable: FirebaseErrorHandler.isRetryableError(e),
-                isOffline: isOffline,
-              ),
-            );
-          }
-
-          FirebaseErrorHandler.logError(e, context: 'AdminLogin');
-          return;
         }
+
+        if (doc != null && doc.exists) {
+          final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+
+          // Save role locally
+          await getIt<CacheHelper>().saveData(
+            key: 'userRole',
+            value: user.role,
+          );
+
+          emit(AuthSuccess(user));
+        }
+      } catch (e) {
+        debugPrint('Error reloading user data: $e');
       }
-
-      // ✅ Regular users (Users & Owners)
-      final user = await authRepository.login(
-        email: email.trim(),
-        password: password,
-      );
-      // ✅ Save role locally
-      await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
-
-      // ✅ Save FCM token to Firestore
-      await NotificationService().saveFCMToken(user.uid);
-
-      emit(AuthSuccess(user));
-    } catch (e) {
-      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
-      final isOffline = FirebaseErrorHandler.isOfflineError(e);
-      final isRetryable = FirebaseErrorHandler.isRetryableError(e);
-
-      if (isOffline) {
-        emit(
-          AuthOfflineWarning(
-            'Unable to sign in. Please check your internet connection.',
-          ),
-        );
-      } else {
-        emit(
-          AuthFailure(
-            errorMessage,
-            errorCode: e is FirebaseException || e is FirebaseAuthException
-                ? (e as dynamic).code
-                : null,
-            isRetryable: isRetryable,
-            isOffline: isOffline,
-          ),
-        );
-      }
-
-      FirebaseErrorHandler.logError(e, context: 'Login');
     }
   }
 
@@ -498,7 +260,6 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       // ✅ Always clear local data and navigate
-      clearControllers();
       await getIt<CacheHelper>().removeData(key: 'userRole');
       await getIt<CacheHelper>().removeData(
         key: 'currentViewRole',
@@ -510,21 +271,5 @@ class AuthCubit extends Cubit<AuthState> {
       debugPrint("Logout error: $e");
       emit(AuthInitial());
     }
-  }
-
-  void clearControllers() {
-    nameController.clear();
-    emailController.clear();
-    passwordController.clear();
-    phoneController.clear();
-  }
-
-  @override
-  Future<void> close() {
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    phoneController.dispose();
-    return super.close();
   }
 }

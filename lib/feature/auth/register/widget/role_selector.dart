@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class RoleSelector extends StatelessWidget {
   final String selectedRole;
@@ -9,39 +10,43 @@ class RoleSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "I am a...",
+          'أنا...',
           style: TextStyle(
-            fontSize: 15.sp,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF1E293B),
+            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
           ),
         ),
-        SizedBox(height: 1.5.h),
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _RoleCard(
                 icon: Icons.person_rounded,
-                label: "User",
-                value: "user",
-                isSelected: selectedRole == "user",
-                color: const Color(0xFF0EA5E9),
-                onTap: () => onChanged?.call("user"),
+                label: 'مستخدم',
+                value: 'user',
+                isSelected: selectedRole == 'user',
+                color: ColorManager.skyBlue0EA5E9,
+                onTap: () => onChanged?.call('user'),
+                isDark: isDark,
               ),
             ),
-            SizedBox(width: 3.w),
+            const SizedBox(width: 12),
             Expanded(
               child: _RoleCard(
                 icon: Icons.home_work_rounded,
-                label: "Owner",
-                value: "owner",
-                isSelected: selectedRole == "owner",
-                color: const Color(0xFF059669),
-                onTap: () => onChanged?.call("owner"),
+                label: 'مالك',
+                value: 'owner',
+                isSelected: selectedRole == 'owner',
+                color: ColorManager.chaletActionDarkGreen,
+                onTap: () => onChanged?.call('owner'),
+                isDark: isDark,
               ),
             ),
           ],
@@ -58,6 +63,7 @@ class _RoleCard extends StatelessWidget {
   final bool isSelected;
   final Color color;
   final VoidCallback onTap;
+  final bool isDark;
 
   const _RoleCard({
     required this.icon,
@@ -66,6 +72,7 @@ class _RoleCard extends StatelessWidget {
     required this.isSelected,
     required this.color,
     required this.onTap,
+    required this.isDark,
   });
 
   @override
@@ -73,62 +80,41 @@ class _RoleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 3.w),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [color.withOpacity(0.15), color.withOpacity(0.08)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected
+              ? color.withOpacity(isDark ? 0.15 : 0.1)
+              : (isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? color : const Color(0xFFE5E7EB),
-            width: isSelected ? 2 : 1.5,
+            color: isSelected
+                ? color
+                : (isDark
+                    ? ColorManager.white.withOpacity(0.1)
+                    : ColorManager.grey300),
+            width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withOpacity(0.2),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isSelected ? color : color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : color,
-                size: 28,
-              ),
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected
+                  ? color
+                  : (isDark ? ColorManager.white70 : ColorManager.grey600),
             ),
-            SizedBox(height: 1.h),
+            const SizedBox(height: 12),
             Text(
               label,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected ? color : const Color(0xFF64748B),
+                color: isSelected
+                    ? color
+                    : (isDark ? ColorManager.white70 : ColorManager.grey600),
               ),
             ),
           ],

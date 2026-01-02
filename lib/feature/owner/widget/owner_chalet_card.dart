@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;
@@ -51,11 +52,11 @@ class OwnerChaletCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: ColorManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -101,10 +102,10 @@ class OwnerChaletCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: status == 'approved'
-                            ? Colors.green.withOpacity(0.1)
+                            ? ColorManager.green.withOpacity(0.1)
                             : status == 'rejected'
-                            ? Colors.red.withOpacity(0.1)
-                            : Colors.orange.withOpacity(0.1),
+                            ? ColorManager.red.withOpacity(0.1)
+                            : ColorManager.orange.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -115,10 +116,10 @@ class OwnerChaletCard extends StatelessWidget {
                             : 'قيد المراجعة',
                         style: TextStyle(
                           color: status == 'approved'
-                              ? Colors.green
+                              ? ColorManager.green
                               : status == 'rejected'
-                              ? Colors.red
-                              : Colors.orange,
+                              ? ColorManager.red
+                              : ColorManager.orange,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -132,13 +133,13 @@ class OwnerChaletCard extends StatelessWidget {
                     Icon(
                       Icons.location_on_outlined,
                       size: 14,
-                      color: Colors.grey[600],
+                      color: ColorManager.grey600,
                     ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         location,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        style: TextStyle(color: ColorManager.grey600, fontSize: 13),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -161,13 +162,13 @@ class OwnerChaletCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.deepPurple.withOpacity(0.1),
+                              color: ColorManager.purple.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               feature.toString(),
                               style: TextStyle(
-                                color: Colors.deepPurple,
+                                color: ColorManager.purple,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -185,7 +186,7 @@ class OwnerChaletCard extends StatelessWidget {
                       Icon(
                         Icons.child_care_rounded,
                         size: 14,
-                        color: Colors.grey[600],
+                        color: ColorManager.grey600,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -218,7 +219,7 @@ class OwnerChaletCard extends StatelessWidget {
                               withSuffixPerNight: false,
                             ),
                             style: TextStyle(
-                              color: Colors.grey[400],
+                              color: ColorManager.grey400,
                               fontSize: 14,
                               decoration: TextDecoration.lineThrough,
                             ),
@@ -268,8 +269,8 @@ class OwnerChaletCard extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
+                        backgroundColor: ColorManager.purple,
+                        foregroundColor: ColorManager.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

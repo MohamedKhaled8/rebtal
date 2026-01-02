@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class CustomInputField extends StatefulWidget {
   final TextEditingController controller;
@@ -68,88 +69,72 @@ class _CustomInputFieldState extends State<CustomInputField> {
   @override
   Widget build(BuildContext context) {
     final isFocused = _focusNode.hasFocus;
-    final showFloatingLabel = isFocused || _hasText;
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
+    return Container(
+      height: 56,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: isFocused ? const Color(0xFFF0F7FF) : const Color(0xFFFAFAFA),
+        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isFocused ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+          color: isFocused
+              ? (isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB)
+              : (isDark
+                  ? ColorManager.white.withOpacity(0.1)
+                  : ColorManager.grey300),
           width: isFocused ? 2 : 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          if (showFloatingLabel)
-            Padding(
-              padding: EdgeInsets.only(bottom: 0.5.h),
-              child: Text(
-                widget.label,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: isFocused
-                      ? const Color(0xFF2563EB)
-                      : const Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
+          const SizedBox(width: 16),
+          Icon(
+            widget.icon,
+            size: 20,
+            color: isFocused
+                ? (isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB)
+                : (isDark ? ColorManager.white70 : ColorManager.grey700),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextFormField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              obscureText: widget.obscureText,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.keyboardType ==
+                          TextInputType.emailAddress ||
+                      widget.keyboardType == TextInputType.phone ||
+                      widget.keyboardType == TextInputType.name
+                  ? TextInputAction.next
+                  : TextInputAction.done,
+              onFieldSubmitted: (_) {
+                if (widget.keyboardType != null &&
+                    widget.keyboardType != TextInputType.visiblePassword) {
+                  FocusScope.of(context).nextFocus();
+                } else {
+                  FocusScope.of(context).unfocus();
+                }
+              },
+              style: TextStyle(
+                fontSize: 15,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.label,
+                hintStyle: TextStyle(
+                  color: isDark ? ColorManager.white.withOpacity(0.4) : ColorManager.grey400,
+                  fontSize: 15,
                 ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
               ),
             ),
-          Row(
-            children: [
-              Icon(
-                widget.icon,
-                color: isFocused
-                    ? const Color(0xFF2563EB)
-                    : const Color(0xFF94A3B8),
-                size: 20,
-              ),
-              SizedBox(width: 3.w),
-              Expanded(
-                child: TextFormField(
-                  controller: widget.controller,
-                  focusNode: _focusNode,
-                  obscureText: widget.obscureText,
-                  keyboardType: widget.keyboardType,
-                  textInputAction:
-                      widget.keyboardType == TextInputType.emailAddress ||
-                          widget.keyboardType == TextInputType.phone ||
-                          widget.keyboardType == TextInputType.name
-                      ? TextInputAction.next
-                      : TextInputAction.done,
-                  onFieldSubmitted: (_) {
-                    if (widget.keyboardType != null &&
-                        widget.keyboardType != TextInputType.visiblePassword) {
-                      FocusScope.of(context).nextFocus();
-                    } else {
-                      FocusScope.of(context).unfocus();
-                    }
-                  },
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: const Color(0xFF0F172A),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: showFloatingLabel ? null : widget.label,
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    border: InputBorder.none,
-                    suffixIcon: widget.suffixIcon,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                  ),
-                ),
-              ),
-            ],
           ),
+          if (widget.suffixIcon != null) widget.suffixIcon!,
+          const SizedBox(width: 8),
         ],
       ),
     );

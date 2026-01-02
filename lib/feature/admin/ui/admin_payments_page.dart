@@ -7,7 +7,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
-import 'package:rebtal/core/services/email_service.dart';
+import 'package:rebtal/core/utils/services/email_service.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
@@ -44,8 +44,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
         return Scaffold(
           backgroundColor: isDark
-              ? const Color(0xFF0F0F1E)
-              : const Color(0xFFF8F9FA),
+              ? ColorManager.darkBackground0F0F1E
+              : ColorManager.bookingsBackgroundLight,
           body: SafeArea(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -81,14 +81,17 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
                   if (_selectedFilter != 'all') {
                     if (_selectedFilter == 'pending' &&
-                        proof.status != PaymentProofStatus.pending)
+                        proof.status != PaymentProofStatus.pending) {
                       return false;
+                    }
                     if (_selectedFilter == 'approved' &&
-                        proof.status != PaymentProofStatus.approved)
+                        proof.status != PaymentProofStatus.approved) {
                       return false;
+                    }
                     if (_selectedFilter == 'rejected' &&
-                        proof.status != PaymentProofStatus.rejected)
+                        proof.status != PaymentProofStatus.rejected) {
                       return false;
+                    }
                   }
                   if (_searchQuery.isNotEmpty) {
                     final query = _searchQuery.toLowerCase();
@@ -147,16 +150,19 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                   if (_selectedFilter != 'all') {
                                     if (_selectedFilter == 'pending' &&
                                         proof.status !=
-                                            PaymentProofStatus.pending)
+                                            PaymentProofStatus.pending) {
                                       return const SizedBox.shrink();
+                                    }
                                     if (_selectedFilter == 'approved' &&
                                         proof.status !=
-                                            PaymentProofStatus.approved)
+                                            PaymentProofStatus.approved) {
                                       return const SizedBox.shrink();
+                                    }
                                     if (_selectedFilter == 'rejected' &&
                                         proof.status !=
-                                            PaymentProofStatus.rejected)
+                                            PaymentProofStatus.rejected) {
                                       return const SizedBox.shrink();
+                                    }
                                   }
                                   if (_searchQuery.isNotEmpty) {
                                     final query = _searchQuery.toLowerCase();
@@ -168,8 +174,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                         ) &&
                                         !proof.userName.toLowerCase().contains(
                                           query,
-                                        ))
+                                        )) {
                                       return const SizedBox.shrink();
+                                    }
                                   }
 
                                   return _buildPaymentCard(
@@ -179,7 +186,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                   );
                                 },
                               );
-                            }).toList(),
+                            }),
                           ],
                         ),
                       ),
@@ -198,10 +205,10 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+            color: ColorManager.black.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -236,7 +243,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 ),
                 child: const Icon(
                   Icons.payment_rounded,
-                  color: Colors.white,
+                  color: ColorManager.white,
                   size: 30,
                 ),
               ),
@@ -250,7 +257,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                         height: 1.2,
                       ),
                     ),
@@ -259,7 +266,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       'مراجعة واعتماد طلبات الدفع',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.white70 : Colors.grey.shade600,
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         height: 1.3,
                       ),
                     ),
@@ -277,7 +284,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.15 : 0.04),
+                  color: ColorManager.black.withOpacity(isDark ? 0.15 : 0.04),
                   blurRadius: 12,
                   offset: const Offset(0, 3),
                   spreadRadius: 0,
@@ -287,7 +294,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             child: TextField(
               controller: _searchController,
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 fontSize: 16,
                 height: 1.4,
               ),
@@ -296,7 +303,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               decoration: InputDecoration(
                 hintText: 'بحث برقم الطلب أو اسم المستخدم...',
                 hintStyle: TextStyle(
-                  color: isDark ? Colors.white38 : Colors.grey.shade500,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey700,
                   fontSize: 15,
                 ),
                 prefixIcon: Padding(
@@ -304,14 +311,14 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                   child: Icon(
                     Icons.search_rounded,
                     size: 24,
-                    color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                   ),
                 ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8),
                         child: Material(
-                          color: Colors.transparent,
+                          color: ColorManager.transparent,
                           borderRadius: BorderRadius.circular(8),
                           child: InkWell(
                             onTap: () {
@@ -323,21 +330,21 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                               Icons.clear_rounded,
                               size: 20,
                               color: isDark
-                                  ? Colors.white54
-                                  : Colors.grey.shade600,
+                                  ? ColorManager.white70
+                                  : ColorManager.grey600,
                             ),
                           ),
                         ),
                       )
                     : null,
                 filled: true,
-                fillColor: isDark ? const Color(0xFF252540) : Colors.white,
+                fillColor: isDark ? ColorManager.darkGrey252540 : ColorManager.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide(
                     color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.shade200,
+                        ? ColorManager.white.withOpacity(0.1)
+                        : ColorManager.grey200,
                     width: 1.5,
                   ),
                 ),
@@ -345,8 +352,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide(
                     color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.shade200,
+                        ? ColorManager.white.withOpacity(0.1)
+                        : ColorManager.grey200,
                     width: 1.5,
                   ),
                 ),
@@ -422,8 +429,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
         icon,
         size: 18,
         color: isSelected
-            ? Colors.white
-            : (isDark ? Colors.white54 : Colors.grey.shade600),
+            ? ColorManager.white
+            : (isDark ? ColorManager.white70 : ColorManager.grey600),
       ),
       label: Text(label),
       selected: isSelected,
@@ -442,12 +449,12 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           }
         });
       },
-      backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+      backgroundColor: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
       selectedColor: activeColor,
       labelStyle: TextStyle(
         color: isSelected
-            ? Colors.white
-            : (isDark ? Colors.white70 : Colors.black87),
+            ? ColorManager.white
+            : (isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         fontSize: 14,
       ),
@@ -457,8 +464,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       ),
       side: BorderSide(
         color: isSelected
-            ? Colors.transparent
-            : (isDark ? Colors.white12 : Colors.grey.shade300),
+            ? ColorManager.transparent
+            : (isDark ? ColorManager.white10 : ColorManager.grey300),
       ),
     );
   }
@@ -472,11 +479,11 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.grey.shade100,
+                  ? ColorManager.white.withOpacity(0.05)
+                  : ColorManager.grey100,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.payment, size: 80, color: Colors.grey.shade400),
+            child: Icon(Icons.payment, size: 80, color: ColorManager.grey400),
           ),
           const SizedBox(height: 24),
           Text(
@@ -484,7 +491,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: ColorManager.grey600,
             ),
           ),
         ],
@@ -502,14 +509,14 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.grey.shade100,
+                  ? ColorManager.white.withOpacity(0.05)
+                  : ColorManager.grey100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.search_off,
               size: 80,
-              color: Colors.grey.shade400,
+              color: ColorManager.grey400,
             ),
           ),
           const SizedBox(height: 24),
@@ -518,7 +525,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
+              color: ColorManager.grey600,
             ),
           ),
         ],
@@ -553,11 +560,11 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+              color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+                  color: ColorManager.black.withOpacity(isDark ? 0.2 : 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -625,15 +632,15 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.12) : Colors.grey.shade200,
+          color: isDark ? ColorManager.white.withOpacity(0.12) : ColorManager.grey200,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.25 : 0.06),
+            color: ColorManager.black.withOpacity(isDark ? 0.25 : 0.06),
             blurRadius: 20,
             offset: const Offset(0, 6),
             spreadRadius: 0,
@@ -662,8 +669,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                               Icons.receipt_long_rounded,
                               size: 16,
                               color: isDark
-                                  ? Colors.white60
-                                  : Colors.grey.shade600,
+                                  ? ColorManager.white70
+                                  : ColorManager.grey600,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -672,8 +679,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: isDark
-                                    ? Colors.white60
-                                    : Colors.grey.shade600,
+                                    ? ColorManager.white70
+                                    : ColorManager.grey600,
                               ),
                             ),
                           ],
@@ -718,7 +725,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                             ),
                             const SizedBox(width: 8),
                             Material(
-                              color: Colors.transparent,
+                              color: ColorManager.transparent,
                               child: InkWell(
                                 onTap: () {
                                   Clipboard.setData(
@@ -735,16 +742,16 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: isDark
-                                        ? Colors.white.withOpacity(0.1)
-                                        : Colors.grey.shade100,
+                                        ? ColorManager.white.withOpacity(0.1)
+                                        : ColorManager.grey100,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     Icons.copy_rounded,
                                     size: 18,
                                     color: isDark
-                                        ? Colors.white70
-                                        : Colors.grey.shade700,
+                                        ? ColorManager.white70
+                                        : ColorManager.grey700,
                                   ),
                                 ),
                               ),
@@ -764,8 +771,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 height: 1,
                 thickness: 1.5,
                 color: isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : Colors.grey.shade300,
+                    ? ColorManager.white.withOpacity(0.12)
+                    : ColorManager.grey300,
               ),
               const SizedBox(height: 24),
 
@@ -781,7 +788,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                             height: 1.3,
                           ),
                         ),
@@ -793,8 +800,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                 Icons.location_on_rounded,
                                 size: 16,
                                 color: isDark
-                                    ? Colors.white54
-                                    : Colors.grey.shade600,
+                                    ? ColorManager.white70
+                                    : ColorManager.grey600,
                               ),
                               const SizedBox(width: 6),
                               Expanded(
@@ -803,8 +810,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: isDark
-                                        ? Colors.white70
-                                        : Colors.grey.shade700,
+                                        ? ColorManager.white70
+                                        : ColorManager.grey700,
                                   ),
                                 ),
                               ),
@@ -818,8 +825,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                               Icons.access_time_rounded,
                               size: 14,
                               color: isDark
-                                  ? Colors.white54
-                                  : Colors.grey.shade600,
+                                  ? ColorManager.white70
+                                  : ColorManager.grey600,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -827,8 +834,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
-                                    ? Colors.white54
-                                    : Colors.grey.shade600,
+                                    ? ColorManager.white70
+                                    : ColorManager.grey600,
                               ),
                             ),
                           ],
@@ -845,12 +852,12 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2A2A3E) : Colors.grey.shade50,
+                  color: isDark ? ColorManager.darkGrey2A2A3E : ColorManager.grey50,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: isDark
-                        ? Colors.white.withOpacity(0.15)
-                        : Colors.grey.shade200,
+                        ? ColorManager.white.withOpacity(0.15)
+                        : ColorManager.grey200,
                     width: 1.5,
                   ),
                 ),
@@ -862,7 +869,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       icon: Icons.calendar_today_rounded,
                       label: 'تاريخ الوصول',
                       value: dateFormat.format(booking.from),
-                      color: Colors.blue,
+                      color: ColorManager.primaryColor,
                       isDark: isDark,
                     ),
                     const SizedBox(height: 16),
@@ -871,7 +878,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       icon: Icons.calendar_month_rounded,
                       label: 'تاريخ المغادرة',
                       value: dateFormat.format(booking.to),
-                      color: Colors.redAccent,
+                      color: ColorManager.red,
                       isDark: isDark,
                     ),
                     const SizedBox(height: 16),
@@ -880,7 +887,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       icon: Icons.nights_stay_rounded,
                       label: 'المدة',
                       value: '$nights ليالي',
-                      color: Colors.purple,
+                      color: ColorManager.purple,
                       isDark: isDark,
                     ),
                     const SizedBox(height: 16),
@@ -889,7 +896,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                       icon: Icons.monetization_on_rounded,
                       label: 'المبلغ الإجمالي',
                       value: '${booking.amount?.toInt() ?? 0} جنيه',
-                      color: Colors.green,
+                      color: ColorManager.green,
                       isDark: isDark,
                       isBold: true,
                     ),
@@ -908,13 +915,13 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.green.withOpacity(0.15)
-                          : Colors.green.shade50,
+                          ? ColorManager.green.withOpacity(0.15)
+                          : ColorManager.chaletAvailableLightGreen,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
-                            ? Colors.green.withOpacity(0.4)
-                            : Colors.green.withOpacity(0.35),
+                            ? ColorManager.green.withOpacity(0.4)
+                            : ColorManager.green.withOpacity(0.35),
                         width: 1.5,
                       ),
                     ),
@@ -924,7 +931,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                         _buildSectionTitle(
                           'معلومات الضيف',
                           Icons.person_rounded,
-                          Colors.green,
+                          ColorManager.green,
                           isDark,
                         ),
                         const SizedBox(height: 16),
@@ -960,13 +967,13 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.orange.withOpacity(0.15)
-                          : Colors.orange.shade50,
+                          ? ColorManager.orange.withOpacity(0.15)
+                          : ColorManager.grey50,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
-                            ? Colors.orange.withOpacity(0.4)
-                            : Colors.orange.withOpacity(0.35),
+                            ? ColorManager.orange.withOpacity(0.4)
+                            : ColorManager.orange.withOpacity(0.35),
                         width: 1.5,
                       ),
                     ),
@@ -976,7 +983,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                         _buildSectionTitle(
                           'معلومات المالك',
                           Icons.business_rounded,
-                          Colors.orange,
+                          ColorManager.orange,
                           isDark,
                         ),
                         const SizedBox(height: 16),
@@ -1034,8 +1041,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                           ),
                           side: BorderSide(
                             color: isDark
-                                ? Colors.white.withOpacity(0.25)
-                                : Colors.grey.shade300,
+                                ? ColorManager.white.withOpacity(0.25)
+                                : ColorManager.grey300,
                             width: 1.5,
                           ),
                         ),
@@ -1046,10 +1053,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          if (booking != null) {
-                            _showReviewDialog(context, proof, booking);
-                          }
-                        },
+                          _showReviewDialog(context, proof, booking);
+                                                },
                         icon: const Icon(Icons.check_circle_rounded, size: 20),
                         label: const Text(
                           'مراجعة',
@@ -1059,8 +1064,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
+                          backgroundColor: ColorManager.green,
+                          foregroundColor: ColorManager.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -1105,7 +1110,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? Colors.white54 : Colors.grey.shade600,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                 ),
               ),
               const SizedBox(height: 2),
@@ -1130,8 +1135,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
   }
 
   Color isButtonActive(Color baseColor, bool isDark) {
-    if (isDark) return Colors.white;
-    return Colors.black87;
+    if (isDark) return ColorManager.white;
+    return ColorManager.chaletTextPrimaryLight;
   }
 
   Widget _buildSectionTitle(
@@ -1165,14 +1170,14 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(icon, size: 14, color: Colors.grey.shade500),
+          Icon(icon, size: 14, color: ColorManager.grey700),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               value ?? 'غير متوفر',
               style: TextStyle(
                 fontSize: 13,
-                color: isDark ? Colors.white70 : Colors.black87,
+                color: isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1213,7 +1218,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1222,7 +1227,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                   height: 1.3,
                 ),
               ),
@@ -1243,7 +1248,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: Colors.grey.shade600),
+        Icon(icon, size: 18, color: ColorManager.grey600),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -1254,7 +1259,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.white60 : Colors.grey.shade600,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1263,7 +1268,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                   height: 1.3,
                 ),
               ),
@@ -1281,17 +1286,17 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
     switch (status) {
       case PaymentProofStatus.pending:
-        color = Colors.orange;
+        color = ColorManager.orange;
         text = 'قيد المراجعة';
         icon = Icons.access_time_rounded;
         break;
       case PaymentProofStatus.approved:
-        color = Colors.green;
+        color = ColorManager.green;
         text = 'مؤكد';
         icon = Icons.check_circle_rounded;
         break;
       case PaymentProofStatus.rejected:
-        color = Colors.red;
+        color = ColorManager.red;
         text = 'مرفوض';
         icon = Icons.cancel_rounded;
         break;
@@ -1512,7 +1517,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1524,8 +1529,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black87,
+                backgroundColor: ColorManager.white,
+                foregroundColor: ColorManager.chaletTextPrimaryLight,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -1575,14 +1580,14 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               Navigator.pop(context);
               _rejectPayment(proof.id, notesController.text, booking);
             },
-            child: const Text('رفض', style: TextStyle(color: Colors.red)),
+            child: const Text('رفض', style: TextStyle(color: ColorManager.red)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _approvePayment(proof.id, booking, notesController.text);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: ColorManager.green),
             child: const Text('موافقة'),
           ),
         ],

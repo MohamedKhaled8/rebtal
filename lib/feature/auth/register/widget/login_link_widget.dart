@@ -1,47 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/helper/extensions.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class LoginLinkWidget extends StatelessWidget {
-  const LoginLinkWidget({super.key});
+  final bool isDark;
+
+  const LoginLinkWidget({super.key, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'لديك حساب بالفعل؟',
+          style: TextStyle(
+            fontSize: 15,
+            color: isDark ? ColorManager.white70 : ColorManager.grey600,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Already exploring with us? ",
-              style: TextStyle(
-                color: const Color(0xFF64748B),
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
+        const SizedBox(width: 8),
+        TextButton(
+          onPressed: () => context.pushNamed(Routes.loginScreen),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          ),
+          child: Text(
+            'تسجيل الدخول',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB,
             ),
-            GestureDetector(
-              onTap: () => context.pushNamed(Routes.loginScreen),
-              child: const Text(
-                "Sign In",
-                style: TextStyle(
-                  color: Color(0xFF0EA5E9),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                  decorationColor: Color(0xFF0EA5E9),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

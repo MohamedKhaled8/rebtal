@@ -15,6 +15,9 @@ class UserModel {
   final String? bankAccountName;
   final String? vodafoneCashNumber;
   final String? instaPayNumber;
+  
+  // Profile picture URL
+  final String? profileImageUrl;
 
   const UserModel({
     required this.uid,
@@ -29,6 +32,7 @@ class UserModel {
     this.bankAccountName,
     this.vodafoneCashNumber,
     this.instaPayNumber,
+    this.profileImageUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -45,6 +49,7 @@ class UserModel {
       'bankAccountName': bankAccountName,
       'vodafoneCashNumber': vodafoneCashNumber,
       'instaPayNumber': instaPayNumber,
+      'profileImageUrl': profileImageUrl,
     };
   }
 
@@ -62,6 +67,7 @@ class UserModel {
       bankAccountName: map['bankAccountName'],
       vodafoneCashNumber: map['vodafoneCashNumber'],
       instaPayNumber: map['instaPayNumber'],
+      profileImageUrl: map['profileImageUrl'],
     );
   }
 }

@@ -84,6 +84,7 @@ dependencies:
   path_provider: ^2.1.5
   gal: ^2.3.0
   mailer: ^6.6.0
+  dartz: ^0.10.1
 
 
 

@@ -6,18 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 // ======================= HelperImage =======================
 class HelperImage {
   static const String _cloudName = "dwobtaa6a";
   static const String _apiKey = "249478428416757";
   static const String _uploadPreset = "Mmkkkkk";
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> addSampleImages(BuildContext context) async {
     await _showImageSourceDialog(true, context);
@@ -28,52 +31,265 @@ class HelperImage {
     BuildContext context,
   ) async {
     final parentContext = context;
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    
     showDialog(
       context: context,
+      barrierColor: ColorManager.black.withOpacity(0.6),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            isChaletPhoto ? 'Add Chalet Photo' : 'Add Profile Photo',
-            style: TextStyle(
-              color: ColorManager.black,
-              fontWeight: FontWeight.bold,
+        return Dialog(
+          backgroundColor: ColorManager.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? ColorManager.bookingsCardDark
+                  : ColorManager.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: ColorManager.black.withOpacity(isDark ? 0.5 : 0.2),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(
-                  Icons.camera_alt,
-                  color: ColorManager.kPrimaryGradient.colors.first,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? ColorManager.white.withOpacity(0.1)
+                            : ColorManager.black.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: ColorManager.kPrimaryGradient.colors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorManager.kPrimaryGradient.colors.first
+                                  .withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isChaletPhoto ? Icons.photo_camera : Icons.person,
+                          color: ColorManager.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isChaletPhoto ? 'إضافة صور الشاليه' : 'تغيير الصورة الشخصية',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: isDark
+                                    ? ColorManager.white
+                                    : ColorManager.chaletGrey800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              isChaletPhoto
+                                  ? 'اختر مصدر الصور'
+                                  : 'اختر مصدر الصورة',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? ColorManager.white70
+                                    : ColorManager.chaletGrey500,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: isDark ? ColorManager.white70 : ColorManager.chaletGrey500,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
                 ),
-                title: Text('Camera'),
-                subtitle: isChaletPhoto
-                    ? const Text('Take a single photo')
-                    : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera, isChaletPhoto, parentContext);
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.photo_library,
-                  color: ColorManager.kPrimaryGradient.colors.first,
+                
+                // Options
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Camera Option
+                      _buildImageSourceOption(
+                        context: context,
+                        icon: Icons.camera_alt_rounded,
+                        title: 'الكاميرا',
+                        subtitle: isChaletPhoto
+                            ? 'التقاط صورة واحدة'
+                            : 'التقاط صورة جديدة',
+                        gradient: LinearGradient(
+                          colors: [
+                            ColorManager.bookingsAccentPrimary,
+                            ColorManager.bookingsAccentSecondary,
+                          ],
+                        ),
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.camera, isChaletPhoto, parentContext);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      // Gallery Option
+                      _buildImageSourceOption(
+                        context: context,
+                        icon: Icons.photo_library_rounded,
+                        title: 'المعرض',
+                        subtitle: isChaletPhoto
+                            ? 'اختيار صور متعددة'
+                            : 'اختيار صورة من المعرض',
+                        gradient: LinearGradient(
+                          colors: [
+                            ColorManager.cyan00C9FF,
+                            ColorManager.green92FE9D,
+                          ],
+                        ),
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.gallery, isChaletPhoto, parentContext);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                title: Text('Gallery'),
-                subtitle: isChaletPhoto
-                    ? const Text('Select multiple photos')
-                    : null,
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery, isChaletPhoto, parentContext);
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Gradient gradient,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: ColorManager.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark
+                ? ColorManager.white.withOpacity(0.05)
+                : ColorManager.greyF9FAFB,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark
+                  ? ColorManager.white.withOpacity(0.1)
+                  : ColorManager.black.withOpacity(0.08),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: gradient,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradient.colors.first.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: ColorManager.white,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? ColorManager.white
+                            : ColorManager.grey1F2937,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? ColorManager.white70
+                            : ColorManager.grey6B7280,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: isDark
+                    ? ColorManager.white.withOpacity(0.3)
+                    : ColorManager.grey9CA3AF,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -111,10 +327,65 @@ class HelperImage {
           );
         }
       } else {
-        await context.read<OwnerCubit>().addProfileImage(source);
+        // Profile picture - pick image directly
         Navigator.of(context).pop();
+        
+        // Check permissions
+        bool hasPermission = await _checkAndRequestPermissions(source);
+        if (!hasPermission) {
+          SnackBarHelper.showError(
+            context,
+            'Permission denied. Please grant camera/gallery access in settings.',
+          );
+          return;
+        }
 
-        SnackBarHelper.showSuccess(context, 'Profile picture updated successfully!');
+        // Pick image
+        final XFile? pickedFile = await _imagePicker.pickImage(
+          source: source,
+          imageQuality: 80,
+          maxWidth: 1200,
+          maxHeight: 1200,
+        );
+
+        if (pickedFile != null) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+
+          try {
+            final profileUrl = await _uploadToCloudinary(File(pickedFile.path));
+            
+            // Save to Firestore in Users/Owners collection
+            final authCubit = context.read<AuthCubit>();
+            final currentUser = authCubit.getCurrentUser();
+            
+            if (currentUser != null) {
+              String collectionName = 'Users';
+              if (currentUser.role.toLowerCase().trim() == 'owner') {
+                collectionName = 'Owners';
+              } else if (currentUser.role.toLowerCase().trim() == 'admin') {
+                collectionName = 'Admin';
+              }
+
+              await FirebaseFirestore.instance
+                  .collection(collectionName)
+                  .doc(currentUser.uid)
+                  .update({'profileImageUrl': profileUrl});
+
+              // Reload user data to update the UI
+              await authCubit.reloadUserData();
+            }
+
+            Navigator.of(context).pop();
+            SnackBarHelper.showSuccess(context, 'تم تحديث الصورة الشخصية بنجاح!');
+          } catch (e) {
+            Navigator.of(context).pop();
+            SnackBarHelper.showError(context, 'خطأ في رفع الصورة: $e');
+          }
+        }
       }
     } catch (e) {
       if (Navigator.canPop(context)) Navigator.of(context).pop();
@@ -136,6 +407,42 @@ class HelperImage {
     _showImageSourceDialog(false, context);
   }
 
+  Future<bool> _checkAndRequestPermissions(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      PermissionStatus cameraStatus = await Permission.camera.status;
+      if (cameraStatus.isDenied) {
+        cameraStatus = await Permission.camera.request();
+      }
+      return cameraStatus.isGranted;
+    } else {
+      // On Android there are two common gallery permission sets:
+      // - older devices: READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE (Permission.storage)
+      // - Android 13+: separate media permissions (Permission.photos maps to READ_MEDIA_IMAGES)
+      // We'll try storage first, then photos, to cover both cases.
+      if (Platform.isAndroid) {
+        PermissionStatus storageStatus = await Permission.storage.status;
+        if (storageStatus.isDenied) {
+          storageStatus = await Permission.storage.request();
+        }
+        if (storageStatus.isGranted) return true;
+
+        // Fallback / Android 13+
+        PermissionStatus photosStatus = await Permission.photos.status;
+        if (photosStatus.isDenied) {
+          photosStatus = await Permission.photos.request();
+        }
+        return photosStatus.isGranted;
+      } else {
+        // iOS: request photos permission
+        PermissionStatus photosStatus = await Permission.photos.status;
+        if (photosStatus.isDenied) {
+          photosStatus = await Permission.photos.request();
+        }
+        return photosStatus.isGranted;
+      }
+    }
+  }
+
   Future<void> submitForm(
     BuildContext context,
     GlobalKey<FormState> formKey,
@@ -143,8 +450,8 @@ class HelperImage {
     final data = context.read<OwnerCubit>().currentData;
     if (!formKey.currentState!.validate()) return;
 
-    if (data.profileImage == null || data.uploadedImages.isEmpty) {
-      SnackBarHelper.showWarning(context, 'Upload profile & chalet images');
+    if (data.uploadedImages.isEmpty) {
+      SnackBarHelper.showWarning(context, 'Upload chalet images');
       return;
     }
     if ((data.chaletName?.isEmpty ?? true) ||
@@ -163,8 +470,6 @@ class HelperImage {
     );
 
     try {
-      final profileUrl = await _uploadToCloudinary(data.profileImage!);
-
       // Upload all chalet images concurrently for better performance
       List<String> chaletImageUrls = await Future.wait(
         data.uploadedImages.map((img) => _uploadToCloudinary(img)),
@@ -180,7 +485,6 @@ class HelperImage {
       final firestore = FirebaseFirestore.instance;
       final docRef = await firestore.collection("chalets").add({
         "ownerId": ownerId, // 🆕 Add ownerId
-        "profileImage": profileUrl,
         "images": chaletImageUrls,
         "location": data.selectedLocation,
         "phoneNumber": data.phoneNumber,
@@ -220,7 +524,6 @@ class HelperImage {
       final realtimeDB = FirebaseDatabase.instance.ref("chalets");
       await realtimeDB.child(docRef.id).set({
         "ownerId": ownerId, // 🆕 Add ownerId
-        "profileImage": profileUrl,
         "images": chaletImageUrls,
         "location": data.selectedLocation,
         "phoneNumber": data.phoneNumber,

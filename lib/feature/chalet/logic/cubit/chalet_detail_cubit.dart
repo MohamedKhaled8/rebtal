@@ -3,7 +3,6 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:meta/meta.dart';
 import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 
 part 'chalet_detail_state.dart';

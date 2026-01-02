@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class CurvedTopClipper extends CustomClipper<Path> {
   @override
@@ -40,7 +41,7 @@ class GeometricPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = ColorManager.white.withOpacity(0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -63,7 +64,7 @@ class GeometricPatternPainter extends CustomPainter {
 
     // Draw connecting dots
     final dotPaint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = ColorManager.white.withOpacity(0.2)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < 15; i++) {

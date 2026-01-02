@@ -6,17 +6,18 @@ import 'package:rebtal/feature/admin/widget/request/rejected_requests_tab.dart';
 import 'package:rebtal/feature/admin/widget/user/user_tab.dart';
 import 'package:rebtal/feature/admin/ui/admin_payments_page.dart';
 import 'package:rebtal/feature/admin/ui/admin_cancellations_page.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class UserManager {
   /// لون حسب الدور
   static Color roleColor(String r) {
     switch (r.toLowerCase()) {
       case 'admin':
-        return Colors.red;
+        return ColorManager.red;
       case 'owner':
-        return Colors.orange;
+        return ColorManager.orange;
       default:
-        return Colors.blue;
+        return ColorManager.primaryColor;
     }
   }
 
@@ -62,17 +63,17 @@ class UserManager {
 
     showDialog(
       context: ctx,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: ColorManager.black.withOpacity(0.5),
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         insetPadding: const EdgeInsets.all(20),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+                color: ColorManager.black.withOpacity(isDark ? 0.5 : 0.1),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -92,15 +93,15 @@ class UserManager {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF2D2D44)
-                              : const Color(0xFF667EEA).withOpacity(0.1),
+                              ? ColorManager.darkGrey2D2D44
+                              : ColorManager.indigo6366F1.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           Icons.edit_rounded,
                           color: isDark
-                              ? const Color(0xFF667EEA)
-                              : const Color(0xFF667EEA),
+                              ? ColorManager.indigo6366F1
+                              : ColorManager.indigo6366F1,
                           size: 24,
                         ),
                       ),
@@ -114,7 +115,7 @@ class UserManager {
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
+                                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -123,8 +124,8 @@ class UserManager {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: isDark
-                                    ? Colors.white70
-                                    : Colors.grey[600],
+                                    ? ColorManager.white70
+                                    : ColorManager.grey600,
                               ),
                             ),
                           ],
@@ -134,7 +135,7 @@ class UserManager {
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close_rounded,
-                          color: isDark ? Colors.white70 : Colors.grey[600],
+                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         ),
                       ),
                     ],
@@ -200,7 +201,7 @@ class UserManager {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: const Text('الرجاء إدخال الاسم'),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: ColorManager.red,
                                 ),
                               );
                               return;
@@ -211,7 +212,7 @@ class UserManager {
                                   content: const Text(
                                     'الرجاء إدخال البريد الإلكتروني',
                                   ),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: ColorManager.red,
                                 ),
                               );
                               return;
@@ -222,7 +223,7 @@ class UserManager {
                                   content: const Text(
                                     'الرجاء إدخال كلمة المرور',
                                   ),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: ColorManager.red,
                                 ),
                               );
                               return;
@@ -257,7 +258,7 @@ class UserManager {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('خطأ: $e'),
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: ColorManager.red,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
@@ -293,12 +294,12 @@ class UserManager {
       decoration: BoxDecoration(
         color: isDark
             ? const Color(0xFF2D2D44).withOpacity(0.5)
-            : Colors.grey[50],
+            : ColorManager.grey50,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.grey[300]!,
+              ? ColorManager.white.withOpacity(0.1)
+              : ColorManager.grey300,
           width: 1,
         ),
       ),
@@ -306,13 +307,13 @@ class UserManager {
         controller: controller,
         keyboardType: keyboardType,
         style: TextStyle(
-          color: isDark ? Colors.white : Colors.black87,
+          color: isDark ? ColorManager.white : ColorManager.black87,
           fontSize: 16,
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            color: isDark ? Colors.white70 : Colors.grey[600],
+            color: isDark ? ColorManager.white70 : ColorManager.grey600,
             fontSize: 14,
           ),
           prefixIcon: Icon(
@@ -363,12 +364,12 @@ class UserManager {
             ? LinearGradient(
                 colors: isDark
                     ? [
-                        const Color(0xFF667EEA),
-                        const Color(0xFF764BA2),
+                        ColorManager.indigo6366F1,
+                        ColorManager.purple764BA2,
                       ]
                     : [
-                        const Color(0xFF667EEA),
-                        const Color(0xFF764BA2),
+                        ColorManager.indigo6366F1,
+                        ColorManager.purple764BA2,
                       ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -377,14 +378,14 @@ class UserManager {
         color: isPrimary
             ? null
             : (isDark
-                ? const Color(0xFF2D2D44)
-                : Colors.grey[200]),
+                ? ColorManager.darkGrey2D2D44
+                : ColorManager.grey200),
         border: isPrimary
             ? null
             : Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.grey[300]!,
+                    ? ColorManager.white.withOpacity(0.2)
+                    : ColorManager.grey300,
               ),
       ),
       child: Material(
@@ -397,8 +398,8 @@ class UserManager {
               label,
               style: TextStyle(
                 color: isPrimary
-                    ? Colors.white
-                    : (isDark ? Colors.white70 : Colors.black87),
+                    ? ColorManager.white
+                    : (isDark ? ColorManager.white70 : ColorManager.black87),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -419,17 +420,17 @@ class UserManager {
     
     showDialog(
       context: ctx,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: ColorManager.black.withOpacity(0.5),
       builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         insetPadding: const EdgeInsets.all(20),
         child: Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+            color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+                color: ColorManager.black.withOpacity(isDark ? 0.5 : 0.1),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),
@@ -458,7 +459,7 @@ class UserManager {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? ColorManager.white : ColorManager.black87,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -467,7 +468,7 @@ class UserManager {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark ? Colors.white70 : Colors.grey[600],
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -495,7 +496,7 @@ class UserManager {
                           ),
                         ),
                         child: Material(
-                          color: Colors.transparent,
+                          color: ColorManager.transparent,
                           child: InkWell(
                             onTap: () async {
                               try {
@@ -521,7 +522,7 @@ class UserManager {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('خطأ: $e'),
-                                    backgroundColor: Colors.red,
+                                    backgroundColor: ColorManager.red,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
@@ -535,7 +536,7 @@ class UserManager {
                               child: Text(
                                 'حذف',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -575,7 +576,7 @@ class UserManager {
       case 'pending':
         return Colors.orange;
       default:
-        return Colors.grey;
+        return ColorManager.grey;
     }
   }
 
@@ -633,12 +634,12 @@ class _PasswordFieldWidgetState extends State<_PasswordFieldWidget> {
       decoration: BoxDecoration(
         color: widget.isDark
             ? const Color(0xFF2D2D44).withOpacity(0.5)
-            : Colors.grey[50],
+            : ColorManager.grey50,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: widget.isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.grey[300]!,
+              ? ColorManager.white.withOpacity(0.1)
+              : ColorManager.grey300,
           width: 1,
         ),
       ),

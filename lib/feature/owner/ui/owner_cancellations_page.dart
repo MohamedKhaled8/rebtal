@@ -5,6 +5,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class OwnerCancellationsPage extends StatelessWidget {
   const OwnerCancellationsPage({super.key});
@@ -15,14 +16,14 @@ class OwnerCancellationsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF121212)
-          : const Color(0xFFF9F9F9),
+          ? ColorManager.darkBackground121212
+          : ColorManager.lightGreyF9F9F9,
       appBar: AppBar(
         title: const Text('سجل الإلغاءات'),
         centerTitle: true,
-        backgroundColor: isDark ? Colors.transparent : Colors.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
-        foregroundColor: isDark ? Colors.white : Colors.black,
+        foregroundColor: isDark ? ColorManager.white : ColorManager.black,
       ),
       body: BlocBuilder<BookingCubit, BookingState>(
         builder: (context, state) {
@@ -45,14 +46,14 @@ class OwnerCancellationsPage extends StatelessWidget {
                   Icon(
                     Icons.check_circle_outline,
                     size: 80,
-                    color: isDark ? Colors.white24 : Colors.grey.shade300,
+                    color: isDark ? ColorManager.white24 : ColorManager.grey300,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'لا توجد حجوزات ملغاة',
                     style: TextStyle(
                       fontSize: 18,
-                      color: isDark ? Colors.white60 : Colors.grey,
+                      color: isDark ? ColorManager.white70 : ColorManager.grey,
                     ),
                   ),
                 ],
@@ -99,11 +100,11 @@ class _CancelledBookingCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: ColorManager.black.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -115,7 +116,7 @@ class _CancelledBookingCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: ColorManager.red.withOpacity(0.1),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
               ),
@@ -125,12 +126,12 @@ class _CancelledBookingCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
-                    color: Colors.red,
+                    color: ColorManager.red,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.close_rounded,
-                    color: Colors.white,
+                    color: ColorManager.white,
                     size: 16,
                   ),
                 ),
@@ -138,7 +139,7 @@ class _CancelledBookingCard extends StatelessWidget {
                 const Text(
                   'تم الإلغاء',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: ColorManager.red,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -147,7 +148,7 @@ class _CancelledBookingCard extends StatelessWidget {
                 Text(
                   dateFormat.format(cancelDate),
                   style: TextStyle(
-                    color: isDark ? Colors.white60 : Colors.grey.shade600,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
                     fontSize: 14,
                   ),
                 ),
@@ -166,7 +167,7 @@ class _CancelledBookingCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -174,7 +175,7 @@ class _CancelledBookingCard extends StatelessWidget {
                   '#${booking.id.substring(0, 8)}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? Colors.white54 : Colors.grey,
+                    color: isDark ? ColorManager.white70 : ColorManager.grey,
                   ),
                 ),
 
@@ -189,24 +190,24 @@ class _CancelledBookingCard extends StatelessWidget {
                       child: _buildFinancialItem(
                         'المبلغ الأصلي',
                         currencyFormat.format(originalAmount),
-                        isDark ? Colors.white70 : Colors.grey.shade700,
-                        isDark ? Colors.white : Colors.black,
+                        isDark ? ColorManager.white70 : ColorManager.grey700,
+                        isDark ? ColorManager.white : ColorManager.black,
                       ),
                     ),
                     Expanded(
                       child: _buildFinancialItem(
                         'المسترد للعميل',
                         currencyFormat.format(refundAmount),
-                        Colors.red.withOpacity(0.7),
-                        Colors.red,
+                        ColorManager.red.withOpacity(0.7),
+                        ColorManager.red,
                       ),
                     ),
                     Expanded(
                       child: _buildFinancialItem(
                         'صافي لك',
                         currencyFormat.format(keptAmount),
-                        Colors.green.withOpacity(0.7),
-                        Colors.green,
+                        ColorManager.green.withOpacity(0.7),
+                        ColorManager.green,
                       ),
                     ),
                   ],
@@ -219,11 +220,11 @@ class _CancelledBookingCard extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.grey.shade50,
+                        ? ColorManager.white.withOpacity(0.05)
+                        : ColorManager.grey50,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.grey.shade200,
+                      color: isDark ? ColorManager.white10 : ColorManager.grey200,
                     ),
                   ),
                   child: Column(
@@ -248,7 +249,7 @@ class _CancelledBookingCard extends StatelessWidget {
                           'سبب/سياسة',
                           booking.refundReason!,
                           isDark,
-                          textColor: Colors.orange,
+                          textColor: ColorManager.orange,
                         ),
                       ],
                     ],
@@ -265,8 +266,8 @@ class _CancelledBookingCard extends StatelessWidget {
                     icon: const Icon(Icons.phone),
                     label: const Text('تواصل مع العميل'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
+                      backgroundColor: ColorManager.whatsappGreen,
+                      foregroundColor: ColorManager.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -318,7 +319,7 @@ class _CancelledBookingCard extends StatelessWidget {
         Icon(
           icon,
           size: 18,
-          color: isDark ? Colors.white38 : Colors.grey.shade400,
+          color: isDark ? ColorManager.white70 : ColorManager.grey400,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -329,14 +330,14 @@ class _CancelledBookingCard extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? Colors.white38 : Colors.grey.shade500,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey700,
                 ),
               ),
               Text(
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: textColor ?? (isDark ? Colors.white : Colors.black87),
+                  color: textColor ?? (isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
                   fontWeight: FontWeight.w500,
                 ),
               ),

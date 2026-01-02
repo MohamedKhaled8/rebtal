@@ -57,10 +57,10 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0A0E27)
-          : const Color(0xFFF5F7FA),
+          ? ColorManager.darkBackground0A0E27
+          : ColorManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         elevation: 0,
         title: const Text(
           'طلب استرداد',
@@ -78,10 +78,10 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? Colors.white12 : Colors.grey.shade300,
+                    color: isDark ? ColorManager.white10 : ColorManager.grey300,
                   ),
                 ),
                 child: Column(
@@ -100,7 +100,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                           ),
                         ),
                       ],
@@ -131,8 +131,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _refundPercentage > 0
-                        ? [Colors.green.shade600, Colors.green.shade700]
-                        : [Colors.red.shade600, Colors.red.shade700],
+                        ? [ColorManager.green, ColorManager.chaletActionDarkGreen]
+                        : [ColorManager.red, ColorManager.chaletActionDarkRed],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -157,7 +157,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: ColorManager.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -166,7 +166,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 'نسبة الاسترداد',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white70,
+                                  color: ColorManager.white70,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -175,7 +175,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                 ),
                               ),
                             ],
@@ -188,7 +188,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: ColorManager.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -197,7 +197,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 'المبلغ المسترد',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white70,
+                                  color: ColorManager.white70,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -206,7 +206,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                 ),
                               ),
                             ],
@@ -238,17 +238,17 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 decoration: InputDecoration(
                   hintText: 'يرجى توضيح سبب إلغاء الحجز...',
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  fillColor: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -259,7 +259,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     ),
                   ),
                 ),
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                style: TextStyle(color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
               ),
 
               const SizedBox(height: 24),
@@ -269,15 +269,15 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: ColorManager.red.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    border: Border.all(color: ColorManager.red.withOpacity(0.3)),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: Colors.red.shade700,
+                        color: ColorManager.chaletActionDarkRed,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -286,7 +286,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           'لن يتم استرداد أي مبلغ حسب سياسة الإلغاء',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.red.shade700,
+                            color: ColorManager.chaletActionDarkRed,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -331,8 +331,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    foregroundColor: Colors.white,
+                    backgroundColor: ColorManager.red,
+                    foregroundColor: ColorManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -381,7 +381,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
           label,
           style: TextStyle(
             fontSize: 14,
-            color: isDark ? Colors.white60 : Colors.grey.shade600,
+            color: isDark ? ColorManager.white70 : ColorManager.grey600,
           ),
         ),
         Text(

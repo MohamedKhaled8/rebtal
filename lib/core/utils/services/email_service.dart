@@ -310,7 +310,7 @@ class EmailService {
 
       <div class="alert-box">
         <p class="alert-text">Your booking #${booking.id.substring(0, 8)} has been cancelled.</p>
-        <p style="margin: 5px 0 0 0; font-size: 14px;">${policyMessage}</p>
+        <p style="margin: 5px 0 0 0; font-size: 14px;">$policyMessage</p>
       </div>
 
       <table class="details-table">

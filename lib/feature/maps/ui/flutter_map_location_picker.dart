@@ -5,7 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class FlutterGoogleMapLocationPicker extends StatefulWidget {
   final String? initialAddress;
@@ -27,7 +29,7 @@ class FlutterGoogleMapLocationPicker extends StatefulWidget {
 class _FlutterGoogleMapLocationPickerState
     extends State<FlutterGoogleMapLocationPicker> {
   // ✅ Google Maps Controller
-  Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _controller = Completer();
 
   // ✅ Google Maps API Key (Used ONLY for Map Rendering now)
 
@@ -261,6 +263,8 @@ class _FlutterGoogleMapLocationPickerState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -291,7 +295,10 @@ class _FlutterGoogleMapLocationPickerState
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.black.withOpacity(0.3), Colors.transparent],
+                  colors: [
+                    ColorManager.black.withOpacity(0.3),
+                    ColorManager.transparent,
+                  ],
                 ),
               ),
               child: SafeArea(
@@ -303,19 +310,23 @@ class _FlutterGoogleMapLocationPickerState
                         children: [
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark
+                                  ? ColorManager.white.withOpacity(0.1)
+                                  : ColorManager.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: ColorManager.black.withOpacity(0.1),
                                   blurRadius: 8,
                                 ),
                               ],
                             ),
                             child: IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.arrow_back),
-                              color: Colors.black87,
+                              icon: Icon(Icons.arrow_back),
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletGrey800,
                             ),
                           ),
                           const SizedBox(width: 12),

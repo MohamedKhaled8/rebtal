@@ -14,7 +14,12 @@ class AppTheme {
         backgroundColor: ColorManager.white,
         centerTitle: true,
         scrolledUnderElevation: 0.0,
-        iconTheme: IconThemeData(color: ColorManager.white),
+        iconTheme: IconThemeData(color: ColorManager.black),
+        titleTextStyle: TextStyle(
+          color: ColorManager.black,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       primaryColor: primaryColor,
       colorScheme: ColorScheme.fromSeed(
@@ -34,8 +39,13 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         scrolledUnderElevation: 0.0,
-        backgroundColor: ColorManager.mainBlue,
-        iconTheme: IconThemeData(color: ColorManager.black),
+        backgroundColor: ColorManager.transparent,
+        iconTheme: IconThemeData(color: ColorManager.white),
+        titleTextStyle: TextStyle(
+          color: ColorManager.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       primaryColor: primaryColor,
       colorScheme: ColorScheme.fromSeed(

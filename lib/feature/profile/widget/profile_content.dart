@@ -21,6 +21,8 @@ import 'package:rebtal/feature/profile/ui/privacy_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/delivery_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
 import 'package:rebtal/feature/localization/language_selection_page.dart';
+import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileContent extends StatelessWidget {
   final UserModel user;
@@ -63,7 +65,7 @@ class ProfileContent extends StatelessWidget {
                                 ColorManager.profileGradientDark2,
                               ]
                             : [
-                                Colors.white,
+                                ColorManager.white,
                                 ColorManager.profileBackgroundLight,
                               ],
                       ),
@@ -78,31 +80,105 @@ class ProfileContent extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                ColorManager.profileAccent.withOpacity(0.6),
-                                ColorManager.profileAccent.withOpacity(0.2),
-                              ],
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 52,
-                            backgroundColor: ColorManager.getProfileSurfaceAlt(
-                              isDark,
-                            ),
-                            child: Text(
-                              user.name.isNotEmpty
-                                  ? user.name[0].toUpperCase()
-                                  : 'U',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: ColorManager.profileAccent,
+                        GestureDetector(
+                          onTap: () => HelperImage().addProfilePicture(context),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  ColorManager.profileAccent.withOpacity(0.6),
+                                  ColorManager.profileAccent.withOpacity(0.2),
+                                ],
                               ),
+                            ),
+                            child: Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 52,
+                                  backgroundColor:
+                                      ColorManager.getProfileSurfaceAlt(isDark),
+                                  child:
+                                      user.profileImageUrl != null &&
+                                          user.profileImageUrl!.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            52,
+                                          ),
+                                          child: CachedNetworkImage(
+                                            imageUrl: user.profileImageUrl!,
+                                            fit: BoxFit.cover,
+                                            width: 104,
+                                            height: 104,
+                                            placeholder: (context, url) => Container(
+                                              color:
+                                                  ColorManager.getProfileSurfaceAlt(
+                                                    isDark,
+                                                  ),
+                                              child: Center(
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(
+                                                        ColorManager
+                                                            .profileAccent,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) => Text(
+                                                  user.name.isNotEmpty
+                                                      ? user.name[0]
+                                                            .toUpperCase()
+                                                      : 'U',
+                                                  style: TextStyle(
+                                                    fontSize: 36,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: ColorManager
+                                                        .profileAccent,
+                                                  ),
+                                                ),
+                                          ),
+                                        )
+                                      : Text(
+                                          user.name.isNotEmpty
+                                              ? user.name[0].toUpperCase()
+                                              : 'U',
+                                          style: TextStyle(
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.bold,
+                                            color: ColorManager.profileAccent,
+                                          ),
+                                        ),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: ColorManager.profileAccent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color:
+                                            ColorManager.getProfileSurfaceAlt(
+                                              isDark,
+                                            ),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt,
+                                      size: 16,
+                                      color: ColorManager.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -176,7 +252,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.verified_user,
                           value: 'نشط',
                           label: 'حالة الحساب',
-                          color: const Color(0xFF3DDC84),
+                          color: ColorManager.green3DDC84,
                         ),
                       ),
                     ],
@@ -188,8 +264,8 @@ class ProfileContent extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withOpacity(0.06)
-                            : Colors.black.withOpacity(0.1),
+                            ? ColorManager.white.withOpacity(0.06)
+                            : ColorManager.black.withOpacity(0.1),
                       ),
                     ),
                     child: Column(
@@ -236,13 +312,13 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.phone_outlined,
                           label: 'رقم الهاتف',
                           value: user.phone,
-                          iconColor: const Color(0xFF3DDC84),
+                          iconColor: ColorManager.green3DDC84,
                         ),
                         ModernProfileItem(
                           icon: Icons.access_time,
                           label: 'تاريخ الإنشاء',
                           value: ProfileHelper.formatDate(user.createdAt),
-                          iconColor: const Color(0xFFEAB308),
+                          iconColor: ColorManager.yellowEAB308,
                           isLast: true,
                         ),
                       ],
@@ -259,8 +335,8 @@ class ProfileContent extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark
-                              ? Colors.white.withOpacity(0.06)
-                              : Colors.black.withOpacity(0.1),
+                              ? ColorManager.white.withOpacity(0.06)
+                              : ColorManager.black.withOpacity(0.1),
                         ),
                       ),
                       child: Column(
@@ -300,7 +376,7 @@ class ProfileContent extends StatelessWidget {
                             icon: Icons.check_circle_outline,
                             title: 'الشاليهات الموافق عليها',
                             subtitle: 'عرض الشاليهات المقبولة',
-                            color: const Color(0xFF3DDC84),
+                            color: ColorManager.green3DDC84,
                             onTap: () =>
                                 onNavigateToChalets(context, 'approved'),
                           ),
@@ -308,7 +384,7 @@ class ProfileContent extends StatelessWidget {
                             icon: Icons.cancel_outlined,
                             title: 'الشاليهات المرفوضة',
                             subtitle: 'عرض الشاليهات المرفوضة',
-                            color: const Color(0xFFEF4444),
+                            color: ColorManager.chaletUnavailableRed,
                             onTap: () =>
                                 onNavigateToChalets(context, 'rejected'),
                             isLast: true,
@@ -324,8 +400,8 @@ class ProfileContent extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withOpacity(0.06)
-                            : Colors.black.withOpacity(0.1),
+                            ? ColorManager.white.withOpacity(0.06)
+                            : ColorManager.black.withOpacity(0.1),
                       ),
                     ),
                     child: Column(
@@ -339,15 +415,19 @@ class ProfileContent extends StatelessWidget {
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? Colors.white.withValues(alpha: 0.06)
-                                      : Colors.black.withValues(alpha: 0.06),
+                                      ? ColorManager.white.withValues(
+                                          alpha: 0.06,
+                                        )
+                                      : ColorManager.black.withValues(
+                                          alpha: 0.06,
+                                        ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   Icons.settings_outlined,
                                   color: isDark
-                                      ? Colors.white70
-                                      : Colors.black54,
+                                      ? ColorManager.white70
+                                      : ColorManager.grey600,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -381,7 +461,7 @@ class ProfileContent extends StatelessWidget {
                                 subtitle: isOwnerView
                                     ? 'تصفح التطبيق كمستخدم'
                                     : 'العودة للوحة التحكم',
-                                color: const Color(0xFF2563EB),
+                                color: ColorManager.blue2563EB,
                                 onTap: () {
                                   bottomNavIndex.value = 0;
                                   context.read<AuthCubit>().toggleViewMode();
@@ -415,7 +495,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.translate,
                           title: 'اللغة',
                           subtitle: 'اختيار لغة العرض | Language',
-                          color: const Color(0xFFEAB308),
+                          color: ColorManager.yellowEAB308,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -430,7 +510,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.receipt_long_outlined,
                           title: 'الفواتير',
                           subtitle: 'عرض وتتبع فواتيرك ومدفوعاتك',
-                          color: const Color(0xFF10B981),
+                          color: ColorManager.chaletActionGreen,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -448,15 +528,15 @@ class ProfileContent extends StatelessWidget {
                           child: Divider(
                             height: 1,
                             color: isDark
-                                ? Colors.white10
-                                : Colors.black.withValues(alpha: 0.05),
+                                ? ColorManager.white10
+                                : ColorManager.black.withValues(alpha: 0.05),
                           ),
                         ),
                         ModernActionTile(
                           icon: Icons.contact_support_outlined,
                           title: 'اتصل بنا',
                           subtitle: 'لديك استفسار؟ تواصل معنا',
-                          color: const Color(0xFF06B6D4),
+                          color: ColorManager.cyan06B6D4,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -470,7 +550,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.info_outline,
                           title: 'عن التطبيق',
                           subtitle: 'تعرف على المزيد عنا',
-                          color: const Color(0xFF8B5CF6),
+                          color: ColorManager.purple8B5CF6,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -484,7 +564,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.privacy_tip_outlined,
                           title: 'سياسة الخصوصية',
                           subtitle: 'كيف نحمي بياناتك',
-                          color: const Color(0xFF10B981),
+                          color: ColorManager.chaletActionGreen,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -498,7 +578,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.local_shipping_outlined,
                           title: 'سياسة الحجز',
                           subtitle: 'شروط الحجز والتأكيد',
-                          color: const Color(0xFFF59E0B),
+                          color: ColorManager.bookingsWarningOrange,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -512,7 +592,7 @@ class ProfileContent extends StatelessWidget {
                           icon: Icons.cancel_outlined,
                           title: 'سياسة الإلغاء والاسترجاع',
                           subtitle: 'شروط الإلغاء والاسترداد',
-                          color: const Color(0xFFEC4899),
+                          color: ColorManager.chaletGalleryPink,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -530,8 +610,8 @@ class ProfileContent extends StatelessWidget {
                           child: Divider(
                             height: 1,
                             color: isDark
-                                ? Colors.white10
-                                : Colors.black.withValues(alpha: 0.05),
+                                ? ColorManager.white10
+                                : ColorManager.black.withValues(alpha: 0.05),
                           ),
                         ),
                         ModernActionTile(

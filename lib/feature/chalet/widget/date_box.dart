@@ -21,10 +21,10 @@ class DateBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark
               ? ColorManager.chaletIconBackgroundDark
-              : const Color(0xFFF9FAFB),
+              : ColorManager.greyF9FAFB,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
+            color: isDark ? ColorManager.white10 : ColorManager.greyE5E7EB,
           ),
         ),
         child: Column(
@@ -37,7 +37,7 @@ class DateBox extends StatelessWidget {
                   size: 16,
                   color: isDark
                       ? ColorManager.chaletTextSecondaryDark
-                      : const Color(0xFF6B7280),
+                      : ColorManager.grey6B7280,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -47,7 +47,7 @@ class DateBox extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: isDark
                         ? ColorManager.chaletTextSecondaryDark
-                        : const Color(0xFF6B7280),
+                        : ColorManager.grey6B7280,
                   ),
                 ),
               ],
@@ -60,7 +60,7 @@ class DateBox extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 color: isDark
                     ? ColorManager.chaletTextPrimaryDark
-                    : const Color(0xFF1F2937),
+                    : ColorManager.grey1F2937,
               ),
             ),
           ],

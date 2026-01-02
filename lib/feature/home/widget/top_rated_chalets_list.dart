@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 
 class TopRatedChaletsList extends StatelessWidget {
@@ -79,7 +80,7 @@ class _TopRatedChaletCard extends StatelessWidget {
           // Clean shadow
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: ColorManager.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -102,9 +103,9 @@ class _TopRatedChaletCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.2),
-                        Colors.black.withOpacity(0.8),
+                        ColorManager.transparent,
+                        ColorManager.black.withOpacity(0.2),
+                        ColorManager.black.withOpacity(0.8),
                       ],
                       stops: const [0.5, 0.7, 1.0],
                     ),

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class InlineLocationPicker extends StatefulWidget {
   final String initialQuery;
@@ -88,7 +89,7 @@ class _InlineLocationPickerState extends State<InlineLocationPicker> {
                       point: _selected,
                       child: const Icon(
                         Icons.location_on,
-                        color: Colors.red,
+                        color: ColorManager.red,
                         size: 36,
                       ),
                     ),
@@ -101,7 +102,7 @@ class _InlineLocationPickerState extends State<InlineLocationPicker> {
         const SizedBox(height: 8),
         Row(
           children: [
-            const Icon(Icons.place, size: 18, color: Colors.blueGrey),
+            Icon(Icons.place, size: 18, color: ColorManager.grey),
             const SizedBox(width: 6),
             Expanded(
               child: _loadingAddress

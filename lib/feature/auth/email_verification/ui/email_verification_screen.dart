@@ -1,293 +1,254 @@
-import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quickalert/quickalert.dart';
-import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/auth/email_verification/logic/email_verification_cubit.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
-class EmailVerificationScreen extends StatefulWidget {
+class EmailVerificationScreen extends StatelessWidget {
   final String email;
 
   const EmailVerificationScreen({super.key, required this.email});
 
   @override
-  State<EmailVerificationScreen> createState() =>
-      _EmailVerificationScreenState();
-}
+  Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
-class _EmailVerificationScreenState extends State<EmailVerificationScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  Timer? _timer;
-  bool _isEmailVerified = false;
-  bool _canResendEmail = false;
-  int _resendCountdown = 60;
-  Timer? _resendTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    )..forward();
-
-    // Start checking for email verification
-    _startVerificationCheck();
-
-    // Start resend cooldown
-    _startResendTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _resendTimer?.cancel();
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  void _startVerificationCheck() {
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      await FirebaseAuth.instance.currentUser?.reload();
-      final user = FirebaseAuth.instance.currentUser;
-      if (user?.emailVerified ?? false) {
-        timer.cancel();
-        setState(() {
-          _isEmailVerified = true;
-        });
-
-        if (mounted) {
-          // ✅ Notify AuthCubit that email is verified
-          await context.read<AuthCubit>().confirmEmailVerification();
-
+    return BlocListener<EmailVerificationCubit, EmailVerificationState>(
+      listener: (context, state) {
+        if (state is EmailVerificationVerified) {
+          context.read<EmailVerificationCubit>().handleVerified(context);
+        } else if (state is EmailVerificationEmailSent) {
           QuickAlert.show(
             context: context,
             type: QuickAlertType.success,
-            title: 'Verified!',
-            text: 'Your email has been verified successfully.',
-            autoCloseDuration: const Duration(seconds: 2),
-            showConfirmBtn: false,
+            title: 'تم الإرسال',
+            text: 'تم إرسال بريد التحقق مرة أخرى.',
           );
-
-          Future.delayed(const Duration(seconds: 2), () {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              Routes.bottomNavigationBarScreen, // Or homeScreen
-              (route) => false,
-            );
-          });
+        } else if (state is EmailVerificationError) {
+          QuickAlert.show(
+            context: context,
+            type: QuickAlertType.error,
+            title: 'خطأ',
+            text: state.message,
+          );
         }
-      }
-    });
-  }
+      },
+      child: BlocBuilder<EmailVerificationCubit, EmailVerificationState>(
+        builder: (context, state) {
+          final cubit = context.read<EmailVerificationCubit>();
+          final isVerified = state is EmailVerificationVerified;
+          final canResend = state is EmailVerificationCanResend;
+          final countdown = state is EmailVerificationResendCooldown
+              ? state.countdown
+              : 0;
 
-  void _startResendTimer() {
-    setState(() {
-      _canResendEmail = false;
-      _resendCountdown = 60;
-    });
-
-    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_resendCountdown > 0) {
-        setState(() {
-          _resendCountdown--;
-        });
-      } else {
-        timer.cancel();
-        setState(() {
-          _canResendEmail = true;
-        });
-      }
-    });
-  }
-
-  Future<void> _resendVerificationEmail() async {
-    if (!_canResendEmail) return;
-
-    try {
-      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.success,
-        title: 'Email Sent',
-        text: 'Verification email sent again.',
-      );
-      _startResendTimer();
-    } catch (e) {
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'Error',
-        text: 'Failed to send verification email. Please try again later.',
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          _buildBackground(),
-          SafeArea(
-            child: FadeTransition(
-              opacity: CurvedAnimation(
-                parent: _fadeController,
-                curve: Curves.easeIn,
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
+          return Scaffold(
+            backgroundColor: isDark
+                ? ColorManager.darkBackground121212
+                : ColorManager.grey50,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: 2.h),
-                    // Logout Button
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => cubit.logout(context),
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1E1E1E)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.logout_rounded,
+                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
                     Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: () async {
-                          await context.read<AuthCubit>().logout();
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            Routes.loginScreen,
-                            (route) => false,
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.logout_rounded,
-                          color: Colors.white,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          padding: const EdgeInsets.all(12),
-                        ),
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            isVerified ? 'تم التحقق!' : 'تحقق من بريدك',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'أرسلنا رابط التحقق إلى',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? ColorManager.indigo6366F1
+                                  : ColorManager.blue2563EB,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 500),
-                          child: _buildVerificationCard(),
-                        ),
+                    const SizedBox(height: 40),
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark
+                                ? Colors.black.withOpacity(0.3)
+                                : Colors.black.withOpacity(0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          if (isVerified)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'تم التحقق بنجاح!',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      isDark
+                                          ? const Color(0xFF667EEA)
+                                          : const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'في انتظار التحقق...',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(height: 32),
+                          TextButton(
+                            onPressed: canResend
+                                ? () => cubit.resendVerificationEmail()
+                                : null,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                            child: Text(
+                              canResend
+                                  ? 'إعادة إرسال البريد'
+                                  : 'إعادة الإرسال خلال $countdown ثانية',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: canResend
+                                    ? (isDark
+                                          ? const Color(0xFF667EEA)
+                                          : const Color(0xFF2563EB))
+                                    : (isDark
+                                          ? Colors.white.withOpacity(0.3)
+                                          : Colors.grey),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF667EEA)
+                                    : const Color(0xFF2563EB),
+                                width: 1.5,
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => cubit.checkVerificationStatus(),
+                                borderRadius: BorderRadius.circular(14),
+                                child: Center(
+                                  child: Text(
+                                    'تم التفعيل - التحقق الآن',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? const Color(0xFF667EEA)
+                                          : const Color(0xFF2563EB),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBackground() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          colors: [Color(0xFF0EA5E9), Color(0xFF1D4ED8)],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVerificationCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 1.w),
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 5.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF3B82F6).withOpacity(0.1),
-            ),
-            child: const Icon(
-              Icons.mark_email_unread_rounded,
-              size: 40,
-              color: Color(0xFF3B82F6),
-            ),
-          ),
-          SizedBox(height: 3.h),
-          Text(
-            'Check your email',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          SizedBox(height: 1.h),
-          Text(
-            'We sent a verification link to',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          SizedBox(height: 0.5.h),
-          Text(
-            widget.email,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 4.h),
-          if (_isEmailVerified)
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
-                Text(
-                  "Verified!",
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            )
-          else
-            const CircularProgressIndicator(),
-
-          SizedBox(height: 2.h),
-          Text(
-            'Waiting for verification...',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-          ),
-
-          SizedBox(height: 4.h),
-
-          TextButton(
-            onPressed: _canResendEmail ? _resendVerificationEmail : null,
-            child: Text(
-              _canResendEmail
-                  ? 'Resend Email'
-                  : 'Resend in $_resendCountdown s',
-              style: TextStyle(
-                color: _canResendEmail ? const Color(0xFF3B82F6) : Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

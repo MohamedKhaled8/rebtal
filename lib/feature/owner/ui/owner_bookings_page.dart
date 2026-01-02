@@ -6,6 +6,7 @@ import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_card.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class OwnerBookingsPage extends StatefulWidget {
   const OwnerBookingsPage({super.key});
@@ -36,8 +37,8 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF121212)
-          : const Color(0xFFF5F5F5),
+          ? ColorManager.darkBackground121212
+          : ColorManager.profileBackgroundLight,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -46,7 +47,7 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
             floating: true,
             pinned: false,
             elevation: 0,
-            backgroundColor: isDark ? Colors.transparent : Colors.white,
+            backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
             title: const Text(
               'حجوزاتي',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -56,7 +57,7 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
               IconButton(
                 icon: Icon(
                   Icons.refresh_rounded,
-                  color: isDark ? Colors.white : Colors.black,
+                  color: isDark ? ColorManager.white : ColorManager.black,
                 ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
@@ -143,8 +144,8 @@ class _OwnerBookingsPageState extends State<OwnerBookingsPage> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: isDark
-                                ? Colors.white70
-                                : Colors.grey.shade700,
+                                ? ColorManager.white70
+                                : ColorManager.grey700,
                           ),
                         ),
                       ],

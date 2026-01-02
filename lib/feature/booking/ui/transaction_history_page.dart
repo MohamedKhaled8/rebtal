@@ -28,10 +28,10 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0A0E27)
-          : const Color(0xFFF5F7FA),
+          ? ColorManager.darkBackground0A0E27
+          : ColorManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         elevation: 0,
         title: Text(
           widget.isOwner ? 'تقرير الإيرادات' : 'سجل المعاملات',
@@ -53,7 +53,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       widget.isOwner ? 'إجمالي الإيرادات' : 'إجمالي المصروفات',
                       widget.isOwner ? _totalEarnings : _totalSpent,
                       Icons.account_balance_wallet,
-                      Colors.green,
+                      ColorManager.green,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -63,7 +63,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       'عدد المعاملات',
                       0,
                       Icons.receipt_long,
-                      Colors.blue,
+                      ColorManager.primaryColor,
                     ),
                   ),
                 ],
@@ -121,14 +121,14 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           Icon(
                             Icons.receipt_long,
                             size: 64,
-                            color: Colors.grey.shade400,
+                            color: ColorManager.grey400,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'لا توجد معاملات',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey.shade600,
+                              color: ColorManager.grey600,
                             ),
                           ),
                         ],
@@ -228,11 +228,11 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white, size: 24),
+          Icon(icon, color: ColorManager.white, size: 24),
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.white70),
+            style: const TextStyle(fontSize: 12, color: ColorManager.white70),
           ),
           const SizedBox(height: 4),
           Text(
@@ -240,7 +240,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: ColorManager.white,
             ),
           ),
         ],
@@ -259,19 +259,19 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           _selectedFilter = value;
         });
       },
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      backgroundColor: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
       selectedColor: ColorManager.chaletAccent.withOpacity(0.2),
       checkmarkColor: ColorManager.chaletAccent,
       labelStyle: TextStyle(
         color: isSelected
             ? ColorManager.chaletAccent
-            : (isDark ? Colors.white70 : Colors.grey.shade700),
+            : (isDark ? ColorManager.white70 : ColorManager.grey700),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       side: BorderSide(
         color: isSelected
             ? ColorManager.chaletAccent
-            : (isDark ? Colors.white12 : Colors.grey.shade300),
+            : (isDark ? ColorManager.white10 : ColorManager.grey300),
       ),
     );
   }
@@ -323,7 +323,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -331,7 +331,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       _formatDate(booking.from),
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? Colors.white60 : Colors.grey.shade600,
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                       ),
                     ),
                   ],
@@ -349,10 +349,10 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: isRefund
-                          ? Colors.green.shade600
+                          ? ColorManager.chaletActionGreen
                           : (widget.isOwner
-                                ? Colors.green.shade600
-                                : Colors.red.shade600),
+                                ? ColorManager.chaletActionGreen
+                                : ColorManager.red),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -369,7 +369,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
           ),
 
           const SizedBox(height: 12),
-          Divider(color: isDark ? Colors.white12 : Colors.grey.shade300),
+          Divider(color: isDark ? ColorManager.white10 : ColorManager.grey300),
           const SizedBox(height: 12),
 
           Row(
@@ -383,7 +383,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
               if (booking.paymentMethod != null)
                 _buildInfoChip(
                   _getPaymentMethodText(booking.paymentMethod!),
-                  Colors.blue.shade600,
+                  ColorManager.chaletActionDarkBlue,
                   isDark,
                 ),
             ],
@@ -394,16 +394,16 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: ColorManager.orange.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: ColorManager.orange.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.info_outline,
                     size: 16,
-                    color: Colors.orange.shade700,
+                    color: ColorManager.orange,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -411,7 +411,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       'تم استرداد ${booking.refundAmount!.toStringAsFixed(0)} جنيه',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.orange.shade700,
+                        color: ColorManager.orange,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -447,13 +447,13 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   Color _getStatusColor(BookingStatus status) {
     switch (status) {
       case BookingStatus.confirmed:
-        return Colors.green.shade600;
+        return ColorManager.chaletActionGreen;
       case BookingStatus.completed:
-        return Colors.blue.shade600;
+        return ColorManager.chaletActionDarkBlue;
       case BookingStatus.cancelled:
-        return Colors.red.shade600;
+        return ColorManager.red;
       default:
-        return Colors.grey.shade600;
+        return ColorManager.grey600;
     }
   }
 

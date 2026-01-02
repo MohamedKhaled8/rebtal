@@ -14,10 +14,10 @@ class BookingSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final GlobalKey _repaintKey = GlobalKey();
+    final GlobalKey repaintKey = GlobalKey();
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
+      backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -28,14 +28,14 @@ class BookingSuccessPage extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.green.shade50,
+                      ? ColorManager.green.withOpacity(0.2)
+                      : ColorManager.chaletAvailableLightGreen,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle_outline_rounded,
                   size: 80,
-                  color: Colors.green.shade600,
+                  color: ColorManager.chaletActionGreen,
                 ),
               ),
               const SizedBox(height: 32),
@@ -44,7 +44,7 @@ class BookingSuccessPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -53,7 +53,7 @@ class BookingSuccessPage extends StatelessWidget {
                 'طلبك قيد المراجعة الآن من قبل المالك.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDark ? Colors.white70 : Colors.black54,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -67,14 +67,14 @@ class BookingSuccessPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Wrap invoice in RepaintBoundary for screenshot/PDF
                 RepaintBoundary(
-                  key: _repaintKey,
+                  key: repaintKey,
                   child: BookingTicketWidget(
                     booking: booking!,
                     ownerPhone: booking!.ownerPhone,
@@ -90,7 +90,7 @@ class BookingSuccessPage extends StatelessWidget {
                         onPressed: () {
                           InvoiceService.printInvoice(
                             context,
-                            _repaintKey,
+                            repaintKey,
                             booking!,
                           );
                         },
@@ -98,11 +98,11 @@ class BookingSuccessPage extends StatelessWidget {
                         label: const Text('طباعة'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: isDark
-                              ? Colors.white
+                              ? ColorManager.white
                               : ColorManager.chaletAccent,
                           side: BorderSide(
                             color: isDark
-                                ? Colors.white.withOpacity(0.3)
+                                ? ColorManager.white.withOpacity(0.3)
                                 : ColorManager.chaletAccent,
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -118,7 +118,7 @@ class BookingSuccessPage extends StatelessWidget {
                         onPressed: () {
                           InvoiceService.showSaveOptions(
                             context,
-                            _repaintKey,
+                            repaintKey,
                             booking!,
                           );
                         },
@@ -126,11 +126,11 @@ class BookingSuccessPage extends StatelessWidget {
                         label: const Text('حفظ'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: isDark
-                              ? Colors.white
+                              ? ColorManager.white
                               : ColorManager.chaletAccent,
                           side: BorderSide(
                             color: isDark
-                                ? Colors.white.withOpacity(0.3)
+                                ? ColorManager.white.withOpacity(0.3)
                                 : ColorManager.chaletAccent,
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -159,7 +159,7 @@ class BookingSuccessPage extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorManager.primaryColor,
-                    foregroundColor: Colors.white,
+                    foregroundColor: ColorManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

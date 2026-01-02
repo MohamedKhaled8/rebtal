@@ -30,13 +30,12 @@ class ImageHeaderSection extends StatelessWidget {
       },
       builder: (context, data) {
         final images = data.images;
-        final currentImageIndex = data.currentIndex;
 
         if (images.isEmpty) {
           return Container(
             height: 400,
             margin: const EdgeInsets.only(bottom: 16.31),
-            decoration: BoxDecoration(color: Colors.grey[200]),
+            decoration: BoxDecoration(color: ColorManager.chaletGrey200),
           );
         }
 
@@ -52,10 +51,11 @@ class ImageHeaderSection extends StatelessWidget {
               // Main Image with PageView
               GestureDetector(
                 onTap: () {
+                  final currentIndex = data.currentIndex;
                   cubit.openFullScreen(
                     context,
                     images: images,
-                    start: currentImageIndex,
+                    start: currentIndex,
                   );
                 },
                 child: PageView.builder(
@@ -74,25 +74,27 @@ class ImageHeaderSection extends StatelessWidget {
                 ),
               ),
 
-              // Gradient Overlay
+              // Gradient Overlay - Ignore pointer to allow tap through
               Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        ColorManager.black.withOpacity(0.2),
-                        ColorManager.transparent,
-                        ColorManager.black.withOpacity(0.8),
-                      ],
-                      stops: const [0.0, 0.5, 1.0],
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          ColorManager.black.withOpacity(0.2),
+                          ColorManager.transparent,
+                          ColorManager.black.withOpacity(0.8),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              // Back Button (Top Left)
+              // Back Button (Top Left) - Keep pointer events
               Positioned(
                 top: 50,
                 left: 20,
@@ -122,108 +124,64 @@ class ImageHeaderSection extends StatelessWidget {
                 ),
               ),
 
-              // Thumbnails (Bottom Right)
-              if (images.length > 1)
-                Positioned(
-                  right: 20,
-                  bottom: 100,
-                  child: SizedBox(
-                    height: 60,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemCount: images.length > 4 ? 4 : images.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final isSelected = currentImageIndex == index;
-                        return GestureDetector(
-                          onTap: () => cubit.navigateToImage(index),
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: isSelected
-                                  ? Border.all(color: ColorManager.white, width: 2)
-                                  : null,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: ColorManager.black.withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: AppImageHelper(
-                                path: images[index],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-              // Title and Location (Bottom Left)
+              // Title and Location (Bottom Left) - Ignore pointer to allow tap through
               Positioned(
                 bottom: 20,
                 left: 20,
                 right: 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hotelName,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: ColorManager.white,
-                        letterSpacing: 0.5,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black45,
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
+                child: IgnorePointer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hotelName,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: ColorManager.white,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              color: ColorManager.black.withOpacity(0.45),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: ColorManager.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              location,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: ColorManager.chaletGrey200,
+                                height: 1.3,
+                                shadows: [
+                                  Shadow(
+                                    color: ColorManager.black.withOpacity(0.45),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: ColorManager.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            location,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFFE0E0E0),
-                              height: 1.3,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

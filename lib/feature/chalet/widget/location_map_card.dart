@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class LocationMapCard extends StatelessWidget {
   final String location;
@@ -96,7 +97,7 @@ class LocationMapCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.1),
+            color: ColorManager.chaletActionBlue.withOpacity(0.1),
             blurRadius: 30,
             offset: const Offset(0, 8),
           ),
@@ -118,19 +119,19 @@ class LocationMapCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.blue.withOpacity(0.2),
-                      Colors.blue.withOpacity(0.1),
+                      ColorManager.chaletActionBlue.withOpacity(0.2),
+                      ColorManager.chaletActionBlue.withOpacity(0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: ColorManager.chaletActionBlue.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
                 child: const Icon(
                   Icons.map_rounded,
-                  color: Colors.blue,
+                  color: ColorManager.chaletActionBlue,
                   size: 22,
                 ),
               ),
@@ -168,86 +169,26 @@ class LocationMapCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           
-          // Map Image (Interactive)
+          // Real Google Maps Image Only (No Design)
           GestureDetector(
             onTap: () => _openMapInApp(context),
             child: Container(
-              height: 200,
+              height: 240,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.blue.shade100.withOpacity(0.3),
-                    Colors.blue.shade200.withOpacity(0.2),
-                  ],
-                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 12,
+                    color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.1),
+                    blurRadius: 15,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Stack(
-                children: [
-                  // Map Image (Real Google Maps Screenshot)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: _buildMapPlaceholder(),
-                  ),
-                  
-                  // Tap indicator (Bottom Right)
-                  Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Colors.blue,
-                            Color(0xFF2563EB),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withOpacity(0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(
-                            Icons.navigation_rounded,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'افتح في الخريطة',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: _buildRealMapImage(isDark),
               ),
             ),
           ),
@@ -258,43 +199,44 @@ class LocationMapCard extends StatelessWidget {
 
   String _getStaticMapImageUrl() {
     if (latitude != null && longitude != null) {
-      // استخدام Google Maps Static API للحصول على صورة حقيقية للخريطة
+      // استخدام Google Maps Static API للحصول على صورة حقيقية للخريطة (مثل screenshot)
       // API Key موجود في AndroidManifest.xml
       const apiKey = 'AIzaSyBMO8r4waPphzE5AxGbe95OW8WRNNlbUo0';
       final lat = latitude!;
       final lon = longitude!;
       
-      // إنشاء URL لصورة الخريطة من Google Maps Static API
-      return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lon&zoom=15&size=600x300&markers=color:red|$lat,$lon&key=$apiKey';
+      // إنشاء URL لصورة الخريطة الحقيقية من Google Maps Static API
+      // zoom=15 للحصول على تفاصيل جيدة (15 مناسب لعرض المنطقة)
+      // size=800x480 للحصول على جودة عالية (نسبة 5:3)
+      // maptype=roadmap للحصول على خريطة حقيقية مع الطرق والأسماء
+      // scale=2 للحصول على جودة أعلى (retina display)
+      // لا نضع marker في الصورة لأننا سنضيفه في الواجهة
+      return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lon&zoom=15&size=800x480&scale=2&maptype=roadmap&key=$apiKey';
     }
     return '';
   }
 
-  Widget _buildMapPlaceholder() {
+  Widget _buildRealMapImage(bool isDark) {
     if (latitude != null && longitude != null) {
       // عرض صورة حقيقية من Google Maps Static API
       final imageUrl = _getStaticMapImageUrl();
       
-      return Image.network(
-        imageUrl,
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return _buildMapImagePlaceholder();
-        },
-        errorBuilder: (context, error, stackTrace) {
-          // إذا فشل التحميل، نستخدم placeholder
-          return _buildMapImagePlaceholder();
-        },
+        placeholder: (context, url) => _buildMapImagePlaceholder(isDark),
+        errorWidget: (context, url, error) => _buildMapImagePlaceholder(isDark),
+        fadeInDuration: const Duration(milliseconds: 300),
+        fadeOutDuration: const Duration(milliseconds: 100),
       );
     }
     
-    return _buildMapImagePlaceholder();
+    return _buildMapImagePlaceholder(isDark);
   }
 
-  Widget _buildMapImagePlaceholder() {
+  Widget _buildMapImagePlaceholder(bool isDark) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -302,18 +244,24 @@ class LocationMapCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade50,
-            Colors.blue.shade100,
-            Colors.blue.shade200,
-          ],
+          colors: isDark
+              ? [
+                  ColorManager.chaletActionDarkBlue,
+                  ColorManager.chaletActionBlue,
+                  ColorManager.chaletActionDarkBlue,
+                ]
+              : [
+                  ColorManager.chaletGrey50,
+                  ColorManager.chaletActionBlue.withOpacity(0.3),
+                  ColorManager.chaletActionBlue.withOpacity(0.5),
+                ],
         ),
       ),
       child: Stack(
         children: [
           // Map-like grid pattern (يشبه الخريطة)
           CustomPaint(
-            painter: MapGridPainter(),
+            painter: MapGridPainter(isDark: isDark),
             size: Size.infinite,
           ),
           // Location marker
@@ -321,19 +269,23 @@ class LocationMapCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: ColorManager.chaletUnavailableRed,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: ColorManager.white,
+                  width: 4,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: ColorManager.chaletUnavailableRed.withOpacity(0.5),
+                    blurRadius: 20,
+                    spreadRadius: 4,
                   ),
                 ],
               ),
               child: const Icon(
                 Icons.location_on,
-                color: Colors.white,
+                color: ColorManager.white,
                 size: 40,
               ),
             ),
@@ -344,12 +296,104 @@ class LocationMapCard extends StatelessWidget {
   }
 }
 
+// Animated marker with continuous ripple effect
+class _RippleMarker extends StatefulWidget {
+  @override
+  State<_RippleMarker> createState() => _RippleMarkerState();
+}
+
+class _RippleMarkerState extends State<_RippleMarker>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Ripple effect rings (3 rings)
+            ...List.generate(3, (index) {
+              final delay = index * 0.33;
+              final animationValue = (_controller.value - delay) % 1.0;
+              final opacity = (1 - animationValue).clamp(0.0, 1.0);
+              final scale = 1.0 + (animationValue * 0.8);
+              
+              return Transform.scale(
+                scale: scale,
+                child: Opacity(
+                  opacity: opacity * 0.4,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: ColorManager.white.withOpacity(0.6 * opacity),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            // Main marker (white circle with home icon)
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: ColorManager.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorManager.black.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.home_rounded,
+                color: ColorManager.chaletGrey800,
+                size: 28,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 // Custom painter for map grid pattern
 class MapGridPainter extends CustomPainter {
+  final bool isDark;
+  
+  MapGridPainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.blue.shade200.withOpacity(0.3)
+      ..color = isDark
+          ? ColorManager.chaletActionBlue.withOpacity(0.2)
+          : ColorManager.chaletActionBlue.withOpacity(0.3)
       ..strokeWidth = 1;
 
     // Draw vertical lines
@@ -372,7 +416,9 @@ class MapGridPainter extends CustomPainter {
 
     // Draw some roads (horizontal and vertical)
     final roadPaint = Paint()
-      ..color = Colors.blue.shade300.withOpacity(0.4)
+      ..color = isDark
+          ? ColorManager.chaletActionBlue.withOpacity(0.3)
+          : ColorManager.chaletActionBlue.withOpacity(0.4)
       ..strokeWidth = 8;
 
     // Horizontal road

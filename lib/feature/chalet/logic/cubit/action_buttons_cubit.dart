@@ -5,6 +5,7 @@ import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 part 'action_buttons_state.dart';
 
@@ -137,7 +138,7 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         builder: (ctx) => BookingBridgeWidget(
           parentContext: context,
           userId: currentUser.uid,

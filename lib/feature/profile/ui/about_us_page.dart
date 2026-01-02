@@ -10,15 +10,15 @@ class AboutUsPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
       appBar: AppBar(
         title: const Text('About Us'),
-        backgroundColor: isDark ? const Color(0xFF001409) : ColorManager.white,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
         titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black,
+          color: isDark ? ColorManager.white : ColorManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -56,7 +56,7 @@ class AboutUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
               ),
               textAlign: TextAlign.center,
             ),
@@ -65,7 +65,7 @@ class AboutUsPage extends StatelessWidget {
               'Your trusted platform for chalet bookings',
               style: TextStyle(
                 fontSize: 16,
-                color: isDark ? Colors.white70 : Colors.black54,
+                color: isDark ? ColorManager.white70 : ColorManager.grey600,
               ),
               textAlign: TextAlign.center,
             ),
@@ -164,18 +164,18 @@ class AboutUsPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF0A2A1D).withValues(alpha: 0.5)
-            : Colors.white,
+            ? ColorManager.darkGreen0A2A1D.withValues(alpha: 0.5)
+            : ColorManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.05),
+              ? ColorManager.white.withValues(alpha: 0.1)
+              : ColorManager.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: ColorManager.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -200,7 +200,7 @@ class AboutUsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
             ],
@@ -212,7 +212,7 @@ class AboutUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.6,
-                color: isDark ? Colors.white70 : Colors.black54,
+                color: isDark ? ColorManager.white70 : ColorManager.grey600,
               ),
             ),
           ],
@@ -242,7 +242,7 @@ class AboutUsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 4),
@@ -250,7 +250,7 @@ class AboutUsPage extends StatelessWidget {
                 description,
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? Colors.white60 : Colors.black54,
+                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
                 ),
               ),
             ],

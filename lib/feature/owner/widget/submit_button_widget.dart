@@ -25,8 +25,8 @@ class SubmitButtonWidget extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onSubmit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: ColorManager.transparent,
+          shadowColor: ColorManager.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

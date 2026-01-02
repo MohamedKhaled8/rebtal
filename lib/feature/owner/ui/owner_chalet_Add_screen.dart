@@ -1,10 +1,10 @@
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
-import 'package:rebtal/feature/owner/widget/profile_picture_section.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
 import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
@@ -54,6 +54,11 @@ class _OwnerChaletAddScreenState extends State<OwnerChaletAddScreen> {
           if (_emailController.text.isEmpty) {
             _emailController.text = currentUser.email;
             cubit.updateEmail(currentUser.email);
+          }
+
+          if (_phoneController.text.isEmpty && currentUser.phone.isNotEmpty) {
+            _phoneController.text = currentUser.phone;
+            cubit.updatePhoneNumber(currentUser.phone);
           }
 
           _isInitialized = true;
@@ -189,6 +194,12 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             ownerCubit.updateEmail(currentUser.email);
           }
 
+          if (widget.phoneController.text.isEmpty &&
+              currentUser.phone.isNotEmpty) {
+            widget.phoneController.text = currentUser.phone;
+            ownerCubit.updatePhoneNumber(currentUser.phone);
+          }
+
           _isInitialized = true;
         }
       } catch (e) {
@@ -208,7 +219,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: ColorManager.grey50,
       appBar: _buildModernAppBar(),
       body: BlocBuilder<OwnerCubit, OwnerState>(
         builder: (context, state) {
@@ -232,15 +243,6 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                 children: [
                   _buildHeaderSection(),
                   const SizedBox(height: 24),
-
-                  // Profile Picture
-                  _buildSectionCard(
-                    child: ProfilePictureSection(
-                      profileImage: data.profileImage,
-                      onTap: () => HelperImage().addProfilePicture(context),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
 
                   // Image Upload
                   _buildSectionCard(
@@ -353,12 +355,13 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   }
 
   PreferredSizeWidget _buildModernAppBar() {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-        color: Colors.grey.shade800,
+        icon: Icon(Icons.arrow_back_ios_new, size: 20),
+        color: isDark ? ColorManager.white : ColorManager.chaletGrey800,
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: Text(
@@ -366,7 +369,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         style: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.bold,
-          color: Colors.grey.shade800,
+          color: isDark ? ColorManager.white : ColorManager.chaletGrey800,
         ),
       ),
       centerTitle: true,
@@ -382,14 +385,14 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
+            color: ColorManager.grey800,
             letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           'Share your beautiful chalet with travelers',
-          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 16, color: ColorManager.grey600),
         ),
       ],
     );
@@ -399,12 +402,12 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorManager.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
+        border: Border.all(color: ColorManager.grey200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: ColorManager.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -422,7 +425,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.person_outline_rounded,
             title: 'Owner Information',
-            color: Colors.blue,
+            color: ColorManager.primaryColor,
           ),
           const SizedBox(height: 24),
           _buildReadOnlyField(
@@ -439,15 +442,11 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             hint: 'Enter email address',
           ),
           const SizedBox(height: 16),
-          _buildModernTextField(
+          _buildReadOnlyField(
             controller: widget.phoneController,
             label: 'Phone Number',
             icon: Icons.phone_rounded,
             hint: 'Enter phone number',
-            keyboardType: TextInputType.phone,
-            validator: (v) =>
-                (v == null || v.isEmpty) ? 'Please enter phone number' : null,
-            onChanged: (v) => context.read<OwnerCubit>().updatePhoneNumber(v),
           ),
         ],
       ),
@@ -462,7 +461,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.home_rounded,
             title: 'Chalet Details',
-            color: Colors.purple,
+            color: ColorManager.purple,
           ),
           const SizedBox(height: 24),
           _buildModernTextField(
@@ -492,6 +491,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
   }
 
   Widget _buildLocationSection(BuildContext context, OwnerData data) {
+    final hasLocation = data.selectedLocation.isNotEmpty;
+
     return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,7 +500,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.location_on_rounded,
             title: 'Location',
-            color: Colors.orange,
+            color: ColorManager.orange,
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -539,7 +540,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             label: const Text('Select Location on Map'),
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorManager.kPrimaryGradient.colors.first,
-              foregroundColor: Colors.white,
+              foregroundColor: ColorManager.white,
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -547,13 +548,15 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               elevation: 0,
             ),
           ),
-          const SizedBox(height: 16),
-          _buildReadOnlyField(
-            controller: widget.locationController,
-            label: 'Selected Address',
-            icon: Icons.place_rounded,
-            hint: 'Selected address will appear here',
-          ),
+          if (hasLocation) ...[
+            const SizedBox(height: 16),
+            _buildReadOnlyField(
+              controller: widget.locationController,
+              label: 'Selected Address',
+              icon: Icons.place_rounded,
+              hint: 'Selected address will appear here',
+            ),
+          ],
         ],
       ),
     );
@@ -567,7 +570,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.info_outline_rounded,
             title: 'Property Details',
-            color: Colors.teal,
+            color: ColorManager.teal,
           ),
           const SizedBox(height: 24),
           // Price Field
@@ -638,7 +641,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                 children: [
                   Icon(
                     Icons.local_offer_rounded,
-                    color: Colors.grey.shade700,
+                    color: ColorManager.grey700,
                     size: 22,
                   ),
                   const SizedBox(width: 12),
@@ -647,7 +650,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
+                      color: ColorManager.grey800,
                     ),
                   ),
                 ],
@@ -674,7 +677,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.calendar_today_rounded,
             title: 'Availability Period',
-            color: Colors.pink,
+            color: ColorManager.pink,
           ),
           const SizedBox(height: 24),
           Row(
@@ -698,9 +701,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                             colorScheme: ColorScheme.light(
                               primary:
                                   ColorManager.kPrimaryGradient.colors.first,
-                              onPrimary: Colors.white,
-                              surface: Colors.white,
-                              onSurface: Colors.black,
+                              onPrimary: ColorManager.white,
+                              surface: ColorManager.white,
+                              onSurface: ColorManager.black,
                             ),
                           ),
                           child: child!,
@@ -736,9 +739,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                             colorScheme: ColorScheme.light(
                               primary:
                                   ColorManager.kPrimaryGradient.colors.first,
-                              onPrimary: Colors.white,
-                              surface: Colors.white,
-                              onSurface: Colors.black,
+                              onPrimary: ColorManager.white,
+                              surface: ColorManager.white,
+                              onSurface: ColorManager.black,
                             ),
                           ),
                           child: child!,
@@ -760,15 +763,15 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               margin: const EdgeInsets.only(top: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: ColorManager.grey50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: ColorManager.grey200),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.check_circle_outline,
-                    color: Colors.grey.shade600,
+                    color: ColorManager.grey600,
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -776,7 +779,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                     child: Text(
                       'Duration: ${_calculateDays(state.availableFrom!, state.availableTo!)} days',
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: ColorManager.grey700,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
@@ -805,17 +808,17 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorManager.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
+        border: Border.all(color: ColorManager.grey200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
+            color: ColorManager.orange.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: ColorManager.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -827,7 +830,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.local_offer_rounded,
             title: 'Discount',
-            color: Colors.orange,
+            color: ColorManager.orange,
           ),
           const SizedBox(height: 24),
           // Discount Type Selection
@@ -836,7 +839,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+              color: ColorManager.grey700,
             ),
           ),
           const SizedBox(height: 12),
@@ -898,9 +901,9 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: ColorManager.grey50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: ColorManager.grey200),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -912,7 +915,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       'Original Price',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: ColorManager.grey600,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -921,14 +924,14 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       style: TextStyle(
                         fontSize: 16,
                         decoration: TextDecoration.lineThrough,
-                        color: Colors.grey.shade600,
+                        color: ColorManager.grey600,
                       ),
                     ),
                   ],
                 ),
                 Icon(
                   Icons.arrow_forward_rounded,
-                  color: Colors.grey.shade400,
+                  color: ColorManager.grey400,
                   size: 20,
                 ),
                 Column(
@@ -938,7 +941,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                       'Final Price',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: ColorManager.grey600,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -975,12 +978,12 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         decoration: BoxDecoration(
           color: selected
               ? ColorManager.kPrimaryGradient.colors.first.withOpacity(0.1)
-              : Colors.grey.shade50,
+              : ColorManager.grey50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
                 ? ColorManager.kPrimaryGradient.colors.first
-                : Colors.grey.shade300,
+                : ColorManager.grey300,
             width: selected ? 2 : 1,
           ),
         ),
@@ -992,7 +995,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
               color: selected
                   ? ColorManager.kPrimaryGradient.colors.first
-                  : Colors.grey.shade700,
+                  : ColorManager.grey700,
             ),
           ),
         ),
@@ -1008,7 +1011,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           _buildSectionHeader(
             icon: Icons.child_care_rounded,
             title: 'Children Count',
-            color: Colors.pink,
+            color: ColorManager.pink,
           ),
           const SizedBox(height: 24),
           _buildModernTextField(
@@ -1039,11 +1042,23 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
 
   Widget _buildFeaturesSection(BuildContext context, OwnerData data) {
     final availableFeatures = [
-      'Pool',
-      'Sea',
-      'Family Gathering',
-      'Luxury',
-      'Mountain',
+      {'name': 'Pool', 'icon': Icons.pool, 'description': 'Swimming Pool'},
+      {'name': 'Sea', 'icon': Icons.water, 'description': 'Sea View'},
+      {
+        'name': 'Family Gathering',
+        'icon': Icons.family_restroom,
+        'description': 'Family Friendly',
+      },
+      {
+        'name': 'Luxury',
+        'icon': Icons.diamond,
+        'description': 'Luxury Accommodation',
+      },
+      {
+        'name': 'Mountain',
+        'icon': Icons.landscape,
+        'description': 'Mountain View',
+      },
     ];
 
     return _buildSectionCard(
@@ -1052,56 +1067,111 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         children: [
           _buildSectionHeader(
             icon: Icons.star_rounded,
-            title: 'Features',
-            color: Colors.amber,
+            title: 'Features & Characteristics',
+            color: ColorManager.amber,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Select the features that best describe your chalet',
+            style: TextStyle(
+              fontSize: 13,
+              color: ColorManager.grey600,
+              fontStyle: FontStyle.italic,
+            ),
           ),
           const SizedBox(height: 24),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: availableFeatures.map((feature) {
-              final isSelected = data.features.contains(feature);
+              final featureName = feature['name'] as String;
+              final featureIcon = feature['icon'] as IconData;
+              final featureDesc = feature['description'] as String;
+              final isSelected = data.features.contains(featureName);
               return GestureDetector(
                 onTap: () {
-                  context.read<OwnerCubit>().toggleFeature(feature);
+                  context.read<OwnerCubit>().toggleFeature(featureName);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+                    horizontal: 18,
+                    vertical: 14,
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? ColorManager.kPrimaryGradient.colors.first
-                        : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(25),
+                        : ColorManager.white,
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
                           ? ColorManager.kPrimaryGradient.colors.first
-                          : Colors.grey.shade300,
-                      width: isSelected ? 2 : 1,
+                          : ColorManager.grey300,
+                      width: isSelected ? 2.5 : 1.5,
                     ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: ColorManager.kPrimaryGradient.colors.first
+                                  .withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: ColorManager.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        size: 20,
-                        color: isSelected ? Colors.white : Colors.grey.shade600,
+                        featureIcon,
+                        size: 22,
+                        color: isSelected
+                            ? ColorManager.white
+                            : ColorManager.kPrimaryGradient.colors.first,
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            featureName,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
+                              color: isSelected
+                                  ? ColorManager.white
+                                  : ColorManager.grey800,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            featureDesc,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.normal,
+                              color: isSelected
+                                  ? ColorManager.white.withOpacity(0.9)
+                                  : ColorManager.grey600,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        feature,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? Colors.white
-                              : Colors.grey.shade700,
-                        ),
+                      Icon(
+                        isSelected
+                            ? Icons.check_circle_rounded
+                            : Icons.radio_button_unchecked,
+                        size: 20,
+                        color: isSelected ? ColorManager.white : ColorManager.grey400,
                       ),
                     ],
                   ),
@@ -1125,7 +1195,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: ColorManager.kPrimaryGradient.colors.first,
-          foregroundColor: Colors.white,
+          foregroundColor: ColorManager.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -1157,10 +1227,10 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: ColorManager.grey100,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Colors.grey.shade700, size: 22),
+          child: Icon(icon, color: ColorManager.grey700, size: 22),
         ),
         const SizedBox(width: 12),
         Text(
@@ -1168,7 +1238,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
+            color: ColorManager.grey800,
           ),
         ),
       ],
@@ -1191,20 +1261,20 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
       maxLines: maxLines,
       validator: validator,
       onChanged: onChanged,
-      style: TextStyle(color: Colors.grey.shade800, fontSize: 15),
+      style: TextStyle(color: ColorManager.grey800, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
+        prefixIcon: Icon(icon, color: ColorManager.grey600, size: 22),
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: ColorManager.grey50,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: ColorManager.grey300),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: ColorManager.grey300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -1215,11 +1285,11 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: ColorManager.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: const BorderSide(color: ColorManager.red, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -1238,29 +1308,29 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
     return TextFormField(
       controller: controller,
       readOnly: true,
-      style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
+      style: TextStyle(color: ColorManager.grey700, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.grey.shade600, size: 22),
+        prefixIcon: Icon(icon, color: ColorManager.grey600, size: 22),
         suffixIcon: Icon(
           Icons.lock_outline,
           size: 18,
-          color: Colors.grey.shade400,
+          color: ColorManager.grey400,
         ),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: ColorManager.grey100,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: ColorManager.grey300),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: ColorManager.grey300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: ColorManager.grey300),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -1282,12 +1352,12 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: ColorManager.grey50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selectedDate != null
                 ? ColorManager.kPrimaryGradient.colors.first
-                : Colors.grey.shade300,
+                : ColorManager.grey300,
             width: selectedDate != null ? 2 : 1,
           ),
         ),
@@ -1297,7 +1367,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
               icon,
               color: selectedDate != null
                   ? ColorManager.kPrimaryGradient.colors.first
-                  : Colors.grey.shade600,
+                  : ColorManager.grey600,
               size: 22,
             ),
             const SizedBox(width: 12),
@@ -1309,7 +1379,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                     label,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: ColorManager.grey600,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1321,8 +1391,8 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
                     style: TextStyle(
                       fontSize: 15,
                       color: selectedDate != null
-                          ? Colors.grey.shade800
-                          : Colors.grey.shade500,
+                          ? ColorManager.grey800
+                          : ColorManager.grey600,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1331,7 +1401,7 @@ class _OwnerScreenContentState extends State<_OwnerScreenContent> {
             ),
             Icon(
               Icons.calendar_today_outlined,
-              color: Colors.grey.shade400,
+              color: ColorManager.grey400,
               size: 20,
             ),
           ],

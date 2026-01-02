@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
@@ -50,7 +51,10 @@ class _AddChaletViewState extends State<_AddChaletView> {
       body: BlocListener<AddChaletCubit, AddChaletState>(
         listener: (context, state) {
           if (state is AddChaletSuccess) {
-            SnackBarHelper.showSuccess(context, "Chalet added successfully! Pending approval.");
+            SnackBarHelper.showSuccess(
+              context,
+              "Chalet added successfully! Pending approval.",
+            );
             Navigator.pop(context);
           } else if (state is AddChaletFailure) {
             SnackBarHelper.showError(context, state.error);
@@ -206,13 +210,13 @@ class _AddChaletViewState extends State<_AddChaletView> {
                     onTap: () => context.read<AddChaletCubit>().pickImages(),
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
+                        border: Border.all(color: ColorManager.grey),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
                         Icons.add_a_photo,
                         size: 30,
-                        color: Colors.grey,
+                        color: ColorManager.grey,
                       ),
                     ),
                   );
@@ -231,13 +235,13 @@ class _AddChaletViewState extends State<_AddChaletView> {
                       child: InkWell(
                         onTap: () =>
                             context.read<AddChaletCubit>().removeImage(index),
-                        child: const CircleAvatar(
+                        child:  CircleAvatar(
                           radius: 10,
-                          backgroundColor: Colors.red,
+                          backgroundColor: ColorManager.red,
                           child: Icon(
                             Icons.close,
                             size: 14,
-                            color: Colors.white,
+                            color: ColorManager.white,
                           ),
                         ),
                       ),

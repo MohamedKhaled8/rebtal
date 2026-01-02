@@ -42,12 +42,12 @@ class RequestDetailsCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  color: ColorManager.orangeF59E0B.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.info_outline,
-                  color: Color(0xFFF59E0B),
+                  color: ColorManager.orangeF59E0B,
                   size: 20,
                 ),
               ),
@@ -57,7 +57,7 @@ class RequestDetailsCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  color: ColorManager.grey1F2937,
                 ),
               ),
             ],
@@ -66,9 +66,9 @@ class RequestDetailsCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
+              color: ColorManager.greyF9FAFB,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: ColorManager.greyE5E7EB),
             ),
             child: Column(
               children: [
@@ -76,7 +76,7 @@ class RequestDetailsCard extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.fingerprint,
-                      color: Color(0xFF6B7280),
+                      color: ColorManager.grey6B7280,
                       size: 18,
                     ),
                     const SizedBox(width: 12),
@@ -84,7 +84,7 @@ class RequestDetailsCard extends StatelessWidget {
                       'Request ID: ',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151),
+                        color: ColorManager.grey374151,
                         fontSize: 15,
                       ),
                     ),
@@ -92,7 +92,7 @@ class RequestDetailsCard extends StatelessWidget {
                       child: Text(
                         docId,
                         style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: ColorManager.grey6B7280,
                           fontSize: 15,
                         ),
                       ),
@@ -104,7 +104,7 @@ class RequestDetailsCard extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.schedule,
-                      color: Color(0xFF6B7280),
+                      color: ColorManager.grey6B7280,
                       size: 18,
                     ),
                     const SizedBox(width: 12),
@@ -112,7 +112,7 @@ class RequestDetailsCard extends StatelessWidget {
                       'Submitted: ',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151),
+                        color: ColorManager.grey374151,
                         fontSize: 15,
                       ),
                     ),
@@ -120,7 +120,7 @@ class RequestDetailsCard extends StatelessWidget {
                       child: Text(
                         cubit.formatDate(requestData['createdAt']),
                         style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: ColorManager.grey6B7280,
                           fontSize: 15,
                         ),
                       ),
@@ -132,7 +132,7 @@ class RequestDetailsCard extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.update,
-                      color: Color(0xFF6B7280),
+                      color: ColorManager.grey6B7280,
                       size: 18,
                     ),
                     const SizedBox(width: 12),
@@ -140,7 +140,7 @@ class RequestDetailsCard extends StatelessWidget {
                       'Updated: ',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151),
+                        color: ColorManager.grey374151,
                         fontSize: 15,
                       ),
                     ),
@@ -150,7 +150,7 @@ class RequestDetailsCard extends StatelessWidget {
                           requestData['updatedAt'] ?? requestData['createdAt'],
                         ),
                         style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: ColorManager.grey6B7280,
                           fontSize: 15,
                         ),
                       ),

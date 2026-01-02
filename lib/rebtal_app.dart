@@ -2,6 +2,7 @@ import 'package:rebtal/core/Router/app_router.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
 import 'package:screen_go/screen_go.dart';
@@ -20,7 +21,7 @@ class RebtalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => AuthCubit(getIt())),
         BlocProvider(create: (context) => BookingCubit()),
         BlocProvider(create: (context) => ThemeCubit()),
         BlocProvider(create: (context) => NotificationCubit()),

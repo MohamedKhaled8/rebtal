@@ -82,7 +82,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           DropdownButtonFormField<String>(
-            value: selectedLocation,
+            initialValue: selectedLocation,
             decoration: InputDecoration(
               labelText: 'Geographical Location',
               prefixIcon: Icon(Icons.location_on, color: ColorManager.gray),

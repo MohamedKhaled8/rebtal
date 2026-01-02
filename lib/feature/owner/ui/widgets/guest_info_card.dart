@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class GuestInfoCard extends StatelessWidget {
   final Booking booking;
@@ -15,10 +16,10 @@ class GuestInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        color: isDark ? ColorManager.white.withOpacity(0.05) : ColorManager.grey50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.white12 : Colors.grey.shade200,
+          color: isDark ? ColorManager.white10 : ColorManager.grey200,
         ),
       ),
       child: Column(
@@ -30,10 +31,10 @@ class GuestInfoCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade600,
+                  color: ColorManager.chaletActionBlue,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.person, size: 18, color: Colors.white),
+                child: const Icon(Icons.person, size: 18, color: ColorManager.white),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -44,7 +45,7 @@ class GuestInfoCard extends StatelessWidget {
                       'معلومات الضيف',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? Colors.white60 : Colors.grey.shade600,
+                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -54,7 +55,7 @@ class GuestInfoCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
                       ),
                     ),
                   ],
@@ -67,7 +68,7 @@ class GuestInfoCard extends StatelessWidget {
             const SizedBox(height: 16),
             Divider(
               height: 1,
-              color: isDark ? Colors.white10 : Colors.grey.shade200,
+              color: isDark ? ColorManager.white10 : ColorManager.grey200,
             ),
             const SizedBox(height: 16),
           ],
@@ -78,8 +79,8 @@ class GuestInfoCard extends StatelessWidget {
               icon: Icons.phone_rounded,
               label: 'رقم الهاتف',
               value: booking.userPhone!,
-              color: Colors.green,
-              bgColor: Colors.green.withOpacity(0.1),
+              color: ColorManager.green,
+              bgColor: ColorManager.green.withOpacity(0.1),
             ),
 
           if (hasPhone && hasEmail) const SizedBox(height: 12),
@@ -90,8 +91,8 @@ class GuestInfoCard extends StatelessWidget {
               icon: Icons.email_rounded,
               label: 'البريد الإلكتروني',
               value: booking.userEmail!,
-              color: Colors.orange,
-              bgColor: Colors.orange.withOpacity(0.1),
+              color: ColorManager.orange,
+              bgColor: ColorManager.orange.withOpacity(0.1),
             ),
         ],
       ),

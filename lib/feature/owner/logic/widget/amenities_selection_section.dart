@@ -17,73 +17,73 @@ class AmenitiesSelectionSection extends StatelessWidget {
       'key': 'hasWifi',
       'label': 'WiFi',
       'icon': Icons.wifi,
-      'color': Color(0xFF3B82F6),
+      'color': ColorManager.chaletActionBlue,
     },
     {
       'key': 'hasPool',
       'label': 'Pool',
       'icon': Icons.pool,
-      'color': Color(0xFF06B6D4),
+      'color': ColorManager.cyan06B6D4,
     },
     {
       'key': 'hasAirConditioning',
       'label': 'Air Conditioning',
       'icon': Icons.ac_unit,
-      'color': Color(0xFFF59E0B),
+      'color': ColorManager.bookingsWarningOrange,
     },
     {
       'key': 'hasParking',
       'label': 'Parking',
       'icon': Icons.local_parking,
-      'color': Color(0xFF8B5CF6),
+      'color': ColorManager.purple8B5CF6,
     },
     {
       'key': 'hasGarden',
       'label': 'Garden',
       'icon': Icons.local_florist,
-      'color': Color(0xFF10B981),
+      'color': ColorManager.chaletActionGreen,
     },
     {
       'key': 'hasBBQ',
       'label': 'BBQ Area',
       'icon': Icons.outdoor_grill,
-      'color': Color(0xFFEF4444),
+      'color': ColorManager.chaletUnavailableRed,
     },
     {
       'key': 'hasBeachView',
       'label': 'Beach View',
       'icon': Icons.beach_access,
-      'color': Color(0xFF0EA5E9),
+      'color': ColorManager.skyBlue0EA5E9,
     },
     {
       'key': 'hasHousekeeping',
       'label': 'Housekeeping',
       'icon': Icons.cleaning_services,
-      'color': Color(0xFF6366F1),
+      'color': ColorManager.indigo6366F1,
     },
     {
       'key': 'hasPetsAllowed',
       'label': 'Pets Allowed',
       'icon': Icons.pets,
-      'color': Color(0xFFEC4899),
+      'color': ColorManager.chaletGalleryPink,
     },
     {
       'key': 'hasGym',
       'label': 'Gym',
       'icon': Icons.fitness_center,
-      'color': Color(0xFF14B8A6),
+      'color': ColorManager.teal,
     },
     {
       'key': 'hasKitchen',
       'label': 'Kitchen',
       'icon': Icons.kitchen,
-      'color': Color(0xFFF97316),
+      'color': ColorManager.orange,
     },
     {
       'key': 'hasTV',
       'label': 'TV',
       'icon': Icons.tv,
-      'color': Color(0xFF6366F1),
+      'color': ColorManager.indigo6366F1,
     },
   ];
 
@@ -205,7 +205,7 @@ class _AmenityCard extends StatelessWidget {
           color: isSelected ? color.withOpacity(0.15) : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : Colors.grey.shade300,
+            color: isSelected ? color : ColorManager.grey300,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -229,12 +229,12 @@ class _AmenityCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? color.withOpacity(0.2)
-                        : Colors.grey.shade200,
+                        : ColorManager.grey200,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     icon,
-                    color: isSelected ? color : Colors.grey.shade600,
+                    color: isSelected ? color : ColorManager.grey600,
                     size: 24,
                   ),
                 ),
@@ -245,12 +245,12 @@ class _AmenityCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.green,
+                        color: ColorManager.green,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.check,
-                        color: Colors.white,
+                        color: ColorManager.white,
                         size: 12,
                       ),
                     ),
@@ -263,7 +263,7 @@ class _AmenityCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? color : Colors.grey.shade700,
+                color: isSelected ? color : ColorManager.grey700,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

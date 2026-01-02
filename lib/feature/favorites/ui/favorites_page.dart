@@ -31,14 +31,14 @@ class FavoritesPage extends StatelessWidget {
           ),
           centerTitle: true,
           backgroundColor: DynamicThemeManager.isDarkMode(context)
-              ? ColorManager.black
+              ? ColorManager.transparent
               : ColorManager.white,
           foregroundColor: DynamicThemeManager.isDarkMode(context)
               ? ColorManager.white
               : ColorManager.black,
           elevation: 0,
-          shadowColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
+          shadowColor: ColorManager.transparent,
+          surfaceTintColor: ColorManager.transparent,
         ),
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {
@@ -55,16 +55,16 @@ class FavoritesPage extends StatelessWidget {
                       Icons.error_outline,
                       size: 80,
                       color: DynamicThemeManager.isDarkMode(context)
-                          ? Colors.white24
-                          : Colors.grey.shade300,
+                          ? ColorManager.white24
+                          : ColorManager.chaletGrey400,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'حدث خطأ',
                       style: TextStyle(
                         color: DynamicThemeManager.isDarkMode(context)
-                            ? Colors.white70
-                            : Colors.grey.shade600,
+                            ? ColorManager.white70
+                            : ColorManager.chaletGrey500,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -74,8 +74,8 @@ class FavoritesPage extends StatelessWidget {
                       state.message,
                       style: TextStyle(
                         color: DynamicThemeManager.isDarkMode(context)
-                            ? Colors.white54
-                            : Colors.grey.shade500,
+                            ? ColorManager.white70.withOpacity(0.7)
+                            : ColorManager.chaletGrey500,
                         fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
@@ -95,16 +95,16 @@ class FavoritesPage extends StatelessWidget {
                         Icons.favorite_border_rounded,
                         size: 80,
                         color: DynamicThemeManager.isDarkMode(context)
-                            ? Colors.white24
-                            : Colors.grey.shade300,
+                            ? ColorManager.white24
+                            : ColorManager.chaletGrey400,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'لا توجد مفضلات بعد',
                         style: TextStyle(
                           color: DynamicThemeManager.isDarkMode(context)
-                              ? Colors.white70
-                              : Colors.grey.shade600,
+                              ? ColorManager.white70
+                              : ColorManager.chaletGrey500,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),

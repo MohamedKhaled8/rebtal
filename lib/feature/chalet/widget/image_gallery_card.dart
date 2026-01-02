@@ -128,7 +128,7 @@ class ImageGalleryCard extends StatelessWidget {
                         gradient: const LinearGradient(
                           colors: [
                             ColorManager.chaletGalleryBlue,
-                            Color(0xFF2563EB),
+                            ColorManager.blue2563EB,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),

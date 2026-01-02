@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -22,10 +24,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _listenToBookingChanges() {
-    FirebaseFirestore.instance
-        .collection('bookings')
-        .snapshots()
-        .listen((snapshot) {
+    FirebaseFirestore.instance.collection('bookings').snapshots().listen((
+      snapshot,
+    ) {
       // إعادة تحميل الحجوزات عند حدوث تغيير
       if (mounted) {
         debugPrint('Firestore change detected, reloading bookings...');
@@ -43,8 +44,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('الإشعارات'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: DynamicThemeManager.isDarkMode(context)
+            ? ColorManager.transparent
+            : ColorManager.white,
+        foregroundColor: DynamicThemeManager.isDarkMode(context)
+            ? ColorManager.white
+            : ColorManager.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -58,26 +63,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: BlocBuilder<BookingCubit, BookingState>(
         builder: (context, state) {
           // تصفية الحجوزات التي تحتوي على إشعارات للمستخدم الحالي
-          final notifications = state.bookings
-              .where((b) {
-                // تطبيع معرف المستخدم للمقارنة
-                final normalizedUserId = b.userId.trim();
-                final normalizedCurrentUid = currentUid.trim();
-                
-                // محاولة مطابقة مختلفة
-                final isUserMatch = normalizedUserId == normalizedCurrentUid ||
-                    b.userId == currentUid ||
-                    b.userId.contains(currentUid) ||
-                    currentUid.contains(b.userId);
-                
-                // عرض الحجوزات المقبولة والمرفوضة (الإشعارات)
-                final hasNotification = b.status == BookingStatus.approved ||
-                    b.status == BookingStatus.rejected;
-                
-                return isUserMatch && hasNotification;
-              })
-              .toList();
-          
+          final notifications = state.bookings.where((b) {
+            // تطبيع معرف المستخدم للمقارنة
+            final normalizedUserId = b.userId.trim();
+            final normalizedCurrentUid = currentUid.trim();
+
+            // محاولة مطابقة مختلفة
+            final isUserMatch =
+                normalizedUserId == normalizedCurrentUid ||
+                b.userId == currentUid ||
+                b.userId.contains(currentUid) ||
+                currentUid.contains(b.userId);
+
+            // عرض الحجوزات المقبولة والمرفوضة (الإشعارات)
+            final hasNotification =
+                b.status == BookingStatus.approved ||
+                b.status == BookingStatus.rejected;
+
+            return isUserMatch && hasNotification;
+          }).toList();
+
           if (notifications.isEmpty) {
             return _buildEmptyState();
           }
@@ -101,14 +106,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue.shade100, Colors.blue.shade50],
+                  colors: [ColorManager.chaletActionBlue.withOpacity(0.2), ColorManager.chaletActionBlue.withOpacity(0.1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: ColorManager.chaletActionBlue.withOpacity(0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -117,35 +122,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Icon(
                 Icons.notifications_none,
                 size: 60,
-                color: Colors.blue.shade400,
+                color: ColorManager.chaletActionBlue,
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // العنوان الرئيسي
             Text(
               'لا توجد إشعارات جديدة',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+                color: ColorManager.chaletGrey800,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            
+
             // النص التوضيحي
             Text(
               'ستظهر هنا الإشعارات الخاصة بحجوزاتك عند تحديث حالتها',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: ColorManager.chaletGrey500,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            
+
             // زر التحديث
             ElevatedButton.icon(
               onPressed: () {
@@ -155,9 +160,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               icon: const Icon(Icons.refresh),
               label: const Text('تحديث'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                backgroundColor: ColorManager.chaletActionBlue,
+                foregroundColor: ColorManager.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -179,16 +187,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue.shade50, Colors.blue.shade100],
+              colors: [ColorManager.chaletActionBlue.withOpacity(0.1), ColorManager.chaletActionBlue.withOpacity(0.2)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade200),
+            border: Border.all(color: ColorManager.chaletActionBlue.withOpacity(0.4)),
           ),
           child: Row(
             children: [
-              Icon(Icons.notifications_active, color: Colors.blue.shade600, size: 24),
+              Icon(
+                Icons.notifications_active,
+                color: ColorManager.chaletActionBlue,
+                size: 24,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -199,14 +211,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
+                        color: ColorManager.chaletActionDarkBlue,
                       ),
                     ),
                     Text(
                       '${notifications.length} إشعار جديد',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.blue.shade600,
+                        color: ColorManager.chaletActionBlue,
                       ),
                     ),
                   ],
@@ -215,7 +227,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ],
           ),
         ),
-        
+
         // قائمة الإشعارات
         Expanded(
           child: ListView.builder(
@@ -245,28 +257,38 @@ class _NotificationCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isApproved 
-              ? [Colors.green.withValues(alpha: 0.1), Colors.green.withValues(alpha: 0.2)]
-              : [Colors.red.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.2)],
+          colors: isApproved
+              ? [
+                  ColorManager.chaletAvailableGreen.withOpacity(0.1),
+                  ColorManager.chaletAvailableGreen.withOpacity(0.2),
+                ]
+              : [
+                  ColorManager.chaletUnavailableRed.withOpacity(0.1),
+                  ColorManager.chaletUnavailableRed.withOpacity(0.2),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: ColorManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
           BoxShadow(
-            color: (isApproved ? Colors.green : Colors.red).withValues(alpha: 0.1),
+            color: (isApproved ? ColorManager.green : ColorManager.red).withValues(
+              alpha: 0.1,
+            ),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
         border: Border.all(
-          color: isApproved ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3), 
-          width: 1
+          color: isApproved
+              ? ColorManager.chaletAvailableGreen.withOpacity(0.3)
+              : ColorManager.chaletUnavailableRed.withOpacity(0.3),
+          width: 1,
         ),
       ),
       child: Padding(
@@ -283,9 +305,9 @@ class _NotificationCard extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isApproved 
-                          ? [Colors.green, Colors.green.shade700]
-                          : [Colors.red, Colors.red.shade700],
+                      colors: isApproved
+                          ? [ColorManager.chaletAvailableGreen, ColorManager.chaletActionDarkGreen]
+                          : [ColorManager.chaletUnavailableRed, ColorManager.chaletActionDarkRed],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -293,12 +315,12 @@ class _NotificationCard extends StatelessWidget {
                   ),
                   child: Icon(
                     isApproved ? Icons.check_circle : Icons.cancel,
-                    color: Colors.white,
+                    color: ColorManager.white,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // معلومات الشاليه
                 Expanded(
                   child: Column(
@@ -309,7 +331,7 @@ class _NotificationCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: ColorManager.black,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -317,21 +339,24 @@ class _NotificationCard extends StatelessWidget {
                         'صاحب الشاليه: ${booking.ownerName}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade600,
+                          color: ColorManager.chaletGrey500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // شارة الحالة
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isApproved 
-                          ? [Colors.green, Colors.green.shade700]
-                          : [Colors.red, Colors.red.shade700],
+                      colors: isApproved
+                          ? [ColorManager.chaletAvailableGreen, ColorManager.chaletActionDarkGreen]
+                          : [ColorManager.chaletUnavailableRed, ColorManager.chaletActionDarkRed],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -340,7 +365,7 @@ class _NotificationCard extends StatelessWidget {
                   child: Text(
                     isApproved ? 'مقبول' : 'مرفوض',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: ColorManager.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -348,17 +373,19 @@ class _NotificationCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // تفاصيل الحجز
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ColorManager.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (isApproved ? Colors.green : Colors.red).withValues(alpha: 0.3)
+                  color: (isApproved ? ColorManager.green : ColorManager.red).withValues(
+                    alpha: 0.3,
+                  ),
                 ),
               ),
               child: Column(
@@ -371,7 +398,7 @@ class _NotificationCard extends StatelessWidget {
                           icon: Icons.calendar_today,
                           label: 'تاريخ البداية',
                           value: _formatDate(booking.from),
-                          color: Colors.blue.shade600,
+                          color: ColorManager.chaletActionBlue,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -380,50 +407,58 @@ class _NotificationCard extends StatelessWidget {
                           icon: Icons.event,
                           label: 'تاريخ النهاية',
                           value: _formatDate(booking.to),
-                          color: Colors.blue.shade600,
+                          color: ColorManager.chaletActionBlue,
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // مدة الإقامة
                   _DetailItem(
                     icon: Icons.schedule,
                     label: 'مدة الإقامة',
                     value: '${_calculateDays(booking.from, booking.to)} أيام',
-                    color: Colors.purple.shade600,
+                    color: ColorManager.purple8B5CF6,
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // رسالة الإشعار
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isApproved 
-                      ? [Colors.green.withValues(alpha: 0.1), Colors.green.withValues(alpha: 0.2)]
-                      : [Colors.red.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.2)],
+                  colors: isApproved
+                      ? [
+                          ColorManager.green.withValues(alpha: 0.1),
+                          ColorManager.green.withValues(alpha: 0.2),
+                        ]
+                      : [
+                          ColorManager.red.withValues(alpha: 0.1),
+                          ColorManager.red.withValues(alpha: 0.2),
+                        ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isApproved ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)
+                  color: isApproved
+                      ? ColorManager.green.withValues(alpha: 0.3)
+                      : ColorManager.red.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
-                    isApproved ? Icons.celebration : Icons.info_outline, 
-                    color: isApproved ? Colors.green : Colors.red, 
-                    size: 24
+                    isApproved ? Icons.celebration : Icons.info_outline,
+                    color: isApproved ? ColorManager.green : ColorManager.red,
+                    size: 24,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -431,22 +466,24 @@ class _NotificationCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isApproved 
-                              ? 'مبروك! تم قبول حجزك' 
+                          isApproved
+                              ? 'مبروك! تم قبول حجزك'
                               : 'تم رفض طلب الحجز',
                           style: TextStyle(
-                            color: isApproved ? Colors.green : Colors.red,
+                            color: isApproved ? ColorManager.green : ColorManager.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          isApproved 
+                          isApproved
                               ? 'يمكنك الآن الاستمتاع بإقامتك في ${booking.chaletName}'
                               : 'للأسف، لم يتم قبول طلب حجزك في ${booking.chaletName}',
                           style: TextStyle(
-                            color: isApproved ? Colors.green.withValues(alpha: 0.8) : Colors.red.withValues(alpha: 0.8),
+                            color: isApproved
+                                ? ColorManager.green.withValues(alpha: 0.8)
+                                : ColorManager.red.withValues(alpha: 0.8),
                             fontSize: 14,
                           ),
                         ),
@@ -489,7 +526,7 @@ class _DetailItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorManager.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
@@ -501,7 +538,7 @@ class _DetailItem extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: ColorManager.grey600,
               fontWeight: FontWeight.w500,
             ),
           ),

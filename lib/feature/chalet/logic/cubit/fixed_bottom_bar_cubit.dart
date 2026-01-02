@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 part 'fixed_bottom_bar_state.dart';
 
@@ -99,7 +100,7 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: ColorManager.transparent,
         builder: (context) => BookingBridgeWidget(
           chaletId: docId,
           chaletName: chaletName,

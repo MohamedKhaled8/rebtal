@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/feature/owner/ui/widgets/booking_status_chip.dart';
 import 'package:rebtal/feature/owner/ui/widgets/guest_info_card.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -22,18 +23,18 @@ class BookingCard extends StatelessWidget {
     );
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: ColorManager.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -73,14 +74,14 @@ class BookingCard extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.blue.shade400,
-                                    Colors.blue.shade700,
+                                    ColorManager.chaletActionBlue,
+                                    ColorManager.chaletActionDarkBlue,
                                   ],
                                 ),
                               ),
                               child: const Icon(
                                 Icons.villa,
-                                color: Colors.white,
+                                color: ColorManager.white,
                                 size: 60,
                               ),
                             )
@@ -118,8 +119,8 @@ class BookingCard extends StatelessWidget {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
+                                  ColorManager.transparent,
+                                  ColorManager.black.withOpacity(0.7),
                                 ],
                               ),
                             ),
@@ -134,13 +135,15 @@ class BookingCard extends StatelessWidget {
                               children: [
                                 Text(
                                   booking.chaletName,
-                                  style: const TextStyle(
+                                  style:  TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: ColorManager.white,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.black45,
+                                        color: ColorManager.black.withOpacity(
+                                          0.45,
+                                        ),
                                         offset: Offset(0, 1),
                                         blurRadius: 3,
                                       ),
@@ -155,7 +158,7 @@ class BookingCard extends StatelessWidget {
                                     const Icon(
                                       Icons.location_on,
                                       size: 16,
-                                      color: Colors.white,
+                                      color: ColorManager.white,
                                     ),
                                     const SizedBox(width: 4),
                                     Expanded(
@@ -163,7 +166,7 @@ class BookingCard extends StatelessWidget {
                                         booking.chaletLocation ?? 'غير محدد',
                                         style: const TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white,
+                                          color: ColorManager.white,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -207,10 +210,12 @@ class BookingCard extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.blue.shade50,
+                            ? ColorManager.white.withOpacity(0.05)
+                            : ColorManager.chaletIconBackgroundLight,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.shade200),
+                        border: Border.all(
+                          color: ColorManager.chaletActionBlue.withOpacity(0.5),
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -225,7 +230,7 @@ class BookingCard extends StatelessWidget {
                                         Icon(
                                           Icons.flight_land,
                                           size: 16,
-                                          color: Colors.green.shade600,
+                                          color: ColorManager.chaletActionGreen,
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
@@ -262,7 +267,7 @@ class BookingCard extends StatelessWidget {
                                 child: const Icon(
                                   Icons.arrow_forward,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -321,14 +326,14 @@ class BookingCard extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Icons.nights_stay,
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   '$nights ليلة',
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: ColorManager.white,
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -522,7 +527,7 @@ class BookingCard extends StatelessWidget {
                                   ),
                                   child: const Icon(
                                     Icons.cancel,
-                                    color: Colors.white,
+                                    color: ColorManager.white,
                                     size: 20,
                                   ),
                                 ),
@@ -544,7 +549,7 @@ class BookingCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: ColorManager.white,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Colors.grey.shade200,

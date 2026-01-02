@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class BookingStatusChip extends StatelessWidget {
   final BookingStatus status;
@@ -24,7 +25,7 @@ class BookingStatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: ColorManager.black.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -33,12 +34,12 @@ class BookingStatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config['icon'] as IconData, size: 16, color: Colors.white),
+          Icon(config['icon'] as IconData, size: 16, color: ColorManager.white),
           const SizedBox(width: 6),
           Text(
             config['text'] as String,
             style: const TextStyle(
-              color: Colors.white,
+              color: ColorManager.white,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
@@ -52,13 +53,13 @@ class BookingStatusChip extends StatelessWidget {
     switch (status) {
       case BookingStatus.pending:
         return {
-          'color': Colors.orange.shade600,
+          'color': ColorManager.orange,
           'text': 'معلق',
           'icon': Icons.schedule,
         };
       case BookingStatus.approved:
         return {
-          'color': Colors.green.shade600,
+          'color': ColorManager.chaletActionGreen,
           'text': 'مقبول',
           'icon': Icons.check_circle,
         };
@@ -70,8 +71,8 @@ class BookingStatusChip extends StatelessWidget {
                     booking!.adminPaymentNotes!.isNotEmpty));
         return {
           'color': isPaymentRejected
-              ? Colors.red.shade600
-              : Colors.blue.shade600,
+              ? ColorManager.red
+              : ColorManager.chaletActionBlue,
           'text': isPaymentRejected
               ? 'في انتظار الدفع - مرفوض'
               : 'في انتظار الدفع',
@@ -79,31 +80,31 @@ class BookingStatusChip extends StatelessWidget {
         };
       case BookingStatus.paymentUnderReview:
         return {
-          'color': Colors.purple.shade600,
+          'color': ColorManager.purple,
           'text': 'قيد المراجعة',
           'icon': Icons.hourglass_empty,
         };
       case BookingStatus.confirmed:
         return {
-          'color': Colors.teal.shade600,
+          'color': ColorManager.teal,
           'text': 'مؤكد',
           'icon': Icons.verified,
         };
       case BookingStatus.completed:
         return {
-          'color': Colors.indigo.shade600,
+          'color': ColorManager.indigo6366F1,
           'text': 'مكتمل',
           'icon': Icons.done_all,
         };
       case BookingStatus.rejected:
         return {
-          'color': Colors.red.shade600,
+          'color': ColorManager.red,
           'text': 'مرفوض',
           'icon': Icons.cancel,
         };
       case BookingStatus.cancelled:
         return {
-          'color': Colors.grey.shade600,
+          'color': ColorManager.grey600,
           'text': 'ملغي',
           'icon': Icons.block,
         };

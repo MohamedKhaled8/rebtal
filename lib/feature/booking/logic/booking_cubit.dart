@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
-import 'package:rebtal/core/services/email_service.dart';
+import 'package:rebtal/core/utils/services/email_service.dart';
 
 // ✅ إضافة هذه الدوال للـ BookingCubit
 

@@ -1,18 +1,21 @@
-import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:rebtal/core/utils/failure.dart';
 import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
+import 'package:rebtal/core/utils/validation/auth_validator.dart';
 
-class AuthRepository {
+import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
+
+class AuthRepository implements BaseAuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  /// Retry configuration
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(seconds: 2);
 
-  /// Retry helper with exponential backoff
   Future<T> _retryWithBackoff<T>(
     Future<T> Function() operation, {
     int maxRetries = _maxRetries,
@@ -27,39 +30,30 @@ class AuthRepository {
             attempt >= maxRetries) {
           rethrow;
         }
-        // Exponential backoff: 2s, 4s, 8s
         await Future.delayed(_retryDelay * (1 << (attempt - 1)));
       }
     }
     throw Exception('Max retries exceeded');
   }
 
-  // Register
-  Future<UserModel> register({
+  Future<Either<Failure, UserModel>> register({
     required String email,
     required String password,
     required String name,
     required String phone,
-    required String role, // user / owner / admin
+    required String role,
   }) async {
     try {
-      // Validate email format
-      if (!_isValidEmail(email)) {
-        throw FirebaseAuthException(
-          code: 'invalid-email',
-          message: 'Invalid email format',
-        );
+      final emailError = AuthValidator.validateEmail(email);
+      if (emailError != null) {
+        return Left(ValidationFailure(emailError));
       }
 
-      // Validate password strength
-      if (password.length < 6) {
-        throw FirebaseAuthException(
-          code: 'weak-password',
-          message: 'Password must be at least 6 characters',
-        );
+      final passwordError = AuthValidator.validatePassword(password);
+      if (passwordError != null) {
+        return Left(ValidationFailure(passwordError));
       }
 
-      // 1- Create user in FirebaseAuth with retry
       final UserCredential userCredential = await _retryWithBackoff(() async {
         return await _auth.createUserWithEmailAndPassword(
           email: email,
@@ -69,19 +63,69 @@ class AuthRepository {
 
       final user = userCredential.user;
       if (user == null) {
-        throw Exception('Failed to create user account');
+        return Left(ServerFailure('فشل إنشاء الحساب'));
       }
 
-      // ✅ Send Email Verification
+      // Wait a bit to ensure user is fully created before sending verification
+      await Future.delayed(const Duration(milliseconds: 500));
+
       if (!user.emailVerified) {
-        await user.sendEmailVerification();
+        try {
+          debugPrint(
+            '📧 Attempting to send email verification to: ${user.email}',
+          );
+          await user.sendEmailVerification();
+          debugPrint(
+            '✅ Email verification sent successfully to: ${user.email}',
+          );
+        } catch (e) {
+          // Log but don't fail registration if email sending fails
+          FirebaseErrorHandler.logError(
+            e,
+            context: 'SendEmailVerificationDuringRegister',
+          );
+          debugPrint('❌ Failed to send email verification: $e');
+          if (e is FirebaseAuthException) {
+            debugPrint('❌ Firebase Auth Error Code: ${e.code}');
+            debugPrint('❌ Firebase Auth Error Message: ${e.message}');
+          }
+        }
+      } else {
+        debugPrint('ℹ️ User email is already verified: ${user.email}');
       }
 
-      // ✅ Normalize role to lowercase
+      // Don't save to Firestore yet - wait for email verification
+      // Return UserModel for temporary use only
       final normalizedRole = role.toLowerCase().trim();
+      final userModel = UserModel(
+        uid: user.uid,
+        email: email,
+        name: name.trim(),
+        role: normalizedRole,
+        password: password,
+        createdAt: DateTime.now(),
+        phone: phone.trim(),
+      );
 
-      // 2- Determine collection based on role
+      return Right(userModel);
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'Register');
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      final isOffline = FirebaseErrorHandler.isOfflineError(e);
+
+      if (isOffline) {
+        return Left(NetworkFailure('تحقق من اتصالك بالإنترنت'));
+      }
+      return Left(AuthFailure(errorMessage));
+    }
+  }
+
+  Future<Either<Failure, UserModel>> saveUserToFirestore(
+    UserModel userModel,
+  ) async {
+    try {
       late String collectionName;
+      final normalizedRole = userModel.role.toLowerCase().trim();
       if (normalizedRole == "user") {
         collectionName = "Users";
       } else if (normalizedRole == "owner") {
@@ -89,50 +133,39 @@ class AuthRepository {
       } else if (normalizedRole == "admin") {
         collectionName = "Admin";
       } else {
-        collectionName = "Users"; // default
+        collectionName = "Users";
       }
 
-      // 3- Build user model
-      final userModel = UserModel(
-        uid: user.uid,
-        email: email,
-        name: name.trim(),
-        role: normalizedRole,
-        password: password, // ⚠️ Note: Storing plain password (not secure)
-        createdAt: DateTime.now(),
-        phone: phone.trim(),
-      );
-
-      // 4- Save to Firestore with retry
       await _retryWithBackoff(() async {
         await _firestore
             .collection(collectionName)
-            .doc(user.uid)
+            .doc(userModel.uid)
             .set(userModel.toMap());
       });
 
-      return userModel;
+      return Right(userModel);
     } catch (e) {
-      FirebaseErrorHandler.logError(e, context: 'Register');
-      rethrow; // Let the cubit handle the error message
+      FirebaseErrorHandler.logError(e, context: 'SaveUserToFirestore');
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      final isOffline = FirebaseErrorHandler.isOfflineError(e);
+
+      if (isOffline) {
+        return Left(NetworkFailure('تحقق من اتصالك بالإنترنت'));
+      }
+      return Left(ServerFailure(errorMessage));
     }
   }
 
-  // Login
-  Future<UserModel> login({
+  Future<Either<Failure, UserModel>> login({
     required String email,
     required String password,
   }) async {
     try {
-      // Validate email format
-      if (!_isValidEmail(email)) {
-        throw FirebaseAuthException(
-          code: 'invalid-email',
-          message: 'Invalid email format',
-        );
+      final emailError = AuthValidator.validateEmail(email);
+      if (emailError != null) {
+        return Left(ValidationFailure(emailError));
       }
 
-      // 1- Sign in with FirebaseAuth with retry
       final UserCredential userCredential = await _retryWithBackoff(() async {
         return await _auth.signInWithEmailAndPassword(
           email: email.trim(),
@@ -142,61 +175,95 @@ class AuthRepository {
 
       final uid = userCredential.user?.uid;
       if (uid == null) {
-        throw Exception('Failed to sign in: User ID is null');
+        return Left(ServerFailure('فشل تسجيل الدخول'));
       }
 
-      // 2- Find user in Firestore collections with retry
       DocumentSnapshot? foundDoc;
 
       await _retryWithBackoff(() async {
-        for (String col in ["Users", "Owners", "Admin"]) {
+        final futures = ["Users", "Owners", "Admin"].map((col) async {
           try {
-            final snapshot = await _firestore.collection(col).doc(uid).get();
-            if (snapshot.exists) {
-              foundDoc = snapshot;
-              break;
-            }
+            final doc = await _firestore.collection(col).doc(uid).get();
+            return doc.exists ? doc : null;
           } catch (e) {
-            // If one collection fails, try the next
-            continue;
+            return null;
           }
-        }
+        });
+
+        final results = await Future.wait(futures);
+        foundDoc = results.firstWhere((doc) => doc != null, orElse: () => null);
       });
 
-      if (foundDoc == null) {
-        throw FirebaseAuthException(
-          code: 'user-not-found',
-          message: 'User account not found in database',
-        );
+      if (foundDoc == null || !foundDoc!.exists) {
+        return Left(AuthFailure('الحساب غير موجود'));
       }
 
-      final doc = foundDoc!;
-      if (!doc.exists) {
-        throw FirebaseAuthException(
-          code: 'user-not-found',
-          message: 'User account not found in database',
-        );
-      }
-
-      final docData = doc.data();
+      final docData = foundDoc!.data();
       if (docData == null) {
-        throw FirebaseAuthException(
-          code: 'user-not-found',
-          message: 'User data is null',
-        );
+        return Left(ServerFailure('بيانات المستخدم غير موجودة'));
       }
 
-      return UserModel.fromMap(docData as Map<String, dynamic>);
+      return Right(UserModel.fromMap(docData as Map<String, dynamic>));
     } catch (e) {
       FirebaseErrorHandler.logError(e, context: 'Login');
-      rethrow; // Let the cubit handle the error message
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      final isOffline = FirebaseErrorHandler.isOfflineError(e);
+
+      if (isOffline) {
+        return Left(NetworkFailure('تحقق من اتصالك بالإنترنت'));
+      }
+      return Left(AuthFailure(errorMessage));
     }
   }
 
-  /// Validates email format
-  bool _isValidEmail(String email) {
-    return RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-    ).hasMatch(email.trim());
+  Future<Either<Failure, void>> sendPasswordResetEmail(String email) async {
+    try {
+      final emailError = AuthValidator.validateEmail(email);
+      if (emailError != null) {
+        return Left(ValidationFailure(emailError));
+      }
+
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return const Right(null);
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'SendPasswordReset');
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      final isOffline = FirebaseErrorHandler.isOfflineError(e);
+
+      if (isOffline) {
+        return Left(NetworkFailure('تحقق من اتصالك بالإنترنت'));
+      }
+      return Left(AuthFailure(errorMessage));
+    }
+  }
+
+  Future<Either<Failure, void>> sendEmailVerification() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        debugPrint('❌ No current user found');
+        return Left(AuthFailure('لا يوجد مستخدم مسجل دخول'));
+      }
+
+      debugPrint('📧 Attempting to send email verification to: ${user.email}');
+      debugPrint('📧 User UID: ${user.uid}');
+      debugPrint('📧 Email verified status: ${user.emailVerified}');
+
+      // Wait a bit to ensure user is fully created
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      await user.sendEmailVerification();
+      debugPrint('✅ Email verification sent successfully to: ${user.email}');
+      return const Right(null);
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'SendEmailVerification');
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      debugPrint('❌ Failed to send email verification: $e');
+      if (e is FirebaseAuthException) {
+        debugPrint('❌ Firebase Auth Error Code: ${e.code}');
+        debugPrint('❌ Firebase Auth Error Message: ${e.message}');
+      }
+      return Left(AuthFailure(errorMessage));
+    }
   }
 }

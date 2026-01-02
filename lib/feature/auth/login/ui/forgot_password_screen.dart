@@ -1,203 +1,136 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:rebtal/core/utils/config/space.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/auth/forgot_password/logic/forgot_password_cubit.dart';
 import 'package:rebtal/feature/auth/register/widget/custom_input_field.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
-}
-
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
-    with TickerProviderStateMixin {
-  late final TextEditingController _emailController;
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _emailController = TextEditingController();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    )..forward();
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          const _ForgotBackground(),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
-              child: FadeTransition(
-                opacity: _controller,
-                child: SlideTransition(
-                  position:
-                      Tween<Offset>(
-                        begin: const Offset(0, 0.1),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: _controller,
-                          curve: Curves.easeOutCubic,
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
+    return BlocProvider(
+      create: (context) => ForgotPasswordCubit(),
+      child: BlocBuilder<ForgotPasswordCubit, ForgotPasswordState>(
+        builder: (context, state) {
+          final cubit = context.read<ForgotPasswordCubit>();
+          final isLoading = state is ForgotPasswordLoading;
+
+          return Scaffold(
+            backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.grey50,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              size: 18,
+                            ),
+                          ),
                         ),
-                      ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                        color: Colors.white,
-                      ),
-                      verticalSpace(1),
-                      Text(
-                        "Forgot password",
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: Colors.white,
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'نسيت كلمة المرور',
+                            style: TextStyle(
+                              fontSize: 32,
                               fontWeight: FontWeight.w700,
+                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              letterSpacing: -0.5,
                             ),
-                      ),
-                      verticalSpace(0.5),
-                      Text(
-                        "Enter your email address and we’ll send reset instructions.",
-                        style: TextStyle(color: Colors.white.withOpacity(0.85)),
-                      ),
-                      verticalSpace(3),
-                      _ForgotCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CustomInputField(
-                              controller: _emailController,
-                              label: 'Email address',
-                              icon: Icons.mail_outline_rounded,
-                              keyboardType: TextInputType.emailAddress,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'أدخل بريدك الإلكتروني وسنرسل لك\nرابط إعادة تعيين كلمة المرور',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                              height: 1.5,
                             ),
-                            verticalSpace(2.5),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 6.2.h,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0EA5E9),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                ),
-                                onPressed: () {
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    CustomInputField(
+                      controller: cubit.emailController,
+                      label: 'البريد الإلكتروني',
+                      icon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Material(
+                        color: ColorManager.transparent,
+                        child: InkWell(
+                          onTap: isLoading
+                              ? null
+                              : () {
                                   FocusScope.of(context).unfocus();
-                                  SnackBarHelper.showInfo(context, 'If this email exists well send you a reset link.');
+                                  cubit.sendResetLink(context);
                                 },
-                                child: const Text(
-                                  "Send reset link",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                          borderRadius: BorderRadius.circular(14),
+                          child: Center(
+                            child: isLoading
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        ColorManager.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Text(
+                                    'إرسال رابط إعادة التعيين',
+                                    style: TextStyle(
+                                      color: ColorManager.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
-    );
-  }
-}
-
-class _ForgotBackground extends StatelessWidget {
-  const _ForgotBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -40,
-            right: -60,
-            child: _blurCircle(const Color(0xFF3B82F6).withOpacity(0.25)),
-          ),
-          Positioned(
-            bottom: -30,
-            left: -30,
-            child: _blurCircle(const Color(0xFF6366F1).withOpacity(0.35)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _blurCircle(Color color) {
-    return Container(
-      width: 220,
-      height: 220,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.5),
-            blurRadius: 140,
-            spreadRadius: 40,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ForgotCard extends StatelessWidget {
-  const _ForgotCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: child,
     );
   }
 }
