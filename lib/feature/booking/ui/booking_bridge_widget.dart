@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class BookingBridgeWidget extends StatefulWidget {
   final BuildContext parentContext;
@@ -1051,123 +1052,215 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   }
 
   Future<void> _showRatingBottomSheet() async {
+    double tempRating = 0;
+    final controller = TextEditingController();
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        double tempRating = 0;
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            final isDark = DynamicThemeManager.isDarkMode(context);
+            final canSubmit =
+                tempRating > 0 && controller.text.trim().isNotEmpty;
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const Text(
-                      'قيّم تجربتك',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'برجاء تقييم الخدمة لمساعدتنا على تحسين التجربة',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (i) {
-                        final filled = tempRating >= i + 1;
-                        return IconButton(
-                          onPressed: () => setModalState(
-                            () => tempRating = (i + 1).toDouble(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          icon: Icon(
-                            filled ? Icons.star : Icons.star_border,
-                            color: const Color(0xFFFFC107),
-                            size: 36,
+                        ),
+                        const Text(
+                          'قيّم تجربتك',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
                           ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: tempRating == 0
-                            ? null
-                            : () async {
-                                try {
-                                  final ratingId = const Uuid().v4();
-                                  await FirebaseFirestore.instance
-                                      .collection('ratings')
-                                      .doc(ratingId)
-                                      .set({
-                                        'id': ratingId,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'برجاء تقييم الخدمة لمساعدتنا على تحسين التجربة',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(5, (i) {
+                            final filled = tempRating >= i + 1;
+                            return IconButton(
+                              onPressed: () => setModalState(
+                                () => tempRating = (i + 1).toDouble(),
+                              ),
+                              icon: Icon(
+                                filled ? Icons.star : Icons.star_border,
+                                color: const Color(0xFFFFC107),
+                                size: 36,
+                              ),
+                            );
+                          }),
+                        ),
+
+                        if (tempRating > 0) ...[
+                          const SizedBox(height: 12),
+                          Center(
+                            child: Text(
+                              _getRatingLabel(tempRating),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: ColorManager.chaletAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: controller,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'اكتب تعليقك هنا (مطلوب)...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[500]!.withOpacity(0.05),
+                          ),
+                          onChanged: (val) => setModalState(() {}),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                (tempRating == 0 ||
+                                    controller.text.trim().isEmpty)
+                                ? null
+                                : () async {
+                                    try {
+                                      // Fetch latest user details for the review
+                                      String userImage = '';
+                                      String displayName = widget.userName;
+                                      try {
+                                        final userDoc = await FirebaseFirestore
+                                            .instance
+                                            .collection('users')
+                                            .doc(widget.userId)
+                                            .get();
+                                        if (userDoc.exists) {
+                                          userImage =
+                                              userDoc.data()?['profileImage'] ??
+                                              '';
+                                          displayName =
+                                              userDoc.data()?['name'] ??
+                                              widget.userName;
+                                        }
+                                      } catch (_) {}
+
+                                      final ratingData = {
                                         'chaletId': widget.chaletId,
+                                        'chaletName': widget.chaletName,
                                         'userId': widget.userId,
+                                        'userName': displayName,
+                                        'userImage': userImage,
                                         'rating': tempRating,
+                                        'review': controller.text.trim(),
                                         'createdAt':
                                             FieldValue.serverTimestamp(),
-                                      });
-                                  // Optionally update chalet doc with aggregate fields
-                                  await _updateChaletRatingAggregate(
-                                    chaletId: widget.chaletId,
-                                    newRating: tempRating,
-                                  );
-                                  if (mounted) Navigator.pop(context);
-                                  if (mounted) {
-                                    SnackBarHelper.showSuccess(
-                                      context,
-                                      'شكراً لتقييمك',
-                                      icon: Icons.star,
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    SnackBarHelper.showError(
-                                      context,
-                                      'تعذر حفظ التقييم: $e',
-                                    );
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                          backgroundColor: const Color(0xFF1ED760),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                                      };
+
+                                      await FirebaseFirestore.instance
+                                          .collection('chalet_ratings')
+                                          .add(ratingData);
+                                      // Optionally update chalet doc with aggregate fields
+                                      await _updateChaletRatingAggregate(
+                                        chaletId: widget.chaletId,
+                                        newRating: tempRating,
+                                      );
+                                      if (mounted) Navigator.pop(context);
+                                      if (mounted) {
+                                        SnackBarHelper.showSuccess(
+                                          context,
+                                          'شكراً لتقييمك',
+                                          icon: Icons.star,
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        SnackBarHelper.showError(
+                                          context,
+                                          'تعذر حفظ التقييم: $e',
+                                        );
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(56),
+                              backgroundColor: canSubmit
+                                  ? ColorManager.chaletAccent
+                                  : (isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300]),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: isDark
+                                  ? Colors.grey[800]
+                                  : Colors.grey[300],
+                              disabledForegroundColor: isDark
+                                  ? Colors.white.withOpacity(0.3)
+                                  : Colors.grey[500],
+                              elevation: canSubmit ? 2 : 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  canSubmit
+                                      ? Icons.send_rounded
+                                      : Icons.edit_outlined,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  canSubmit
+                                      ? 'إرسال التقييم'
+                                      : 'أكمل البيانات للإرسال',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        child: const Text(
-                          'إرسال',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -1175,6 +1268,14 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         );
       },
     );
+  }
+
+  String _getRatingLabel(double rating) {
+    if (rating == 5) return 'ممتاز! 🌟';
+    if (rating == 4) return 'جيد جداً 👍';
+    if (rating == 3) return 'جيد ✓';
+    if (rating == 2) return 'مقبول';
+    return 'ضعيف';
   }
 
   Future<void> _updateChaletRatingAggregate({

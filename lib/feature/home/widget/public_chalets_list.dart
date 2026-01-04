@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -260,6 +261,17 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                 ),
               ),
 
+              // Rating Badge (Live Fetch)
+              Positioned(
+                top: 16,
+                left: 16,
+                child: RatingDisplayWidget(
+                  chaletId: widget.docId,
+                  isDark: false, // Badge always dark bg
+                  isBadge: true,
+                ),
+              ),
+
               // Image Indicators
               if (images.length > 1)
                 Positioned(
@@ -397,34 +409,11 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
                 const SizedBox(height: 12),
 
-                // STAR RATING
-                Row(
-                  children: [
-                    ...List.generate(5, (index) {
-                      // Mock rating calculation: 4.5
-                      // In real app, bind to widget.chaletData['rating']
-                      const double rating = 4.5;
-                      IconData icon = Icons.star_border;
-                      Color color = ColorManager.chaletGrey400;
-                      if (index < rating.floor()) {
-                        icon = Icons.star;
-                        color = Colors.amber;
-                      } else if (index < rating && (rating - index) >= 0.5) {
-                        icon = Icons.star_half;
-                        color = Colors.amber;
-                      }
-                      return Icon(icon, size: 18, color: color);
-                    }),
-                    const SizedBox(width: 6),
-                    Text(
-                      '4.5 (24 تقييم)', // Placeholder
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white70 : Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                // STAR RATING (Live Fetch)
+                RatingDisplayWidget(
+                  chaletId: widget.docId,
+                  isDark: isDark,
+                  isBadge: false,
                 ),
 
                 const SizedBox(height: 16),
@@ -711,17 +700,6 @@ class PublicChaletsList extends StatelessWidget {
             // Debug logging
             print('🔍 === SEARCH DEBUG ===');
             print('📊 Total chalets from Firestore: ${docs.length}');
-            print('🎯 Active filters:');
-            print('   - Query: "${filters.query}"');
-            print('   - Location: ${filters.location}');
-            print('   - Price Range: ${filters.priceRange}');
-            print('   - Min Bedrooms: ${filters.minBedrooms}');
-            print('   - Min Bathrooms: ${filters.minBathrooms}');
-            print('   - Min Area: ${filters.minArea}');
-            print('   - Features: ${filters.features}');
-            print('   - Facilities: ${filters.facilities}');
-            print('   - Is Empty: ${filters.isEmpty}');
-
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;
 
@@ -746,18 +724,6 @@ class PublicChaletsList extends StatelessWidget {
               return result.isNotEmpty;
             }).toList();
 
-            print('✅ Filtered results: ${filtered.length} chalets');
-            if (filtered.isNotEmpty && filtered.length <= 3) {
-              print('📝 Sample filtered chalet names:');
-              for (var doc in filtered) {
-                final data = doc.data() as Map<String, dynamic>;
-                print(
-                  '   - ${data['chaletName']} (${data['location']}, ${data['price']} EGP)',
-                );
-              }
-            }
-            print('🔍 === END DEBUG ===\n');
-
             if (filtered.isEmpty) {
               return Center(
                 child: Column(
@@ -767,6 +733,7 @@ class PublicChaletsList extends StatelessWidget {
                       emptyIcon ?? Icons.home_outlined,
                       size: 72,
                       color: ColorManager.chaletGrey400,
+                      key: const Key('empty-icon'),
                     ),
                     const SizedBox(height: 16),
                     Text(

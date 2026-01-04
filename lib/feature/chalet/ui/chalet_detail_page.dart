@@ -16,6 +16,7 @@ import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
 import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 import 'package:rebtal/feature/chalet/widget/section_title.dart';
+import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
 
 class ChaletDetailPage extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -71,6 +72,8 @@ class ChaletDetailPage extends StatelessWidget {
                             child: ImageHeaderSection(
                               hotelName: hotelName,
                               location: location,
+                              requestData: requestData,
+                              docId: docId,
                             ),
                           ),
 
@@ -102,16 +105,16 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 24),
 
-                                    // Services & Facilities Section
-                                    ServicesSection(
+                                    // Property Amenities & Features
+                                    PropertyFeaturesCard(
                                       requestData: requestData,
-                                      isDark: isDark,
                                     ),
                                     const SizedBox(height: 24),
 
-                                    // Additional Details
-                                    PropertyFeaturesCard(
+                                    // Additional Features
+                                    ServicesSection(
                                       requestData: requestData,
+                                      isDark: isDark,
                                     ),
                                     const SizedBox(height: 24),
 
@@ -131,16 +134,24 @@ class ChaletDetailPage extends StatelessWidget {
                                           ? (requestData['latitude'] as num)
                                                 .toDouble()
                                           : (requestData['lat'] != null
-                                              ? (requestData['lat'] as num)
-                                                    .toDouble()
-                                              : null),
-                                      longitude: requestData['longitude'] != null
+                                                ? (requestData['lat'] as num)
+                                                      .toDouble()
+                                                : null),
+                                      longitude:
+                                          requestData['longitude'] != null
                                           ? (requestData['longitude'] as num)
                                                 .toDouble()
                                           : (requestData['lon'] != null
-                                              ? (requestData['lon'] as num)
-                                                    .toDouble()
-                                              : null),
+                                                ? (requestData['lon'] as num)
+                                                      .toDouble()
+                                                : null),
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    // Reviews Section
+                                    ReviewsSection(
+                                      chaletId: docId,
+                                      isDark: isDark,
                                     ),
                                     const SizedBox(height: 24),
 

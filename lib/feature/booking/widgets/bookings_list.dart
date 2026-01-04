@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
+import 'package:rebtal/feature/booking/ui/rating_page.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -437,6 +438,16 @@ class BookingCard extends StatelessWidget {
                             ? () => _payNow(context, booking)
                             : isConfirmed
                             ? () => _confirmCancel(context, booking)
+                            : booking.status == BookingStatus.completed
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RatingPage(booking: booking),
+                                  ),
+                                );
+                              }
                             : null,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -453,11 +464,17 @@ class BookingCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                             ],
+                            if (booking.status == BookingStatus.completed) ...[
+                              const Icon(Icons.star_rounded, size: 20),
+                              const SizedBox(width: 8),
+                            ],
                             Text(
                               isApproved
                                   ? 'إتمام الدفع'
                                   : isConfirmed
                                   ? 'إلغاء الحجز'
+                                  : booking.status == BookingStatus.completed
+                                  ? 'تقييم الشاليه'
                                   : isRejected
                                   ? 'تم رفض هذا الطلب'
                                   : booking.status ==

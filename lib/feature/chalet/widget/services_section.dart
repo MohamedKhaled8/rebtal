@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/chalet/logic/cubit/services_cubit.dart';
-import 'package:rebtal/feature/chalet/widget/amenity_card.dart';
 
 class ServicesSection extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -16,115 +13,97 @@ class ServicesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ServicesCubit()..loadAmenities(requestData),
-      child: BlocBuilder<ServicesCubit, ServicesState>(
-        builder: (context, state) {
-          if (state is ServicesLoaded) {
-            if (state.amenities.isEmpty) return const SizedBox.shrink();
+    // Extract features from requestData
+    final featuresList = requestData['features'] as List?;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Services & Facilities',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? ColorManager.chaletTextPrimaryDark
-                        : ColorManager.chaletTextPrimaryLight,
-                    letterSpacing: 0.5,
+    if (featuresList == null || featuresList.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
+          const SizedBox(height: 32),
+          Text(
+            'Additional Features',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: isDark
+                  ? ColorManager.chaletTextPrimaryDark
+                  : ColorManager.chaletTextPrimaryLight,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: List.generate(featuresList.length, (index) {
+              final feature = featuresList[index];
+
+              // Define Palette of Distinct Colors
+              final List<Color> palette = [
+                ColorManager.chaletActionBlue,
+                ColorManager.purple8B5CF6,
+                ColorManager.orangeF59E0B,
+                ColorManager.chaletGalleryPink,
+                Colors.teal,
+                Colors.indigo,
+                Colors.blueGrey,
+                Colors.green,
+                Colors.cyan,
+                Colors.deepOrange,
+              ];
+
+              // Cycle through palette
+              final color = palette[index % palette.length];
+
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(
+                    0.08,
+                  ), // Always light colored background
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withOpacity(
+                      0.3,
+                    ), // Always matching colored border
+                    width: 1,
                   ),
                 ),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.1,
-                  ),
-                  itemCount: state.amenities.length,
-                  itemBuilder: (context, index) {
-                    final item = state.amenities[index];
-                    return AmenityCard(
-                      label: item['label'] as String,
-                      icon: item['icon'] as IconData,
-                      isDark: isDark,
-                    );
-                  },
-                ),
-
-                // Additional Features (Dynamic Tags)
-                if (requestData['features'] != null &&
-                    (requestData['features'] as List).isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Divider(
-                    height: 1,
-                    color: isDark ? ColorManager.white10 : ColorManager.grey200,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Additional Features',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? ColorManager.chaletTextPrimaryDark
-                          : ColorManager.chaletTextPrimaryLight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 18,
+                      color: color, // Always matching colored icon
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: (requestData['features'] as List).map((feature) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? ColorManager.chaletIconBackgroundDark
-                              : ColorManager.greyF3F4F6,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check,
-                              size: 16,
-                              color: isDark
-                                  ? ColorManager.white.withOpacity(0.8)
-                                  : ColorManager.chaletActionGreen,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              feature.toString(),
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? ColorManager.chaletTextSecondaryDark
-                                    : ColorManager.grey374151,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ],
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                    const SizedBox(width: 8),
+                    Text(
+                      feature.toString(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? Colors.white.withOpacity(0.9)
+                            : Colors.black87, // Keep text clearly visible
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }

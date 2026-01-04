@@ -48,6 +48,11 @@ class _RatingPageState extends State<RatingPage> {
     for (var aspect in aspects) {
       _aspectRatings[aspect] = 0;
     }
+    _reviewController.addListener(_onReviewChanged);
+  }
+
+  void _onReviewChanged() {
+    setState(() {});
   }
 
   @override
@@ -67,12 +72,22 @@ class _RatingPageState extends State<RatingPage> {
     });
 
     try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.booking.userId)
+          .get();
+      final userData = userDoc.data() ?? {};
+      final userImage = userData['profileImage'] ?? '';
+      final latestName = userData['name'] ?? widget.booking.userName;
+
       final ratingData = {
         'bookingId': widget.booking.id,
         'rating': _rating,
         'review': _reviewController.text.trim(),
         'aspectRatings': _aspectRatings,
         'createdAt': FieldValue.serverTimestamp(),
+        'userImage': userImage,
+        'userName': latestName,
       };
 
       if (widget.isOwnerRating) {
@@ -93,7 +108,7 @@ class _RatingPageState extends State<RatingPage> {
         ratingData['chaletId'] = widget.booking.chaletId;
         ratingData['chaletName'] = widget.booking.chaletName;
         ratingData['userId'] = widget.booking.userId;
-        ratingData['userName'] = widget.booking.userName;
+        ratingData['userName'] = latestName;
 
         await FirebaseFirestore.instance
             .collection('chalet_ratings')
@@ -193,7 +208,10 @@ class _RatingPageState extends State<RatingPage> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [ColorManager.chaletAccent, ColorManager.teal00A896],
+                    colors: [
+                      ColorManager.chaletAccent,
+                      ColorManager.teal00A896,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -239,7 +257,9 @@ class _RatingPageState extends State<RatingPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -281,29 +301,15 @@ class _RatingPageState extends State<RatingPage> {
 
               const SizedBox(height: 32),
 
-              // Aspect Ratings
+              // Review Text - Moved Up
               Text(
-                'تقييم تفصيلي',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              ...aspects.map((aspect) => _buildAspectRating(aspect, isDark)),
-
-              const SizedBox(height: 24),
-
-              // Review Text
-              Text(
-                'تعليقك (اختياري)',
+                'تعليقك (مطلوب)',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -311,21 +317,27 @@ class _RatingPageState extends State<RatingPage> {
 
               TextField(
                 controller: _reviewController,
-                maxLines: 5,
+                maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'شاركنا تجربتك...',
+                  hintText: 'اكتب تجربتك هنا بالتفصيل...',
                   filled: true,
-                  fillColor: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+                  fillColor: isDark
+                      ? ColorManager.darkSurface1E1E1E
+                      : ColorManager.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey300,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                      color: isDark
+                          ? ColorManager.white10
+                          : ColorManager.grey300,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -336,8 +348,30 @@ class _RatingPageState extends State<RatingPage> {
                     ),
                   ),
                 ),
-                style: TextStyle(color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight),
+                style: TextStyle(
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
+                ),
               ),
+
+              const SizedBox(height: 32),
+
+              // Detailed Ratings
+              Text(
+                'تقييم تفصيلي (اختياري)',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark
+                      ? ColorManager.white
+                      : ColorManager.chaletTextPrimaryLight,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              ...aspects.map((aspect) => _buildAspectRating(aspect, isDark)),
 
               const SizedBox(height: 32),
 
@@ -345,14 +379,21 @@ class _RatingPageState extends State<RatingPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : _submitRating,
+                  onPressed:
+                      (_isSubmitting ||
+                          _reviewController.text.trim().isEmpty ||
+                          _rating == 0)
+                      ? null
+                      : _submitRating,
                   icon: _isSubmitting
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(ColorManager.white),
+                            valueColor: AlwaysStoppedAnimation(
+                              ColorManager.white,
+                            ),
                           ),
                         )
                       : const Icon(Icons.send, size: 20),

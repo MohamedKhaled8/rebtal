@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/services_cubit.dart';
 
 class PropertyFeaturesCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -15,161 +17,216 @@ class PropertyFeaturesCard extends StatelessWidget {
     final childrenCount = requestData['childrenCount']?.toString();
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark
-            ? ColorManager.chaletCardDark
-            : ColorManager.chaletCardLight,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Property Features',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: isDark
-                  ? ColorManager.chaletTextPrimaryDark
-                  : ColorManager.chaletTextPrimaryLight,
-              letterSpacing: 0.5,
+    return BlocProvider(
+      create: (context) => ServicesCubit()..loadAmenities(requestData),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Specs Section
+            Text(
+              'Property Specs',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark
+                    ? ColorManager.chaletTextPrimaryDark
+                    : ColorManager.chaletTextPrimaryLight,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 2.0, // Adjusted to prevent overflow
-            children: [
-              FeatureItem(
-                icon: Icons.bed_rounded,
-                color: ColorManager.chaletActionBlue,
-                value: bedrooms,
-                label: 'Bedrooms',
-                isDark: isDark,
-              ),
-              FeatureItem(
-                icon: Icons.bathtub_rounded,
-                color: ColorManager.purple8B5CF6,
-                value: bathrooms,
-                label: 'Bathrooms',
-                isDark: isDark,
-              ),
-              if (chaletArea != null && chaletArea.isNotEmpty)
-                FeatureItem(
-                  icon: Icons.square_foot_rounded,
-                  color: ColorManager.orangeF59E0B,
-                  value: '$chaletArea m²',
-                  label: 'Area',
-                  isDark: isDark,
+            const SizedBox(height: 16),
+
+            // Minimal Grid for Specs
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 24,
+              crossAxisSpacing: 24,
+              childAspectRatio: 3.5,
+              children: [
+                _buildSimpleFeature(
+                  context,
+                  Icons.bed_rounded,
+                  bedrooms,
+                  'Bedrooms',
+                  isDark,
+                  ColorManager.chaletActionBlue,
                 ),
-              if (childrenCount != null)
-                FeatureItem(
-                  icon: Icons.child_care_rounded,
-                  color: ColorManager.chaletGalleryPink,
-                  value: childrenCount,
-                  label: 'Children',
-                  isDark: isDark,
+                _buildSimpleFeature(
+                  context,
+                  Icons.bathtub_outlined,
+                  bathrooms,
+                  'Bathrooms',
+                  isDark,
+                  ColorManager.purple8B5CF6,
                 ),
-            ],
-          ),
-        ],
+                if (chaletArea != null && chaletArea.isNotEmpty)
+                  _buildSimpleFeature(
+                    context,
+                    Icons.square_foot_rounded,
+                    '$chaletArea m²',
+                    'Area',
+                    isDark,
+                    ColorManager.orangeF59E0B, // Use Orange
+                  ),
+                if (childrenCount != null)
+                  _buildSimpleFeature(
+                    context,
+                    Icons.child_care_rounded,
+                    childrenCount,
+                    'Children',
+                    isDark,
+                    ColorManager.chaletGalleryPink, // Use Pink
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+            Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
+            const SizedBox(height: 32),
+
+            // Amenities Section (Clean & Minimal)
+            BlocBuilder<ServicesCubit, ServicesState>(
+              builder: (context, state) {
+                if (state is ServicesLoaded && state.amenities.isNotEmpty) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Facilities & Services',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? ColorManager.chaletTextPrimaryDark
+                              : ColorManager.chaletTextPrimaryLight,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 24,
+                              childAspectRatio: 0.8,
+                            ),
+                        itemCount: state.amenities.length,
+                        itemBuilder: (context, index) {
+                          final item = state.amenities[index];
+
+                          // Defined Palette for Amenities
+                          final List<Color> palette = [
+                            ColorManager.chaletActionBlue,
+                            ColorManager.purple8B5CF6,
+                            ColorManager.orangeF59E0B,
+                            ColorManager.chaletGalleryPink,
+                            ColorManager.chaletAvailableGreen,
+                            Colors.teal,
+                            Colors.indigo,
+                            Colors.redAccent,
+                          ];
+
+                          // Cycle through palette
+                          final color = palette[index % palette.length];
+
+                          // Always use vibrant color for icon
+                          final iconColor = color;
+
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  // Always show colored background
+                                  color: color.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  item['icon'] as IconData,
+                                  color: iconColor,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item['label'] as String,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.7)
+                                      : Colors.grey[800],
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-class FeatureItem extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String value;
-  final String label;
-  final bool isDark;
-
-  const FeatureItem({
-    super.key,
-    required this.icon,
-    required this.color,
-    required this.value,
-    required this.label,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? ColorManager.chaletIconBackgroundDark
-                  : ColorManager.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+  Widget _buildSimpleFeature(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+    bool isDark,
+    Color color,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 28,
+          color: color, // Always use vibrant color
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isDark
+                    ? ColorManager.chaletTextPrimaryDark
+                    : Colors.black87, // Darker text
+              ),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? ColorManager.chaletTextPrimaryDark
-                        : ColorManager.grey1F2937,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: isDark
-                        ? ColorManager.chaletTextSecondaryDark
-                        : ColorManager.grey[600],
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white54 : Colors.grey[600],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
