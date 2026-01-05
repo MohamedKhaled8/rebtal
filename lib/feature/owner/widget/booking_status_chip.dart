@@ -65,7 +65,8 @@ class BookingStatusChip extends StatelessWidget {
         };
       case BookingStatus.awaitingPayment:
         // Check if payment was rejected
-        final isPaymentRejected = booking != null &&
+        final isPaymentRejected =
+            booking != null &&
             (booking!.paymentRejected == true ||
                 (booking!.adminPaymentNotes != null &&
                     booking!.adminPaymentNotes!.isNotEmpty));
@@ -105,8 +106,14 @@ class BookingStatusChip extends StatelessWidget {
       case BookingStatus.cancelled:
         return {
           'color': ColorManager.grey600,
-          'text': 'ملغي',
+          'text': 'تم الإلغاء',
           'icon': Icons.block,
+        };
+      case BookingStatus.reOffered:
+        return {
+          'color': ColorManager.chaletActionBlue,
+          'text': 'معروض للنقاش',
+          'icon': Icons.swap_horiz,
         };
     }
   }

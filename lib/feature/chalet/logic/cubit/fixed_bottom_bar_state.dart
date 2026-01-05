@@ -13,7 +13,14 @@ class FixedBottomBarLoaded extends FixedBottomBarState {
     required this.displayPrice,
     this.originalPrice,
     required this.isBookingAvailable,
+    this.hasContactedOriginalTenant = false,
+    this.booking,
+    this.isOriginalOfferOwner = false,
   });
+
+  final bool hasContactedOriginalTenant;
+  final Booking? booking;
+  final bool isOriginalOfferOwner;
 }
 
 class FixedBottomBarError extends FixedBottomBarState {

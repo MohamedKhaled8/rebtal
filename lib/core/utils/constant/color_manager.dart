@@ -19,6 +19,8 @@ abstract class ColorManager {
   static const black26 = Colors.black26;
   static const white = Colors.white;
   static const white24 = Colors.white24;
+  static const white38 = Colors.white38;
+  static const white54 = Colors.white54;
   static const white70 = Colors.white70;
   static const white10 = Colors.white10;
   static const gray = Colors.grey;

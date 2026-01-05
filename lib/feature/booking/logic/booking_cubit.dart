@@ -259,6 +259,13 @@ class BookingCubit extends Cubit<BookingState> {
           adminPaymentNotes: data['adminPaymentNotes'] as String?,
           paymentRejected: paymentRejected,
           paymentRejectedAt: paymentRejectedAt,
+          originalTenantId: data['originalTenantId'] as String?,
+          originalTenantName: data['originalTenantName'] as String?,
+          originalTenantPhone: data['originalTenantPhone'] as String?,
+          originalTenantEmail: data['originalTenantEmail'] as String?,
+          transferredAt: data['transferredAt'] != null
+              ? _parseDateTime(data['transferredAt'])
+              : null,
         );
       }).toList(),
     );

@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
 
 class BookingsList extends StatelessWidget {
@@ -64,10 +65,9 @@ class BookingCard extends StatelessWidget {
         booking.status == BookingStatus.approved ||
         (booking.status == BookingStatus.awaitingPayment && !isPaymentRejected);
     final isConfirmed = booking.status == BookingStatus.confirmed;
+    final isCancelled = booking.status == BookingStatus.cancelled;
     final isRejected =
-        booking.status == BookingStatus.rejected ||
-        booking.status == BookingStatus.cancelled ||
-        isPaymentRejected;
+        booking.status == BookingStatus.rejected || isPaymentRejected;
 
     // ألوان الحالة
     final Color statusColor = isPaymentRejected
@@ -76,10 +76,14 @@ class BookingCard extends StatelessWidget {
         ? const Color(0xFF10B981) // Green for confirmed
         : isApproved
         ? const Color(0xFF10B981) // Green for approved/accepted
+        : isCancelled
+        ? ColorManager.grey600
         : isRejected
         ? const Color(0xFFEF4444)
         : booking.status == BookingStatus.paymentUnderReview
         ? const Color(0xFF3B82F6) // Blue for under review
+        : booking.status == BookingStatus.reOffered
+        ? const Color(0xFF2196F3) // Blue for re-offered
         : const Color(0xFFF59E0B); // Orange for pending/awaiting
 
     return Container(
@@ -229,10 +233,12 @@ class BookingCard extends StatelessWidget {
                             Text(
                               isConfirmed
                                   ? 'مؤكد'
+                                  : isCancelled
+                                  ? 'تم الإلغاء'
                                   : isApproved
                                   ? 'مقبول'
                                   : isRejected
-                                  ? (isPaymentRejected ? 'مرفوض' : 'مرفوض')
+                                  ? 'مرفوض'
                                   : booking.status ==
                                         BookingStatus.paymentUnderReview
                                   ? 'قيد المراجعة'
@@ -408,6 +414,72 @@ class BookingCard extends StatelessWidget {
                   // Show contact buttons if payment was rejected, otherwise show normal button
                   if (isPaymentRejected)
                     const SizedBox.shrink() // Contact buttons already shown above
+                  else if (isConfirmed)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent.shade400,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
+                            ),
+                            onPressed: () => _confirmCancel(context, booking),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cancel_outlined,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'إلغاء الحجز',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 4,
+                            ),
+                            onPressed: () => _reList(context, booking),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.swap_horiz, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'إعادة عرض',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
                   else
                     SizedBox(
                       width: double.infinity,
@@ -415,19 +487,27 @@ class BookingCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isApproved
                               ? const Color(0xFF1ED760)
-                              : isConfirmed
-                              ? Colors.redAccent.shade400
+                              : booking.status == BookingStatus.reOffered
+                              ? const Color(0xFF2196F3)
                               : (isDarkMode
                                     ? Colors.white.withOpacity(0.05)
                                     : Colors.grey.shade100),
-                          foregroundColor: isApproved || isConfirmed
+                          foregroundColor:
+                              isApproved ||
+                                  booking.status == BookingStatus.reOffered
                               ? Colors.white
                               : (isDarkMode
                                     ? Colors.white54
                                     : Colors.grey.shade600),
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: isApproved || isConfirmed ? 4 : 0,
-                          shadowColor: isApproved || isConfirmed
+                          elevation:
+                              isApproved ||
+                                  booking.status == BookingStatus.reOffered
+                              ? 4
+                              : 0,
+                          shadowColor:
+                              isApproved ||
+                                  booking.status == BookingStatus.reOffered
                               ? Colors.black26
                               : Colors.transparent,
                           shape: RoundedRectangleBorder(
@@ -436,8 +516,6 @@ class BookingCard extends StatelessWidget {
                         ),
                         onPressed: isApproved
                             ? () => _payNow(context, booking)
-                            : isConfirmed
-                            ? () => _confirmCancel(context, booking)
                             : booking.status == BookingStatus.completed
                             ? () {
                                 Navigator.push(
@@ -448,20 +526,16 @@ class BookingCard extends StatelessWidget {
                                   ),
                                 );
                               }
+                            : booking.status == BookingStatus.reOffered
+                            ? () {
+                                // Undo re-offer? For now do nothing or show info
+                              }
                             : null,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             if (isApproved) ...[
                               const Icon(Icons.payment_rounded, size: 20),
-                              const SizedBox(width: 8),
-                            ],
-                            if (isConfirmed) ...[
-                              const Icon(
-                                Icons.cancel_outlined,
-                                size: 20,
-                                color: Colors.white,
-                              ),
                               const SizedBox(width: 8),
                             ],
                             if (booking.status == BookingStatus.completed) ...[
@@ -471,15 +545,17 @@ class BookingCard extends StatelessWidget {
                             Text(
                               isApproved
                                   ? 'إتمام الدفع'
-                                  : isConfirmed
-                                  ? 'إلغاء الحجز'
                                   : booking.status == BookingStatus.completed
                                   ? 'تقييم الشاليه'
+                                  : isCancelled
+                                  ? 'تم إلغاء هذا الطلب'
                                   : isRejected
                                   ? 'تم رفض هذا الطلب'
                                   : booking.status ==
                                         BookingStatus.paymentUnderReview
                                   ? 'جاري مراجعة الدفع'
+                                  : booking.status == BookingStatus.reOffered
+                                  ? 'معروض للنقاش'
                                   : 'بانتظار موافقة المضيف',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -787,6 +863,37 @@ class BookingCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: isDarkMode ? Colors.white : Colors.black87,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reList(BuildContext context, Booking booking) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("إعادة عرض الحجز"),
+        content: const Text(
+          "هل تريد عرض هذا الحجز للنقاش مع مستأجرين آخرين؟\nسيتمكن المستخدمون الآخرون من رؤية الحجز وطلب نقله.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("تراجع"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<AppCubit>().bookingCubit.updateBookingStatus(
+                booking.id,
+                BookingStatus.reOffered,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('تم عرض الحجز للنقاش بنجاح')),
+              );
+            },
+            child: const Text("تأكيد والعرض"),
           ),
         ],
       ),

@@ -10,6 +10,7 @@ enum BookingStatus {
   completed, // اكتمل الحجز
   rejected, // مرفوض من المالك
   cancelled, // ملغي من المستخدم
+  reOffered, // معروض للنقاش / إعادة عرض
 }
 
 enum PaymentStatus { pending, paid, failed, expired }
@@ -65,6 +66,12 @@ class Booking {
   final double? refundAmount;
   final DateTime? refundedAt;
   final String? refundReason;
+  // Transfer tracking
+  final String? originalTenantId;
+  final String? originalTenantName;
+  final String? originalTenantPhone;
+  final String? originalTenantEmail;
+  final DateTime? transferredAt;
 
   Booking({
     required this.id,
@@ -104,6 +111,11 @@ class Booking {
     this.refundAmount,
     this.refundedAt,
     this.refundReason,
+    this.originalTenantId,
+    this.originalTenantName,
+    this.originalTenantPhone,
+    this.originalTenantEmail,
+    this.transferredAt,
   });
 
   Booking copyWith({
@@ -144,6 +156,11 @@ class Booking {
     double? refundAmount,
     DateTime? refundedAt,
     String? refundReason,
+    String? originalTenantId,
+    String? originalTenantName,
+    String? originalTenantPhone,
+    String? originalTenantEmail,
+    DateTime? transferredAt,
   }) {
     return Booking(
       id: id ?? this.id,
@@ -185,6 +202,11 @@ class Booking {
       refundAmount: refundAmount ?? this.refundAmount,
       refundedAt: refundedAt ?? this.refundedAt,
       refundReason: refundReason ?? this.refundReason,
+      originalTenantId: originalTenantId ?? this.originalTenantId,
+      originalTenantName: originalTenantName ?? this.originalTenantName,
+      originalTenantPhone: originalTenantPhone ?? this.originalTenantPhone,
+      originalTenantEmail: originalTenantEmail ?? this.originalTenantEmail,
+      transferredAt: transferredAt ?? this.transferredAt,
     );
   }
 
@@ -230,6 +252,11 @@ class Booking {
       refundAmount: (json['refundAmount'] as num?)?.toDouble(),
       refundedAt: _parseDate(json['refundedAt']),
       refundReason: json['refundReason'] as String?,
+      originalTenantId: json['originalTenantId'] as String?,
+      originalTenantName: json['originalTenantName'] as String?,
+      originalTenantPhone: json['originalTenantPhone'] as String?,
+      originalTenantEmail: json['originalTenantEmail'] as String?,
+      transferredAt: _parseDate(json['transferredAt']),
     );
   }
 
@@ -258,6 +285,8 @@ class Booking {
         return BookingStatus.rejected;
       case 'cancelled':
         return BookingStatus.cancelled;
+      case 'reOffered':
+        return BookingStatus.reOffered;
       default:
         return BookingStatus.pending;
     }
@@ -332,5 +361,10 @@ class Booking {
     'refundAmount': refundAmount,
     'refundedAt': refundedAt?.toIso8601String(),
     'refundReason': refundReason,
+    'originalTenantId': originalTenantId,
+    'originalTenantName': originalTenantName,
+    'originalTenantPhone': originalTenantPhone,
+    'originalTenantEmail': originalTenantEmail,
+    'transferredAt': transferredAt?.toIso8601String(),
   };
 }

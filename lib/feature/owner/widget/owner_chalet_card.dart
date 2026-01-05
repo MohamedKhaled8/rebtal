@@ -26,7 +26,6 @@ class OwnerChaletCard extends StatelessWidget {
     final price = chaletData['price'];
     final images = OwnerHelper.collectChaletImages(chaletData);
     final status = chaletData['status'] ?? 'pending';
-    final finalPrice = OwnerHelper.calculateFinalPrice(chaletData);
 
     final bool isVisible = chaletData['isVisible'] ?? true;
     final String bookingStatus =

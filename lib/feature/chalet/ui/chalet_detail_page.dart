@@ -28,7 +28,12 @@ class ChaletDetailPage extends StatelessWidget {
     required this.requestData,
     required this.docId,
     required this.status,
+    this.bookingId,
+    this.isReOffer = false,
   });
+
+  final String? bookingId;
+  final bool isReOffer;
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +220,8 @@ class ChaletDetailPage extends StatelessWidget {
                           requestData: requestData,
                           isDark: isDark,
                           docId: docId,
+                          bookingId: bookingId,
+                          isReOffer: isReOffer,
                         ),
                     ],
                   ),

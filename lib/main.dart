@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:rebtal/core/Router/app_router.dart';
+import 'package:rebtal/core/Router/export_routes.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/firebase_options.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
@@ -47,7 +49,9 @@ void main() async {
     print('✅ Firebase App Check Activated (Debug Mode)');
   } catch (e) {
     print('⚠️ Firebase App Check Failed: $e');
-    print('⚠️ Continuing without App Check - this may cause storage upload issues');
+    print(
+      '⚠️ Continuing without App Check - this may cause storage upload issues',
+    );
     // Don't fail the app startup if App Check fails
     // The app will continue but storage might have issues
   }
@@ -73,5 +77,10 @@ void main() async {
   // Initialize OneSignal
   await OneSignalService().initialize();
 
-  runApp(RebtalApp(appRouter: AppRouter()));
+  runApp(
+    BlocProvider<AppCubit>(
+      create: (context) => getIt<AppCubit>(),
+      child: RebtalApp(appRouter: AppRouter()),
+    ),
+  );
 }

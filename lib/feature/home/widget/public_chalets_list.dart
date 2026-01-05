@@ -18,11 +18,15 @@ import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
 class PublicChaletCard extends StatefulWidget {
   final Map<String, dynamic> chaletData;
   final String docId;
+  final VoidCallback? onDetailsPressed;
+  final Widget? badge;
 
   const PublicChaletCard({
     super.key,
     required this.chaletData,
     required this.docId,
+    this.onDetailsPressed,
+    this.badge,
   });
 
   @override
@@ -297,6 +301,8 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                     ),
                   ),
                 ),
+              if (widget.badge != null)
+                Positioned(top: 50, right: 16, child: widget.badge!),
             ],
           ),
 
@@ -500,18 +506,20 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                     ),
 
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChaletDetailPage(
-                              requestData: widget.chaletData,
-                              docId: widget.docId,
-                              status: 'approved',
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed:
+                          widget.onDetailsPressed ??
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChaletDetailPage(
+                                  requestData: widget.chaletData,
+                                  docId: widget.docId,
+                                  status: 'approved',
+                                ),
+                              ),
+                            );
+                          },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isDark
                             ? ColorManager.white

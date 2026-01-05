@@ -6,6 +6,7 @@ enum NotificationType {
   chaletSubmission('chalet_submission'),
   chaletApproved('chalet_approved'),
   chaletRejected('chalet_rejected'),
+  transferTicket('transfer_ticket'),
   general('general');
 
   final String value;
@@ -34,6 +35,8 @@ enum NotificationType {
         return 'تم قبول الشاليه';
       case NotificationType.chaletRejected:
         return 'تم رفض الشاليه';
+      case NotificationType.transferTicket:
+        return 'نقل حجز';
       case NotificationType.general:
         return 'إشعار عام';
     }
