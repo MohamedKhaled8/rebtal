@@ -198,12 +198,24 @@ class AuthRepository implements BaseAuthRepository {
         return Left(AuthFailure('الحساب غير موجود'));
       }
 
-      final docData = foundDoc!.data();
+      final docData = foundDoc!.data() as Map<String, dynamic>?;
       if (docData == null) {
         return Left(ServerFailure('بيانات المستخدم غير موجودة'));
       }
 
-      return Right(UserModel.fromMap(docData as Map<String, dynamic>));
+      // ✅ تحديث كلمة المرور في قاعدة البيانات لتتناسب مع كلمة المرور الجديدة
+      if (docData['password'] != password) {
+        try {
+          await foundDoc!.reference.update({'password': password});
+          debugPrint('🔄 Password updated in Firestore to match Auth.');
+          // تحديث المودل المحلي أيضاً
+          docData['password'] = password;
+        } catch (e) {
+          debugPrint('⚠️ Failed to sync password to Firestore: $e');
+        }
+      }
+
+      return Right(UserModel.fromMap(docData));
     } catch (e) {
       FirebaseErrorHandler.logError(e, context: 'Login');
       final errorMessage = FirebaseErrorHandler.getErrorMessage(e);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HandwrittenAnimatedText extends StatefulWidget {
   final String text;
@@ -12,7 +13,7 @@ class HandwrittenAnimatedText extends StatefulWidget {
     required this.text,
     this.fontSize = 64,
     required this.color,
-    this.animationDuration = const Duration(milliseconds: 2800),
+    this.animationDuration = const Duration(milliseconds: 2000),
     this.isDark = false,
   });
 
@@ -36,11 +37,11 @@ class _HandwrittenAnimatedTextState extends State<HandwrittenAnimatedText>
 
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.95, curve: Curves.easeInOut),
+      curve: const Interval(0.0, 1.0, curve: Curves.easeInOut),
     );
 
     // Start animation after a small delay
-    Future.delayed(const Duration(milliseconds: 400), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         _controller.forward();
       }
@@ -84,107 +85,49 @@ class _AnimatedTextWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate how many characters to show
     final totalChars = text.length;
-    final charsToShow = (totalChars * progress).floor();
-    final remainingProgress = (totalChars * progress) - charsToShow;
+    // Calculate visible characters based on progress
+    // We want a fluid reveal, so we use the fractional part for opacity of the current char
+    final floatIndex = totalChars * progress;
+    final int visibleIndex = floatIndex.floor();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: List.generate(totalChars, (index) {
-        if (index < charsToShow) {
-          // Fully visible character
-          return _HandwrittenChar(
-            char: text[index],
-            fontSize: fontSize,
-            color: color,
-            opacity: 1.0,
-            index: index,
-          );
-        } else if (index == charsToShow && remainingProgress > 0) {
-          // Partially visible character (being drawn)
-          return _HandwrittenChar(
-            char: text[index],
-            fontSize: fontSize,
-            color: color,
-            opacity: remainingProgress,
-            index: index,
-          );
-        } else {
-          // Not yet visible
-          return _HandwrittenChar(
-            char: text[index],
-            fontSize: fontSize,
-            color: color,
-            opacity: 0.0,
-            index: index,
-          );
+        double opacity = 0.0;
+        double slideY = 10.0;
+
+        if (index < visibleIndex) {
+          // Fully visible
+          opacity = 1.0;
+          slideY = 0.0;
+        } else if (index == visibleIndex) {
+          // Fading in
+          final charProgress = floatIndex - visibleIndex;
+          opacity = charProgress;
+          slideY = 10.0 * (1 - charProgress);
         }
-      }),
-    );
-  }
-}
 
-class _HandwrittenChar extends StatelessWidget {
-  final String char;
-  final double fontSize;
-  final Color color;
-  final double opacity;
-  final int index;
-
-  const _HandwrittenChar({
-    required this.char,
-    required this.fontSize,
-    required this.color,
-    required this.opacity,
-    required this.index,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Add slight rotation for handwriting effect
-    final rotation = (char.hashCode % 7 - 3) * 0.03;
-    final offsetY = (char.hashCode % 5 - 2) * 1.5;
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: opacity),
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.rotate(
-          angle: rotation * value,
-          child: Transform.translate(
-            offset: Offset(0, offsetY * (1 - value)),
-              child: Opacity(
-              opacity: value,
-              child: Text(
-                char,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w200,
-                  letterSpacing: 4,
-                  color: color,
-                  height: 1.2,
-                  shadows: [
-                    Shadow(
-                      color: color.withOpacity(0.25 * value),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                    Shadow(
-                      color: color.withOpacity(0.15 * value),
-                      blurRadius: 6,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
+        return Transform.translate(
+          offset: Offset(0, slideY),
+          child: Opacity(
+            opacity: opacity,
+            child: Text(
+              text[index],
+              style: GoogleFonts.grandHotel(
+                fontSize: fontSize,
+                color: color,
+                // Zero or negative spacing to connect letters
+                letterSpacing: 0,
+                height: 1.0,
               ),
             ),
           ),
         );
-      },
+      }),
     );
   }
 }
-

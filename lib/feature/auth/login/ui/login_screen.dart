@@ -92,9 +92,7 @@ class _LogoSection extends StatelessWidget {
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
-              color: isDark
-                  ? ColorManager.white
-                  : ColorManager.chaletActionBlue,
+              color: isDark ? ColorManager.white : Colors.black,
               letterSpacing: -0.5,
             ),
           ),
@@ -104,9 +102,7 @@ class _LogoSection extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: isDark
-                  ? ColorManager.white
-                  : ColorManager.chaletActionBlue,
+              color: isDark ? ColorManager.white : Colors.black,
             ),
           ),
         ],

@@ -151,7 +151,9 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
                         b.status == BookingStatus.awaitingPayment ||
                         b.status == BookingStatus.paymentUnderReview ||
                         b.status == BookingStatus.confirmed ||
-                        b.status == BookingStatus.completed,
+                        b.status == BookingStatus.completed ||
+                        b.status == BookingStatus.reOffered ||
+                        b.status == BookingStatus.pendingOwnerApproval,
                   )
                   .toList()
                 ..sort((a, b) {

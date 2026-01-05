@@ -11,6 +11,7 @@ enum BookingStatus {
   rejected, // مرفوض من المالك
   cancelled, // ملغي من المستخدم
   reOffered, // معروض للنقاش / إعادة عرض
+  pendingOwnerApproval, // في انتظار موافقة المالك النهائية على نقل الحجز
 }
 
 enum PaymentStatus { pending, paid, failed, expired }
@@ -287,6 +288,8 @@ class Booking {
         return BookingStatus.cancelled;
       case 'reOffered':
         return BookingStatus.reOffered;
+      case 'pendingOwnerApproval':
+        return BookingStatus.pendingOwnerApproval;
       default:
         return BookingStatus.pending;
     }

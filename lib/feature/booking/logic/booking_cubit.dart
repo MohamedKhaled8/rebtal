@@ -581,6 +581,10 @@ class BookingCubit extends Cubit<BookingState> {
           return BookingStatus.confirmed;
         case 'completed':
           return BookingStatus.completed;
+        case 'reoffered':
+          return BookingStatus.reOffered;
+        case 'pendingownerapproval':
+          return BookingStatus.pendingOwnerApproval;
         default:
           return BookingStatus.pending;
       }
@@ -871,6 +875,107 @@ class BookingCubit extends Cubit<BookingState> {
       debugPrint('❌ Error requesting refund: $e');
       rethrow;
     }
+  }
+
+  // ✅ الموافقة النهائية على نقل الحجز (للمالك)
+  Future<void> finalizeTransfer(String bookingId) async {
+    try {
+      // جلب بيانات الحجز
+      final bookingDoc = await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .get();
+
+      if (!bookingDoc.exists) {
+        debugPrint('Booking does not exist');
+        return;
+      }
+
+      final bookingData = bookingDoc.data()!;
+      final oldBooking = Booking.fromJson({
+        ...bookingData,
+        'id': bookingDoc.id,
+      });
+
+      // التأكد من وجود معلومات المستأجر الجديد
+      final newTenantId = bookingData['pendingNewTenantId'] as String?;
+      final newTenantName = bookingData['pendingNewTenantName'] as String?;
+      final newTenantPhone = bookingData['pendingNewTenantPhone'] as String?;
+      final newTenantEmail = bookingData['pendingNewTenantEmail'] as String?;
+
+      if (newTenantId == null) {
+        debugPrint('No pending tenant info found');
+        return;
+      }
+
+      // تنفيذ التحويل الفعلي
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': 'confirmed',
+            'userId': newTenantId,
+            'userName': newTenantName ?? 'Unknown',
+            'userPhone': newTenantPhone,
+            'userEmail': newTenantEmail,
+            'originalTenantId': oldBooking.userId,
+            // حفظ بيانات المستأجر الأصلي
+            'originalTenantName': oldBooking.userName,
+            'originalTenantPhone': oldBooking.userPhone,
+            'originalTenantEmail': oldBooking.userEmail,
+            'transferredAt': FieldValue.serverTimestamp(),
+            'paymentStatus': 'paid',
+            // حذف الحقول المؤقتة
+            'pendingNewTenantId': FieldValue.delete(),
+            'pendingNewTenantName': FieldValue.delete(),
+            'pendingNewTenantPhone': FieldValue.delete(),
+            'pendingNewTenantEmail': FieldValue.delete(),
+            'pendingApprovalAt': FieldValue.delete(),
+          });
+
+      // إرسال إشعار للمستأجر الجديد
+      try {
+        await NotificationService().sendNotification(
+          userId: newTenantId,
+          title: 'تم قبول طلب نقل الحجز',
+          body: 'تم الموافقة على نقل الحجز إليك من قبل المالك. مبروك!',
+          type: NotificationType.transferTicket,
+          relatedId: bookingId,
+          data: {'bookingId': bookingId, 'chaletName': oldBooking.chaletName},
+        );
+      } catch (e) {
+        debugPrint('Notification error: $e');
+      }
+
+      // إرسال إيميل للمستأجر الجديد
+      if (newTenantEmail != null && newTenantEmail.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('mail').add({
+          'to': [newTenantEmail],
+          'message': {
+            'subject': 'تأكيد حجز الشاليه: ${oldBooking.chaletName}',
+            'html':
+                '''
+<h2>تم تأكيد حجزك!</h2>
+<p>مرحباً ${newTenantName ?? 'عزيزي العميل'}،</p>
+<p>تم نقل حجز الشاليه (<strong>${oldBooking.chaletName}</strong>) إليك بنجاح.</p>
+<h3>تفاصيل الحجز:</h3>
+<ul>
+  <li><strong>من:</strong> ${_formatDate(oldBooking.from)}</li>
+  <li><strong>إلى:</strong> ${_formatDate(oldBooking.to)}</li>
+  <li><strong>المبلغ:</strong> ${oldBooking.amount} EGP</li>
+</ul>
+<p>نتمنى لك إقامة سعيدة!</p>
+''',
+          },
+        });
+      }
+    } catch (e) {
+      debugPrint('Error finalizing transfer: $e');
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.day}/${date.month}/${date.year}";
   }
 }
 

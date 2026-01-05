@@ -84,6 +84,8 @@ class BookingCard extends StatelessWidget {
         ? const Color(0xFF3B82F6) // Blue for under review
         : booking.status == BookingStatus.reOffered
         ? const Color(0xFF2196F3) // Blue for re-offered
+        : booking.status == BookingStatus.pendingOwnerApproval
+        ? const Color(0xFF9C27B0) // Purple for action required
         : const Color(0xFFF59E0B); // Orange for pending/awaiting
 
     return Container(
@@ -528,8 +530,11 @@ class BookingCard extends StatelessWidget {
                               }
                             : booking.status == BookingStatus.reOffered
                             ? () {
-                                // Undo re-offer? For now do nothing or show info
+                                // Undo re-offer logic if needed
                               }
+                            : booking.status ==
+                                  BookingStatus.pendingOwnerApproval
+                            ? () => _finalizeTransfer(context, booking)
                             : null,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -540,6 +545,11 @@ class BookingCard extends StatelessWidget {
                             ],
                             if (booking.status == BookingStatus.completed) ...[
                               const Icon(Icons.star_rounded, size: 20),
+                              const SizedBox(width: 8),
+                            ],
+                            if (booking.status ==
+                                BookingStatus.pendingOwnerApproval) ...[
+                              const Icon(Icons.check_circle_outline, size: 20),
                               const SizedBox(width: 8),
                             ],
                             Text(
@@ -556,6 +566,9 @@ class BookingCard extends StatelessWidget {
                                   ? 'جاري مراجعة الدفع'
                                   : booking.status == BookingStatus.reOffered
                                   ? 'معروض للنقاش'
+                                  : booking.status ==
+                                        BookingStatus.pendingOwnerApproval
+                                  ? 'إتمام قبول الموافقة النهائية'
                                   : 'بانتظار موافقة المضيف',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -589,6 +602,30 @@ class BookingCard extends StatelessWidget {
       Routes.paymentMethodSelection,
       arguments: {'booking': booking, 'totalAmount': booking.amount ?? 0.0},
     );
+  }
+
+  void _finalizeTransfer(BuildContext context, Booking booking) async {
+    try {
+      final appCubit = context.read<AppCubit>();
+      await appCubit.bookingCubit.finalizeTransfer(booking.id);
+
+      if (context.mounted) {
+        // Refresh list
+        final currentState = appCubit.state;
+        if (currentState is AppAuthenticated) {
+          appCubit.bookingCubit.loadUserBookings(currentState.user.uid);
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم نقل الحجز بنجاح ✅')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('حدث خطأ: $e')));
+      }
+    }
   }
 
   void _confirmCancel(BuildContext context, Booking booking) {

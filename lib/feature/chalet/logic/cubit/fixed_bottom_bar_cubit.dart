@@ -149,78 +149,159 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
 
         final oldBooking = s.booking!;
 
-        // CASE 2: Transfer to New Tenant (Update existing booking)
-        // We update the existing document to avoid creating a new invoice/booking ID
+        // المرحلة الأولى: تغيير الحالة إلى pendingOwnerApproval فقط
+        // نحفظ معلومات المستأجر الجديد في حقول مؤقتة
         await FirebaseFirestore.instance
             .collection('bookings')
             .doc(oldBooking.id)
             .update({
-              'status': 'confirmed',
-              'userId': currentUser.uid,
-              'userName': currentUser.name,
-              'userPhone': currentUser.phone,
-              'userEmail': currentUser.email,
-              'originalTenantId': oldBooking.userId,
-              'originalTenantName': oldBooking.userName,
-              'originalTenantPhone': oldBooking.userPhone,
-              'originalTenantEmail': oldBooking.userEmail,
-              'transferredAt': FieldValue.serverTimestamp(),
-              'paymentStatus': 'paid',
+              'status': 'pendingOwnerApproval',
+              'pendingNewTenantId': currentUser.uid,
+              'pendingNewTenantName': currentUser.name,
+              'pendingNewTenantPhone': currentUser.phone,
+              'pendingNewTenantEmail': currentUser.email,
+              'pendingApprovalAt': FieldValue.serverTimestamp(),
             });
 
-        // 3. Notify Owner (Using NotificationService for OneSignal Push)
-        // Ensure we handle case where notification service might be unitialized safely?
-        // Usually safe to call instance().
+        // إرسال إشعار للمالك بأن هناك موافقة مبدئية تنتظر موافقته
         try {
           await NotificationService().sendNotification(
             userId: oldBooking.ownerId,
-            title: 'تم نقل حجز',
+            title: 'موافقة مبدئية على نقل حجز',
             body:
-                'تم نقل الحجز من ${oldBooking.userName} إلى ${currentUser.name}',
+                'قام ${currentUser.name} بالموافقة المبدئية على نقل الحجز. يرجى المراجعة والموافقة النهائية.',
             type: NotificationType.transferTicket,
             relatedId: oldBooking.id,
             data: {
-              'oldTenantName': oldBooking.userName,
               'newTenantName': currentUser.name,
               'bookingId': oldBooking.id,
+              'requiresOwnerApproval': true,
             },
           );
         } catch (e) {
           debugPrint('Notification error: $e');
         }
 
-        // 4. Send Email to New Tenant (Via Mail Collection Trigger)
-        // This relies on Firebase Trigger Email extension being installed
-        if (currentUser.email.isNotEmpty) {
-          await FirebaseFirestore.instance.collection('mail').add({
-            'to': [currentUser.email],
-            'message': {
-              'subject': 'تأكيد حجز الشاليه: ${oldBooking.chaletName}',
-              'html':
-                  '''
-<h2>تم تأكيد حجزك!</h2>
-<p>مرحباً ${currentUser.name}،</p>
-<p>تم نقل حجز الشاليه (<strong>${oldBooking.chaletName}</strong>) إليك بنجاح.</p>
-<h3>تفاصيل الحجز:</h3>
-<ul>
-  <li><strong>من:</strong> ${_formatDate(oldBooking.from)}</li>
-  <li><strong>إلى:</strong> ${_formatDate(oldBooking.to)}</li>
-  <li><strong>المبلغ:</strong> ${oldBooking.amount} EGP</li>
-</ul>
-<p>نتمنى لك إقامة سعيدة!</p>
-''',
-            },
-          });
-        }
-
         if (context.mounted) {
-          SnackBarHelper.showSuccess(context, 'تم نقل الحجز بنجاح!');
-          Navigator.pop(context); // Return to offers or details
+          SnackBarHelper.showSuccess(
+            context,
+            'تم إرسال الموافقة المبدئية! في انتظار موافقة المالك النهائية.',
+          );
+          Navigator.pop(context);
         }
       } catch (e) {
         if (context.mounted) {
           SnackBarHelper.showError(context, 'حدث خطأ: $e');
         }
+      }
+    }
+  }
+
+  // المرحلة الثانية: التحويل الفعلي بعد موافقة المالك
+  Future<void> finalizeTransfer(BuildContext context, String bookingId) async {
+    try {
+      // جلب بيانات الحجز
+      final bookingDoc = await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .get();
+
+      if (!bookingDoc.exists) {
+        if (context.mounted) {
+          SnackBarHelper.showError(context, 'الحجز غير موجود');
+        }
+        return;
+      }
+
+      final bookingData = bookingDoc.data()!;
+      final oldBooking = Booking.fromJson({
+        ...bookingData,
+        'id': bookingDoc.id,
+      });
+
+      // التأكد من وجود معلومات المستأجر الجديد
+      final newTenantId = bookingData['pendingNewTenantId'] as String?;
+      final newTenantName = bookingData['pendingNewTenantName'] as String?;
+      final newTenantPhone = bookingData['pendingNewTenantPhone'] as String?;
+      final newTenantEmail = bookingData['pendingNewTenantEmail'] as String?;
+
+      if (newTenantId == null || newTenantName == null) {
+        if (context.mounted) {
+          SnackBarHelper.showError(
+            context,
+            'معلومات المستأجر الجديد غير موجودة',
+          );
+        }
+        return;
+      }
+
+      // تنفيذ التحويل الفعلي
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+            'status': 'confirmed',
+            'userId': newTenantId,
+            'userName': newTenantName,
+            'userPhone': newTenantPhone,
+            'userEmail': newTenantEmail,
+            'originalTenantId': oldBooking.userId,
+            'originalTenantName': oldBooking.userName,
+            'originalTenantPhone': oldBooking.userPhone,
+            'originalTenantEmail': oldBooking.userEmail,
+            'transferredAt': FieldValue.serverTimestamp(),
+            'paymentStatus': 'paid',
+            // حذف الحقول المؤقتة
+            'pendingNewTenantId': FieldValue.delete(),
+            'pendingNewTenantName': FieldValue.delete(),
+            'pendingNewTenantPhone': FieldValue.delete(),
+            'pendingNewTenantEmail': FieldValue.delete(),
+            'pendingApprovalAt': FieldValue.delete(),
+          });
+
+      // إرسال إشعار للمستأجر الجديد
+      try {
+        await NotificationService().sendNotification(
+          userId: newTenantId,
+          title: 'تم قبول طلب نقل الحجز',
+          body: 'تم الموافقة على نقل الحجز إليك من قبل المالك. مبروك!',
+          type: NotificationType.transferTicket,
+          relatedId: bookingId,
+          data: {'bookingId': bookingId, 'chaletName': oldBooking.chaletName},
+        );
+      } catch (e) {
+        debugPrint('Notification error: $e');
+      }
+
+      // إرسال إيميل للمستأجر الجديد
+      if (newTenantEmail != null && newTenantEmail.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('mail').add({
+          'to': [newTenantEmail],
+          'message': {
+            'subject': 'تأكيد حجز الشاليه: ${oldBooking.chaletName}',
+            'html':
+                '''
+\u003ch2\u003eتم تأكيد حجزك!\u003c/h2\u003e
+\u003cp\u003eمرحباً $newTenantName،\u003c/p\u003e
+\u003cp\u003eتم نقل حجز الشاليه (\u003cstrong\u003e${oldBooking.chaletName}\u003c/strong\u003e) إليك بنجاح.\u003c/p\u003e
+\u003ch3\u003eتفاصيل الحجز:\u003c/h3\u003e
+\u003cul\u003e
+  \u003cli\u003e\u003cstrong\u003eمن:\u003c/strong\u003e ${_formatDate(oldBooking.from)}\u003c/li\u003e
+  \u003cli\u003e\u003cstrong\u003eإلى:\u003c/strong\u003e ${_formatDate(oldBooking.to)}\u003c/li\u003e
+  \u003cli\u003e\u003cstrong\u003eالمبلغ:\u003c/strong\u003e ${oldBooking.amount} EGP\u003c/li\u003e
+\u003c/ul\u003e
+\u003cp\u003eنتمنى لك إقامة سعيدة!\u003c/p\u003e
+''',
+          },
+        });
+      }
+
+      if (context.mounted) {
+        SnackBarHelper.showSuccess(context, 'تم إعادة العرض بنجاح! ✅');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarHelper.showError(context, 'حدث خطأ: $e');
       }
     }
   }

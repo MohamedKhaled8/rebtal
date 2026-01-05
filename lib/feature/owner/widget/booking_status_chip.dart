@@ -115,6 +115,12 @@ class BookingStatusChip extends StatelessWidget {
           'text': 'معروض للنقاش',
           'icon': Icons.swap_horiz,
         };
+      case BookingStatus.pendingOwnerApproval:
+        return {
+          'color': ColorManager.orange,
+          'text': 'في انتظار موافقة المالك',
+          'icon': Icons.pending_actions,
+        };
     }
   }
 }

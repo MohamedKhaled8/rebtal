@@ -468,6 +468,8 @@ class BookingCard extends StatelessWidget {
                       ),
                     ],
 
+                    // زر الموافقة النهائية على نقل الحجز
+
                     // معلومات إضافية للحجوزات المقبولة
                     if (booking.status == BookingStatus.approved) ...[
                       const SizedBox(height: 16),

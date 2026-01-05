@@ -87,6 +87,7 @@ dependencies:
   mailer: ^6.6.0
   dartz: ^0.10.1
   share_plus: ^12.0.1
+  google_fonts: ^6.3.3
 
 
 

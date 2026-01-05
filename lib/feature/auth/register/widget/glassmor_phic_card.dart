@@ -32,7 +32,7 @@ class GlassmorPhicCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: isDark ? ColorManager.white : ColorManager.primaryColor,
+            color: isDark ? ColorManager.white : Colors.black,
           ),
         ),
         const SizedBox(height: 8),
@@ -43,7 +43,7 @@ class GlassmorPhicCard extends StatelessWidget {
             "Create an account so you can start your journey with us",
             style: TextStyle(
               fontSize: 15,
-              color: isDark ? ColorManager.white : ColorManager.grey,
+              color: isDark ? ColorManager.white : Colors.black,
             ),
           ),
         ),

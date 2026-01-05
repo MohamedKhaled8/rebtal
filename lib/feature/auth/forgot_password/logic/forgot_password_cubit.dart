@@ -29,10 +29,12 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
       },
       (_) {
         emit(ForgotPasswordSuccess());
-        SnackBarHelper.showInfo(
+        SnackBarHelper.showSuccess(
           context,
-          'إذا كان هذا البريد موجوداً، سنرسل لك رابط إعادة التعيين.',
+          'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح ✅',
         );
+        // العودة لصفحة تسجيل الدخول
+        Navigator.of(context).pop();
       },
     );
   }
