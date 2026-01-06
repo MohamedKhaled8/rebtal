@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
@@ -47,15 +49,18 @@ class OffersPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.local_offer_outlined,
-                    size: 64,
-                    color: ColorManager.grey,
-                  ),
+                  AppImageHelper(path: ImageAssetsManger.couponDiscount),
+
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد عروض حالياً',
-                    style: TextStyle(color: ColorManager.grey, fontSize: 18),
+                    'لا توجد عروض',
+                    style: TextStyle(
+                      color: DynamicThemeManager.isDarkMode(context)
+                          ? ColorManager.white70
+                          : ColorManager.chaletGrey500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

@@ -133,27 +133,27 @@ class OwnerChaletsList extends StatelessWidget {
     if (chalet is Map<String, dynamic>) {
       return chalet;
     }
-    
+
     if (chalet is ChaletModel) {
       final map = chalet.toMap();
       map['id'] = chalet.id; // Ensure ID is included
-      
+
       // Try to get original Firestore data if available
       // Note: This assumes the original data might be stored somewhere
       // For now, we'll add fallback values based on ownerName
       if (!map.containsKey('merchantName') && chalet.ownerName.isNotEmpty) {
         map['merchantName'] = chalet.ownerName;
       }
-      
+
       // Set isAvailable based on bookingAvailability if not present
       if (!map.containsKey('isAvailable')) {
-        map['isAvailable'] = chalet.bookingAvailability == 
-            BookingAvailability.available;
+        map['isAvailable'] =
+            chalet.bookingAvailability == BookingAvailability.available;
       }
-      
+
       return map;
     }
-    
+
     if (chalet is ChaletEntity) {
       // Convert ChaletEntity to Map manually
       final map = {
@@ -176,19 +176,19 @@ class OwnerChaletsList extends StatelessWidget {
         'bookingAvailability': chalet.bookingAvailability.name,
         'isVisible': chalet.isVisible,
       };
-      
+
       // Add fallback values for missing fields
       if (!map.containsKey('merchantName') && chalet.ownerName.isNotEmpty) {
         map['merchantName'] = chalet.ownerName;
       }
-      
+
       // Set isAvailable based on bookingAvailability
-      map['isAvailable'] = chalet.bookingAvailability == 
-          BookingAvailability.available;
-      
+      map['isAvailable'] =
+          chalet.bookingAvailability == BookingAvailability.available;
+
       return map;
     }
-    
+
     // Fallback: try to call toMap() if available
     try {
       return (chalet as dynamic).toMap() as Map<String, dynamic>;

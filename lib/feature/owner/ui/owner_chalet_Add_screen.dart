@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
@@ -31,20 +32,35 @@ class OwnerChaletAddScreen extends StatelessWidget {
       );
     }
 
-    return BlocListener<OwnerCubit, OwnerState>(
-      bloc: ownerCubit,
-      listenWhen: (previous, current) {
-        return previous.isFormSuccess != current.isFormSuccess ||
-            previous.formError != current.formError;
-      },
-      listener: (context, state) {
-        if (state.isFormSuccess) {
-          SnackBarHelper.showSuccess(context, 'تم إضافة الشاليه بنجاح!');
-          Navigator.pop(context);
-        } else if (state.formError != null) {
-          SnackBarHelper.showError(context, state.formError!);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<OwnerCubit, OwnerState>(
+          bloc: ownerCubit,
+          listenWhen: (previous, current) =>
+              previous.isFormSubmitting != current.isFormSubmitting,
+          listener: (context, state) {
+            if (state.isFormSubmitting) {
+              PremiumLoadingOverlay.show(context);
+            } else {
+              PremiumLoadingOverlay.dismiss(context);
+            }
+          },
+        ),
+        BlocListener<OwnerCubit, OwnerState>(
+          bloc: ownerCubit,
+          listenWhen: (previous, current) =>
+              previous.isFormSuccess != current.isFormSuccess ||
+              previous.formError != current.formError,
+          listener: (context, state) {
+            if (state.isFormSuccess) {
+              SnackBarHelper.showSuccess(context, 'تم إضافة الشاليه بنجاح!');
+              Navigator.pop(context);
+            } else if (state.formError != null) {
+              SnackBarHelper.showError(context, state.formError!);
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<OwnerCubit, OwnerState>(
         bloc: ownerCubit,
         builder: (context, state) {

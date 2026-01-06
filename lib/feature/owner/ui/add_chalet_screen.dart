@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
@@ -10,8 +11,22 @@ import 'package:rebtal/feature/owner/widget/modern_image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/modern_amenities_section.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 
-class AddChaletScreen extends StatelessWidget {
+class AddChaletScreen extends StatefulWidget {
   const AddChaletScreen({super.key});
+
+  @override
+  State<AddChaletScreen> createState() => _AddChaletScreenState();
+}
+
+class _AddChaletScreenState extends State<AddChaletScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Reset form when entering the screen to ensure clean state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppCubit>().ownerCubit.resetForm();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,16 +34,35 @@ class AddChaletScreen extends StatelessWidget {
     final ownerCubit = appCubit.ownerCubit;
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return BlocListener<OwnerCubit, OwnerState>(
-      bloc: ownerCubit,
-      listener: (context, state) {
-        if (state.isFormSuccess) {
-          SnackBarHelper.showSuccess(context, "Chalet added successfully!");
-          Navigator.pop(context);
-        } else if (state.formError != null) {
-          SnackBarHelper.showError(context, state.formError!);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<OwnerCubit, OwnerState>(
+          bloc: ownerCubit,
+          listenWhen: (previous, current) =>
+              previous.isFormSubmitting != current.isFormSubmitting,
+          listener: (context, state) {
+            if (state.isFormSubmitting) {
+              PremiumLoadingOverlay.show(context);
+            } else {
+              PremiumLoadingOverlay.dismiss(context);
+            }
+          },
+        ),
+        BlocListener<OwnerCubit, OwnerState>(
+          bloc: ownerCubit,
+          listenWhen: (previous, current) =>
+              previous.isFormSuccess != current.isFormSuccess ||
+              previous.formError != current.formError,
+          listener: (context, state) {
+            if (state.isFormSuccess) {
+              SnackBarHelper.showSuccess(context, "Chalet added successfully!");
+              Navigator.pop(context);
+            } else if (state.formError != null) {
+              SnackBarHelper.showError(context, state.formError!);
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: isDark
             ? ColorManager.darkBackground0A0E27

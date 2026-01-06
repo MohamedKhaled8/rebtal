@@ -5,6 +5,8 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart' as l;
 import 'package:latlong2/latlong.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class LocationPickerPage extends StatefulWidget {
   final String? initialAddress;
@@ -213,10 +215,17 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
     return Scaffold(
+      backgroundColor: isDark
+          ? ColorManager.chaletBackgroundDark
+          : ColorManager.chaletBackgroundLight,
       appBar: AppBar(
         title: const Text('اختيار الموقع'),
-        backgroundColor: Colors.blue,
+        backgroundColor: isDark
+            ? ColorManager.darkBlue161B30
+            : ColorManager.primaryColor,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -268,24 +277,48 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
             child: TextField(
               controller: _search,
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
               decoration: InputDecoration(
+                filled: true,
+                fillColor: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
                 hintText: 'اكتب العنوان للبحث...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: isDark ? Colors.white70 : Colors.grey[600],
+                ),
                 suffixIcon: _loading
-                    ? const Padding(
-                        padding: EdgeInsets.all(12),
+                    ? Padding(
+                        padding: const EdgeInsets.all(12),
                         child: SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDark ? Colors.white70 : Colors.blue,
+                          ),
                         ),
                       )
                     : IconButton(
-                        icon: const Icon(Icons.my_location),
+                        icon: Icon(
+                          Icons.my_location,
+                          color: isDark ? Colors.white70 : Colors.grey[600],
+                        ),
                         onPressed: () => _geocode(_search.text),
                       ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.transparent,
+                  ),
                 ),
               ),
               onChanged: _onSearchChanged,
@@ -302,7 +335,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                 icon: const Icon(Icons.my_location),
                 label: const Text('حدد موقعي الآن'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: isDark ? Colors.blueAccent : Colors.blue,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -313,11 +346,13 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
               constraints: const BoxConstraints(maxHeight: 180),
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: isDark
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.06),
                     blurRadius: 8,
                   ),
                 ],
@@ -327,11 +362,17 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                 itemBuilder: (context, i) {
                   final s = _suggestions[i];
                   return ListTile(
-                    leading: const Icon(Icons.place, color: Colors.blue),
+                    leading: Icon(
+                      Icons.place,
+                      color: isDark ? Colors.blueAccent : Colors.blue,
+                    ),
                     title: Text(
                       s['display'],
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
                     ),
                     onTap: () => _selectSuggestion(s),
                   );
@@ -344,13 +385,20 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
             child: Row(
               children: [
-                const Icon(Icons.place, size: 18, color: Colors.blueGrey),
+                Icon(
+                  Icons.place,
+                  size: 18,
+                  color: isDark ? Colors.white70 : Colors.blueGrey,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _selectedAddress ?? 'اضغط على الخريطة لاختيار الموقع',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
                   ),
                 ),
               ],

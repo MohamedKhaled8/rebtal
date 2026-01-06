@@ -15,7 +15,8 @@ class TopRatedChaletsList extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('chalets')
             .where('status', isEqualTo: 'approved')
-            .limit(5) // Limit to 5 for "Top" list
+            .where('isVisible', isEqualTo: true)
+            .limit(3) // Reduced from 5 to 3 for better performance
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError || !snapshot.hasData) {

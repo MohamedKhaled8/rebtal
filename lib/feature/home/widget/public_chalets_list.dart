@@ -38,7 +38,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
   String? _userId;
   int _currentImageIndex = 0;
   PageController? _pageController;
-  Timer? _autoPlayTimer;
+  bool _favoriteChecked = false;
 
   @override
   void initState() {
@@ -47,43 +47,22 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
       final user = context.read<AppCubit>().authCubit.getCurrentUser();
       _userId = user?.uid;
     } catch (_) {}
-    _checkFavoriteInitial();
-    _initImageCarousel();
-  }
-
-  void _initImageCarousel() {
+    // Initialize carousel without auto-play for better performance
     final images = _collectChaletImages(widget.chaletData);
     if (images.length > 1) {
       _pageController = PageController();
-      _startAutoPlay(images.length);
-    }
-  }
-
-  void _startAutoPlay(int imageCount) {
-    _autoPlayTimer?.cancel();
-    if (imageCount > 1) {
-      _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        if (_pageController?.hasClients == true) {
-          final nextIndex = (_currentImageIndex + 1) % imageCount;
-          _pageController?.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
     }
   }
 
   @override
   void dispose() {
-    _autoPlayTimer?.cancel();
     _pageController?.dispose();
     super.dispose();
   }
 
-  Future<void> _checkFavoriteInitial() async {
-    if (_userId == null) return;
+  // Check favorite status on demand (lazy loading)
+  Future<bool> _checkFavoriteStatus() async {
+    if (_userId == null) return false;
     try {
       final favDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -91,12 +70,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           .collection('favorites')
           .doc(widget.docId)
           .get();
-      if (mounted) {
-        setState(() {
-          _isFavorite = favDoc.exists;
-        });
-      }
-    } catch (_) {}
+      return favDoc.exists;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _toggleFavorite() async {
@@ -180,376 +157,402 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     final images = _collectChaletImages(widget.chaletData);
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24, left: 20, right: 20),
-      decoration: BoxDecoration(
-        color: isDark ? ColorManager.chaletBackgroundDark : ColorManager.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 24, left: 20, right: 20),
+        decoration: BoxDecoration(
           color: isDark
-              ? ColorManager.white.withOpacity(0.05)
-              : ColorManager.chaletGrey200.withOpacity(0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
+              ? ColorManager.chaletBackgroundDark
+              : ColorManager.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
             color: isDark
-                ? ColorManager.black.withOpacity(0.2)
-                : ColorManager.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+                ? ColorManager.white.withOpacity(0.05)
+                : ColorManager.chaletGrey200.withOpacity(0.1),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. Image Carousel
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? ColorManager.black.withOpacity(0.2)
+                  : ColorManager.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Image Carousel
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                  child: SizedBox(
+                    height: 240,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Open full screen gallery when tapping on image
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenImageGallery(
+                              images: images,
+                              initialIndex: _currentImageIndex,
+                            ),
+                          ),
+                        );
+                      },
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: images.length,
+                        onPageChanged: (index) {
+                          setState(() => _currentImageIndex = index);
+                        },
+                        itemBuilder: (context, index) {
+                          return AppImageHelper(
+                            path: images[index],
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-                child: SizedBox(
-                  height: 240,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Open full screen gallery when tapping on image
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => FullScreenImageGallery(
-                            images: images,
-                            initialIndex: _currentImageIndex,
+
+                // Favorite Button - Lazy loaded
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: FutureBuilder<bool>(
+                    future: _favoriteChecked ? null : _checkFavoriteStatus(),
+                    builder: (context, snapshot) {
+                      if (!_favoriteChecked && snapshot.hasData) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            setState(() {
+                              _isFavorite = snapshot.data ?? false;
+                              _favoriteChecked = true;
+                            });
+                          }
+                        });
+                      }
+                      return GestureDetector(
+                        onTap: _toggleFavorite,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: ColorManager.black.withOpacity(0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: _isFavorite
+                                ? ColorManager.chaletUnavailableRed
+                                : ColorManager.white,
+                            size: 24,
                           ),
                         ),
                       );
                     },
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: images.length,
-                      onPageChanged: (index) {
-                        setState(() => _currentImageIndex = index);
-                      },
-                      itemBuilder: (context, index) {
-                        return AppImageHelper(
-                          path: images[index],
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
                   ),
                 ),
-              ),
 
-              // Favorite Button
-              Positioned(
-                top: 16,
-                right: 16,
-                child: GestureDetector(
-                  onTap: _toggleFavorite,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: ColorManager.black.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorite
-                          ? ColorManager.chaletUnavailableRed
-                          : ColorManager.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Rating Badge (Live Fetch)
-              Positioned(
-                top: 16,
-                left: 16,
-                child: RatingDisplayWidget(
-                  chaletId: widget.docId,
-                  isDark: false, // Badge always dark bg
-                  isBadge: true,
-                ),
-              ),
-
-              // Image Indicators
-              if (images.length > 1)
+                // Rating Badge (Live Fetch)
                 Positioned(
-                  bottom: 16,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      images.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: _currentImageIndex == index ? 8 : 6,
-                        height: _currentImageIndex == index ? 8 : 6,
-                        decoration: BoxDecoration(
-                          color: _currentImageIndex == index
-                              ? ColorManager.white
-                              : ColorManager.white.withOpacity(0.5),
-                          shape: BoxShape.circle,
+                  top: 16,
+                  left: 16,
+                  child: RatingDisplayWidget(
+                    chaletId: widget.docId,
+                    isDark: false, // Badge always dark bg
+                    isBadge: true,
+                  ),
+                ),
+
+                // Image Indicators
+                if (images.length > 1)
+                  Positioned(
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        images.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: _currentImageIndex == index ? 8 : 6,
+                          height: _currentImageIndex == index ? 8 : 6,
+                          decoration: BoxDecoration(
+                            color: _currentImageIndex == index
+                                ? ColorManager.white
+                                : ColorManager.white.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              if (widget.badge != null)
-                Positioned(top: 50, right: 16, child: widget.badge!),
-            ],
-          ),
+                if (widget.badge != null)
+                  Positioned(top: 50, right: 16, child: widget.badge!),
+              ],
+            ),
 
-          // 2. Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name and Location
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            chaletName,
-                            style: TextStyle(
-                              color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletBackgroundDark,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.location_on_outlined,
-                                size: 14,
+            // 2. Content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Name and Location
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              chaletName,
+                              style: TextStyle(
                                 color: isDark
-                                    ? ColorManager.white.withOpacity(0.6)
-                                    : ColorManager.chaletGrey500,
+                                    ? ColorManager.white
+                                    : ColorManager.chaletBackgroundDark,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                height: 1.2,
                               ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  location,
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? ColorManager.white.withOpacity(0.6)
-                                        : ColorManager.chaletGrey500,
-                                    fontSize: 13,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on_outlined,
+                                  size: 14,
+                                  color: isDark
+                                      ? ColorManager.white.withOpacity(0.6)
+                                      : ColorManager.chaletGrey500,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    location,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? ColorManager.white.withOpacity(0.6)
+                                          : ColorManager.chaletGrey500,
+                                      fontSize: 13,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
 
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                // DETAILS: Bedrooms, Bathrooms, Children
-                Row(
-                  children: [
-                    // Bedrooms
-                    _buildInfoBadge(
-                      context,
-                      icon: Icons.bed_outlined,
-                      text: '${widget.chaletData['bedrooms'] ?? 0} غرف',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Bathrooms
-                    _buildInfoBadge(
-                      context,
-                      icon: Icons.bathtub_outlined,
-                      text: '${widget.chaletData['bathrooms'] ?? 0} حمام',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Children
-                    if (widget.chaletData['childrenCount'] != null &&
-                        (widget.chaletData['childrenCount'] as int) > 0) ...[
+                  // DETAILS: Bedrooms, Bathrooms, Children
+                  Row(
+                    children: [
+                      // Bedrooms
                       _buildInfoBadge(
                         context,
-                        icon: Icons.child_care_outlined,
-                        text: '${widget.chaletData['childrenCount']} أطفال',
+                        icon: Icons.bed_outlined,
+                        text: '${widget.chaletData['bedrooms'] ?? 0} غرف',
                         isDark: isDark,
                       ),
                       const SizedBox(width: 12),
-                    ],
 
-                    // Chalet Area
-                    if (widget.chaletData['chaletArea'] != null &&
-                        widget.chaletData['chaletArea'].toString().isNotEmpty)
+                      // Bathrooms
                       _buildInfoBadge(
                         context,
-                        icon: Icons.square_foot_rounded,
-                        text: '${widget.chaletData['chaletArea']} م²',
+                        icon: Icons.bathtub_outlined,
+                        text: '${widget.chaletData['bathrooms'] ?? 0} حمام',
                         isDark: isDark,
                       ),
-                  ],
-                ),
+                      const SizedBox(width: 12),
 
-                const SizedBox(height: 12),
-
-                // STAR RATING (Live Fetch)
-                RatingDisplayWidget(
-                  chaletId: widget.docId,
-                  isDark: isDark,
-                  isBadge: false,
-                ),
-
-                const SizedBox(height: 16),
-
-                // Price and Action
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_hasDiscount()) ...[
-                          Text(
-                            '$price جنيه',
-                            style: TextStyle(
-                              color: isDark
-                                  ? ColorManager.white.withOpacity(0.5)
-                                  : ColorManager.chaletGrey500,
-                              fontSize: 14,
-                              decoration: TextDecoration.lineThrough,
-                              decorationColor:
-                                  ColorManager.chaletUnavailableRed,
-                            ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                _calculateDiscountedPrice(),
-                                style: TextStyle(
-                                  color: ColorManager
-                                      .kPrimaryGradient
-                                      .colors
-                                      .first,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'جنيه / ليلة',
-                                style: TextStyle(
-                                  color: isDark
-                                      ? ColorManager.white.withOpacity(0.7)
-                                      : ColorManager.chaletGrey600,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                '$price',
-                                style: TextStyle(
-                                  color: ColorManager
-                                      .kPrimaryGradient
-                                      .colors
-                                      .first,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'جنيه / ليلة',
-                                style: TextStyle(
-                                  color: isDark
-                                      ? ColorManager.white.withOpacity(0.7)
-                                      : ColorManager.chaletGrey600,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      // Children
+                      if (widget.chaletData['childrenCount'] != null &&
+                          (widget.chaletData['childrenCount'] as int) > 0) ...[
+                        _buildInfoBadge(
+                          context,
+                          icon: Icons.child_care_outlined,
+                          text: '${widget.chaletData['childrenCount']} أطفال',
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 12),
                       ],
-                    ),
 
-                    ElevatedButton(
-                      onPressed:
-                          widget.onDetailsPressed ??
-                          () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChaletDetailPage(
-                                  requestData: widget.chaletData,
-                                  docId: widget.docId,
-                                  status: 'approved',
+                      // Chalet Area
+                      if (widget.chaletData['chaletArea'] != null &&
+                          widget.chaletData['chaletArea'].toString().isNotEmpty)
+                        _buildInfoBadge(
+                          context,
+                          icon: Icons.square_foot_rounded,
+                          text: '${widget.chaletData['chaletArea']} م²',
+                          isDark: isDark,
+                        ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // STAR RATING (Live Fetch)
+                  RatingDisplayWidget(
+                    chaletId: widget.docId,
+                    isDark: isDark,
+                    isBadge: false,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Price and Action
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_isBookingAvailable()) ...[
+                            if (_hasDiscount()) ...[
+                              Text(
+                                '$price جنيه',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? ColorManager.white.withOpacity(0.5)
+                                      : ColorManager.chaletGrey500,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.lineThrough,
+                                  decorationColor:
+                                      ColorManager.chaletUnavailableRed,
                                 ),
                               ),
-                            );
-                          },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? ColorManager.white
-                            : ColorManager.black,
-                        foregroundColor: isDark
-                            ? ColorManager.black
-                            : ColorManager.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    _calculateDiscountedPrice(),
+                                    style: const TextStyle(
+                                      color: ColorManager.blue2563EB,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'جنيه / ليلة',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? ColorManager.white.withOpacity(0.7)
+                                          : ColorManager.chaletGrey600,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ] else ...[
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    '$price',
+                                    style: const TextStyle(
+                                      color: ColorManager.blue2563EB,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'جنيه / ليلة',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? ColorManager.white.withOpacity(0.7)
+                                          : ColorManager.chaletGrey600,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ] else ...[
+                            Text(
+                              'غير متاح للحجز',
+                              style: TextStyle(
+                                color: ColorManager.redFF3B30,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      ElevatedButton(
+                        onPressed:
+                            widget.onDetailsPressed ??
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChaletDetailPage(
+                                    requestData: widget.chaletData,
+                                    docId: widget.docId,
+                                    status: 'approved',
+                                  ),
+                                ),
+                              );
+                            },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark
+                              ? ColorManager.white
+                              : ColorManager.black,
+                          foregroundColor: isDark
+                              ? ColorManager.black
+                              : ColorManager.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
+                        child: const Text(
+                          'عرض التفاصيل',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'عرض التفاصيل',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -593,6 +596,12 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     return discountedPrice.toStringAsFixed(0);
   }
 
+  bool _isBookingAvailable() {
+    final status = widget.chaletData['bookingAvailability'];
+    if (status == 'unavailable') return false;
+    return true;
+  }
+
   Widget _buildInfoBadge(
     BuildContext context, {
     required IconData icon,
@@ -624,7 +633,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
   }
 }
 
-class PublicChaletsList extends StatelessWidget {
+class PublicChaletsList extends StatefulWidget {
   final IconData? emptyIcon;
   final String? emptyTitle;
   final String? emptySubtitle;
@@ -639,11 +648,26 @@ class PublicChaletsList extends StatelessWidget {
   });
 
   @override
+  State<PublicChaletsList> createState() => _PublicChaletsListState();
+}
+
+class _PublicChaletsListState extends State<PublicChaletsList> {
+  int _displayLimit = 10; // Start with 10 items as requested
+  final int _increment = 10;
+
+  void _loadMore() {
+    setState(() {
+      _displayLimit += _increment;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('chalets')
           .where('status', isEqualTo: 'approved')
+          .where('isVisible', isEqualTo: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -683,13 +707,13 @@ class PublicChaletsList extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  emptyIcon ?? Icons.home_outlined,
+                  widget.emptyIcon ?? Icons.home_outlined,
                   size: 72,
                   color: ColorManager.chaletGrey400,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  emptyTitle ?? 'لا توجد شاليهات متاحة',
+                  widget.emptyTitle ?? 'لا توجد شاليهات متاحة',
                   style: TextStyle(
                     fontSize: 18,
                     color: ColorManager.chaletGrey500,
@@ -706,24 +730,22 @@ class PublicChaletsList extends StatelessWidget {
           valueListenable: HomeSearch.filters,
           builder: (context, filters, _) {
             // Debug logging
-            print('🔍 === SEARCH DEBUG ===');
-            print('📊 Total chalets from Firestore: ${docs.length}');
+            // print('🔍 === SEARCH DEBUG ===');
+            // print('📊 Total chalets from Firestore: ${docs.length}');
+
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;
 
-              // Visibility check
-              final isVisible = data['isVisible'] ?? true;
-              if (!isVisible) return false;
-
-              // Category filter (from home screen tabs)
-              if (selectedCategory != null) {
+              // Category filter
+              if (widget.selectedCategory != null) {
                 final features = data['features'] as List<dynamic>?;
-                if (features == null || !features.contains(selectedCategory)) {
+                if (features == null ||
+                    !features.contains(widget.selectedCategory)) {
                   return false;
                 }
               }
 
-              // Apply search filters using centralized service
+              // Apply search filters
               final singleList = [data];
               final result = ChaletFilterService.filterChalets(
                 singleList,
@@ -738,14 +760,14 @@ class PublicChaletsList extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      emptyIcon ?? Icons.home_outlined,
+                      widget.emptyIcon ?? Icons.home_outlined,
                       size: 72,
                       color: ColorManager.chaletGrey400,
                       key: const Key('empty-icon'),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      emptyTitle ?? 'لا توجد شاليهات متاحة',
+                      widget.emptyTitle ?? 'لا توجد شاليهات متاحة',
                       style: TextStyle(
                         fontSize: 18,
                         color: ColorManager.chaletGrey500,
@@ -757,16 +779,69 @@ class PublicChaletsList extends StatelessWidget {
               );
             }
 
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 0, bottom: 80),
-              itemCount: filtered.length,
-              itemBuilder: (context, i) {
-                final doc = filtered[i];
-                final data = doc.data() as Map<String, dynamic>;
-                return PublicChaletCard(chaletData: data, docId: doc.id);
-              },
+            // Pagination Logic
+            // If user has filtered search, show all valid results to avoid hiding matches
+            // If default view, use pagination limit
+            final isFiltering = !filters.isEmpty;
+
+            final int countToShow = isFiltering
+                ? filtered.length
+                : (_displayLimit > filtered.length
+                      ? filtered.length
+                      : _displayLimit);
+            final bool hasMore =
+                !isFiltering && filtered.length > _displayLimit;
+
+            return Column(
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(top: 0, bottom: 20),
+                  itemCount: countToShow,
+                  itemBuilder: (context, i) {
+                    final doc = filtered[i];
+                    final data = doc.data() as Map<String, dynamic>;
+                    return PublicChaletCard(chaletData: data, docId: doc.id);
+                  },
+                ),
+
+                if (hasMore)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _loadMore,
+                        icon: const Icon(
+                          Icons.expand_more,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          'عرض المزيد (${filtered.length - countToShow} شاليه)',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: ColorManager.chaletAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 60),
+              ],
             );
           },
         );

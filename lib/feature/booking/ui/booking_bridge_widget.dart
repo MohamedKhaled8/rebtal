@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 
 class BookingBridgeWidget extends StatefulWidget {
   final BuildContext parentContext;
@@ -703,94 +704,103 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () async {
-                        final resolved = await _resolveOwner();
-                        final totalAmount = _calculateTotalAmount(_from!, _to!);
+                        // إظهار شاشة التحميل الفاخرة
+                        PremiumLoadingOverlay.show(context);
 
-                        // Fetch user details
-                        String? userPhone;
-                        String? userEmail;
                         try {
-                          // Try Users collection first
-                          var userDoc = await FirebaseFirestore.instance
-                              .collection('Users')
-                              .doc(widget.userId)
-                              .get();
-
-                          // If not found, try Owners collection
-                          if (!userDoc.exists) {
-                            userDoc = await FirebaseFirestore.instance
-                                .collection('Owners')
-                                .doc(widget.userId)
-                                .get();
-                          }
-
-                          if (userDoc.exists) {
-                            final userData = userDoc.data();
-                            userPhone =
-                                userData?['phone'] ?? userData?['phoneNumber'];
-                            userEmail = userData?['email'];
-                          }
-                        } catch (e) {
-                          debugPrint('Error fetching user details: $e');
-                        }
-
-                        // Fetch owner details
-                        String? ownerPhone;
-                        String? ownerEmail;
-                        try {
-                          final ownerId = _normOwnerId(
-                            resolved['ownerId'] ?? widget.ownerId,
+                          final resolved = await _resolveOwner();
+                          final totalAmount = _calculateTotalAmount(
+                            _from!,
+                            _to!,
                           );
 
-                          // Try Users collection first
-                          var ownerDoc = await FirebaseFirestore.instance
-                              .collection('Users')
-                              .doc(ownerId)
-                              .get();
+                          // Fetch user details
+                          String? userPhone;
+                          String? userEmail;
+                          try {
+                            // Try Users collection first
+                            var userDoc = await FirebaseFirestore.instance
+                                .collection('Users')
+                                .doc(widget.userId)
+                                .get();
 
-                          // If not found, try Owners collection
-                          if (!ownerDoc.exists) {
-                            ownerDoc = await FirebaseFirestore.instance
-                                .collection('Owners')
+                            // If not found, try Owners collection
+                            if (!userDoc.exists) {
+                              userDoc = await FirebaseFirestore.instance
+                                  .collection('Owners')
+                                  .doc(widget.userId)
+                                  .get();
+                            }
+
+                            if (userDoc.exists) {
+                              final userData = userDoc.data();
+                              userPhone =
+                                  userData?['phone'] ??
+                                  userData?['phoneNumber'];
+                              userEmail = userData?['email'];
+                            }
+                          } catch (e) {
+                            debugPrint('Error fetching user details: $e');
+                          }
+
+                          // Fetch owner details
+                          String? ownerPhone;
+                          String? ownerEmail;
+                          try {
+                            final ownerId = _normOwnerId(
+                              resolved['ownerId'] ?? widget.ownerId,
+                            );
+
+                            // Try Users collection first
+                            var ownerDoc = await FirebaseFirestore.instance
+                                .collection('Users')
                                 .doc(ownerId)
                                 .get();
+
+                            // If not found, try Owners collection
+                            if (!ownerDoc.exists) {
+                              ownerDoc = await FirebaseFirestore.instance
+                                  .collection('Owners')
+                                  .doc(ownerId)
+                                  .get();
+                            }
+
+                            if (ownerDoc.exists) {
+                              final ownerData = ownerDoc.data();
+                              ownerPhone =
+                                  ownerData?['phone'] ??
+                                  ownerData?['phoneNumber'];
+                              ownerEmail = ownerData?['email'];
+                            }
+                          } catch (e) {
+                            debugPrint('Error fetching owner details: $e');
                           }
 
-                          if (ownerDoc.exists) {
-                            final ownerData = ownerDoc.data();
-                            ownerPhone =
-                                ownerData?['phone'] ??
-                                ownerData?['phoneNumber'];
-                            ownerEmail = ownerData?['email'];
-                          }
-                        } catch (e) {
-                          debugPrint('Error fetching owner details: $e');
-                        }
+                          final booking = Booking(
+                            id: _bookingId,
+                            chaletId: widget.chaletId,
+                            chaletName: widget.chaletName,
+                            ownerId: _normOwnerId(
+                              resolved['ownerId'] ?? widget.ownerId,
+                            ),
+                            ownerName:
+                                resolved['ownerName'] ?? widget.ownerName,
+                            userId: widget.userId,
+                            userName: widget.userName,
+                            from: _from ?? DateTime.now(),
+                            to:
+                                _to ??
+                                DateTime.now().add(const Duration(days: 1)),
+                            status: BookingStatus.pending,
+                            amount: totalAmount,
+                            userPhone: userPhone,
+                            userEmail: userEmail,
+                            ownerPhone: ownerPhone,
+                            ownerEmail: ownerEmail,
+                            chaletLocation:
+                                widget.requestData['location'] as String?,
+                          );
 
-                        final booking = Booking(
-                          id: _bookingId,
-                          chaletId: widget.chaletId,
-                          chaletName: widget.chaletName,
-                          ownerId: _normOwnerId(
-                            resolved['ownerId'] ?? widget.ownerId,
-                          ),
-                          ownerName: resolved['ownerName'] ?? widget.ownerName,
-                          userId: widget.userId,
-                          userName: widget.userName,
-                          from: _from ?? DateTime.now(),
-                          to:
-                              _to ??
-                              DateTime.now().add(const Duration(days: 1)),
-                          status: BookingStatus.pending,
-                          amount: totalAmount,
-                          userPhone: userPhone,
-                          userEmail: userEmail,
-                          ownerPhone: ownerPhone,
-                          ownerEmail: ownerEmail,
-                          chaletLocation:
-                              widget.requestData['location'] as String?,
-                        );
-                        try {
                           // Generate ID beforehand to use in notification
                           final docRef = FirebaseFirestore.instance
                               .collection('bookings')
@@ -817,20 +827,31 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               'chaletId': bookingWithId.chaletId,
                             },
                           );
+
+                          // إخفاء التحميل بنجاح
+                          if (mounted) {
+                            PremiumLoadingOverlay.dismiss(context);
+
+                            SnackBarHelper.showSuccess(
+                              widget.parentContext,
+                              'تم إرسال الطلب للمالك',
+                            );
+
+                            await _showRatingBottomSheet();
+                            if (mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          }
                         } catch (e) {
                           debugPrint('Error confirming booking: $e');
-                          widget.parentContext
-                              .read<AppCubit>()
-                              .bookingCubit
-                              .addBooking(booking);
-                        }
-                        SnackBarHelper.showSuccess(
-                          widget.parentContext,
-                          'تم إرسال الطلب للمالك',
-                        );
-                        await _showRatingBottomSheet();
-                        if (mounted) {
-                          Navigator.of(context).pop();
+                          // إخفاء التحميل عند الخطأ
+                          if (mounted) {
+                            PremiumLoadingOverlay.dismiss(context);
+                            SnackBarHelper.showError(
+                              context,
+                              'حدث خطأ في الحجز: $e',
+                            );
+                          }
                         }
                       },
                       borderRadius: BorderRadius.circular(16),
@@ -1140,13 +1161,41 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         TextField(
                           controller: controller,
                           maxLines: 3,
+                          textInputAction: TextInputAction.done,
+                          style: const TextStyle(
+                            color: Colors.black, // Always Black
+                            fontSize: 16,
+                          ),
+                          cursorColor: Colors.black,
                           decoration: InputDecoration(
+                            hintStyle: TextStyle(
+                              color: Colors.black.withOpacity(0.5),
+                              fontSize: 14,
+                            ),
                             hintText: 'اكتب تعليقك هنا (مطلوب)...',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                                width: 1.5,
+                              ),
                             ),
                             filled: true,
-                            fillColor: Colors.grey[500]!.withOpacity(0.05),
+                            fillColor: const Color(
+                              0xFFF9FAFB,
+                            ), // Very light gray, almost white
                           ),
                           onChanged: (val) => setModalState(() {}),
                         ),
@@ -1159,6 +1208,12 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                     controller.text.trim().isEmpty)
                                 ? null
                                 : () async {
+                                    // Show loading overlay
+                                    PremiumLoadingOverlay.show(
+                                      context,
+                                      message: 'جاري إرسال التقييم...',
+                                    );
+
                                     try {
                                       // Fetch latest user details for the review
                                       String userImage = '';
@@ -1199,8 +1254,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                         chaletId: widget.chaletId,
                                         newRating: tempRating,
                                       );
-                                      if (mounted) Navigator.pop(context);
                                       if (mounted) {
+                                        PremiumLoadingOverlay.dismiss(context);
+                                        Navigator.pop(context);
                                         SnackBarHelper.showSuccess(
                                           context,
                                           'شكراً لتقييمك',
@@ -1209,6 +1265,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                       }
                                     } catch (e) {
                                       if (mounted) {
+                                        PremiumLoadingOverlay.dismiss(context);
                                         SnackBarHelper.showError(
                                           context,
                                           'تعذر حفظ التقييم: $e',

@@ -311,7 +311,7 @@ class _FlutterGoogleMapLocationPickerState
                           Container(
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? ColorManager.white.withOpacity(0.1)
+                                  ? ColorManager.darkGrey2D2D44
                                   : ColorManager.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
@@ -323,7 +323,7 @@ class _FlutterGoogleMapLocationPickerState
                             ),
                             child: IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: Icon(Icons.arrow_back),
+                              icon: const Icon(Icons.arrow_back),
                               color: isDark
                                   ? ColorManager.white
                                   : ColorManager.chaletGrey800,
@@ -334,28 +334,47 @@ class _FlutterGoogleMapLocationPickerState
                             child: Material(
                               elevation: 4,
                               borderRadius: BorderRadius.circular(12),
+                              color: Colors.transparent,
                               child: TextField(
                                 controller: _searchController,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
                                 decoration: InputDecoration(
                                   hintText: 'ابحث عن موقع...',
-                                  prefixIcon: const Icon(
+                                  hintStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
+                                  prefixIcon: Icon(
                                     Icons.search,
-                                    color: Colors.blue,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.blue,
                                   ),
                                   suffixIcon: _isSearching || _isLoading
-                                      ? const Padding(
-                                          padding: EdgeInsets.all(12),
+                                      ? Padding(
+                                          padding: const EdgeInsets.all(12),
                                           child: SizedBox(
                                             width: 20,
                                             height: 20,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
+                                              color: isDark
+                                                  ? Colors.white70
+                                                  : Colors.blue,
                                             ),
                                           ),
                                         )
                                       : _searchController.text.isNotEmpty
                                       ? IconButton(
-                                          icon: const Icon(Icons.clear),
+                                          icon: Icon(
+                                            Icons.clear,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : Colors.grey,
+                                          ),
                                           onPressed: () {
                                             _searchController.clear();
                                             setState(() {
@@ -370,7 +389,9 @@ class _FlutterGoogleMapLocationPickerState
                                     borderSide: BorderSide.none,
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: isDark
+                                      ? ColorManager.darkGrey2D2D44
+                                      : Colors.white,
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 14,
@@ -387,7 +408,9 @@ class _FlutterGoogleMapLocationPickerState
                           margin: const EdgeInsets.only(top: 8),
                           constraints: const BoxConstraints(maxHeight: 250),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark
+                                ? ColorManager.darkGrey2D2D44
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
@@ -399,16 +422,27 @@ class _FlutterGoogleMapLocationPickerState
                           child: ListView.separated(
                             shrinkWrap: true,
                             itemCount: _searchSuggestions.length,
-                            separatorBuilder: (context, index) =>
-                                const Divider(height: 1),
+                            separatorBuilder: (context, index) => Divider(
+                              height: 1,
+                              color: isDark
+                                  ? Colors.grey[700]
+                                  : Colors.grey[300],
+                            ),
                             itemBuilder: (context, index) {
                               final suggestion = _searchSuggestions[index];
                               return ListTile(
-                                leading: const Icon(
+                                leading: Icon(
                                   Icons.place,
-                                  color: Colors.blue,
+                                  color: isDark
+                                      ? Colors.blueAccent
+                                      : Colors.blue,
                                 ),
-                                title: Text(suggestion['display']),
+                                title: Text(
+                                  suggestion['display'],
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                ),
                                 onTap: () => _selectSuggestion(suggestion),
                               );
                             },
@@ -430,25 +464,30 @@ class _FlutterGoogleMapLocationPickerState
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(16),
+                color: Colors.transparent,
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.place, color: Colors.blue, size: 24),
+                      Icon(
+                        Icons.place,
+                        color: isDark ? Colors.blueAccent : Colors.blue,
+                        size: 24,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'الموقع المحدد',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: isDark ? Colors.grey[400] : Colors.grey,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -456,9 +495,10 @@ class _FlutterGoogleMapLocationPickerState
                               _selectedAddress!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black,
                               ),
                             ),
                           ],
@@ -495,8 +535,11 @@ class _FlutterGoogleMapLocationPickerState
         padding: const EdgeInsets.only(bottom: 100),
         child: FloatingActionButton(
           onPressed: _getCurrentLocation,
-          backgroundColor: Colors.white,
-          child: const Icon(Icons.my_location, color: Colors.blue),
+          backgroundColor: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
+          child: Icon(
+            Icons.my_location,
+            color: isDark ? Colors.white : Colors.blue,
+          ),
         ),
       ),
     );

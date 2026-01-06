@@ -1045,7 +1045,7 @@ class _DateButton extends StatelessWidget {
   }
 }
 
-class _BouncyFeatureCard extends StatefulWidget {
+class _BouncyFeatureCard extends StatelessWidget {
   final bool isDark;
   final String label;
   final IconData icon;
@@ -1063,133 +1063,90 @@ class _BouncyFeatureCard extends StatefulWidget {
   });
 
   @override
-  State<_BouncyFeatureCard> createState() => _BouncyFeatureCardState();
-}
-
-class _BouncyFeatureCardState extends State<_BouncyFeatureCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use an elastic curve for a nice bouncy effect
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-      lowerBound: 0.0,
-      upperBound: 0.1,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() async {
-    await _controller.forward();
-    widget.onTap();
-    await _controller.reverse();
-  }
-
-  @override
   Widget build(BuildContext context) {
     // Use passed color or default to yellow
-    final activeColor = widget.color ?? ColorManager.yellowEAB308;
+    final activeColor = color ?? ColorManager.yellowEAB308;
 
     return GestureDetector(
-      onTap: _handleTap,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) =>
-            Transform.scale(scale: _scaleAnimation.value, child: child),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          decoration: BoxDecoration(
-            gradient: widget.isSelected
-                ? LinearGradient(
-                    colors: [
-                      activeColor.withOpacity(0.2),
-                      activeColor.withOpacity(0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            color: widget.isSelected
-                ? null
-                : (widget.isDark
-                      ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                      : ColorManager.grey50),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: widget.isSelected
-                  ? activeColor
-                  : (widget.isDark
-                        ? ColorManager.grey800.withOpacity(0.3)
-                        : ColorManager.grey300),
-              width: widget.isSelected ? 2 : 1,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    activeColor.withOpacity(0.2),
+                    activeColor.withOpacity(0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected
+              ? null
+              : (isDark
+                    ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
+                    : ColorManager.grey50),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? activeColor
+                : (isDark
+                      ? ColorManager.grey800.withOpacity(0.3)
+                      : ColorManager.grey300),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: activeColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? activeColor // Solid color when selected
+                    : (isDark
+                          ? ColorManager.grey800.withOpacity(0.3)
+                          : ColorManager.grey200),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? ColorManager.white
+                    : (isDark
+                          ? ColorManager.grey400
+                          : activeColor.withOpacity(0.7)),
+                size: 20,
+              ),
             ),
-            boxShadow: widget.isSelected
-                ? [
-                    BoxShadow(
-                      color: activeColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: widget.isSelected
-                      ? activeColor // Solid color when selected
-                      : (widget.isDark
-                            ? ColorManager.grey800.withOpacity(0.3)
-                            : ColorManager.grey200),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  widget.icon,
-                  color: widget.isSelected
-                      ? ColorManager.white
-                      : (widget.isDark
-                            ? ColorManager.grey400
-                            : activeColor.withOpacity(0.7)),
-                  size: 20,
-                ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? activeColor
+                    : (isDark ? ColorManager.grey300 : ColorManager.grey700),
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
-              const SizedBox(height: 8),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  color: widget.isSelected
-                      ? activeColor
-                      : (widget.isDark
-                            ? ColorManager.grey300
-                            : ColorManager.grey700),
-                  fontSize: 11,
-                  fontWeight: widget.isSelected
-                      ? FontWeight.bold
-                      : FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

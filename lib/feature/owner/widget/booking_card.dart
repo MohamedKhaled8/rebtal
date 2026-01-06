@@ -8,6 +8,8 @@ import 'package:rebtal/feature/owner/widget/booking_status_chip.dart';
 import 'package:rebtal/feature/owner/widget/guest_info_card.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -86,31 +88,9 @@ class BookingCard extends StatelessWidget {
                               ),
                             )
                           else
-                            Image.network(
-                              booking.chaletImage!,
+                            AppImageHelper(
+                              path: booking.chaletImage!,
                               fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.blue.shade400,
-                                            Colors.blue.shade700,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 3,
-                                          valueColor: AlwaysStoppedAnimation(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
                             ),
                           // Gradient overlay
                           Container(
@@ -610,6 +590,9 @@ class BookingCard extends StatelessWidget {
   }
 
   void _updateStatus(BuildContext context, BookingStatus status) async {
+    // إظهار شاشة التحميل الفاخرة
+    PremiumLoadingOverlay.show(context);
+
     try {
       await context.read<AppCubit>().bookingCubit.updateBookingStatus(
         booking.id,
@@ -617,6 +600,9 @@ class BookingCard extends StatelessWidget {
       );
 
       if (context.mounted) {
+        // إخفاء التحميل
+        PremiumLoadingOverlay.dismiss(context);
+
         final isApproved = status == BookingStatus.approved;
         if (isApproved) {
           SnackBarHelper.showSuccess(context, 'تم قبول الحجز بنجاح');
@@ -626,6 +612,8 @@ class BookingCard extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
+        // إخفاء التحميل عند الخطأ
+        PremiumLoadingOverlay.dismiss(context);
         SnackBarHelper.showError(context, 'خطأ: $e');
       }
     }

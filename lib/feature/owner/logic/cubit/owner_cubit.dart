@@ -9,6 +9,7 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
+import 'package:rebtal/core/utils/services/local_notification_service.dart';
 
 class OwnerCubit extends Cubit<OwnerState> {
   final AddChaletUseCase addChaletUseCase;
@@ -392,6 +393,7 @@ class OwnerCubit extends Cubit<OwnerState> {
         .stream(ownerId)
         .listen(
           (chalets) {
+            _checkExpiredChalets(chalets);
             emit(state.copyWith(status: OwnerStatus.loaded, chalets: chalets));
           },
           onError: (error) {
@@ -403,6 +405,49 @@ class OwnerCubit extends Cubit<OwnerState> {
             );
           },
         );
+  }
+
+  Future<void> _checkExpiredChalets(List<dynamic> chalets) async {
+    final now = DateTime.now();
+    for (var chalet in chalets) {
+      if (chalet is Map<String, dynamic>) {
+        // Check availability flag
+        bool isAvailable = false;
+        if (chalet['isAvailable'] == true) isAvailable = true;
+        if (chalet['bookingAvailability'] == 'available') isAvailable = true;
+
+        if (!isAvailable) continue;
+
+        DateTime? availableTo;
+        final availableToRaw = chalet['availableTo'];
+        if (availableToRaw is Timestamp) {
+          availableTo = availableToRaw.toDate();
+        } else if (availableToRaw is String) {
+          availableTo = DateTime.tryParse(availableToRaw);
+        }
+
+        // If expired
+        if (availableTo != null && now.isAfter(availableTo)) {
+          try {
+            // Update Firestore
+            await _firestore.collection('chalets').doc(chalet['id']).update({
+              'isAvailable': false,
+              'bookingAvailability': 'unavailable',
+            });
+
+            // Show Local Notification
+            await LocalNotificationService().showNotification(
+              id: chalet['id'].hashCode,
+              title: 'انتهت فترة الحجز ⏳',
+              body:
+                  'انتهت الفترة المتاحة لحجز شاليه "${chalet['chaletName'] ?? 'غير معروف'}". تم تحديث حالته إلى غير متاح.',
+            );
+          } catch (e) {
+            print('Error updating expired chalet: $e');
+          }
+        }
+      }
+    }
   }
 
   @override

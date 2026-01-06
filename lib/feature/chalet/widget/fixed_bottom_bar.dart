@@ -240,33 +240,48 @@ class FixedBottomBar extends StatelessWidget {
                       ] else ...[
                         // Reserve Now Button (Normal Flow)
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => context
-                                .read<FixedBottomBarCubit>()
-                                .handleBooking(
-                                  context,
-                                  docId: docId,
-                                  requestData: requestData,
+                          child: Builder(
+                            builder: (context) {
+                              final status = requestData['bookingAvailability'];
+                              final isAvailable = status != 'unavailable';
+
+                              return ElevatedButton(
+                                onPressed: isAvailable
+                                    ? () => context
+                                          .read<FixedBottomBarCubit>()
+                                          .handleBooking(
+                                            context,
+                                            docId: docId,
+                                            requestData: requestData,
+                                          )
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isAvailable
+                                      ? ColorManager.chaletAccent
+                                      : ColorManager.grey,
+                                  foregroundColor: ColorManager.white,
+                                  disabledBackgroundColor: ColorManager.grey,
+                                  disabledForegroundColor: ColorManager.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
                                 ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ColorManager.chaletAccent,
-                              foregroundColor: ColorManager.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 16,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Reserve Now',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                                child: Text(
+                                  isAvailable
+                                      ? 'Reserve Now'
+                                      : 'غير متاح للحجز',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],

@@ -11,6 +11,7 @@ import 'package:rebtal/core/utils/services/email_service.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 
 class AdminPaymentsPage extends StatefulWidget {
   const AdminPaymentsPage({super.key});
@@ -1547,7 +1548,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(imageUrl, fit: BoxFit.contain),
+              child: AppImageHelper(path: imageUrl, fit: BoxFit.contain),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

@@ -10,6 +10,8 @@ import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -119,8 +121,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Access AuthCubit through AppCubit
     final authCubit = context.read<AppCubit>().authCubit;
+    final size = MediaQuery.of(context).size;
 
     return BlocListener(
       bloc: authCubit,
@@ -128,7 +130,6 @@ class _SplashScreenState extends State<SplashScreen>
         if (state is AuthSuccess) {
           _navigateBasedOnRole();
         } else if (state is AuthRegistrationSuccess) {
-          // Redirect to Email Verification if not verified
           Navigator.pushReplacementNamed(
             context,
             Routes.emailVerification,
@@ -140,159 +141,185 @@ class _SplashScreenState extends State<SplashScreen>
       },
       child: Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
+          width: size.width,
+          height: size.height,
+          decoration: BoxDecoration(
+            color: ColorManager.darkBackground0A0E27,
             gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [
-                Color(0xFF4FA8C5), // Sky Blue
-                Color(0xFF87CEEB), // Lighter Sky
-                Colors.white,
+                ColorManager.darkBackground0A0E27,
+                ColorManager.darkBlue1A1A2E,
+                Color(0xFF0F172A),
               ],
-              stops: [0.0, 0.6, 1.0],
             ),
           ),
           child: Stack(
             children: [
-              // 1. The Sun (Pulsing)
+              // 1. Ambient Background Glows (Glassmorphism backdrop)
               Positioned(
-                top: -60,
-                right: -60,
-                child: AnimatedBuilder(
-                  animation: _sunController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: 1.0 + (_sunController.value * 0.1),
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFFFD54F).withOpacity(0.8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFD54F).withOpacity(0.4),
-                              blurRadius: 50 + (_sunController.value * 20),
-                              spreadRadius: 10 + (_sunController.value * 10),
-                            ),
-                          ],
-                        ),
+                top: -100,
+                right: -50,
+                child: ZoomIn(
+                  duration: const Duration(seconds: 3),
+                  child: Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          ColorManager.purple764BA2.withOpacity(0.2),
+                          Colors.transparent,
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
-
-              // 2. Moving Clouds
               Positioned(
-                top: 100,
-                left: 0,
-                right: 0,
-                height: 200,
-                child: AnimatedBuilder(
-                  animation: _cloudController,
-                  builder: (context, child) {
-                    return Stack(
-                      children: [
-                        _buildCloud(
-                          context,
-                          top: 20,
-                          left:
-                              -100 +
-                              (MediaQuery.of(context).size.width + 200) *
-                                  _cloudController.value,
-                          scale: 1.0,
-                        ),
-                        _buildCloud(
-                          context,
-                          top: 80,
-                          left:
-                              -150 +
-                              (MediaQuery.of(context).size.width + 300) *
-                                  ((_cloudController.value + 0.5) % 1.0),
-                          scale: 0.8,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              // 3. The Sea (Waves)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 150,
-                child: FadeInUp(
-                  duration: const Duration(seconds: 1),
-                  child: AnimatedBuilder(
-                    animation: _waveController,
-                    builder: (context, child) {
-                      return CustomPaint(
-                        painter: SeaWavePainter(
-                          animationValue: _waveController.value,
-                        ),
-                        size: Size.infinite,
-                      );
-                    },
+                bottom: -80,
+                left: -60,
+                child: ZoomIn(
+                  duration: const Duration(seconds: 4),
+                  child: Container(
+                    width: 350,
+                    height: 350,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          ColorManager.blue2563EB.withOpacity(0.15),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
 
-              // 4. Main Content (Center)
+              // 2. Center Content
               Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Icon
-                    ZoomIn(
-                      duration: const Duration(milliseconds: 1000),
+                    // Animated Logo Container
+                    ElasticIn(
+                      duration: const Duration(seconds: 2),
                       child: Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.9),
+                          gradient: LinearGradient(
+                            colors: [
+                              ColorManager.blue2563EB,
+                              ColorManager.purple764BA2,
+                            ],
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                              color: ColorManager.blue2563EB.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 5,
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.beach_access_rounded,
-                          size: 64,
-                          color: Color(0xFF006994), // Sea Blue
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              ImageAssetsManger.logo,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.villa_rounded,
+                                    size: 60,
+                                    color: ColorManager.blue2563EB,
+                                  ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 40),
 
-                    // Text
+                    // Brand Name
                     FadeInUp(
-                      delay: const Duration(milliseconds: 300),
-                      child: const Text(
-                        'Rebtal',
-                        style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF006994), // Sea Blue
-                          letterSpacing: 1.5,
-                          fontFamily: 'Outfit',
+                      duration: const Duration(seconds: 1),
+                      delay: const Duration(milliseconds: 500),
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [Colors.white, Color(0xFFE2E8F0)],
+                        ).createShader(bounds),
+                        child: const Text(
+                          'REBTAL',
+                          style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 8,
+                            color: Colors.white,
+                            fontFamily: 'Outfit',
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    FadeInUp(
-                      delay: const Duration(milliseconds: 500),
+                    const SizedBox(height: 12),
+
+                    // Tagline
+                    FadeIn(
+                      duration: const Duration(seconds: 2),
+                      delay: const Duration(seconds: 1),
                       child: Text(
                         'صيفك يبدأ من هنا',
                         style: TextStyle(
                           fontSize: 18,
-                          color: const Color(0xFF006994).withOpacity(0.8),
-                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Bottom Loading/Status Segment
+              Positioned(
+                bottom: 60,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    FadeIn(
+                      delay: const Duration(seconds: 1),
+                      child: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white.withOpacity(0.3),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    FadeInUp(
+                      delay: const Duration(seconds: 2),
+                      child: Text(
+                        'PREMIUM CHALET EXPERIENCES',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withOpacity(0.3),
+                          letterSpacing: 3,
                         ),
                       ),
                     ),
@@ -304,115 +331,5 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ),
     );
-  }
-
-  Widget _buildCloud(
-    BuildContext context, {
-    required double top,
-    required double left,
-    required double scale,
-  }) {
-    return Positioned(
-      top: top,
-      left: left,
-      child: Transform.scale(
-        scale: scale,
-        child: Container(
-          width: 100,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.6),
-            borderRadius: BorderRadius.circular(50),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SeaWavePainter extends CustomPainter {
-  final double animationValue;
-
-  SeaWavePainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF006994).withOpacity(0.8)
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-
-    // Animate the wave by shifting the phase
-    // We'll use a simple sine-like movement by shifting control points
-    // Since we don't want to use dart:math, we can just linearly interpolate the control points
-
-    double shift =
-        size.width *
-        animationValue; // Shift by full width over the animation cycle
-
-    // We need to draw a wider wave so we can shift it
-    path.moveTo(-size.width + shift, size.height * 0.4);
-
-    // Draw multiple wave segments to cover the shift
-    for (int i = -1; i < 2; i++) {
-      double startX = (i * size.width) + shift;
-      path.quadraticBezierTo(
-        startX + size.width * 0.25,
-        size.height * 0.3,
-        startX + size.width * 0.5,
-        size.height * 0.4,
-      );
-      path.quadraticBezierTo(
-        startX + size.width * 0.75,
-        size.height * 0.5,
-        startX + size.width,
-        size.height * 0.4,
-      );
-    }
-
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-
-    canvas.drawPath(path, paint);
-
-    // Second layer (slower or different phase)
-    final paint2 = Paint()
-      ..color = const Color(0xFF006994).withOpacity(0.4)
-      ..style = PaintingStyle.fill;
-
-    final path2 = Path();
-    double shift2 =
-        size.width * ((animationValue + 0.5) % 1.0); // Different phase
-
-    path2.moveTo(-size.width + shift2, size.height * 0.5);
-
-    for (int i = -1; i < 2; i++) {
-      double startX = (i * size.width) + shift2;
-      path2.quadraticBezierTo(
-        startX + size.width * 0.25,
-        size.height * 0.6,
-        startX + size.width * 0.5,
-        size.height * 0.5,
-      );
-      path2.quadraticBezierTo(
-        startX + size.width * 0.75,
-        size.height * 0.4,
-        startX + size.width,
-        size.height * 0.5,
-      );
-    }
-
-    path2.lineTo(size.width, size.height);
-    path2.lineTo(0, size.height);
-    path2.close();
-
-    canvas.drawPath(path2, paint2);
-  }
-
-  @override
-  bool shouldRepaint(covariant SeaWavePainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue;
   }
 }

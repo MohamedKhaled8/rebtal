@@ -171,8 +171,8 @@ class _ModernAmenityCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.fastOutSlowIn,
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(

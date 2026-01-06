@@ -85,7 +85,7 @@ Future<void> _showRatingBottomSheet() async {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: Colors.black,
                         ),
                       ),
 
@@ -95,12 +95,7 @@ Future<void> _showRatingBottomSheet() async {
                       Text(
                         'ساعدنا في تحسين الخدمة من خلال تقييمك',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark
-                              ? Colors.white.withOpacity(0.7)
-                              : Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.black),
                       ),
 
                       const SizedBox(height: 24),
@@ -160,7 +155,7 @@ Future<void> _showRatingBottomSheet() async {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: ColorManager.chaletAccent,
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -183,10 +178,7 @@ Future<void> _showRatingBottomSheet() async {
                       TextField(
                         controller: controller,
                         maxLines: 4,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
+                        style: TextStyle(fontSize: 15, color: Colors.black),
                         decoration: InputDecoration(
                           hintText: 'شاركنا رأيك وتجربتك بالتفصيل...',
                           hintStyle: TextStyle(

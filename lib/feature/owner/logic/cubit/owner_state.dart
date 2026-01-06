@@ -129,7 +129,7 @@ class ChaletDraft extends Equatable {
   const ChaletDraft({
     this.uploadedImages = const [],
     this.profileImage,
-    this.selectedLocation = 'Sharm El Sheikh',
+    this.selectedLocation = '',
     this.isAvailable = true,
     this.hasWifi = false,
     this.hasPool = false,

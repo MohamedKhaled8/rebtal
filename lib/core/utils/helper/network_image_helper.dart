@@ -24,8 +24,10 @@ class NetworkImageHelper extends StatelessWidget {
       height: height,
       fit: fit,
       placeholder: (context, url) => Center(child: CircularProgressIndicator()),
-      errorWidget: (context, url, error) =>
-          const Center(child: Icon(Icons.error, color: ColorManager.red)),
+      errorWidget: (context, url, error) {
+        debugPrint('❌ Image failed to load: $url');
+        return const Center(child: Icon(Icons.error, color: ColorManager.red));
+      },
     );
   }
 }

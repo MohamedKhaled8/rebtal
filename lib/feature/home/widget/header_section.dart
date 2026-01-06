@@ -25,11 +25,20 @@ class _HeaderSectionState extends State<HeaderSection> {
 
   // Images for the slideshow
   final List<String> _backgroundImages = [
-    'https://images.pexels.com/photos/261187/pexels-photo-261187.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    'https://images.pexels.com/photos/1287460/pexels-photo-1287460.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/2103127/pexels-photo-2103127.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/1287460/pexels-photo-1287460.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/261187/pexels-photo-261187.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/2034335/pexels-photo-2034335.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/1438834/pexels-photo-1438834.jpeg?auto=compress&cs=tinysrgb&w=600',
+    'https://images.pexels.com/photos/1579253/pexels-photo-1579253.jpeg?auto=compress&cs=tinysrgb&w=600',
   ];
-
   late PageController _pageController;
   late Timer _timer;
   int _currentImageIndex = 0;
@@ -138,44 +147,46 @@ class _HeaderSectionState extends State<HeaderSection> {
         children: [
           // 1. Background Slideshow with Gradient Overlay
           Positioned.fill(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: _backgroundImages.length,
-              onPageChanged: (index) {
-                setState(() => _currentImageIndex = index);
-              },
-              itemBuilder: (context, index) {
-                return Stack(
-                  children: [
-                    Positioned.fill(
-                      child: AppImageHelper(
-                        path: _backgroundImages[index],
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    // Gradient Overlay for text readability
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: isDark
-                              ? LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.3),
-                                    Colors.transparent,
-                                    const Color(0xFF001409).withOpacity(0.8),
-                                    const Color(0xFF001409),
-                                  ],
-                                  stops: const [0.0, 0.4, 0.8, 1.0],
-                                )
-                              : null, // No gradient in Light Mode
+            child: RepaintBoundary(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _backgroundImages.length,
+                onPageChanged: (index) {
+                  setState(() => _currentImageIndex = index);
+                },
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AppImageHelper(
+                          path: _backgroundImages[index],
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                      // Gradient Overlay for text readability
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: isDark
+                                ? LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.3),
+                                      Colors.transparent,
+                                      const Color(0xFF001409).withOpacity(0.8),
+                                      const Color(0xFF001409),
+                                    ],
+                                    stops: const [0.0, 0.4, 0.8, 1.0],
+                                  )
+                                : null, // No gradient in Light Mode
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
 

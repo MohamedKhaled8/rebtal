@@ -18,8 +18,11 @@ abstract class ImageAssetsManger {
   ///json
   static const String rootImagesJson = "assets/images/json";
 
-  static const String errornet = "$rootImagesJson/errornet.json";
-  static const String open = "$rootImagesJson/open.json";
+  static const String noData = "$rootImagesJson/No Data.json";
+  static const String notifications = "$rootImagesJson/Notifications.json";
+  static const String couponDiscount = "$rootImagesJson/Coupon_Discount.json";
+  static const String favoriteRibbon =
+      "$rootImagesJson/Ribbon with heart icon.json";
 
   ///SVG
   static const String rootImagesSvg = "assets/images/svg";

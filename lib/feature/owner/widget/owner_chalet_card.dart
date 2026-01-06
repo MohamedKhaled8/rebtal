@@ -392,7 +392,7 @@ class _PriceRow extends StatelessWidget {
         Text(
           CurrencyFormatter.egp(finalPrice, withSuffixPerNight: true),
           style: TextStyle(
-            color: ColorManager.purple,
+            color: ColorManager.blue2563EB,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),

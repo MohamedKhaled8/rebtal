@@ -7,6 +7,7 @@ import 'package:rebtal/feature/admin/widget/user/user_tab.dart';
 import 'package:rebtal/feature/admin/ui/admin_payments_page.dart';
 import 'package:rebtal/feature/admin/ui/admin_cancellations_page.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/feature/admin/ui/admin_statistics_page.dart';
 
 class UserManager {
   /// لون حسب الدور
@@ -115,7 +116,9 @@ class UserManager {
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                                color: isDark
+                                    ? ColorManager.white
+                                    : ColorManager.chaletTextPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -135,7 +138,9 @@ class UserManager {
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close_rounded,
-                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                          color: isDark
+                              ? ColorManager.white70
+                              : ColorManager.grey600,
                         ),
                       ),
                     ],
@@ -318,9 +323,7 @@ class UserManager {
           ),
           prefixIcon: Icon(
             icon,
-            color: isDark
-                ? const Color(0xFF667EEA)
-                : const Color(0xFF667EEA),
+            color: isDark ? const Color(0xFF667EEA) : const Color(0xFF667EEA),
             size: 22,
           ),
           border: InputBorder.none,
@@ -363,23 +366,15 @@ class UserManager {
         gradient: isPrimary
             ? LinearGradient(
                 colors: isDark
-                    ? [
-                        ColorManager.indigo6366F1,
-                        ColorManager.purple764BA2,
-                      ]
-                    : [
-                        ColorManager.indigo6366F1,
-                        ColorManager.purple764BA2,
-                      ],
+                    ? [ColorManager.indigo6366F1, ColorManager.purple764BA2]
+                    : [ColorManager.indigo6366F1, ColorManager.purple764BA2],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               )
             : null,
         color: isPrimary
             ? null
-            : (isDark
-                ? ColorManager.darkGrey2D2D44
-                : ColorManager.grey200),
+            : (isDark ? ColorManager.darkGrey2D2D44 : ColorManager.grey200),
         border: isPrimary
             ? null
             : Border.all(
@@ -417,7 +412,7 @@ class UserManager {
     required String docId,
   }) {
     final isDark = Theme.of(ctx).brightness == Brightness.dark;
-    
+
     showDialog(
       context: ctx,
       barrierColor: ColorManager.black.withOpacity(0.5),
@@ -508,7 +503,9 @@ class UserManager {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('تم حذف المستخدم بنجاح'),
+                                    content: const Text(
+                                      'تم حذف المستخدم بنجاح',
+                                    ),
                                     backgroundColor: Colors.green,
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
@@ -580,29 +577,32 @@ class UserManager {
     }
   }
 
-  static final List<Widget> tabs = const [
+  static final List<Widget> tabs = [
+    AdminStatisticsPage(), // Statistics as Dashboard Home
     UsersTab(),
     PendingRequestsTab(),
     AdminPaymentsPage(),
-    AdminCancellationsPage(), // New Tab
+    AdminCancellationsPage(),
     ApprovedRequestsTab(),
     RejectedRequestsTab(),
   ];
 
   static final List<String> tabTitles = const [
+    'Statistics',
     'Users',
     'Pending',
     'Payments',
-    'Cancellations', // New Title
+    'Cancellations',
     'Approved',
     'Rejected',
   ];
 
   static final List<IconData> tabIcons = const [
+    Icons.analytics_rounded, // Analytics Icon
     Icons.people,
     Icons.pending_actions,
     Icons.payment,
-    Icons.cancel_presentation, // New Icon
+    Icons.cancel_presentation,
     Icons.check_circle,
     Icons.cancel,
   ];

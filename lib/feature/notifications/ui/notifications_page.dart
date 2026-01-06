@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -311,25 +314,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    ColorManager.chaletAccent.withOpacity(0.2),
-                    ColorManager.chaletAccent.withOpacity(0.1),
-                  ],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.notifications_none_rounded,
-                size: 60,
-                color: ColorManager.chaletAccent.withOpacity(0.5),
-              ),
-            ),
-            const SizedBox(height: 32),
+            AppImageHelper(path: ImageAssetsManger.notifications),
+
+            const SizedBox(height: 24),
             Text(
               'لا توجد إشعارات',
               style: TextStyle(

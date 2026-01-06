@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 
 part 'fixed_bottom_bar_state.dart';
 
@@ -142,10 +143,16 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
   Future<void> confirmTransfer(BuildContext context) async {
     final s = state;
     if (s is FixedBottomBarLoaded && s.booking != null) {
+      // إظهار شاشة التحميل الفاخرة
+      PremiumLoadingOverlay.show(context);
+
       try {
         final appCubit = context.read<AppCubit>();
         final currentUser = appCubit.authCubit.getCurrentUser();
-        if (currentUser == null) return;
+        if (currentUser == null) {
+          PremiumLoadingOverlay.dismiss(context);
+          return;
+        }
 
         final oldBooking = s.booking!;
 
@@ -163,26 +170,32 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
               'pendingApprovalAt': FieldValue.serverTimestamp(),
             });
 
-        // إرسال إشعار للمالك بأن هناك موافقة مبدئية تنتظر موافقته
-        try {
-          await NotificationService().sendNotification(
-            userId: oldBooking.ownerId,
-            title: 'موافقة مبدئية على نقل حجز',
-            body:
-                'قام ${currentUser.name} بالموافقة المبدئية على نقل الحجز. يرجى المراجعة والموافقة النهائية.',
-            type: NotificationType.transferTicket,
-            relatedId: oldBooking.id,
-            data: {
-              'newTenantName': currentUser.name,
-              'bookingId': oldBooking.id,
-              'requiresOwnerApproval': true,
-            },
-          );
-        } catch (e) {
-          debugPrint('Notification error: $e');
-        }
+        // إرسال إشعار للمالك بأن هناك موافقة مبدئية تنتظر موافقته (في الخلفية)
+        NotificationService()
+            .sendNotification(
+              userId: oldBooking.ownerId,
+              title: 'موافقة مبدئية على نقل حجز',
+              body:
+                  'قام ${currentUser.name} بالموافقة المبدئية على نقل الحجز. يرجى المراجعة والموافقة النهائية.',
+              type: NotificationType.transferTicket,
+              relatedId: oldBooking.id,
+              data: {
+                'newTenantName': currentUser.name,
+                'bookingId': oldBooking.id,
+                'requiresOwnerApproval': true,
+              },
+            )
+            .then((_) {
+              debugPrint('Notification sent successfully');
+            })
+            .catchError((e) {
+              debugPrint('Notification error: $e');
+            });
 
         if (context.mounted) {
+          // إخفاء التحميل
+          PremiumLoadingOverlay.dismiss(context);
+
           SnackBarHelper.showSuccess(
             context,
             'تم إرسال الموافقة المبدئية! في انتظار موافقة المالك النهائية.',
@@ -191,6 +204,8 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
         }
       } catch (e) {
         if (context.mounted) {
+          // إخفاء التحميل عند الخطأ
+          PremiumLoadingOverlay.dismiss(context);
           SnackBarHelper.showError(context, 'حدث خطأ: $e');
         }
       }
