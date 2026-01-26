@@ -964,9 +964,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
             final canConfirm = termsAccepted;
             return Container(
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF1A1A1A)
-                    : Colors.white,
+                color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
@@ -1016,98 +1014,139 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                       '${dateStr(from)} → ${dateStr(to)}',
                     ),
                     const SizedBox(height: 10),
-                    _confirmationRow(
-                      isDark,
-                      'عدد الأيام:',
-                      '$days',
-                    ),
+                    _confirmationRow(isDark, 'عدد الأيام:', '$days'),
                     const SizedBox(height: 6),
-                    _confirmationRow(
-                      isDark,
-                      'عدد الليالي:',
-                      '$nights',
-                    ),
+                    _confirmationRow(isDark, 'عدد الليالي:', '$nights'),
                     const SizedBox(height: 16),
-                    Text(
-                      'عدد الأطفال:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? Colors.white70
-                            : Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton.filled(
-                          onPressed: () {
-                            setModalState(() {
-                              selectedChildren = (selectedChildren - 1).clamp(0, 30);
-                              childrenController.text = '$selectedChildren';
-                            });
-                          },
-                          icon: const Icon(Icons.remove),
-                          style: IconButton.styleFrom(
-                            backgroundColor: isDark
-                                ? Colors.white.withOpacity(0.12)
-                                : Colors.grey.shade200,
-                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                        Text(
+                          'عدد الأطفال:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white70 : Colors.grey[700],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: childrenController,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withOpacity(0.08)
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.grey.shade300,
+                              width: 1,
                             ),
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              filled: true,
-                              fillColor: isDark
-                                  ? Colors.white.withOpacity(0.08)
-                                  : Colors.grey.shade100,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 12,
-                              ),
-                            ),
-                            onChanged: (v) {
-                              final n = int.tryParse(v.trim());
-                              setModalState(() {
-                                if (n != null && n >= 0 && n <= 30) {
-                                  selectedChildren = n;
-                                } else if (v.trim().isEmpty) {
-                                  selectedChildren = 0;
-                                }
-                              });
-                            },
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton.filled(
-                          onPressed: () {
-                            setModalState(() {
-                              selectedChildren = (selectedChildren + 1).clamp(0, 30);
-                              childrenController.text = '$selectedChildren';
-                            });
-                          },
-                          icon: const Icon(Icons.add),
-                          style: IconButton.styleFrom(
-                            backgroundColor: isDark
-                                ? Colors.white.withOpacity(0.12)
-                                : Colors.grey.shade200,
-                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    setModalState(() {
+                                      selectedChildren = (selectedChildren - 1)
+                                          .clamp(0, 30);
+                                      childrenController.text =
+                                          '$selectedChildren';
+                                    });
+                                  },
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(10),
+                                    bottomRight: Radius.circular(10),
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      size: 18,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: 50,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 8,
+                                ),
+                                child: TextField(
+                                  controller: childrenController,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: '0',
+                                    hintStyle: TextStyle(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.white38
+                                          : Colors.grey[400],
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                  ),
+                                  onChanged: (v) {
+                                    final n = int.tryParse(v.trim());
+                                    setModalState(() {
+                                      if (n != null && n >= 0 && n <= 30) {
+                                        selectedChildren = n;
+                                      } else if (v.trim().isEmpty) {
+                                        selectedChildren = 0;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    setModalState(() {
+                                      selectedChildren = (selectedChildren + 1)
+                                          .clamp(0, 30);
+                                      childrenController.text =
+                                          '$selectedChildren';
+                                    });
+                                  },
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 18,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -1122,9 +1161,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             : Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isDark
-                              ? Colors.white12
-                              : Colors.grey.shade200,
+                          color: isDark ? Colors.white12 : Colors.grey.shade200,
                         ),
                       ),
                       child: Column(
@@ -1142,8 +1179,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                   height: 24,
                                   child: Checkbox(
                                     value: termsAccepted,
-                                    onChanged: (v) =>
-                                        setModalState(() => termsAccepted = v ?? false),
+                                    onChanged: (v) => setModalState(
+                                      () => termsAccepted = v ?? false,
+                                    ),
                                     activeColor: ColorManager.chaletAccent,
                                   ),
                                 ),
@@ -1168,9 +1206,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             '• الحساب بالليلة. الإلغاء: استرداد كامل قبل 7+ أيام، جزئي قبل 3–6 أيام، خصم 50% قبل أقل من 3 أيام، بدون استرداد يوم الوصول.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark
-                                  ? Colors.white60
-                                  : Colors.grey[700],
+                              color: isDark ? Colors.white60 : Colors.grey[700],
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -1179,7 +1215,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               () => expandedPolicy = !expandedPolicy,
                             ),
                             child: Text(
-                              expandedPolicy ? 'إخفاء التفاصيل' : 'عرض السياسة كاملة',
+                              expandedPolicy
+                                  ? 'إخفاء التفاصيل'
+                                  : 'عرض السياسة كاملة',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -1291,8 +1329,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         }
         if (userDoc.exists) {
           final userData = userDoc.data();
-          userPhone =
-              userData?['phone'] ?? userData?['phoneNumber'];
+          userPhone = userData?['phone'] ?? userData?['phoneNumber'];
           userEmail = userData?['email'];
         }
       } catch (e) {
@@ -1302,9 +1339,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
       String? ownerPhone;
       String? ownerEmail;
       try {
-        final ownerId = _normOwnerId(
-          resolved['ownerId'] ?? widget.ownerId,
-        );
+        final ownerId = _normOwnerId(resolved['ownerId'] ?? widget.ownerId);
         var ownerDoc = await FirebaseFirestore.instance
             .collection('Users')
             .doc(ownerId)
@@ -1317,8 +1352,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         }
         if (ownerDoc.exists) {
           final ownerData = ownerDoc.data();
-          ownerPhone =
-              ownerData?['phone'] ?? ownerData?['phoneNumber'];
+          ownerPhone = ownerData?['phone'] ?? ownerData?['phoneNumber'];
           ownerEmail = ownerData?['email'];
         }
       } catch (e) {
@@ -1348,7 +1382,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
       final docRef = FirebaseFirestore.instance.collection('bookings').doc();
       final bookingWithId = booking.copyWith(id: docRef.id);
 
-      widget.parentContext.read<AppCubit>().bookingCubit.addBooking(bookingWithId);
+      widget.parentContext.read<AppCubit>().bookingCubit.addBooking(
+        bookingWithId,
+      );
       await docRef.set(bookingWithId.toMap());
 
       await NotificationService().sendNotification(
@@ -1379,10 +1415,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
       debugPrint('Error confirming booking: $e');
       if (mounted) {
         PremiumLoadingOverlay.dismiss(context);
-        SnackBarHelper.showError(
-          context,
-          'حدث خطأ في الحجز: $e',
-        );
+        SnackBarHelper.showError(context, 'حدث خطأ في الحجز: $e');
       }
     }
   }

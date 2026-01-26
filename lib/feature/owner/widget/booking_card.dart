@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -590,6 +591,12 @@ class BookingCard extends StatelessWidget {
   }
 
   void _updateStatus(BuildContext context, BookingStatus status) async {
+    // إذا كانت الموافقة، إظهار ملخص سياسة الإلغاء أولاً
+    if (status == BookingStatus.approved) {
+      final shouldProceed = await _showCancellationPolicySummary(context);
+      if (!shouldProceed) return; // المستخدم ألغى العملية
+    }
+
     // إظهار شاشة التحميل الفاخرة
     PremiumLoadingOverlay.show(context);
 
@@ -617,5 +624,207 @@ class BookingCard extends StatelessWidget {
         SnackBarHelper.showError(context, 'خطأ: $e');
       }
     }
+  }
+
+  Future<bool> _showCancellationPolicySummary(BuildContext context) async {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final now = DateTime.now();
+    final daysRemaining = booking.from.difference(now).inDays;
+
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: ColorManager.chaletAccent,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'ملخص سياسة الإلغاء',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'سيتم تطبيق سياسة الإلغاء التالية على هذا الحجز:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white70 : Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildPolicyCard(
+                  isDark,
+                  '7 ليالٍ أو أكثر قبل الوصول',
+                  'استرداد كامل (100%)',
+                  const Color(0xFF4CAF50),
+                  daysRemaining >= 7,
+                ),
+                const SizedBox(height: 10),
+                _buildPolicyCard(
+                  isDark,
+                  '3–6 ليالٍ قبل الوصول',
+                  'خصم حتى 50%',
+                  const Color(0xFFFF9800),
+                  daysRemaining >= 3 && daysRemaining < 7,
+                ),
+                const SizedBox(height: 10),
+                _buildPolicyCard(
+                  isDark,
+                  'أقل من 3 ليالٍ قبل الوصول',
+                  'خصم 50%',
+                  const Color(0xFFF44336),
+                  daysRemaining > 0 && daysRemaining < 3,
+                ),
+                const SizedBox(height: 10),
+                _buildPolicyCard(
+                  isDark,
+                  'يوم الوصول',
+                  'لا استرداد (0%)',
+                  const Color(0xFFD32F2F),
+                  daysRemaining <= 0,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ColorManager.chaletAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ColorManager.chaletAccent.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        size: 18,
+                        color: ColorManager.chaletAccent,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          daysRemaining < 0
+                              ? 'مضى موعد الوصول'
+                              : (daysRemaining == 0
+                                  ? 'اليوم'
+                                  : 'المتبقي: $daysRemaining يوم'),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '• الحساب بالليلة. الإلغاء: استرداد كامل قبل 7+ أيام، جزئي قبل 3–6 أيام، خصم 50% قبل أقل من 3 أيام، بدون استرداد يوم الوصول.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white60 : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: TextButton.styleFrom(
+                foregroundColor: isDark ? Colors.white70 : Colors.grey.shade700,
+              ),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorManager.chaletAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('موافقة على الحجز'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+  }
+
+  Widget _buildPolicyCard(
+    bool isDark,
+    String title,
+    String text,
+    Color color,
+    bool isActive,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(isDark ? 0.2 : 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isActive ? color : color.withOpacity(0.4),
+          width: isActive ? 2.5 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isActive ? Icons.check_circle : Icons.info_outline,
+              color: color,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white70 : Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
