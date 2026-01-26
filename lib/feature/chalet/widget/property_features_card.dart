@@ -6,8 +6,13 @@ import 'package:rebtal/feature/chalet/logic/cubit/services_cubit.dart';
 
 class PropertyFeaturesCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
+  final bool isDark;
 
-  const PropertyFeaturesCard({super.key, required this.requestData});
+  const PropertyFeaturesCard({
+    super.key,
+    required this.requestData,
+    this.isDark = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -87,95 +92,88 @@ class PropertyFeaturesCard extends StatelessWidget {
             Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
             const SizedBox(height: 32),
 
-            // Amenities Section (Clean & Minimal)
+            // المرافق والخدمات فقط (بدون المميزات الإضافية القديمة Sea View / Garden / Pool / WiFi / BBQ / Parking)
             BlocBuilder<ServicesCubit, ServicesState>(
               builder: (context, state) {
-                if (state is ServicesLoaded && state.amenities.isNotEmpty) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Facilities & Services',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? ColorManager.chaletTextPrimaryDark
-                              : ColorManager.chaletTextPrimaryLight,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 24,
-                              childAspectRatio: 0.8,
-                            ),
-                        itemCount: state.amenities.length,
-                        itemBuilder: (context, index) {
-                          final item = state.amenities[index];
-
-                          // Defined Palette for Amenities
-                          final List<Color> palette = [
-                            ColorManager.chaletActionBlue,
-                            ColorManager.purple8B5CF6,
-                            ColorManager.orangeF59E0B,
-                            ColorManager.chaletGalleryPink,
-                            ColorManager.chaletAvailableGreen,
-                            Colors.teal,
-                            Colors.indigo,
-                            Colors.redAccent,
-                          ];
-
-                          // Cycle through palette
-                          final color = palette[index % palette.length];
-
-                          // Always use vibrant color for icon
-                          final iconColor = color;
-
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  // Always show colored background
-                                  color: color.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  item['icon'] as IconData,
-                                  color: iconColor,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item['label'] as String,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? Colors.white.withOpacity(0.7)
-                                      : Colors.grey[800],
-                                  height: 1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  );
+                final hasAmenities =
+                    state is ServicesLoaded && state.amenities.isNotEmpty;
+                if (!hasAmenities) {
+                  return const SizedBox.shrink();
                 }
-                return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'المرافق والخدمات',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? ColorManager.chaletTextPrimaryDark
+                            : ColorManager.chaletTextPrimaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 24,
+                            childAspectRatio: 0.8,
+                          ),
+                      itemCount: state.amenities.length,
+                      itemBuilder: (context, index) {
+                        final item = state.amenities[index];
+                        final List<Color> palette = [
+                          ColorManager.chaletActionBlue,
+                          ColorManager.purple8B5CF6,
+                          ColorManager.orangeF59E0B,
+                          ColorManager.chaletGalleryPink,
+                          ColorManager.chaletAvailableGreen,
+                          Colors.teal,
+                          Colors.indigo,
+                          Colors.redAccent,
+                        ];
+                        final color = palette[index % palette.length];
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: color.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                item['icon'] as IconData,
+                                color: color,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              item['label'] as String,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.7)
+                                    : Colors.grey[800],
+                                height: 1.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                );
               },
             ),
           ],

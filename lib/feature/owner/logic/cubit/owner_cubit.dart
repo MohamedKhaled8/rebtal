@@ -265,14 +265,26 @@ class OwnerCubit extends Cubit<OwnerState> {
     String chaletId,
     bool currentVisibility,
   ) async {
+    final newVisibility = !currentVisibility;
+    // Optimistic Update
+    final updatedChalets = state.chalets.map((c) {
+      if (c['id'] == chaletId) {
+        final Map<String, dynamic> newC = Map.from(c);
+        newC['isVisible'] = newVisibility;
+        return newC;
+      }
+      return c;
+    }).toList();
+    emit(state.copyWith(chalets: updatedChalets));
+
     try {
       await _firestore.collection('chalets').doc(chaletId).update({
-        'isVisible': !currentVisibility,
+        'isVisible': newVisibility,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      // Optionally re-fetch
     } catch (_) {
-      // Handle error
+      // Revert if failed (optional, but good practice)
+      fetchChalets(state.chalets.first['ownerId']);
     }
   }
 
@@ -280,17 +292,31 @@ class OwnerCubit extends Cubit<OwnerState> {
     String chaletId,
     String currentAvailability,
   ) async {
+    final newAvailability = currentAvailability == 'available'
+        ? 'unavailable'
+        : 'available';
+
+    // Optimistic Update
+    final updatedChalets = state.chalets.map((c) {
+      if (c['id'] == chaletId) {
+        final Map<String, dynamic> newC = Map.from(c);
+        newC['bookingAvailability'] = newAvailability;
+        return newC;
+      }
+      return c;
+    }).toList();
+    emit(state.copyWith(chalets: updatedChalets));
+
     try {
-      final newAvailability = currentAvailability == 'available'
-          ? 'unavailable'
-          : 'available';
       await _firestore.collection('chalets').doc(chaletId).update({
         'bookingAvailability': newAvailability,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      // Optionally re-fetch
     } catch (_) {
-      // Handle error
+      // Revert/Refresh if failed
+      if (state.chalets.isNotEmpty) {
+        fetchChalets(state.chalets.first['ownerId']);
+      }
     }
   }
 

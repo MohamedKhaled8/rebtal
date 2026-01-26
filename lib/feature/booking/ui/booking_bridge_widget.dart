@@ -48,7 +48,6 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     return id.trim();
   }
 
-  bool _showDecisionButtons = false;
   bool _launchedExternal = false;
   late final String _bookingId;
   DateTime? _from;
@@ -77,10 +76,8 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed && _launchedExternal) {
-      setState(() {
-        _showDecisionButtons = true;
-      });
       _launchedExternal = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -433,6 +430,27 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
+                            'عدد الأيام:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            '${_getDays(_from!, _to!)}',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
                             'عدد الليالي:',
                             style: TextStyle(
                               fontSize: 14,
@@ -440,11 +458,11 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             ),
                           ),
                           Text(
-                            '${_calculateBookingDays(_from!, _to!)} ليال',
+                            '${_getNights(_from!, _to!)}',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: ColorManager.chaletAccent,
                             ),
                           ),
                         ],
@@ -530,9 +548,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                   ),
                 ),
               ] else ...[
-                // Hidden: WhatsApp and Call Buttons (kept for future use - set to false to hide)
-                // To show them again, change the condition below to: if (!_showDecisionButtons && false)
-                if (false && !_showDecisionButtons) ...[
+                // WhatsApp/Call buttons kept for future use; condition intentionally false.
+                // ignore: dead_code
+                if (false) ...[
                   // WhatsApp Button
                   Container(
                     decoration: BoxDecoration(
@@ -685,7 +703,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     ),
                   ),
                 ],
-                // Decision Buttons (shown directly after selecting dates)
+                // Decision Buttons: open confirmation sheet first, then create booking + rating
                 Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -703,157 +721,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () async {
-                        // إظهار شاشة التحميل الفاخرة
-                        PremiumLoadingOverlay.show(context);
-
-                        try {
-                          final resolved = await _resolveOwner();
-                          final totalAmount = _calculateTotalAmount(
-                            _from!,
-                            _to!,
-                          );
-
-                          // Fetch user details
-                          String? userPhone;
-                          String? userEmail;
-                          try {
-                            // Try Users collection first
-                            var userDoc = await FirebaseFirestore.instance
-                                .collection('Users')
-                                .doc(widget.userId)
-                                .get();
-
-                            // If not found, try Owners collection
-                            if (!userDoc.exists) {
-                              userDoc = await FirebaseFirestore.instance
-                                  .collection('Owners')
-                                  .doc(widget.userId)
-                                  .get();
-                            }
-
-                            if (userDoc.exists) {
-                              final userData = userDoc.data();
-                              userPhone =
-                                  userData?['phone'] ??
-                                  userData?['phoneNumber'];
-                              userEmail = userData?['email'];
-                            }
-                          } catch (e) {
-                            debugPrint('Error fetching user details: $e');
-                          }
-
-                          // Fetch owner details
-                          String? ownerPhone;
-                          String? ownerEmail;
-                          try {
-                            final ownerId = _normOwnerId(
-                              resolved['ownerId'] ?? widget.ownerId,
-                            );
-
-                            // Try Users collection first
-                            var ownerDoc = await FirebaseFirestore.instance
-                                .collection('Users')
-                                .doc(ownerId)
-                                .get();
-
-                            // If not found, try Owners collection
-                            if (!ownerDoc.exists) {
-                              ownerDoc = await FirebaseFirestore.instance
-                                  .collection('Owners')
-                                  .doc(ownerId)
-                                  .get();
-                            }
-
-                            if (ownerDoc.exists) {
-                              final ownerData = ownerDoc.data();
-                              ownerPhone =
-                                  ownerData?['phone'] ??
-                                  ownerData?['phoneNumber'];
-                              ownerEmail = ownerData?['email'];
-                            }
-                          } catch (e) {
-                            debugPrint('Error fetching owner details: $e');
-                          }
-
-                          final booking = Booking(
-                            id: _bookingId,
-                            chaletId: widget.chaletId,
-                            chaletName: widget.chaletName,
-                            ownerId: _normOwnerId(
-                              resolved['ownerId'] ?? widget.ownerId,
-                            ),
-                            ownerName:
-                                resolved['ownerName'] ?? widget.ownerName,
-                            userId: widget.userId,
-                            userName: widget.userName,
-                            from: _from ?? DateTime.now(),
-                            to:
-                                _to ??
-                                DateTime.now().add(const Duration(days: 1)),
-                            status: BookingStatus.pending,
-                            amount: totalAmount,
-                            userPhone: userPhone,
-                            userEmail: userEmail,
-                            ownerPhone: ownerPhone,
-                            ownerEmail: ownerEmail,
-                            chaletLocation:
-                                widget.requestData['location'] as String?,
-                          );
-
-                          // Generate ID beforehand to use in notification
-                          final docRef = FirebaseFirestore.instance
-                              .collection('bookings')
-                              .doc();
-                          final bookingWithId = booking.copyWith(id: docRef.id);
-
-                          widget.parentContext
-                              .read<AppCubit>()
-                              .bookingCubit
-                              .addBooking(bookingWithId);
-                          // Save with the pre-generated ID
-                          await docRef.set(bookingWithId.toMap());
-
-                          // ✅ Send notification to owner
-                          await NotificationService().sendNotification(
-                            userId: bookingWithId.ownerId,
-                            title: 'طلب حجز جديد 📩',
-                            body:
-                                'لديك طلب حجز جديد لشاليه ${bookingWithId.chaletName} من ${bookingWithId.userName}. يرجى المراجعة والموافقة.',
-                            type: NotificationType.bookingRequest,
-                            relatedId: bookingWithId.id,
-                            data: {
-                              'bookingId': bookingWithId.id,
-                              'chaletId': bookingWithId.chaletId,
-                            },
-                          );
-
-                          // إخفاء التحميل بنجاح
-                          if (mounted) {
-                            PremiumLoadingOverlay.dismiss(context);
-
-                            SnackBarHelper.showSuccess(
-                              widget.parentContext,
-                              'تم إرسال الطلب للمالك',
-                            );
-
-                            await _showRatingBottomSheet();
-                            if (mounted) {
-                              Navigator.of(context).pop();
-                            }
-                          }
-                        } catch (e) {
-                          debugPrint('Error confirming booking: $e');
-                          // إخفاء التحميل عند الخطأ
-                          if (mounted) {
-                            PremiumLoadingOverlay.dismiss(context);
-                            SnackBarHelper.showError(
-                              context,
-                              'حدث خطأ في الحجز: $e',
-                            );
-                          }
-                        }
-                      },
+                      onTap: () => _showBookingConfirmationSheet(context),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -1070,6 +938,453 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         ),
       ),
     );
+  }
+
+  void _showBookingConfirmationSheet(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final from = _from!;
+    final to = _to!;
+    final totalAmount = _calculateTotalAmount(from, to);
+    final days = _getDays(from, to);
+    final nights = _getNights(from, to);
+    final dateStr = (DateTime d) => '${d.day}/${d.month}/${d.year}';
+
+    int selectedChildren = 0;
+    bool termsAccepted = false;
+    bool expandedPolicy = false;
+    final childrenController = TextEditingController(text: '0');
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final canConfirm = termsAccepted;
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF1A1A1A)
+                    : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'تأكيد الحجز',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    _confirmationRow(
+                      isDark,
+                      'السعر النهائي:',
+                      '${totalAmount.toStringAsFixed(0)} EGP',
+                      valueColor: const Color(0xFF10B981),
+                    ),
+                    const SizedBox(height: 12),
+                    _confirmationRow(
+                      isDark,
+                      'من إلى:',
+                      '${dateStr(from)} → ${dateStr(to)}',
+                    ),
+                    const SizedBox(height: 10),
+                    _confirmationRow(
+                      isDark,
+                      'عدد الأيام:',
+                      '$days',
+                    ),
+                    const SizedBox(height: 6),
+                    _confirmationRow(
+                      isDark,
+                      'عدد الليالي:',
+                      '$nights',
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'عدد الأطفال:',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? Colors.white70
+                            : Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        IconButton.filled(
+                          onPressed: () {
+                            setModalState(() {
+                              selectedChildren = (selectedChildren - 1).clamp(0, 30);
+                              childrenController.text = '$selectedChildren';
+                            });
+                          },
+                          icon: const Icon(Icons.remove),
+                          style: IconButton.styleFrom(
+                            backgroundColor: isDark
+                                ? Colors.white.withOpacity(0.12)
+                                : Colors.grey.shade200,
+                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: childrenController,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: '0',
+                              filled: true,
+                              fillColor: isDark
+                                  ? Colors.white.withOpacity(0.08)
+                                  : Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 12,
+                              ),
+                            ),
+                            onChanged: (v) {
+                              final n = int.tryParse(v.trim());
+                              setModalState(() {
+                                if (n != null && n >= 0 && n <= 30) {
+                                  selectedChildren = n;
+                                } else if (v.trim().isEmpty) {
+                                  selectedChildren = 0;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton.filled(
+                          onPressed: () {
+                            setModalState(() {
+                              selectedChildren = (selectedChildren + 1).clamp(0, 30);
+                              childrenController.text = '$selectedChildren';
+                            });
+                          },
+                          icon: const Icon(Icons.add),
+                          style: IconButton.styleFrom(
+                            backgroundColor: isDark
+                                ? Colors.white.withOpacity(0.12)
+                                : Colors.grey.shade200,
+                            foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Terms & policies
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.06)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white12
+                              : Colors.grey.shade200,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: () => setModalState(
+                              () => termsAccepted = !termsAccepted,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: termsAccepted,
+                                    onChanged: (v) =>
+                                        setModalState(() => termsAccepted = v ?? false),
+                                    activeColor: ColorManager.chaletAccent,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'أوافق على سياسات الحجز والإلغاء',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '• الحساب بالليلة. الإلغاء: استرداد كامل قبل 7+ أيام، جزئي قبل 3–6 أيام، خصم 50% قبل أقل من 3 أيام، بدون استرداد يوم الوصول.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? Colors.white60
+                                  : Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          InkWell(
+                            onTap: () => setModalState(
+                              () => expandedPolicy = !expandedPolicy,
+                            ),
+                            child: Text(
+                              expandedPolicy ? 'إخفاء التفاصيل' : 'عرض السياسة كاملة',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: ColorManager.chaletAccent,
+                              ),
+                            ),
+                          ),
+                          if (expandedPolicy) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'الحجوزات تحسب بالليلة. الإلغاء: استرداد كامل (100%) إذا كان قبل 7 ليالٍ أو أكثر؛ استرداد حتى 50% إذا قبل 3–6 ليالٍ؛ خصم 50% إذا قبل أقل من 3 ليالٍ؛ لا استرداد في يوم الوصول.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? Colors.white54
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: canConfirm
+                            ? () async {
+                                Navigator.of(ctx).pop();
+                                if (!mounted) return;
+                                await _submitBooking(selectedChildren);
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: canConfirm
+                              ? ColorManager.chaletAccent
+                              : Colors.grey,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          'تأكيد الحجز',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) => childrenController.dispose());
+  }
+
+  Widget _confirmationRow(
+    bool isDark,
+    String label,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            color: isDark ? Colors.white70 : Colors.grey[700],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: valueColor ?? (isDark ? Colors.white : Colors.black87),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submitBooking(int childrenCount) async {
+    PremiumLoadingOverlay.show(context);
+
+    try {
+      final resolved = await _resolveOwner();
+      final totalAmount = _calculateTotalAmount(_from!, _to!);
+
+      String? userPhone;
+      String? userEmail;
+      try {
+        var userDoc = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(widget.userId)
+            .get();
+        if (!userDoc.exists) {
+          userDoc = await FirebaseFirestore.instance
+              .collection('Owners')
+              .doc(widget.userId)
+              .get();
+        }
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          userPhone =
+              userData?['phone'] ?? userData?['phoneNumber'];
+          userEmail = userData?['email'];
+        }
+      } catch (e) {
+        debugPrint('Error fetching user details: $e');
+      }
+
+      String? ownerPhone;
+      String? ownerEmail;
+      try {
+        final ownerId = _normOwnerId(
+          resolved['ownerId'] ?? widget.ownerId,
+        );
+        var ownerDoc = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(ownerId)
+            .get();
+        if (!ownerDoc.exists) {
+          ownerDoc = await FirebaseFirestore.instance
+              .collection('Owners')
+              .doc(ownerId)
+              .get();
+        }
+        if (ownerDoc.exists) {
+          final ownerData = ownerDoc.data();
+          ownerPhone =
+              ownerData?['phone'] ?? ownerData?['phoneNumber'];
+          ownerEmail = ownerData?['email'];
+        }
+      } catch (e) {
+        debugPrint('Error fetching owner details: $e');
+      }
+
+      final booking = Booking(
+        id: _bookingId,
+        chaletId: widget.chaletId,
+        chaletName: widget.chaletName,
+        ownerId: _normOwnerId(resolved['ownerId'] ?? widget.ownerId),
+        ownerName: resolved['ownerName'] ?? widget.ownerName,
+        userId: widget.userId,
+        userName: widget.userName,
+        from: _from ?? DateTime.now(),
+        to: _to ?? DateTime.now().add(const Duration(days: 1)),
+        status: BookingStatus.pending,
+        amount: totalAmount,
+        userPhone: userPhone,
+        userEmail: userEmail,
+        ownerPhone: ownerPhone,
+        ownerEmail: ownerEmail,
+        chaletLocation: widget.requestData['location'] as String?,
+        childrenCount: childrenCount,
+      );
+
+      final docRef = FirebaseFirestore.instance.collection('bookings').doc();
+      final bookingWithId = booking.copyWith(id: docRef.id);
+
+      widget.parentContext.read<AppCubit>().bookingCubit.addBooking(bookingWithId);
+      await docRef.set(bookingWithId.toMap());
+
+      await NotificationService().sendNotification(
+        userId: bookingWithId.ownerId,
+        title: 'طلب حجز جديد 📩',
+        body:
+            'لديك طلب حجز جديد لشاليه ${bookingWithId.chaletName} من ${bookingWithId.userName}. يرجى المراجعة والموافقة.',
+        type: NotificationType.bookingRequest,
+        relatedId: bookingWithId.id,
+        data: {
+          'bookingId': bookingWithId.id,
+          'chaletId': bookingWithId.chaletId,
+        },
+      );
+
+      if (mounted) {
+        PremiumLoadingOverlay.dismiss(context);
+        SnackBarHelper.showSuccess(
+          widget.parentContext,
+          'تم إرسال الطلب للمالك',
+        );
+        await _showRatingBottomSheet();
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error confirming booking: $e');
+      if (mounted) {
+        PremiumLoadingOverlay.dismiss(context);
+        SnackBarHelper.showError(
+          context,
+          'حدث خطأ في الحجز: $e',
+        );
+      }
+    }
   }
 
   Future<void> _showRatingBottomSheet() async {
@@ -1359,11 +1674,15 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     });
   }
 
-  int _calculateBookingDays(DateTime from, DateTime to) {
-    final duration = to.difference(from).inDays;
-    // Inclusive count: start day is counted.
-    // If from=15, to=30, diff=15. Result=16 days.
-    return duration >= 0 ? duration + 1 : 1;
+  /// Full days between check-in and check-out (e.g. Jan10→Jan15 = 5 days).
+  int _getDays(DateTime from, DateTime to) {
+    return to.difference(from).inDays.clamp(0, 365);
+  }
+
+  /// Nights = days - 1; billing is per night (e.g. Jan10→Jan15 = 4 nights).
+  int _getNights(DateTime from, DateTime to) {
+    final d = _getDays(from, to);
+    return (d - 1).clamp(0, 364);
   }
 
   double _calculateNightlyPrice() {
@@ -1400,7 +1719,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   }
 
   double _calculateTotalAmount(DateTime from, DateTime to) {
-    final days = _calculateBookingDays(from, to);
-    return _calculateNightlyPrice() * days;
+    final nights = _getNights(from, to);
+    return _calculateNightlyPrice() * nights;
   }
 }

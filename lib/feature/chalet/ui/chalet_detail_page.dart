@@ -7,7 +7,6 @@ import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:rebtal/feature/chalet/widget/about_us_section.dart';
 import 'package:rebtal/feature/chalet/widget/fixed_bottom_bar.dart';
 import 'package:rebtal/feature/chalet/widget/image_header_section.dart';
-import 'package:rebtal/feature/chalet/widget/services_section.dart';
 import 'package:rebtal/feature/chalet/widget/action_buttons.dart';
 import 'package:rebtal/feature/chalet/widget/availability_card.dart';
 import 'package:rebtal/feature/chalet/widget/image_gallery_card.dart';
@@ -110,14 +109,8 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 24),
 
-                                    // Property Amenities & Features
+                                    // Facilities & Services (includes amenities + additional features)
                                     PropertyFeaturesCard(
-                                      requestData: requestData,
-                                    ),
-                                    const SizedBox(height: 24),
-
-                                    // Additional Features
-                                    ServicesSection(
                                       requestData: requestData,
                                       isDark: isDark,
                                     ),

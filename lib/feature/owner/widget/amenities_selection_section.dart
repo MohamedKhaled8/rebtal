@@ -3,7 +3,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 
-/// Modern amenities selection widget with icon-based cards
+/// Modern amenities selection widget with icon-based cards.
 class AmenitiesSelectionSection extends StatelessWidget {
   final Map<String, bool> selectedAmenities;
   final Function(String, bool) onAmenityChanged;
@@ -17,7 +17,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final selectedCount = selectedAmenities.values.where((v) => v).length;
+    var selectedCount = selectedAmenities.values.where((v) => v).length;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -144,6 +144,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
               );
             },
           ),
+          // Additional features removed to prevent duplication as requested
         ],
       ),
     );

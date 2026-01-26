@@ -73,6 +73,7 @@ class Booking {
   final String? originalTenantPhone;
   final String? originalTenantEmail;
   final DateTime? transferredAt;
+  final int? childrenCount;
 
   Booking({
     required this.id,
@@ -117,6 +118,7 @@ class Booking {
     this.originalTenantPhone,
     this.originalTenantEmail,
     this.transferredAt,
+    this.childrenCount,
   });
 
   Booking copyWith({
@@ -162,6 +164,7 @@ class Booking {
     String? originalTenantPhone,
     String? originalTenantEmail,
     DateTime? transferredAt,
+    int? childrenCount,
   }) {
     return Booking(
       id: id ?? this.id,
@@ -258,6 +261,7 @@ class Booking {
       originalTenantPhone: json['originalTenantPhone'] as String?,
       originalTenantEmail: json['originalTenantEmail'] as String?,
       transferredAt: _parseDate(json['transferredAt']),
+      childrenCount: (json['childrenCount'] as num?)?.toInt(),
     );
   }
 
@@ -369,5 +373,6 @@ class Booking {
     'originalTenantPhone': originalTenantPhone,
     'originalTenantEmail': originalTenantEmail,
     'transferredAt': transferredAt?.toIso8601String(),
+    'childrenCount': childrenCount,
   };
 }

@@ -44,44 +44,55 @@ class BookingHelper {
     return '$dayName، $date - $time';
   }
 
-  static ({double refundAmount, double refundPercentage, String message})
-  calculateRefund(DateTime checkInDate, double totalAmount) {
+  /// Returns refund amount, percentage, message, and tier index for UI.
+  /// Tier: 0 = 7+ nights (100%), 1 = 3–6 nights (up to 50%), 2 = <3 nights (50% deduction), 3 = day of check-in (0%).
+  static ({
+    double refundAmount,
+    double refundPercentage,
+    String message,
+    int tier,
+  }) calculateRefund(DateTime checkInDate, double totalAmount) {
     final now = DateTime.now();
-
-    // Normalize to midnight to ignore hours/minutes
     final dateCheckIn = DateTime(
       checkInDate.year,
       checkInDate.month,
       checkInDate.day,
     );
     final dateToday = DateTime(now.year, now.month, now.day);
+    final nightsBeforeCheckIn = dateCheckIn.difference(dateToday).inDays;
 
-    final difference = dateCheckIn.difference(dateToday).inDays;
-
-    // Policy:
-    // >= 7 days: 100%
-    // 3 - 6 days: 50%
-    // < 3 days: 0%
-
-    if (difference >= 7) {
+    // Policy: 7+ nights → 100%; 3–6 → up to 50%; <3 → 50% deduction; day-of → 0%
+    if (nightsBeforeCheckIn >= 7) {
       return (
         refundAmount: totalAmount,
         refundPercentage: 100.0,
-        message: 'استرداد كامل (100%) - الإلغاء قبل الموعد بـ 7 أيام أو أكثر.',
+        message: 'استرداد كامل (100%) - الإلغاء قبل 7 ليالٍ أو أكثر من الوصول.',
+        tier: 0,
       );
-    } else if (difference >= 3) {
+    }
+    if (nightsBeforeCheckIn >= 3) {
       final amount = totalAmount * 0.5;
       return (
         refundAmount: amount,
         refundPercentage: 50.0,
-        message: 'استرداد جزئي (50%) - الإلغاء قبل الموعد بـ 3 إلى 7 أيام.',
-      );
-    } else {
-      return (
-        refundAmount: 0.0,
-        refundPercentage: 0.0,
-        message: 'غير مسترد (0%) - الإلغاء قبل الموعد بأقل من 3 أيام.',
+        message: 'استرداد جزئي (50%) - الإلغاء قبل 3–6 ليالٍ من الوصول.',
+        tier: 1,
       );
     }
+    if (nightsBeforeCheckIn >= 1) {
+      final amount = totalAmount * 0.5;
+      return (
+        refundAmount: amount,
+        refundPercentage: 50.0,
+        message: 'خصم 50% - الإلغاء قبل أقل من 3 ليالٍ من الوصول.',
+        tier: 2,
+      );
+    }
+    return (
+      refundAmount: 0.0,
+      refundPercentage: 0.0,
+      message: 'لا استرداد (0%) - الإلغاء في يوم الوصول.',
+      tier: 3,
+    );
   }
 }

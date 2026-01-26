@@ -593,7 +593,11 @@ class BookingCard extends StatelessWidget {
   }
 
   int _calculateDays(DateTime from, DateTime to) {
-    return to.difference(from).inDays + 1;
+    return to.difference(from).inDays.clamp(0, 365);
+  }
+
+  int _calculateNights(DateTime from, DateTime to) {
+    return (_calculateDays(from, to) - 1).clamp(0, 364);
   }
 
   void _payNow(BuildContext context, Booking booking) {
@@ -635,23 +639,13 @@ class BookingCard extends StatelessWidget {
     // Today at midnight
     final dateToday = DateTime(now.year, now.month, now.day);
 
-    // Check-in at midnight
     final dateCheckIn = DateTime(
       booking.from.year,
       booking.from.month,
       booking.from.day,
     );
 
-    // Check-out at midnight
-    final dateCheckOut = DateTime(
-      booking.to.year,
-      booking.to.month,
-      booking.to.day,
-    );
-
-    // 2. Calculations
     final daysRemaining = dateCheckIn.difference(dateToday).inDays;
-    final actualNights = dateCheckOut.difference(dateCheckIn).inDays;
 
     // الحصول على معلومات الاسترداد
     final refundInfo = BookingHelper.calculateRefund(
@@ -680,44 +674,40 @@ class BookingCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. عرض القواعد العامة
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? Colors.white10 : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isDarkMode ? Colors.white24 : Colors.grey.shade200,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'قواعد الاسترداد:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPolicyRow(
-                        '• 7 أيام أو أكثر:',
-                        'استرداد كامل (100%)',
-                        isDarkMode,
-                      ),
-                      _buildPolicyRow(
-                        '• من 3 إلى 7 أيام:',
-                        'استرداد (50%)',
-                        isDarkMode,
-                      ),
-                      _buildPolicyRow(
-                        '• أقل من 3 أيام:',
-                        'غير مسترد (0%)',
-                        isDarkMode,
-                      ),
-                    ],
-                  ),
+                _buildCancellationPolicyCard(
+                  isDarkMode,
+                  title: '7 ليالٍ أو أكثر قبل الوصول',
+                  text: 'استرداد كامل (100%)',
+                  color: const Color(0xFF4CAF50),
+                  isActive: refundInfo.tier == 0,
+                  icon: Icons.calendar_today_rounded,
+                ),
+                const SizedBox(height: 10),
+                _buildCancellationPolicyCard(
+                  isDarkMode,
+                  title: '3–6 ليالٍ قبل الوصول',
+                  text: 'خصم حتى 50%',
+                  color: const Color(0xFFFF9800),
+                  isActive: refundInfo.tier == 1,
+                  icon: Icons.savings_outlined,
+                ),
+                const SizedBox(height: 10),
+                _buildCancellationPolicyCard(
+                  isDarkMode,
+                  title: 'أقل من 3 ليالٍ قبل الوصول',
+                  text: 'خصم 50%',
+                  color: const Color(0xFFF44336),
+                  isActive: refundInfo.tier == 2,
+                  icon: Icons.warning_amber_rounded,
+                ),
+                const SizedBox(height: 10),
+                _buildCancellationPolicyCard(
+                  isDarkMode,
+                  title: 'يوم الوصول',
+                  text: 'لا استرداد (0%)',
+                  color: const Color(0xFFD32F2F),
+                  isActive: refundInfo.tier == 3,
+                  icon: Icons.block_rounded,
                 ),
 
                 const SizedBox(height: 20),
@@ -733,7 +723,7 @@ class BookingCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 _buildDateRow(
                   'مدة الحجز:',
-                  '$actualNights ليالٍ (${_calculateDays(booking.from, booking.to)} أيام)',
+                  '${_calculateDays(booking.from, booking.to)} أيام، ${_calculateNights(booking.from, booking.to)} ليالٍ',
                   isDarkMode,
                 ),
                 _buildDateRow(
@@ -880,27 +870,61 @@ class BookingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPolicyRow(String label, String value, bool isDarkMode) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+  Widget _buildCancellationPolicyCard(
+    bool isDarkMode, {
+    required String title,
+    required String text,
+    required Color color,
+    required bool isActive,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(isDarkMode ? 0.2 : 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isActive ? color : color.withOpacity(0.4),
+          width: isActive ? 2.5 : 1,
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDarkMode ? Colors.white70 : Colors.grey.shade700,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white70 : color,
+                  ),
+                ),
+              ],
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-          ),
+          if (isActive)
+            Icon(Icons.check_circle, color: color, size: 24),
         ],
       ),
     );

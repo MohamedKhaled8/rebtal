@@ -165,10 +165,21 @@ class BookingTicketWidget extends StatelessWidget {
                 isDark,
               ),
               _buildDetailRow(
-                'المدة:',
-                '${booking.to.difference(booking.from).inDays + 1} ليال',
+                'عدد الأيام:',
+                '${_getDays(booking.from, booking.to)}',
                 isDark,
               ),
+              _buildDetailRow(
+                'عدد الليالي:',
+                '${_getNights(booking.from, booking.to)}',
+                isDark,
+              ),
+              if (booking.childrenCount != null)
+                _buildDetailRow(
+                  'عدد الأطفال:',
+                  '${booking.childrenCount}',
+                  isDark,
+                ),
 
               const SizedBox(height: 16),
               _buildDashedLine(isDark),
@@ -221,6 +232,11 @@ class BookingTicketWidget extends StatelessWidget {
       ),
     );
   }
+
+  static int _getDays(DateTime from, DateTime to) =>
+      to.difference(from).inDays.clamp(0, 365);
+  static int _getNights(DateTime from, DateTime to) =>
+      (_getDays(from, to) - 1).clamp(0, 364);
 
   Widget _buildDashedLine(bool isDark) {
     return LayoutBuilder(

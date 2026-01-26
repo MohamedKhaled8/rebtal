@@ -84,6 +84,7 @@ class ChaletDetailsSection extends StatelessWidget {
       child: Column(
         children: [
           _ModernTextField(
+            key: const ValueKey('chalet_name'),
             isDark: isDark,
             initialValue: initialName,
             label: 'اسم الشاليه',
@@ -93,6 +94,7 @@ class ChaletDetailsSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _ModernTextField(
+            key: const ValueKey('chalet_desc'),
             isDark: isDark,
             initialValue: initialDescription,
             label: 'الوصف',
@@ -198,12 +200,10 @@ class PropertyDetailsSection extends StatelessWidget {
   final String? initialArea;
   final String? initialBedrooms;
   final String? initialBathrooms;
-  final String? initialChildrenCount;
   final Function(String) onPriceChanged;
   final Function(String) onAreaChanged;
   final Function(String) onBedroomsChanged;
   final Function(String) onBathroomsChanged;
-  final Function(String) onChildrenCountChanged;
 
   const PropertyDetailsSection({
     super.key,
@@ -211,12 +211,10 @@ class PropertyDetailsSection extends StatelessWidget {
     this.initialArea,
     this.initialBedrooms,
     this.initialBathrooms,
-    this.initialChildrenCount,
     required this.onPriceChanged,
     required this.onAreaChanged,
     required this.onBedroomsChanged,
     required this.onBathroomsChanged,
-    required this.onChildrenCountChanged,
   });
 
   @override
@@ -231,6 +229,7 @@ class PropertyDetailsSection extends StatelessWidget {
       child: Column(
         children: [
           _ModernTextField(
+            key: const ValueKey('chalet_price'),
             isDark: isDark,
             initialValue: initialPrice,
             label: 'السعر لليلة (جنيه)',
@@ -240,38 +239,22 @@ class PropertyDetailsSection extends StatelessWidget {
             onChanged: onPriceChanged,
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _ModernTextField(
-                  isDark: isDark,
-                  initialValue: initialArea,
-                  label: 'المساحة (م²)',
-                  icon: Icons.square_foot_rounded,
-                  hint: '0',
-                  keyboardType: TextInputType.number,
-                  onChanged: onAreaChanged,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _ModernTextField(
-                  isDark: isDark,
-                  initialValue: initialChildrenCount,
-                  label: 'عدد الأطفال',
-                  icon: Icons.child_care_rounded,
-                  hint: '0',
-                  keyboardType: TextInputType.number,
-                  onChanged: onChildrenCountChanged,
-                ),
-              ),
-            ],
+          _ModernTextField(
+            key: const ValueKey('chalet_area'),
+            isDark: isDark,
+            initialValue: initialArea,
+            label: 'المساحة (م²)',
+            icon: Icons.square_foot_rounded,
+            hint: '0',
+            keyboardType: TextInputType.number,
+            onChanged: onAreaChanged,
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _ModernTextField(
+                  key: const ValueKey('chalet_bedrooms'),
                   isDark: isDark,
                   initialValue: initialBedrooms,
                   label: 'غرف النوم',
@@ -284,6 +267,7 @@ class PropertyDetailsSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _ModernTextField(
+                  key: const ValueKey('chalet_bathrooms'),
                   isDark: isDark,
                   initialValue: initialBathrooms,
                   label: 'الحمامات',
@@ -899,6 +883,7 @@ class _ModernTextField extends StatelessWidget {
   final void Function(String)? onChanged;
 
   const _ModernTextField({
+    super.key,
     required this.isDark,
     this.initialValue,
     required this.label,

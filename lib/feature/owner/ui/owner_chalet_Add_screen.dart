@@ -216,15 +216,12 @@ class _ChaletFormContent extends StatelessWidget {
                 initialArea: draft.chaletArea,
                 initialBedrooms: draft.bedrooms?.toString(),
                 initialBathrooms: draft.bathrooms?.toString(),
-                initialChildrenCount: draft.childrenCount?.toString(),
                 onPriceChanged: ownerCubit.updatePrice,
                 onAreaChanged: ownerCubit.updateChaletArea,
                 onBedroomsChanged: (v) =>
                     ownerCubit.updateBedrooms(int.tryParse(v) ?? 0),
                 onBathroomsChanged: (v) =>
                     ownerCubit.updateBathrooms(int.tryParse(v) ?? 0),
-                onChildrenCountChanged: (v) =>
-                    ownerCubit.updateChildrenCount(int.tryParse(v)),
               ),
               const SizedBox(height: 20),
 
@@ -237,13 +234,6 @@ class _ChaletFormContent extends StatelessWidget {
                 onDiscountEnabledChanged: ownerCubit.updateDiscountEnabled,
                 onDiscountTypeChanged: ownerCubit.updateDiscountType,
                 onDiscountValueChanged: ownerCubit.updateDiscountValue,
-              ),
-              const SizedBox(height: 20),
-
-              // Features Section
-              FeaturesSection(
-                selectedFeatures: draft.features,
-                onToggleFeature: ownerCubit.toggleFeature,
               ),
               const SizedBox(height: 20),
 
@@ -276,7 +266,7 @@ class _ChaletFormContent extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Amenities Section
+              // المرافق والخدمات (يشمل المميزات الإضافية — بدون قسم منفصل)
               AmenitiesSelectionSection(
                 selectedAmenities: {
                   'hasWifi': draft.hasWifi,
