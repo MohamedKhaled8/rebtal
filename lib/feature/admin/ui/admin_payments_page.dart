@@ -934,13 +934,13 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? ColorManager.green.withOpacity(0.15)
-                          : ColorManager.chaletAvailableLightGreen,
+                          ? ColorManager.mainBlue.withOpacity(0.15)
+                          : Color(0xFFEFF6FF),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
-                            ? ColorManager.green.withOpacity(0.4)
-                            : ColorManager.green.withOpacity(0.35),
+                            ? ColorManager.mainBlue.withOpacity(0.4)
+                            : ColorManager.mainBlue.withOpacity(0.35),
                         width: 1.5,
                       ),
                     ),

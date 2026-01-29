@@ -279,7 +279,7 @@ class _CancelledBookingCard extends StatelessWidget {
                     icon: const Icon(Icons.phone),
                     label: const Text('تواصل مع العميل'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.whatsappGreen,
+                      backgroundColor: ColorManager.mainBlue,
                       foregroundColor: ColorManager.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

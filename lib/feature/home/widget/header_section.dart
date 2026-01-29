@@ -247,7 +247,7 @@ class _HeaderSectionState extends State<HeaderSection> {
                               children: [
                                 const Icon(
                                   Icons.location_on,
-                                  color: Color(0xFF10B981),
+                                  color: Color(0xFF2563EB),
                                   size: 16,
                                 ),
                                 const SizedBox(width: 6),
@@ -301,86 +301,117 @@ class _HeaderSectionState extends State<HeaderSection> {
                         builder: (context) => const AdvancedSearchSheet(),
                       );
                     },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12, // Increased vertical padding
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.15)
-                                : Colors.white.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.2)
-                                  : Colors.grey.withOpacity(0.2),
+                    child: Hero(
+                      tag: 'search-bar',
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.search,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.12)
+                                  : Colors.white.withOpacity(0.95),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.8)
-                                    : Colors.grey[600],
-                                size: 26,
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.grey.withOpacity(0.3),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: ValueListenableBuilder<SearchFilters>(
-                                  valueListenable: HomeSearch.filters,
-                                  builder: (context, filters, _) {
-                                    final hasFilters = !filters.isEmpty;
-                                    String text = 'ابحث عن شاليه، منتجع...';
-                                    if (hasFilters) {
-                                      if (filters.query.isNotEmpty) {
-                                        text = filters.query;
-                                      } else if (filters.location != null) {
-                                        text = filters.location!;
-                                      } else {
-                                        text = 'تم تطبيق فلاتر البحث';
-                                      }
-                                    }
-
-                                    return Text(
-                                      text,
-                                      style: TextStyle(
-                                        color: isDark
-                                            ? Colors.white.withOpacity(
-                                                hasFilters ? 1.0 : 0.6,
-                                              )
-                                            : (hasFilters
-                                                  ? Colors.black87
-                                                  : Colors.grey[500]),
-                                        fontSize: 16,
-                                        fontWeight: hasFilters
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.search,
+                                        color: Color(0xFF2563EB),
+                                        size: 24,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    );
-                                  },
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              'إلى أين تريد الذهاب؟',
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? Colors.white
+                                                    : Colors.black87,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            ValueListenableBuilder<
+                                              SearchFilters
+                                            >(
+                                              valueListenable:
+                                                  HomeSearch.filters,
+                                              builder: (context, filters, _) {
+                                                String sub =
+                                                    'أي مكان • أي وقت • ضيوف';
+                                                if (!filters.isEmpty) {
+                                                  sub = '';
+                                                  if (filters.location !=
+                                                      null) {
+                                                    sub +=
+                                                        '${filters.location} • ';
+                                                  }
+                                                  sub += 'تم الفلترة';
+                                                }
+                                                return Text(
+                                                  sub,
+                                                  style: TextStyle(
+                                                    color: isDark
+                                                        ? Colors.white70
+                                                        : Colors.black54,
+                                                    fontSize: 11,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF10B981),
-                                  shape: BoxShape.circle,
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(
+                                      isDark ? 0.1 : 0.8,
+                                    ),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.grey.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.tune,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                    size: 18,
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.tune,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

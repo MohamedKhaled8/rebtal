@@ -13,6 +13,7 @@ import 'package:rebtal/feature/admin/ui/dashboard.dart';
 
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
+
 import 'package:rebtal/feature/chalet/ui/offers_page.dart';
 import 'package:rebtal/feature/favorites/ui/favorites_page.dart';
 import 'package:rebtal/feature/notifications/ui/notifications_page.dart';
@@ -206,7 +207,7 @@ class _SimpleNavBar extends StatelessWidget {
                     Icon(
                       item.icon,
                       color: isActive
-                          ? const Color(0xFF1ED760)
+                          ? const Color(0xFF2563EB)
                           : isDark
                           ? Colors.white.withOpacity(0.5)
                           : Colors.black.withOpacity(0.5),
@@ -217,7 +218,7 @@ class _SimpleNavBar extends StatelessWidget {
                       item.label,
                       style: TextStyle(
                         color: isActive
-                            ? const Color(0xFF1ED760)
+                            ? const Color(0xFF2563EB)
                             : isDark
                             ? Colors.white.withOpacity(0.5)
                             : Colors.black.withOpacity(0.5),

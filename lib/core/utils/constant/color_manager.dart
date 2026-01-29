@@ -88,8 +88,8 @@ abstract class ColorManager {
   static const bookingsBorderDark = Color(0xFF374151);
   static const bookingsBorderLight = Color(0xFFE5E7EB);
   // Chalet Detail Page Colors
-  static const chaletBackgroundDark = Color(0xFF001409);
-  static const chaletBackgroundLight = Color(0xFFF5F8FF);
+  static const chaletBackgroundDark = Colors.black;
+  static const chaletBackgroundLight = Colors.white;
 
   static const chaletCardDark = Color(0xFF0B0F0D);
   static const chaletCardLight = Colors.white;

@@ -225,7 +225,7 @@ class PropertyDetailsSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.attach_money_rounded,
       title: 'تفاصيل العقار',
-      color: ColorManager.green3DDC84,
+      color: ColorManager.mainBlue,
       child: Column(
         children: [
           _ModernTextField(
@@ -376,7 +376,7 @@ class FeaturesSection extends StatelessWidget {
         'key': 'Garden',
         'label': 'حديقة',
         'icon': Icons.local_florist_rounded,
-        'color': ColorManager.green3DDC84,
+        'color': ColorManager.mainBlue,
       },
       {
         'key': 'WiFi',

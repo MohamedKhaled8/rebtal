@@ -44,7 +44,7 @@ class RoleSelector extends StatelessWidget {
                 label: 'مالك',
                 value: 'owner',
                 isSelected: selectedRole == 'owner',
-                color: ColorManager.chaletActionDarkGreen,
+                color: ColorManager.chaletActionDarkBlue,
                 onTap: () => onChanged?.call('owner'),
                 isDark: isDark,
               ),

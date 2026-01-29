@@ -7,7 +7,6 @@ import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 import 'package:rebtal/feature/booking/widgets/bookings_list.dart';
-import 'package:rebtal/feature/booking/widgets/empty_bookings_state.dart';
 
 class UserBookingsPage extends StatefulWidget {
   const UserBookingsPage({super.key});
@@ -128,9 +127,7 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
             '🎨 UserBookingsPage Build: Total Bookings: ${state.bookings.length} -> Mine: ${myBookings.length}',
           );
 
-          if (myBookings.isEmpty) {
-            return const EmptyBookingsState();
-          }
+        
 
           // فصل الحجوزات حسب الحالة
           final pendingBookings =

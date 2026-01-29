@@ -318,7 +318,7 @@ class _NotificationCard extends StatelessWidget {
                       colors: isApproved
                           ? [
                               ColorManager.chaletAvailableGreen,
-                              ColorManager.chaletActionDarkGreen,
+                              ColorManager.chaletActionDarkBlue,
                             ]
                           : [
                               ColorManager.chaletUnavailableRed,
@@ -373,7 +373,7 @@ class _NotificationCard extends StatelessWidget {
                       colors: isApproved
                           ? [
                               ColorManager.chaletAvailableGreen,
-                              ColorManager.chaletActionDarkGreen,
+                              ColorManager.chaletActionDarkBlue,
                             ]
                           : [
                               ColorManager.chaletUnavailableRed,

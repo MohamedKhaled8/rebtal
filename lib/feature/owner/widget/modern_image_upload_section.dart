@@ -99,13 +99,13 @@ class ModernImageUploadSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        ColorManager.green3DDC84.withOpacity(0.2),
+                        ColorManager.mainBlue.withOpacity(0.2),
                         ColorManager.cyan06B6D4.withOpacity(0.2),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: ColorManager.green3DDC84.withOpacity(0.3),
+                      color: ColorManager.mainBlue.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
@@ -113,14 +113,14 @@ class ModernImageUploadSection extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.check_circle_rounded,
-                        color: ColorManager.green3DDC84,
+                        color: ColorManager.mainBlue,
                         size: 14,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${images.length}',
                         style: const TextStyle(
-                          color: ColorManager.green3DDC84,
+                          color: ColorManager.mainBlue,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),

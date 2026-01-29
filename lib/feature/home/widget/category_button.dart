@@ -26,7 +26,7 @@ class CategoryButton extends StatelessWidget {
         margin: const EdgeInsets.only(left: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF10B981)
+              ? const Color(0xFF2563EB)
               : (isDark
                     ? Colors.white.withOpacity(0.05)
                     : Colors.grey.withOpacity(0.1)),
@@ -41,7 +41,7 @@ class CategoryButton extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.4),
+                    color: const Color(0xFF2563EB).withOpacity(0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

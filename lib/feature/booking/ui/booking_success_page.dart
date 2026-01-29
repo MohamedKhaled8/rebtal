@@ -28,14 +28,14 @@ class BookingSuccessPage extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? ColorManager.green.withOpacity(0.2)
-                      : ColorManager.chaletAvailableLightGreen,
+                      ? ColorManager.mainBlue.withOpacity(0.2)
+                      : Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle_outline_rounded,
                   size: 80,
-                  color: ColorManager.chaletActionGreen,
+                  color: ColorManager.chaletActionBlue,
                 ),
               ),
               const SizedBox(height: 32),

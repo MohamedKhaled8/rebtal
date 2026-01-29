@@ -136,8 +136,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                   gradient: LinearGradient(
                     colors: _refundPercentage > 0
                         ? [
-                            ColorManager.green,
-                            ColorManager.chaletActionDarkGreen,
+                            ColorManager.mainBlue,
+                            ColorManager.chaletActionDarkBlue,
                           ]
                         : [ColorManager.red, ColorManager.chaletActionDarkRed],
                   ),

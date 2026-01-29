@@ -413,7 +413,7 @@ class BookingCard extends StatelessWidget {
                               icon: const Icon(Icons.check_circle, size: 20),
                               label: const Text('قبول الحجز'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green.shade600,
+                                backgroundColor: Color(0xFF1D4ED8),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
@@ -457,15 +457,15 @@ class BookingCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.green.shade50,
+                          color: Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.green.shade200),
+                          border: Border.all(color: Color(0xFFBFDBFE)),
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.verified,
-                              color: Colors.green.shade700,
+                              color: Color(0xFF1E40AF),
                               size: 20,
                             ),
                             const SizedBox(width: 10),
@@ -473,7 +473,7 @@ class BookingCard extends StatelessWidget {
                               child: Text(
                                 'تم قبول الحجز بنجاح',
                                 style: TextStyle(
-                                  color: Colors.green.shade700,
+                                  color: Color(0xFF1E40AF),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),

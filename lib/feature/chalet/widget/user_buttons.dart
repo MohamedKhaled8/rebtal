@@ -48,8 +48,8 @@ class _BookingButton extends StatelessWidget {
         gradient: isBookingAvailable
             ? const LinearGradient(
                 colors: [
-                  ColorManager.chaletActionGreen,
-                  ColorManager.chaletActionDarkGreen,
+                  ColorManager.chaletActionBlue,
+                  ColorManager.chaletActionDarkBlue,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

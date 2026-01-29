@@ -923,8 +923,7 @@ class BookingCard extends StatelessWidget {
               ],
             ),
           ),
-          if (isActive)
-            Icon(Icons.check_circle, color: color, size: 24),
+          if (isActive) Icon(Icons.check_circle, color: color, size: 24),
         ],
       ),
     );
