@@ -41,258 +41,224 @@ class FixedBottomBar extends StatelessWidget {
       child: BlocBuilder<FixedBottomBarCubit, FixedBottomBarState>(
         builder: (context, state) {
           if (state is FixedBottomBarLoaded) {
-            return Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? ColorManager.chaletCardDark
-                      : ColorManager.chaletCardLight,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.grey[200]!,
+                    width: 1,
                   ),
                 ),
-                child: SafeArea(
-                  top: false,
-                  child: Row(
-                    children: [
-                      // Price Section
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (state.originalPrice != null) ...[
+                boxShadow: [
+                  if (!isDark)
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, -4),
+                    ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    // Price Section (Left)
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (state.originalPrice != null)
+                            Text(
+                              '${state.originalPrice}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                decoration: TextDecoration.lineThrough,
+                                color: isDark
+                                    ? Colors.white54
+                                    : const Color(0xFF717171),
+                                decorationColor: isDark
+                                    ? Colors.white54
+                                    : const Color(0xFF717171),
+                              ),
+                            ),
+                          const SizedBox(height: 4),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
                               Text(
-                                '${state.originalPrice} / night',
+                                state.displayPrice.split(' /')[0],
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  decoration: TextDecoration.lineThrough,
-                                  decorationColor: isDark
-                                      ? ColorManager.chaletTextSecondaryDark
-                                      : ColorManager.chaletTextSecondaryLight,
-                                  decorationThickness: 2,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700, // Bold
                                   color: isDark
-                                      ? ColorManager.chaletTextSecondaryDark
-                                      : ColorManager.chaletTextSecondaryLight,
-                                  fontWeight: FontWeight.w500,
+                                      ? Colors.white
+                                      : const Color(0xFF222222),
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(width: 4),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Text(
+                                  'night',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : const Color(0xFF717171),
+                                  ),
+                                ),
+                              ),
                             ],
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: state.displayPrice.split(' /')[0],
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      color: ColorManager.chaletAccent,
-                                    ),
+                          ),
+                          // Optional date placeholder or offer info
+                          if (isReOffer)
+                            Text(
+                              'Re-offer',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.white60 : Colors.grey[600],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+
+                    // Button Section (Right)
+                    if (isReOffer && state.booking != null) ...[
+                      if (state.isOriginalOfferOwner) ...[
+                        // Cancellation Button
+                        _buildActionButton(
+                          context: context,
+                          label: 'إلغاء العرض',
+                          color: const Color(0xFFE51D42), // Red
+                          onPressed: () => context
+                              .read<FixedBottomBarCubit>()
+                              .cancelOffer(context, docId: docId),
+                        ),
+                      ] else ...[
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              width: 140, 
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (!state.hasContactedOriginalTenant) {
+                                    context
+                                        .read<FixedBottomBarCubit>()
+                                        .markContacted();
+                                    _showContactInfo(context, state.booking!);
+                                  } else {
+                                    context
+                                        .read<FixedBottomBarCubit>()
+                                        .confirmTransfer(context);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF222222),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  TextSpan(
-                                    text: ' / night',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark
-                                          ? ColorManager.chaletTextSecondaryDark
-                                          : ColorManager
-                                                .chaletTextSecondaryLight,
-                                    ),
+                                ),
+                                child: Text(
+                                  state.hasContactedOriginalTenant
+                                      ? 'قبول الحجز'
+                                      : 'موافقة مبدئية',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      if (isReOffer && state.booking != null) ...[
-                        if (state.isOriginalOfferOwner) ...[
-                          // Cancellation Button for Original Tenant
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => context
-                                  .read<FixedBottomBarCubit>()
-                                  .cancelOffer(context, docId: docId),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: ColorManager.chaletActionRed,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'إلغاء العرض',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ] else ...[
-                          // Accept & Contact Buttons for New Tenant
-                          Expanded(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Accept Button (Top)
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 45,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      if (!state.hasContactedOriginalTenant) {
-                                        context
-                                            .read<FixedBottomBarCubit>()
-                                            .markContacted();
-                                        _showContactInfo(
-                                          context,
-                                          state.booking!,
-                                        );
-                                      } else {
-                                        context
-                                            .read<FixedBottomBarCubit>()
-                                            .confirmTransfer(context);
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          ColorManager.chaletActionGreen,
-                                      foregroundColor: Colors.white,
-                                      elevation: 2,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      state.hasContactedOriginalTenant
-                                          ? 'قبول الحجز الآن'
-                                          : 'موافقة مبدئية',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Contact Button (Bottom)
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 45,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      context
-                                          .read<FixedBottomBarCubit>()
-                                          .markContacted();
-                                      _showContactInfo(context, state.booking!);
-                                    },
-                                    icon: const Icon(
-                                      Icons.chat_outlined,
-                                      size: 18,
-                                    ),
-                                    label: const Text(
-                                      'تواصل مع المستأجر',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: isDark
-                                          ? Colors.white70
-                                          : Colors.black87,
-                                      side: BorderSide(
-                                        color: isDark
-                                            ? Colors.white24
-                                            : Colors.black12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ] else ...[
-                        // Reserve Now Button (Normal Flow)
-                        Expanded(
-                          child: Builder(
-                            builder: (context) {
-                              final status = requestData['bookingAvailability'];
-                              final isAvailable = status != 'unavailable';
-
-                              return ElevatedButton(
-                                onPressed: isAvailable
-                                    ? () => context
-                                          .read<FixedBottomBarCubit>()
-                                          .handleBooking(
-                                            context,
-                                            docId: docId,
-                                            requestData: requestData,
-                                          )
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isAvailable
-                                      ? ColorManager.chaletAccent
-                                      : ColorManager.grey,
-                                  foregroundColor: ColorManager.white,
-                                  disabledBackgroundColor: ColorManager.grey,
-                                  disabledForegroundColor: ColorManager.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: Text(
-                                  isAvailable
-                                      ? 'Reserve Now'
-                                      : 'غير متاح للحجز',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                       ],
+                    ] else ...[
+                      // Reserve Now Button (Standard)
+                      Builder(
+                        builder: (context) {
+                          final status = requestData['bookingAvailability'];
+                          final isAvailable = status != 'unavailable';
+
+                          return SizedBox(
+                            width: 140,
+                            height: 48,
+                            child: ElevatedButton(
+                              onPressed: isAvailable
+                                  ? () => context
+                                        .read<FixedBottomBarCubit>()
+                                        .handleBooking(
+                                          context,
+                                          docId: docId,
+                                          requestData: requestData,
+                                        )
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE51D55), // Vibrant Pink/Red
+                                foregroundColor: Colors.white,
+                                elevation: 0, 
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                disabledBackgroundColor: Colors.grey[300],
+                              ),
+                              child: Text(
+                                isAvailable ? 'Reserve' : 'Unavailable',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             );
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String label,
+    required VoidCallback onPressed,
+    required Color color,
+  }) {
+    return SizedBox(
+      width: 140,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }

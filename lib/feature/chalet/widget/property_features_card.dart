@@ -16,214 +16,154 @@ class PropertyFeaturesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bedrooms = requestData['bedrooms']?.toString() ?? 'N/A';
-    final bathrooms = requestData['bathrooms']?.toString() ?? 'N/A';
-    final chaletArea = requestData['chaletArea']?.toString();
-    final childrenCount = requestData['childrenCount']?.toString();
-    final isDark = DynamicThemeManager.isDarkMode(context);
-
     return BlocProvider(
       create: (context) => ServicesCubit()..loadAmenities(requestData),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Specs Section
-            Text(
-              'Property Specs',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.chaletTextPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 16),
+        padding: EdgeInsets.zero,
+        child: BlocBuilder<ServicesCubit, ServicesState>(
+          builder: (context, state) {
+            final hasAmenities =
+                state is ServicesLoaded && state.amenities.isNotEmpty;
+            if (!hasAmenities) {
+              return const SizedBox.shrink();
+            }
 
-            // Minimal Grid for Specs
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 24,
-              crossAxisSpacing: 24,
-              childAspectRatio: 3.5,
-              children: [
-                _buildSimpleFeature(
-                  context,
-                  Icons.bed_rounded,
-                  bedrooms,
-                  'Bedrooms',
-                  isDark,
-                  ColorManager.chaletActionBlue,
-                ),
-                _buildSimpleFeature(
-                  context,
-                  Icons.bathtub_outlined,
-                  bathrooms,
-                  'Bathrooms',
-                  isDark,
-                  ColorManager.purple8B5CF6,
-                ),
-                if (chaletArea != null && chaletArea.isNotEmpty)
-                  _buildSimpleFeature(
-                    context,
-                    Icons.square_foot_rounded,
-                    '$chaletArea m²',
-                    'Area',
-                    isDark,
-                    ColorManager.orangeF59E0B, // Use Orange
-                  ),
-                if (childrenCount != null)
-                  _buildSimpleFeature(
-                    context,
-                    Icons.child_care_rounded,
-                    childrenCount,
-                    'Children',
-                    isDark,
-                    ColorManager.chaletGalleryPink, // Use Pink
-                  ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-            Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
-            const SizedBox(height: 32),
-
-            // المرافق والخدمات فقط (بدون المميزات الإضافية القديمة Sea View / Garden / Pool / WiFi / BBQ / Parking)
-            BlocBuilder<ServicesCubit, ServicesState>(
-              builder: (context, state) {
-                final hasAmenities =
-                    state is ServicesLoaded && state.amenities.isNotEmpty;
-                if (!hasAmenities) {
-                  return const SizedBox.shrink();
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'المرافق والخدمات',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? ColorManager.chaletTextPrimaryDark
-                            : ColorManager.chaletTextPrimaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 24,
-                            childAspectRatio: 0.8,
-                          ),
-                      itemCount: state.amenities.length,
-                      itemBuilder: (context, index) {
-                        final item = state.amenities[index];
-                        final List<Color> palette = [
-                          ColorManager.chaletActionBlue,
-                          ColorManager.purple8B5CF6,
-                          ColorManager.orangeF59E0B,
-                          ColorManager.chaletGalleryPink,
-                          ColorManager.chaletAvailableGreen,
-                          Colors.teal,
-                          Colors.indigo,
-                          Colors.redAccent,
-                        ];
-                        final color = palette[index % palette.length];
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: color.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                item['icon'] as IconData,
-                                color: color,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              item['label'] as String,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white.withOpacity(0.7)
-                                    : Colors.grey[800],
-                                height: 1.2,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+            return StatefulBuilder(
+              builder: (context, setState) {
+                // Determine if we need to show the "Show all" button
+                // (Only if > 5 items)
+                // If isExpanded is true (we need to track this state), show all.
+                // Since StatefulBuilder doesn't hold state across rebuilds of PARENT,
+                // but holds it for itself: we need a variable *outside* the builder?
+                // No, StatefulBuilder's state is preserved as long as it's in the tree.
+                // Wait, StatefulBuilder just provides setState. It doesn't hold custom vars itself unless we initialize them?
+                // Actually, I can't hold `isExpanded` inside StatefulBuilder easily without a closure variable that persists?
+                // Better to convert `PropertyFeaturesCard` to `StatefulWidget`.
+                // BUT, sticking to stateless for minimize diffs: I'll use a local `ValueNotifier` or similar if I can, but converting to StatefulWidget is cleaner.
+                // Let's assume I can't easily convert to Stateful in one go without replacing the whole file header.
+                // I will use a custom wrapper or just `StatefulBuilder` with a boolean variable defined in `build`? No, that resets on rebuild.
+                // Screw it, I'll replace the CLASS definition to be StatefulWidget.
+                return _AmenitiesList(
+                  amenities: state.amenities,
+                  isDark: isDark,
                 );
               },
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
+}
 
-  Widget _buildSimpleFeature(
-    BuildContext context,
-    IconData icon,
-    String value,
-    String label,
-    bool isDark,
-    Color color,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+class _AmenitiesList extends StatefulWidget {
+  final List<Map<String, dynamic>> amenities;
+  final bool isDark;
+
+  const _AmenitiesList({required this.amenities, required this.isDark});
+
+  @override
+  State<_AmenitiesList> createState() => _AmenitiesListState();
+}
+
+class _AmenitiesListState extends State<_AmenitiesList>
+    with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final showButton = widget.amenities.length > 5;
+    final visibleCount = _isExpanded ? widget.amenities.length : 5;
+    final itemsToShow = widget.amenities.take(visibleCount).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 28,
-          color: color, // Always use vibrant color
+        Text(
+          "What this place offers",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: widget.isDark ? Colors.white : const Color(0xFF222222),
+          ),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : Colors.black87, // Darker text
+        const SizedBox(height: 24),
+
+        // List with implicit animation (Size/Fade could be added but simpler update first)
+        // List with animation
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: ListView.separated(
+            key: ValueKey(
+              _isExpanded,
+            ), // Helps with animation context? Not strictly needed for AnimatedSize but good
+            padding: EdgeInsets.zero, // Remove padding to avoid jump
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: itemsToShow.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final item = itemsToShow[index];
+              return Row(
+                children: [
+                  Icon(
+                    item['icon'] as IconData,
+                    size: 24,
+                    color: widget.isDark
+                        ? Colors.white70
+                        : const Color(0xFF222222),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    item['label'] as String,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: widget.isDark
+                          ? Colors.white70
+                          : const Color(0xFF222222),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+
+        if (showButton) ...[
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: widget.isDark ? Colors.white24 : Colors.black,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                foregroundColor: widget.isDark ? Colors.white : Colors.black,
+              ),
+              child: Text(
+                _isExpanded
+                    ? "Show less"
+                    : "Show all ${widget.amenities.length} amenities",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white54 : Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ],
     );
   }

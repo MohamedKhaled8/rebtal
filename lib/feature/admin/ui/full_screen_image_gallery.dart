@@ -103,6 +103,8 @@ class _ZoomableImage extends StatefulWidget {
 class _ZoomableImageState extends State<_ZoomableImage> {
   final TransformationController _transformationController =
       TransformationController();
+  // Store the tap details for precise zoom
+  TapDownDetails? _doubleTapDetails;
   bool _isZoomed = false;
 
   @override
@@ -114,10 +116,12 @@ class _ZoomableImageState extends State<_ZoomableImage> {
   void _onTransformationChanged() {
     final scale = _transformationController.value.getMaxScaleOnAxis();
     final wasZoomed = _isZoomed;
-    final isNowZoomed = scale > 1.1;
-    
+    final isNowZoomed = scale > 1.05; // Slightly tolerant
+
     if (wasZoomed != isNowZoomed) {
-      setState(() => _isZoomed = isNowZoomed);
+      if (mounted) {
+        setState(() => _isZoomed = isNowZoomed);
+      }
     }
   }
 
@@ -132,33 +136,28 @@ class _ZoomableImageState extends State<_ZoomableImage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // If zoomed, reset zoom. Otherwise, toggle app bar
         if (_isZoomed) {
           _resetZoom();
         } else {
           widget.onTap();
         }
       },
-      onDoubleTap: () {
-        // Double tap to zoom in/out
-        if (_isZoomed) {
-          _resetZoom();
-        } else {
-          _zoomIn();
-        }
+      onDoubleTapDown: (details) {
+        _doubleTapDetails = details;
       },
+      onDoubleTap: _handleDoubleTap,
       child: InteractiveViewer(
         transformationController: _transformationController,
-        minScale: 0.5,
-        maxScale: 4.0,
-        // Disable pan when zoomed to allow page view scrolling
-        panEnabled: !_isZoomed,
+        minScale: 1.0,
+        maxScale: 5.0,
+        panEnabled: _isZoomed, // Allow panning only when zoomed
         scaleEnabled: true,
         child: Center(
           child: AppImageHelper(
             height: double.infinity,
+            width: double.infinity,
             path: widget.imageUrl,
-            fit: BoxFit.contain,
+            fit: BoxFit.contain, // Ensure full image is visible
           ),
         ),
       ),
@@ -169,11 +168,25 @@ class _ZoomableImageState extends State<_ZoomableImage> {
     _transformationController.value = Matrix4.identity();
   }
 
-  void _zoomIn() {
-    final size = MediaQuery.of(context).size;
-    _transformationController.value = Matrix4.identity()
-      ..translate(-size.width / 2, -size.height / 2)
-      ..scale(2.0)
-      ..translate(size.width / 2, size.height / 2);
+  void _handleDoubleTap() {
+    if (_isZoomed) {
+      _resetZoom();
+    } else {
+      final position = _doubleTapDetails?.localPosition;
+      if (position != null) {
+        final double scale = 2.5;
+        final x = -position.dx * (scale - 1);
+        final y = -position.dy * (scale - 1);
+
+        final zoomed = Matrix4.identity()
+          ..translate(x, y)
+          ..scale(scale);
+
+        _transformationController.value = zoomed;
+      } else {
+        // Fallback center zoom
+        _transformationController.value = Matrix4.identity()..scale(2.5);
+      }
+    }
   }
 }

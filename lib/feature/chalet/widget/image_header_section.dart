@@ -190,20 +190,18 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
 
         if (images.isEmpty) {
           return Container(
-            height: 400,
-            margin: const EdgeInsets.only(bottom: 16.31),
-            decoration: BoxDecoration(color: ColorManager.chaletGrey200),
+            height: 300, // Roughly 40% height visually
+            width: double.infinity,
+            color: ColorManager.chaletGrey200,
           );
         }
 
         final cubit = context.read<ChaletDetailCubit>();
 
-        return Container(
-          height: 400,
-          margin: const EdgeInsets.only(bottom: 16.31),
-          decoration: const BoxDecoration(color: ColorManager.black),
+        return SizedBox(
+          height: 320, // Airbnb style height
+          width: double.infinity,
           child: Stack(
-            fit: StackFit.expand,
             children: [
               // 1. Main Image Slider
               GestureDetector(
@@ -219,6 +217,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                   controller: cubit.pageController,
                   itemCount: images.length,
                   onPageChanged: cubit.onPageChanged,
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     return Hero(
                       tag: 'chalet_image_header_$index',
@@ -231,129 +230,64 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                 ),
               ),
 
-              // 2. Gradient Overlay
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          ColorManager.black.withOpacity(0.3),
-                          ColorManager.transparent,
-                          ColorManager.black.withOpacity(0.8),
-                        ],
-                        stops: const [0.0, 0.4, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 3. Top Left: Back Button
+              // 2. Top Bar Buttons
               Positioned(
                 top: 50,
                 left: 20,
-                child: _buildGlassyButton(
-                  onTap: () => Navigator.pop(context),
-                  icon: Icons.arrow_back_ios_new,
-                ),
-              ),
-
-              // 4. Top Right: Share & Favorite
-              Positioned(
-                top: 50,
                 right: 20,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildGlassyButton(
-                      onTap: _shareChalet,
-                      icon: Icons.share_rounded,
+                    // Back Button
+                    _buildCircleButton(
+                      onTap: () => Navigator.pop(context),
+                      icon: Icons.arrow_back,
+                      isBack: true,
                     ),
-                    const SizedBox(width: 12),
-                    _buildGlassyButton(
-                      onTap: _toggleFavorite,
-                      icon: _isFavorite
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      color: _isFavorite
-                          ? ColorManager.chaletUnavailableRed
-                          : ColorManager.white,
+
+                    // Right Actions
+                    Row(
+                      children: [
+                        _buildCircleButton(
+                          onTap: _shareChalet,
+                          icon: Icons.ios_share,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildCircleButton(
+                          onTap: _toggleFavorite,
+                          icon: _isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: _isFavorite
+                              ? const Color(0xFFFF385C)
+                              : Colors.black,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              // 5. Rating Badge (Top Right - Below Buttons)
-              if (widget.docId.isNotEmpty)
-                Positioned(
-                  top: 100,
-                  right: 20,
-                  child: RatingDisplayWidget(
-                    chaletId: widget.docId,
-                    isDark: false,
-                    isBadge: true,
-                  ),
-                ),
-
-              // 6. Bottom: Title and Location
+              // 3. Page Indicator (Bottom Right)
               Positioned(
                 bottom: 20,
-                left: 20,
                 right: 20,
-                child: IgnorePointer(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.hotelName,
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: ColorManager.white,
-                          letterSpacing: 0.5,
-                          shadows: [
-                            Shadow(
-                              color: ColorManager.black.withOpacity(0.45),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            color: ColorManager.white,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              widget.location,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: ColorManager.chaletGrey200,
-                                height: 1.3,
-                                shadows: [
-                                  Shadow(
-                                    color: ColorManager.black.withOpacity(0.45),
-                                    blurRadius: 4,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${data.currentIndex + 1} / ${images.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -364,31 +298,29 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
     );
   }
 
-  Widget _buildGlassyButton({
+  Widget _buildCircleButton({
     required VoidCallback onTap,
     required IconData icon,
-    Color color = ColorManager.white,
+    Color color = Colors.black,
+    bool isBack = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 40,
-        width: 40,
+        height: 32, // Smaller Airbnb style
+        width: 32,
         decoration: BoxDecoration(
-          color: ColorManager.white.withOpacity(0.2), // Glassy bg
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: ColorManager.white.withOpacity(0.3),
-            width: 1,
-          ),
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Center(child: Icon(icon, color: color, size: 20)),
-          ),
-        ),
+        child: Icon(icon, size: 18, color: color),
       ),
     );
   }

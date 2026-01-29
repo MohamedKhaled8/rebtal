@@ -55,9 +55,7 @@ class OwnerInformationCard extends StatelessWidget {
               merchantName = fetchedName;
             }
           }
-          if (email.isEmpty || email == 'No email' || email == 'غير متوفر') {
-            email = data['email'] ?? '';
-          }
+
           if (phoneNumber.isEmpty ||
               phoneNumber == 'No phone' ||
               phoneNumber == 'غير متوفر') {
@@ -68,99 +66,110 @@ class OwnerInformationCard extends StatelessWidget {
           }
         }
 
+        Map<String, dynamic> ownerData = {};
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.exists) {
+          ownerData = snapshot.data!.data() as Map<String, dynamic>;
+        }
+
         if (email.isEmpty) email = 'No email';
         if (phoneNumber.isEmpty) phoneNumber = 'No phone';
 
+        // Calculate hosting duration
+        String hostingDuration = 'New host';
+        Timestamp? createdTimestamp;
+
+        // Helper to safely parse timestamp
+        Timestamp? parseTimestamp(dynamic val) {
+          if (val is Timestamp) return val;
+          if (val is String && val.isNotEmpty) {
+            try {
+              // Try standard parsing
+              return Timestamp.fromDate(DateTime.parse(val));
+            } catch (_) {}
+          }
+          return null;
+        }
+
+        createdTimestamp =
+            parseTimestamp(ownerData['createdAt']) ??
+            parseTimestamp(ownerData['memberSince']) ??
+            parseTimestamp(requestData['createdAt']);
+
+        if (createdTimestamp != null) {
+          final createdDate = createdTimestamp.toDate();
+          final now = DateTime.now();
+          final difference = now.difference(createdDate);
+          final days = difference.inDays;
+
+          if (days > 365) {
+            final years = (days / 365).floor();
+            hostingDuration = '$years ${years == 1 ? "year" : "years"} hosting';
+          } else if (days > 30) {
+            final months = (days / 30).floor();
+            hostingDuration =
+                '$months ${months == 1 ? "month" : "months"} hosting';
+          } else {
+            hostingDuration = '$days ${days == 1 ? "day" : "days"} hosting';
+          }
+        }
+
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: EdgeInsets.zero,
+          child: Row(
             children: [
-              Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
-              const SizedBox(height: 32),
-
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: profileImageUrl != null && profileImageUrl.isNotEmpty
-                        ? () => _showFullScreenImage(context, profileImageUrl!)
+              GestureDetector(
+                onTap: profileImageUrl != null && profileImageUrl.isNotEmpty
+                    ? () => _showFullScreenImage(context, profileImageUrl!)
+                    : null,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: profileImageUrl != null && profileImageUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: CachedNetworkImageProvider(profileImageUrl),
+                            fit: BoxFit.cover,
+                          )
                         : null,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark ? Colors.white24 : Colors.grey[300]!,
-                          width: 1,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child:
-                            profileImageUrl != null &&
-                                profileImageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: profileImageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) =>
-                                    Container(color: Colors.grey[200]),
-                                errorWidget: (context, url, error) =>
-                                    _buildPlaceholderIcon(isDark),
-                              )
-                            : _buildPlaceholderIcon(isDark),
-                      ),
-                    ),
+                    color: isDark ? Colors.white10 : Colors.grey[200],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Owner Information',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? ColorManager.chaletTextPrimaryDark
-                                : ColorManager.chaletTextPrimaryLight,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          merchantName,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  child: profileImageUrl == null || profileImageUrl.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          color: isDark ? Colors.white54 : Colors.grey,
+                        )
+                      : null,
+                ),
               ),
-
-              const SizedBox(height: 20),
-
-              // Simple Contact List - No Container
-              Column(
-                children: [
-                  OwnerInfoRow(
-                    icon: Icons.email_outlined,
-                    label: "Email",
-                    value: email,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 12),
-                  OwnerInfoRow(
-                    icon: Icons.phone_outlined,
-                    label: "Phone",
-                    value: phoneNumber,
-                    isDark: isDark,
-                  ),
-                ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hosted by $merchantName',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF222222),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Superhost · $hostingDuration',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark
+                            ? Colors.white70
+                            : const Color(0xFF717171),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
