@@ -46,9 +46,7 @@ class FixedBottomBar extends StatelessWidget {
                 color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                 border: Border(
                   top: BorderSide(
-                    color: isDark
-                        ? Colors.white10
-                        : Colors.grey[200]!,
+                    color: isDark ? Colors.white10 : Colors.grey[200]!,
                     width: 1,
                   ),
                 ),
@@ -122,7 +120,9 @@ class FixedBottomBar extends StatelessWidget {
                               'Re-offer',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? Colors.white60 : Colors.grey[600],
+                                color: isDark
+                                    ? Colors.white60
+                                    : Colors.grey[600],
                               ),
                             ),
                         ],
@@ -148,7 +148,7 @@ class FixedBottomBar extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             SizedBox(
-                              width: 140, 
+                              width: 140,
                               height: 48,
                               child: ElevatedButton(
                                 onPressed: () {
@@ -203,12 +203,15 @@ class FixedBottomBar extends StatelessWidget {
                                           context,
                                           docId: docId,
                                           requestData: requestData,
+                                          price: price,
                                         )
                                   : null,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFE51D55), // Vibrant Pink/Red
+                                backgroundColor: const Color(
+                                  0xFFE51D55,
+                                ), // Vibrant Pink/Red
                                 foregroundColor: Colors.white,
-                                elevation: 0, 
+                                elevation: 0,
                                 padding: EdgeInsets.zero,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),

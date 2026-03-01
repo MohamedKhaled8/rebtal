@@ -24,8 +24,7 @@ class UriLauncherService {
       if (await canLaunchUrl(uri)) {
         await launchUrl(
           uri,
-          mode:
-              LaunchMode.externalApplication, // ✅ يفتح الواتس مباشرة
+          mode: LaunchMode.externalApplication, // ✅ يفتح الواتس مباشرة
         );
       } else {
         _showSnackBar(context, 'لا يمكن فتح WhatsApp');
@@ -35,6 +34,27 @@ class UriLauncherService {
     }
   }
 
+  /// Opens WhatsApp with a specific phone number and message (without BuildContext)
+  static Future<void> openWhatsApp(String phone, String message) async {
+    try {
+      final cleanPhone = _cleanPhoneNumber(phone);
+      if (cleanPhone.isEmpty) {
+        throw Exception('رقم الهاتف غير صالح');
+      }
+
+      final waMeUrl =
+          'https://wa.me/$cleanPhone?text=${Uri.encodeComponent(message)}';
+
+      final uri = Uri.parse(waMeUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('لا يمكن فتح WhatsApp');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   static String _cleanPhoneNumber(String phone) {
     if (phone.isEmpty) return '';

@@ -5,6 +5,8 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 
 class RatingPage extends StatefulWidget {
@@ -58,25 +60,70 @@ class _RatingPageState extends State<RatingPage> {
     PremiumLoadingOverlay.show(context, message: 'جاري إرسال التقييم...');
 
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.booking.userId)
-          .get();
-      final userData = userDoc.data() ?? {};
-      final latestName = userData['name'] ?? widget.booking.userName;
+      final appCubit = context.read<AppCubit>();
+      final currentUser = appCubit.getCurrentUser();
+
+      String? profileImageUrl;
+      String latestName = widget.booking.userName;
+
+      // 1. Try to get image from current user if it matches the booking userId
+      if (currentUser != null && currentUser.uid == widget.booking.userId) {
+        profileImageUrl = currentUser.profileImageUrl;
+        latestName = currentUser.name;
+      } else {
+        // 2. Fallback to robust Firestore lookup (checking all common collection formats)
+        DocumentSnapshot? userDoc;
+        final collections = [
+          'Users',
+          'Owners',
+          'Admin',
+          'Admins',
+          'users',
+          'owners',
+          'admins',
+        ];
+
+        for (final col in collections) {
+          try {
+            final doc = await FirebaseFirestore.instance
+                .collection(col)
+                .doc(widget.booking.userId)
+                .get();
+            if (doc.exists) {
+              userDoc = doc;
+              break;
+            }
+          } catch (_) {
+            // Ignore collection doesn't exist errors
+          }
+        }
+
+        if (userDoc != null && userDoc.exists) {
+          final userData = userDoc.data() as Map<String, dynamic>? ?? {};
+          latestName =
+              userData['name'] ??
+              userData['userName'] ??
+              widget.booking.userName;
+          profileImageUrl =
+              userData['profileImageUrl'] ??
+              userData['profileImage'] ??
+              userData['userImage'];
+        }
+      }
 
       final ratingData = {
         'bookingId': widget.booking.id,
+        'userId': widget.booking.userId, // Important for dynamic fetching later
         'rating': _rating,
         'review': _reviewController.text.trim(),
         'aspectRatings': _aspectRatings,
         'createdAt': FieldValue.serverTimestamp(),
-        'userImage': userData['profileImage'] ?? '',
+        'userImage': profileImageUrl ?? '', // For backward compatibility
+        'profileImageUrl': profileImageUrl ?? '', // For consistency
         'userName': latestName,
       };
 
       if (widget.isOwnerRating) {
-        ratingData['userId'] = widget.booking.userId;
         ratingData['ownerId'] = widget.booking.ownerId;
         await FirebaseFirestore.instance
             .collection('user_ratings')

@@ -25,9 +25,7 @@ import "package:rebtal/feature/splash/ui/splash_screen.dart";
 
 // Payment System Imports
 import "package:rebtal/feature/booking/models/booking.dart";
-import "package:rebtal/feature/payment/ui/payment_method_selection_page.dart";
-import "package:rebtal/feature/payment/ui/payment_instructions_page_new.dart";
-import "package:rebtal/feature/payment/ui/payment_proof_upload_page.dart";
+import "package:rebtal/feature/payment/ui/new_payment_method_page.dart";
 import "package:rebtal/feature/booking/ui/booking_confirmation_page.dart";
 import "package:rebtal/feature/admin/ui/admin_payments_page.dart";
 import "package:rebtal/feature/booking/ui/cancellation_policy_page.dart";
@@ -101,33 +99,13 @@ class AppRouter {
       case Routes.notificationsPage:
         return MaterialPageRoute(builder: (_) => const NotificationsPage());
 
-      // Payment System Routes
+      // Payment System Routes - New Modern Design
       case Routes.paymentMethodSelection:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-          builder: (_) => PaymentMethodSelectionPage(
+          builder: (_) => NewPaymentMethodPage(
             booking: args['booking'] as Booking,
             totalAmount: args['totalAmount'] as double,
-          ),
-        );
-
-      case Routes.paymentInstructions:
-        final args = settings.arguments as Map<String, dynamic>;
-        return MaterialPageRoute(
-          builder: (_) => PaymentInstructionsPage(
-            booking: args['booking'] as Booking,
-            paymentMethod: args['paymentMethod'] as PaymentMethod,
-            amount: args['amount'] as double,
-          ),
-        );
-
-      case Routes.paymentProofUpload:
-        final args = settings.arguments as Map<String, dynamic>;
-        return MaterialPageRoute(
-          builder: (_) => PaymentProofUploadPage(
-            booking: args['booking'] as Booking,
-            paymentMethod: args['paymentMethod'] as PaymentMethod,
-            amount: args['amount'] as double,
           ),
         );
 

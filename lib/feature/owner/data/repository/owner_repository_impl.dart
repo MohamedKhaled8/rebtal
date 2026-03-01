@@ -117,6 +117,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
     String? discountType,
     String? discountValue,
     List<String>? features,
+    bool? dayUseEnabled,
   }) async {
     try {
       print(
@@ -156,7 +157,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
             return url;
           } catch (e) {
             failCount++;
-            print('❌ Failed to upload image ${failCount}: $e');
+            print('❌ Failed to upload image $failCount: $e');
             return null; // Return null on error instead of throwing
           }
         }),
@@ -250,6 +251,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         if (discountType != null) dataMap['discountType'] = discountType;
         if (discountValue != null) dataMap['discountValue'] = discountValue;
         if (features != null) dataMap['features'] = features;
+        if (dayUseEnabled != null) dataMap['dayUseEnabled'] = dayUseEnabled;
 
         // إضافة lat و lon للتوافق مع LocationMapCard
         if (chalet.latitude != null) {
@@ -318,7 +320,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
           return Right(chaletId);
         } else if (failCount > 0) {
           print(
-            '⚠️ Chalet saved with ${allImages.length} images (${failCount} failed)',
+            '⚠️ Chalet saved with ${allImages.length} images ($failCount failed)',
           );
           return Right(chaletId);
         } else {

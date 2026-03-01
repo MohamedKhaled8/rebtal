@@ -4,8 +4,8 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:screen_go/screen_go.dart';
 import 'package:rebtal/core/utils/theme/app_theme.dart';
-
 import 'package:flutter/foundation.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class RebtalApp extends StatelessWidget {
   final AppRouter appRouter;
@@ -23,6 +23,7 @@ class RebtalApp extends StatelessWidget {
         return BlocBuilder<AppCubit, AppState>(
           builder: (context, appState) {
             return MaterialApp(
+              scaffoldMessengerKey: SnackBarHelper.messengerKey,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.getLightTheme(
                 primaryColor: appState.primaryColor,

@@ -364,7 +364,7 @@ class HelperImage {
           );
 
           try {
-            final profileUrl = await _uploadToCloudinary(File(pickedFile.path));
+            final profileUrl = await uploadToCloudinary(File(pickedFile.path));
 
             // Save to Firestore in Users/Owners collection
             final authCubit = context.read<AppCubit>().authCubit;
@@ -483,7 +483,7 @@ class HelperImage {
     try {
       // Upload all chalet images concurrently for better performance
       List<String> chaletImageUrls = await Future.wait(
-        data.uploadedImages.map((img) => _uploadToCloudinary(img)),
+        data.uploadedImages.map((img) => uploadToCloudinary(img)),
       );
 
       final ownerId = context.read<AppCubit>().getCurrentUser()?.uid;
@@ -600,7 +600,7 @@ class HelperImage {
     }
   }
 
-  Future<String> _uploadToCloudinary(File imageFile) async {
+  Future<String> uploadToCloudinary(File imageFile) async {
     try {
       final uri = Uri.parse(
         "https://api.cloudinary.com/v1_1/$_cloudName/image/upload",

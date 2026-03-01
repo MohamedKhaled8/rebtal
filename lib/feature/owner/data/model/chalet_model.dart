@@ -27,6 +27,7 @@ class ChaletModel extends ChaletEntity {
     super.discountType,
     super.discountValue,
     super.features,
+    super.dayUseEnabled,
   });
 
   factory ChaletModel.fromMap(Map<String, dynamic> map, String id) {
@@ -59,6 +60,7 @@ class ChaletModel extends ChaletEntity {
       features: map['features'] != null
           ? List<String>.from(map['features'])
           : null,
+      dayUseEnabled: map['dayUseEnabled'] ?? false,
     );
   }
 
@@ -87,6 +89,7 @@ class ChaletModel extends ChaletEntity {
       'discountType': discountType,
       'discountValue': discountValue,
       'features': features,
+      'dayUseEnabled': dayUseEnabled,
     };
   }
 
@@ -115,6 +118,7 @@ class ChaletModel extends ChaletEntity {
     String? discountType,
     String? discountValue,
     List<String>? features,
+    bool? dayUseEnabled,
   }) {
     return ChaletModel(
       id: id ?? this.id,
@@ -141,6 +145,7 @@ class ChaletModel extends ChaletEntity {
       discountType: discountType ?? this.discountType,
       discountValue: discountValue ?? this.discountValue,
       features: features ?? this.features,
+      dayUseEnabled: dayUseEnabled ?? this.dayUseEnabled,
     );
   }
 

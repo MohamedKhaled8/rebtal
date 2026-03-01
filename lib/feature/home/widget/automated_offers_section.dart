@@ -42,18 +42,18 @@ class AutomatedOffersSection extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${docs.length} عرض',
+                    '${docs.length} عرض متاح',
                     style: const TextStyle(
                       color: Color(0xFF2563EB),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(
-              height: 220,
+              height: 230,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -65,7 +65,7 @@ class AutomatedOffersSection extends StatelessWidget {
                   // Logic to calculate discount percentage
                   final price = (data['price'] as num?)?.toDouble() ?? 0.0;
                   final discountValue =
-                      (data['discountValue'] as num?)?.toDouble() ?? 0.0;
+                      double.tryParse(data['discountValue'].toString()) ?? 0.0;
                   final discountType = data['discountType'] ?? 'amount';
 
                   double discountedPrice = price;
@@ -104,105 +104,152 @@ class AutomatedOffersSection extends StatelessWidget {
                       margin: const EdgeInsets.only(right: 16, bottom: 10),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF111111) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Image with Badge
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(20),
-                                ),
-                                child: AppImageHelper(
-                                  path: imageUrl,
-                                  height: 140,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    'خصم $percentage%',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Full Background Image
+                            AppImageHelper(
+                              path: imageUrl,
+                              height: double.infinity,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
 
-                          // Details
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  data['chaletName'] ?? 'شاليه مميز',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark
-                                        ? Colors.white
-                                        : Colors.black87,
+                            // Gradient Overlay for Text Readability
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.2),
+                                      Colors.black.withOpacity(0.8),
+                                    ],
+                                    stops: const [0.5, 0.7, 1.0],
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Text(
-                                      '${discountedPrice.round()} ج.م',
-                                      style: TextStyle(
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              ),
+                            ),
+
+                            // Discount Badge (Chic Glassmorphism Style)
+                            Positioned(
+                              top: 16,
+                              right: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red.withOpacity(0.4),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
                                     ),
-                                    const SizedBox(width: 8),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.local_offer_rounded,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 4),
                                     Text(
-                                      '${price.round()} ج.م',
-                                      style: TextStyle(
-                                        color: isDark
-                                            ? Colors.white54
-                                            : Colors.grey,
+                                      'خصم $percentage%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
                                         fontSize: 12,
-                                        decoration: TextDecoration.lineThrough,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+
+                            // Text Info Overlay
+                            Positioned(
+                              bottom: 16,
+                              right: 16,
+                              left: 16,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    data['chaletName'] ?? 'شاليه مميز',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black45,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${discountedPrice.round()} ج.م',
+                                        style: const TextStyle(
+                                          color: Color(
+                                            0xFF4ADE80,
+                                          ), // Light green for visibility
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w900,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black45,
+                                              blurRadius: 4,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${price.round()} ج.م',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.7),
+                                          fontSize: 13,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          decorationColor: Colors.white70,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

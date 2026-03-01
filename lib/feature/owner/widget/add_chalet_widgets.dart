@@ -729,6 +729,54 @@ class DiscountSection extends StatelessWidget {
 }
 
 // ==========================================
+// Day Use Section
+// ==========================================
+class DayUseSection extends StatelessWidget {
+  final bool? dayUseEnabled;
+  final ValueChanged<bool> onDayUseChanged;
+
+  const DayUseSection({
+    super.key,
+    this.dayUseEnabled,
+    required this.onDayUseChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final isEnabled = dayUseEnabled ?? false;
+
+    return _ModernCard(
+      isDark: isDark,
+      icon: Icons.access_time_rounded,
+      title: 'خصائص الحجز (Day Use)',
+      color: ColorManager.green3DDC84,
+      child: SwitchListTile(
+        title: Text(
+          'تفعيل خاصية "Day Use"',
+          style: TextStyle(
+            color: isDark ? ColorManager.white : ColorManager.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          'السماح للمستخدمين بحجز الشاليه لقضاء اليوم فقط بدون مبيت',
+          style: TextStyle(
+            color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+            fontSize: 12,
+          ),
+        ),
+        value: isEnabled,
+        activeColor: ColorManager.green3DDC84,
+        onChanged: (val) => onDayUseChanged(val),
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
+}
+
+// ==========================================
 // Private Widgets
 // ==========================================
 

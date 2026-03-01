@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/quickalert.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/domain/usecases/resend_email_verification_usecase.dart';
@@ -132,11 +132,9 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
             // We could emit error state, but this function is called when already "Verified" state is detected by the timer?
             // Or we call this manually?
             // The UI calls handleVerified when state is EmailVerificationVerified.
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.error,
-              title: 'خطأ',
-              text: 'فشل حفظ البيانات: ${failure.message}',
+            SnackBarHelper.showError(
+              context,
+              'فشل حفظ البيانات: ${failure.message}',
             );
           },
           (savedUser) async {
@@ -153,13 +151,9 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
             final authCubit = context.read<AppCubit>().authCubit;
             await authCubit.reloadUserData();
 
-            QuickAlert.show(
-              context: context,
-              type: QuickAlertType.success,
-              title: 'تم التحقق!',
-              text: 'تم التحقق من بريدك الإلكتروني بنجاح.',
-              autoCloseDuration: const Duration(seconds: 2),
-              showConfirmBtn: false,
+            SnackBarHelper.showSuccess(
+              context,
+              'تم التحقق من بريدك الإلكتروني بنجاح.',
             );
             Future.delayed(const Duration(seconds: 2), () {
               if (Navigator.of(context).mounted) {
@@ -174,11 +168,9 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       }
     } catch (e) {
       debugPrint("Error confirming email verification: $e");
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.error,
-        title: 'خطأ',
-        text: 'حدث خطأ أثناء التحقق من البريد الإلكتروني',
+      SnackBarHelper.showError(
+        context,
+        'حدث خطأ أثناء التحقق من البريد الإلكتروني',
       );
     }
   }

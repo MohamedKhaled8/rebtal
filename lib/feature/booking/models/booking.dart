@@ -74,6 +74,7 @@ class Booking {
   final String? originalTenantEmail;
   final DateTime? transferredAt;
   final int? childrenCount;
+  final bool isDayUse;
 
   Booking({
     required this.id,
@@ -119,6 +120,7 @@ class Booking {
     this.originalTenantEmail,
     this.transferredAt,
     this.childrenCount,
+    this.isDayUse = false,
   });
 
   Booking copyWith({
@@ -165,6 +167,7 @@ class Booking {
     String? originalTenantEmail,
     DateTime? transferredAt,
     int? childrenCount,
+    bool? isDayUse,
   }) {
     return Booking(
       id: id ?? this.id,
@@ -211,6 +214,7 @@ class Booking {
       originalTenantPhone: originalTenantPhone ?? this.originalTenantPhone,
       originalTenantEmail: originalTenantEmail ?? this.originalTenantEmail,
       transferredAt: transferredAt ?? this.transferredAt,
+      isDayUse: isDayUse ?? this.isDayUse,
     );
   }
 
@@ -262,6 +266,7 @@ class Booking {
       originalTenantEmail: json['originalTenantEmail'] as String?,
       transferredAt: _parseDate(json['transferredAt']),
       childrenCount: (json['childrenCount'] as num?)?.toInt(),
+      isDayUse: json['isDayUse'] as bool? ?? false,
     );
   }
 
@@ -374,5 +379,6 @@ class Booking {
     'originalTenantEmail': originalTenantEmail,
     'transferredAt': transferredAt?.toIso8601String(),
     'childrenCount': childrenCount,
+    'isDayUse': isDayUse,
   };
 }

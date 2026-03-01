@@ -4,12 +4,14 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/feature/booking/ui/booking_wizard_page.dart'; // Import Wizard Page
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
+import 'package:confetti/confetti.dart';
+import 'package:animate_do/animate_do.dart';
+import 'dart:ui';
 
 part 'fixed_bottom_bar_state.dart';
 
@@ -329,18 +331,30 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     BuildContext context, {
     required String docId,
     required Map<String, dynamic> requestData,
+    required dynamic price,
   }) {
     // Access AuthCubit through AppCubit
     final appCubit = context.read<AppCubit>();
     final authCubit = appCubit.authCubit;
     final currentUser = authCubit.getCurrentUser();
-    if (currentUser == null) return;
+    if (currentUser == null) {
+      SnackBarHelper.showError(context, 'يرجى تسجيل الدخول أولاً');
+      return;
+    }
 
     final bookingAvailability =
         requestData['bookingAvailability'] ?? 'available';
     final isBookingAvailable = bookingAvailability == 'available';
 
     if (isBookingAvailable) {
+      final bool dayUseEnabled = requestData['dayUseEnabled'] == true;
+
+      // If Day Use is enabled, show the quick request sheet
+      if (dayUseEnabled) {
+        _showDayUseQuickRequest(context, docId, requestData, price);
+        return;
+      }
+
       var ownerId = requestData['ownerId'] ?? requestData['userId'] ?? '';
       if (ownerId.isEmpty) {
         ownerId = '';
@@ -348,28 +362,412 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
 
       final chaletName =
           requestData['chaletName'] ?? requestData['name'] ?? 'شاليه';
-      final ownerName =
-          requestData['merchantName'] ??
-          requestData['ownerName'] ??
-          'صاحب الشاليه';
 
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: ColorManager.transparent,
-        builder: (context) => BookingBridgeWidget(
-          chaletId: docId,
-          chaletName: chaletName,
-          ownerId: ownerId,
-          ownerName: ownerName,
-          userId: currentUser.uid,
-          userName: currentUser.name,
-          requestData: requestData,
-          parentContext: context,
+      // Navigate to the full screen Wizard Page
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BookingWizardPage(
+            chaletId: docId,
+            chaletName: chaletName,
+            ownerId: ownerId,
+            requestData: requestData,
+            basePrice: price,
+          ),
         ),
       );
     } else {
       SnackBarHelper.showError(context, 'الحجز غير متاح حالياً');
     }
+  }
+
+  void _showDayUseQuickRequest(
+    BuildContext context,
+    String docId,
+    Map<String, dynamic> requestData,
+    dynamic price,
+  ) {
+    final chaletName =
+        requestData['chaletName'] ?? requestData['name'] ?? 'شاليه';
+    final ownerId = requestData['ownerId'] ?? requestData['userId'] ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final isDarkSheet =
+            Theme.of(sheetContext).brightness == Brightness.dark;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDarkSheet ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "بيانات طلب الداي يوز",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(sheetContext),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: isDarkSheet ? Colors.white54 : Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Request Details
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDarkSheet
+                      ? Colors.white.withOpacity(0.03)
+                      : Colors.grey[50],
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDarkSheet
+                        ? Colors.white10
+                        : Colors.black.withOpacity(0.05),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    _buildRequestInfoItem(
+                      Icons.calendar_today_rounded,
+                      "التاريخ",
+                      "اليوم - ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+                      isDarkSheet,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(height: 1),
+                    ),
+                    _buildRequestInfoItem(
+                      Icons.payments_rounded,
+                      "التكلفة المتوقعة",
+                      "$price EGP",
+                      isDarkSheet,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(sheetContext),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        "إلغاء",
+                        style: TextStyle(
+                          color: isDarkSheet
+                              ? Colors.white70
+                              : Colors.grey[600],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        _submitQuickDayUseRequest(
+                          context, // Use outer context
+                          docId,
+                          ownerId,
+                          chaletName,
+                          price,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE51D55),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "إرسال الطلب",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRequestInfoItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    bool isDark,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, size: 22, color: const Color(0xFFE51D55)),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white70 : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submitQuickDayUseRequest(
+    BuildContext context,
+    String docId,
+    String ownerId,
+    String chaletName,
+    dynamic price,
+  ) async {
+    // 1. Show Success Dialog Immediately (Optimistic UI)
+    _showSuccessCelebration(context);
+
+    try {
+      final appCubit = context.read<AppCubit>();
+      final currentUser = appCubit.authCubit.getCurrentUser();
+      if (currentUser == null) return;
+
+      final bookingRef = FirebaseFirestore.instance
+          .collection('bookings')
+          .doc();
+      final double amount = (price is num)
+          ? price.toDouble()
+          : double.tryParse(price.toString()) ?? 0.0;
+
+      await bookingRef.set({
+        'id': bookingRef.id,
+        'chaletId': docId,
+        'chaletName': chaletName,
+        'ownerId': ownerId,
+        'userId': currentUser.uid,
+        'userName': currentUser.name,
+        'userPhone': currentUser.phone,
+        'userEmail': currentUser.email,
+        'amount': amount,
+        'status': 'pending', // Pending owner approval
+        'isDayUse': true, // Correct flag for Day Use
+        'bookingType': 'day_use',
+        'createdAt': FieldValue.serverTimestamp(),
+        'from':
+            DateTime.now(), // For Day Use, it's typically immediate or current day
+        'to': DateTime.now(), // Same day
+      });
+
+      // Send notification to owner
+      await NotificationService().sendNotification(
+        userId: ownerId,
+        title: 'طلب حجز داي يوز جديد! ☀️',
+        body: 'قام ${currentUser.name} بطلب حجز داي يوز لشاليه $chaletName.',
+        type: NotificationType.bookingRequest,
+        relatedId: bookingRef.id,
+        data: {
+          'bookingId': bookingRef.id,
+          'chaletName': chaletName,
+          'userName': currentUser.name,
+        },
+      );
+
+      // 3. No need to show dialog here, it's already shown
+    } catch (e) {
+      if (context.mounted) {
+        // If error, we might want to close the success dialog (if it's still there)
+        // and show error. ideally we should track the dialog context.
+        // For now, let's just log or show snackbar. The success dialog will auto-close.
+        // Maybe better to force close if we can, but simpler is safer for now.
+        SnackBarHelper.showError(context, 'حدث خطأ أثناء إرسال الطلب: $e');
+      }
+    }
+  }
+
+  void _showSuccessCelebration(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      builder: (context) => const SuccessCelebrationDialog(),
+    );
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
+        // Use rootNavigator: true to ensure we pop the dialog specifically
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    });
+  }
+}
+
+class SuccessCelebrationDialog extends StatefulWidget {
+  const SuccessCelebrationDialog({super.key});
+
+  @override
+  State<SuccessCelebrationDialog> createState() =>
+      _SuccessCelebrationDialogState();
+}
+
+class _SuccessCelebrationDialogState extends State<SuccessCelebrationDialog> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 2),
+    );
+    _confettiController.play();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Backdrop blur
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(color: Colors.black.withOpacity(0.4)),
+        ),
+
+        ConfettiWidget(
+          confettiController: _confettiController,
+          blastDirectionality: BlastDirectionality.explosive,
+          shouldLoop: false,
+          colors: const [
+            Colors.green,
+            Colors.blue,
+            Colors.pink,
+            Colors.orange,
+            Colors.purple,
+            Color(0xFFE51D55),
+          ],
+          numberOfParticles: 20,
+          gravity: 0.1,
+        ),
+
+        Material(
+          color: Colors.transparent,
+          child: ZoomIn(
+            duration: const Duration(milliseconds: 600),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FadeInDown(
+                  from: 30,
+                  delay: const Duration(milliseconds: 200),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.3),
+                          blurRadius: 40,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 84,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                const Text(
+                  "تم إرسال طلبك ✓",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black26,
+                        offset: Offset(0, 4),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "جاري المراجعة",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w500,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black26,
+                        offset: Offset(0, 2),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

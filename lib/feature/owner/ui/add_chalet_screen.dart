@@ -235,6 +235,8 @@ class _AddChaletContent extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    _buildDayUseToggle(isDark, draft.dayUseEnabled, ownerCubit),
                   ],
                 ),
               ),
@@ -450,6 +452,70 @@ class _AddChaletContent extends StatelessWidget {
           horizontal: 16,
           vertical: 16,
         ),
+      ),
+    );
+  }
+
+  Widget _buildDayUseToggle(
+    bool isDark,
+    bool dayUseEnabled,
+    OwnerCubit ownerCubit,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
+            : ColorManager.grey50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: dayUseEnabled
+              ? ColorManager.blue2563EB
+              : (isDark
+                    ? ColorManager.grey800.withOpacity(0.3)
+                    : ColorManager.grey300),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: dayUseEnabled
+                  ? ColorManager.blue2563EB.withOpacity(0.15)
+                  : ColorManager.grey400.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.wb_sunny_rounded,
+              color: dayUseEnabled
+                  ? ColorManager.blue2563EB
+                  : ColorManager.grey600,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Day Use (استخدام يومي)",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  dayUseEnabled ? "مفعل" : "غير مفعل",
+                  style: TextStyle(fontSize: 12, color: ColorManager.grey600),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: dayUseEnabled,
+            onChanged: ownerCubit.updateDayUseEnabled,
+            activeColor: ColorManager.blue2563EB,
+          ),
+        ],
       ),
     );
   }

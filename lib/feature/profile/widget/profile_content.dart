@@ -1,30 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-// import 'package:rebtal/feature/auth/cubit/auth_cubit.dart'; // Accessed via AppCubit
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
-// import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart'; // Accessed via AppState
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/theme/painter/pattern_painter.dart';
 import 'package:rebtal/feature/profile/ui/user_invoices_page.dart';
-import 'package:rebtal/feature/profile/widget/modern_profile_item.dart';
-import 'package:rebtal/feature/profile/widget/switch_action_tile.dart';
-import 'package:rebtal/feature/profile/widget/stat_card.dart';
-import 'package:rebtal/feature/profile/widget/modern_action_tile.dart';
-import 'package:rebtal/feature/profile/widget/chalet_management_tile.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
-import 'package:rebtal/feature/profile/utils/profile_helper.dart';
 import 'package:rebtal/feature/profile/ui/contact_us_page.dart';
 import 'package:rebtal/feature/profile/ui/about_us_page.dart';
 import 'package:rebtal/feature/profile/ui/privacy_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/delivery_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
+import 'package:rebtal/feature/profile/ui/personal_info_page.dart';
 import 'package:rebtal/feature/localization/language_selection_page.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+/// صفحة الإعدادات كما في التصميم: رأس الملف الشخصي + أقسام إعدادات الحساب، الدعم، القانونية، تفضيلات التطبيق.
 class ProfileContent extends StatelessWidget {
   final UserModel user;
   final VoidCallback onLogout;
@@ -40,599 +31,438 @@ class ProfileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDark = DynamicThemeManager.isDarkMode(context);
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subColor = isDark ? Colors.white54 : Colors.grey.shade600;
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final dividerColor = isDark ? Colors.white12 : Colors.grey.shade200;
 
     return Scaffold(
-      backgroundColor: ColorManager.getProfileBackground(isDark),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 260,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: ColorManager.getProfileSurface(isDark),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: isDark
-                            ? [
-                                ColorManager.profileGradientDark1,
-                                ColorManager.profileGradientDark2,
-                              ]
-                            : [
-                                ColorManager.white,
-                                ColorManager.profileBackgroundLight,
-                              ],
-                      ),
-                    ),
-                  ),
-                  Opacity(
-                    opacity: 0.08,
-                    child: CustomPaint(painter: PatternPainter()),
-                  ),
-                  SafeArea(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 24),
-                        GestureDetector(
-                          onTap: () => HelperImage().addProfilePicture(context),
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: [
-                                  ColorManager.profileAccent.withOpacity(0.6),
-                                  ColorManager.profileAccent.withOpacity(0.2),
-                                ],
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 52,
-                                  backgroundColor:
-                                      ColorManager.getProfileSurfaceAlt(isDark),
-                                  child:
-                                      user.profileImageUrl != null &&
-                                          user.profileImageUrl!.isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            52,
-                                          ),
-                                          child: CachedNetworkImage(
-                                            imageUrl: user.profileImageUrl!,
-                                            fit: BoxFit.cover,
-                                            width: 104,
-                                            height: 104,
-                                            placeholder: (context, url) => Container(
-                                              color:
-                                                  ColorManager.getProfileSurfaceAlt(
-                                                    isDark,
-                                                  ),
-                                              child: Center(
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(
-                                                        ColorManager
-                                                            .profileAccent,
-                                                      ),
-                                                ),
-                                              ),
-                                            ),
-                                            errorWidget:
-                                                (context, url, error) => Text(
-                                                  user.name.isNotEmpty
-                                                      ? user.name[0]
-                                                            .toUpperCase()
-                                                      : 'U',
-                                                  style: TextStyle(
-                                                    fontSize: 36,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: ColorManager
-                                                        .profileAccent,
-                                                  ),
-                                                ),
-                                          ),
-                                        )
-                                      : Text(
-                                          user.name.isNotEmpty
-                                              ? user.name[0].toUpperCase()
-                                              : 'U',
-                                          style: TextStyle(
-                                            fontSize: 36,
-                                            fontWeight: FontWeight.bold,
-                                            color: ColorManager.profileAccent,
-                                          ),
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // —— رأس الملف: صورة + اسم + إيميل + زر عرض الملف الشخصي ——
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () => HelperImage().addProfilePicture(context),
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 44,
+                            backgroundColor: Colors.grey.shade800,
+                            child: user.profileImageUrl != null &&
+                                    user.profileImageUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(44),
+                                    child: CachedNetworkImage(
+                                      imageUrl: user.profileImageUrl!,
+                                      fit: BoxFit.cover,
+                                      width: 88,
+                                      height: 88,
+                                      placeholder: (_, __) => const Center(
+                                          child: CircularProgressIndicator()),
+                                      errorWidget: (_, __, ___) => Text(
+                                        user.name.isNotEmpty
+                                            ? user.name[0].toUpperCase()
+                                            : '؟',
+                                        style: TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
                                         ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: ColorManager.profileAccent,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color:
-                                            ColorManager.getProfileSurfaceAlt(
-                                              isDark,
-                                            ),
-                                        width: 2,
                                       ),
                                     ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      size: 16,
-                                      color: ColorManager.white,
+                                  )
+                                : Text(
+                                    user.name.isNotEmpty
+                                        ? user.name[0].toUpperCase()
+                                        : '؟',
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          user.name,
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: ColorManager.getProfileTextPrimary(isDark),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ColorManager.profileAccent.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: ColorManager.profileAccent.withOpacity(
-                                0.3,
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade700,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF121212)
+                                        : Colors.white,
+                                    width: 2),
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                size: 16,
+                                color: Colors.white,
                               ),
                             ),
-                          ),
-                          child: Text(
-                            ProfileHelper.getRoleText(user.role),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: ColorManager.profileAccent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  color: ColorManager.getProfileTextPrimary(isDark),
-                ),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StatCard(
-                          icon: Icons.calendar_month,
-                          value: ProfileHelper.calculateDays(user.createdAt),
-                          label: 'أيام معنا',
-                          color: ColorManager.profileAccent,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StatCard(
-                          icon: Icons.verified_user,
-                          value: 'نشط',
-                          label: 'حالة الحساب',
-                          color: ColorManager.green3DDC84,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: ColorManager.getProfileSurfaceAlt(isDark),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? ColorManager.white.withOpacity(0.06)
-                            : ColorManager.black.withOpacity(0.1),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: ColorManager.profileAccent.withOpacity(
-                                    0.12,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.person_outline,
-                                  color: ColorManager.profileAccent,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'معلومات الحساب',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: ColorManager.getProfileTextPrimary(
-                                    isDark,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ModernProfileItem(
-                          icon: Icons.email_outlined,
-                          label: 'البريد الإلكتروني',
-                          value: user.email,
-                          iconColor: ColorManager.profileAccent,
-                        ),
-                        ModernProfileItem(
-                          icon: Icons.phone_outlined,
-                          label: 'رقم الهاتف',
-                          value: user.phone,
-                          iconColor: ColorManager.green3DDC84,
-                        ),
-                        ModernProfileItem(
-                          icon: Icons.access_time,
-                          label: 'تاريخ الإنشاء',
-                          value: ProfileHelper.formatDate(user.createdAt),
-                          iconColor: ColorManager.yellowEAB308,
-                          isLast: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Only show Chalet Management if the user is an Owner AND is in Owner View Mode
-                  if (user.role.toLowerCase() == 'owner' &&
-                      context.read<AppCubit>().getCurrentRole() == 'owner') ...[
-                    Container(
-                      decoration: BoxDecoration(
-                        color: ColorManager.getProfileSurfaceAlt(isDark),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark
-                              ? ColorManager.white.withOpacity(0.06)
-                              : ColorManager.black.withOpacity(0.1),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: ColorManager.profileAccent
-                                        .withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    Icons.home_outlined,
-                                    color: ColorManager.profileAccent,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'إدارة الشاليهات',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: ColorManager.getProfileTextPrimary(
-                                      isDark,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ChaletManagementTile(
-                            icon: Icons.check_circle_outline,
-                            title: 'الشاليهات الموافق عليها',
-                            subtitle: 'عرض الشاليهات المقبولة',
-                            color: ColorManager.green3DDC84,
-                            onTap: () =>
-                                onNavigateToChalets(context, 'approved'),
-                          ),
-                          ChaletManagementTile(
-                            icon: Icons.cancel_outlined,
-                            title: 'الشاليهات المرفوضة',
-                            subtitle: 'عرض الشاليهات المرفوضة',
-                            color: ColorManager.chaletUnavailableRed,
-                            onTap: () =>
-                                onNavigateToChalets(context, 'rejected'),
-                            isLast: true,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
-                  Container(
-                    decoration: BoxDecoration(
-                      color: ColorManager.getProfileSurfaceAlt(isDark),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? ColorManager.white.withOpacity(0.06)
-                            : ColorManager.black.withOpacity(0.1),
+                    const SizedBox(height: 12),
+                    Text(
+                      user.name,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? ColorManager.white.withValues(
-                                          alpha: 0.06,
-                                        )
-                                      : ColorManager.black.withValues(
-                                          alpha: 0.06,
-                                        ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.settings_outlined,
-                                  color: isDark
-                                      ? ColorManager.white70
-                                      : ColorManager.grey600,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'الإعدادات والدعم',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: ColorManager.getProfileTextPrimary(
-                                    isDark,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (user.role.toLowerCase().trim() == 'owner')
-                          Builder(
-                            builder: (context) {
-                              final currentRole = context
-                                  .read<AppCubit>()
-                                  .getCurrentRole();
-                              final isOwnerView = currentRole == 'owner';
-                              return ModernActionTile(
-                                icon: isOwnerView
-                                    ? Icons.person_outline
-                                    : Icons.store_outlined,
-                                title: isOwnerView
-                                    ? 'وضع المستخدم'
-                                    : 'وضع المالك',
-                                subtitle: isOwnerView
-                                    ? 'تصفح التطبيق كمستخدم'
-                                    : 'العودة للوحة التحكم',
-                                color: ColorManager.blue2563EB,
-                                onTap: () {
-                                  bottomNavIndex.value = 0;
-                                  context.read<AppCubit>().toggleViewMode();
-                                },
-                              );
-                            },
-                          ),
-                        BlocBuilder<AppCubit, AppState>(
-                          builder: (context, appState) {
-                            final isDarkMode =
-                                appState.themeMode == ThemeMode.dark;
-                            return SwitchActionTile(
-                              icon: isDarkMode
-                                  ? Icons.dark_mode
-                                  : Icons.light_mode,
-                              title: isDarkMode
-                                  ? 'الوضع الداكن'
-                                  : 'الوضع النهاري',
-                              subtitle: isDarkMode
-                                  ? 'تفعيل المظهر الداكن'
-                                  : 'تفعيل المظهر النهاري',
-                              color: ColorManager.profileAccent,
-                              value: isDarkMode,
-                              onChanged: (value) {
-                                context.read<AppCubit>().toggleTheme();
-                              },
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.translate,
-                          title: 'اللغة',
-                          subtitle: 'اختيار لغة العرض | Language',
-                          color: ColorManager.yellowEAB308,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const LanguageSelectionPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.receipt_long_outlined,
-                          title: 'الفواتير',
-                          subtitle: 'عرض وتتبع فواتيرك ومدفوعاتك',
-                          color: ColorManager.chaletActionGreen,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const UserInvoicesPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Divider(
-                            height: 1,
-                            color: isDark
-                                ? ColorManager.white10
-                                : ColorManager.black.withValues(alpha: 0.05),
-                          ),
-                        ),
-                        ModernActionTile(
-                          icon: Icons.contact_support_outlined,
-                          title: 'اتصل بنا',
-                          subtitle: 'لديك استفسار؟ تواصل معنا',
-                          color: ColorManager.cyan06B6D4,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ContactUsPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.info_outline,
-                          title: 'عن التطبيق',
-                          subtitle: 'تعرف على المزيد عنا',
-                          color: ColorManager.purple8B5CF6,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const AboutUsPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.privacy_tip_outlined,
-                          title: 'سياسة الخصوصية',
-                          subtitle: 'كيف نحمي بياناتك',
-                          color: ColorManager.chaletActionGreen,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const PrivacyPolicyPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.local_shipping_outlined,
-                          title: 'سياسة الحجز',
-                          subtitle: 'شروط الحجز والتأكيد',
-                          color: ColorManager.bookingsWarningOrange,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const DeliveryPolicyPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        ModernActionTile(
-                          icon: Icons.cancel_outlined,
-                          title: 'سياسة الإلغاء والاسترجاع',
-                          subtitle: 'شروط الإلغاء والاسترداد',
-                          color: ColorManager.chaletGalleryPink,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const RefundPolicyPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Divider(
-                            height: 1,
-                            color: isDark
-                                ? ColorManager.white10
-                                : ColorManager.black.withValues(alpha: 0.05),
-                          ),
-                        ),
-                        ModernActionTile(
-                          icon: Icons.logout_rounded,
-                          title: 'تسجيل الخروج',
-                          subtitle: 'الخروج من حسابك بأمان',
-                          color: const Color(0xFFEF4444),
-                          onTap: onLogout,
-                          isLast: true,
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      user.email,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: subColor,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PersonalInfoPage(user: user),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textColor,
+                          side: BorderSide(color: dividerColor),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('عرض الملف الشخصي'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-                  SizedBox(height: 20.h),
+            // —— إعدادات الحساب ——
+            _sectionTitle('إعدادات الحساب', textColor),
+            SliverToBoxAdapter(
+              child: _buildCard(
+                context,
+                cardColor,
+                dividerColor,
+                [
+                  _settingsTile(
+                    context,
+                    icon: Icons.person_outline,
+                    title: 'المعلومات الشخصية',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PersonalInfoPage(user: user),
+                      ),
+                    ),
+                    textColor: textColor,
+                  ),
+                  if (user.role.toLowerCase().trim() == 'owner')
+                    _settingsTile(
+                      context,
+                      icon: Icons.home_work_outlined,
+                      title: 'التبديل إلى وضع المالك',
+                      subtitle: 'العودة لوحة التحكم أو التصفح',
+                      onTap: () {
+                        bottomNavIndex.value = 0;
+                        context.read<AppCubit>().toggleViewMode();
+                      },
+                      textColor: textColor,
+                      subColor: subColor,
+                    ),
+                  _settingsTile(
+                    context,
+                    icon: Icons.receipt_long_outlined,
+                    title: 'الفواتير والمدفوعات',
+                    subtitle: 'عرض تفاصيل مدفوعاتك',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UserInvoicesPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                    subColor: subColor,
+                  ),
                 ],
               ),
             ),
+
+            // —— الدعم والمساعدة ——
+            _sectionTitle('الدعم والمساعدة', textColor),
+            SliverToBoxAdapter(
+              child: _buildCard(
+                context,
+                cardColor,
+                dividerColor,
+                [
+                  _settingsTile(
+                    context,
+                    icon: Icons.help_outline,
+                    title: 'اتصل بنا',
+                    subtitle: 'فريق الدعم متاح للمساعدة',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ContactUsPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                    subColor: subColor,
+                  ),
+                  _settingsTile(
+                    context,
+                    icon: Icons.info_outline,
+                    title: 'عن التطبيق',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AboutUsPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                  ),
+                ],
+              ),
+            ),
+
+            // —— القانونية ——
+            _sectionTitle('القانونية', textColor),
+            SliverToBoxAdapter(
+              child: _buildCard(
+                context,
+                cardColor,
+                dividerColor,
+                [
+                  _settingsTile(
+                    context,
+                    icon: Icons.shield_outlined,
+                    title: 'سياسة الخصوصية',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PrivacyPolicyPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                  ),
+                  _settingsTile(
+                    context,
+                    icon: Icons.description_outlined,
+                    title: 'الشروط والأحكام',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DeliveryPolicyPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                  ),
+                  _settingsTile(
+                    context,
+                    icon: Icons.replay_outlined,
+                    title: 'سياسة الاسترجاع',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const RefundPolicyPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                  ),
+                ],
+              ),
+            ),
+
+            // —— تفضيلات التطبيق ——
+            _sectionTitle('تفضيلات التطبيق', textColor),
+            SliverToBoxAdapter(
+              child: _buildCard(
+                context,
+                cardColor,
+                dividerColor,
+                [
+                  BlocBuilder<AppCubit, AppState>(
+                    buildWhen: (p, c) =>
+                        p.themeMode != c.themeMode,
+                    builder: (context, appState) {
+                      final isDarkMode =
+                          appState.themeMode == ThemeMode.dark;
+                      return ListTile(
+                        leading: Icon(
+                          Icons.dark_mode_outlined,
+                          color: textColor,
+                          size: 24,
+                        ),
+                        title: Text(
+                          'الوضع الليلي',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        trailing: Switch(
+                          value: isDarkMode,
+                          onChanged: (_) =>
+                              context.read<AppCubit>().toggleTheme(),
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.blue,
+                        ),
+                      );
+                    },
+                  ),
+                  _settingsTile(
+                    context,
+                    icon: Icons.language,
+                    title: 'اللغة',
+                    subtitle: 'العربية',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LanguageSelectionPage(),
+                      ),
+                    ),
+                    textColor: textColor,
+                    subColor: subColor,
+                  ),
+                ],
+              ),
+            ),
+
+            // —— تسجيل الخروج + الإصدار ——
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: onLogout,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: textColor,
+                          side: BorderSide(color: dividerColor),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('تسجيل الخروج'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'الإصدار 1.0.0',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: subColor,
+                      ),
+                    ),
+                    const SizedBox(height: 90),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title, Color textColor) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context,
+    Color cardColor,
+    Color dividerColor,
+    List<Widget> children,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: dividerColor),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < children.length; i++) ...[
+            children[i],
+            if (i < children.length - 1)
+              Divider(height: 1, color: dividerColor),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _settingsTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+    Color? textColor,
+    Color? subColor,
+  }) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final tx = textColor ?? (isDark ? Colors.white : Colors.black87);
+    final sx = subColor ?? (isDark ? Colors.white54 : Colors.grey.shade600);
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, color: tx, size: 24),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: tx,
+          fontSize: 15,
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(fontSize: 12, color: sx),
+            )
+          : null,
+      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+      onTap: onTap,
     );
   }
 }

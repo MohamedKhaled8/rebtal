@@ -11,6 +11,8 @@ class AppImageHelper extends StatelessWidget {
   final double? width;
   final BoxFit fit;
   final Color? color;
+  final Widget? placeholder;
+  final Widget? errorWidget;
 
   const AppImageHelper({
     super.key,
@@ -19,6 +21,8 @@ class AppImageHelper extends StatelessWidget {
     this.width,
     this.fit = BoxFit.scaleDown,
     this.color,
+    this.placeholder,
+    this.errorWidget,
   });
 
   @override
@@ -41,14 +45,11 @@ class AppImageHelper extends StatelessWidget {
           height: height ?? 200.0,
           width: width ?? double.infinity,
           fit: fit,
+          placeholder: placeholder,
+          errorWidget: errorWidget,
         );
       case ImageType.lottie:
-        return Lottie.asset(
-          path,
-          height: height,
-          width: width,
-          fit: fit,
-        );
+        return Lottie.asset(path, height: height, width: width, fit: fit);
       case ImageType.asset:
         return Image.asset(
           path,
@@ -65,7 +66,7 @@ class AppImageHelper extends StatelessWidget {
           fit: fit,
           color: color,
         );
-      }
+    }
   }
 
   ImageType _getImageType(String path) {
@@ -85,10 +86,4 @@ class AppImageHelper extends StatelessWidget {
   }
 }
 
-enum ImageType {
-  svg,
-  network,
-  lottie,
-  asset,
-  errorImage,
-}
+enum ImageType { svg, network, lottie, asset, errorImage }

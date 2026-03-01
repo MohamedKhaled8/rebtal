@@ -42,6 +42,7 @@ class AuthRepository implements BaseAuthRepository {
     required String name,
     required String phone,
     required String role,
+    String? profileImageUrl,
   }) async {
     try {
       final emailError = AuthValidator.validateEmail(email);
@@ -105,6 +106,7 @@ class AuthRepository implements BaseAuthRepository {
         password: password,
         createdAt: DateTime.now(),
         phone: phone.trim(),
+        profileImageUrl: profileImageUrl,
       );
 
       return Right(userModel);
@@ -276,6 +278,87 @@ class AuthRepository implements BaseAuthRepository {
         debugPrint('❌ Firebase Auth Error Message: ${e.message}');
       }
       return Left(AuthFailure(errorMessage));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserModel>> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+    required String role,
+    String? profileImageUrl,
+  }) async {
+    try {
+      late String collectionName;
+      final normalizedRole = role.toLowerCase().trim();
+      if (normalizedRole == "user") {
+        collectionName = "Users";
+      } else if (normalizedRole == "owner") {
+        collectionName = "Owners";
+      } else if (normalizedRole == "admin") {
+        collectionName = "Admin";
+      } else {
+        collectionName = "Users";
+      }
+
+      final Map<String, dynamic> updateData = {
+        'name': name.trim(),
+        'phone': phone.trim(),
+      };
+
+      if (profileImageUrl != null) {
+        updateData['profileImageUrl'] = profileImageUrl;
+      }
+
+      await _firestore.collection(collectionName).doc(uid).update(updateData);
+
+      // Fetch the updated document to return full model
+      final doc = await _firestore.collection(collectionName).doc(uid).get();
+      return Right(UserModel.fromMap(doc.data() as Map<String, dynamic>));
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'UpdateProfile');
+      return Left(ServerFailure(FirebaseErrorHandler.getErrorMessage(e)));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return Left(AuthFailure('المستخدم غير متصل'));
+
+      // Re-authenticate user
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+
+      // Update password in Firestore as well (since it's stored there)
+      final uid = user.uid;
+      DocumentSnapshot? foundDoc;
+      for (String col in ["Users", "Owners", "Admin"]) {
+        final doc = await _firestore.collection(col).doc(uid).get();
+        if (doc.exists) {
+          foundDoc = doc;
+          break;
+        }
+      }
+
+      if (foundDoc != null) {
+        await foundDoc.reference.update({'password': newPassword});
+      }
+
+      return const Right(null);
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'ChangePassword');
+      return Left(AuthFailure(FirebaseErrorHandler.getErrorMessage(e)));
     }
   }
 }

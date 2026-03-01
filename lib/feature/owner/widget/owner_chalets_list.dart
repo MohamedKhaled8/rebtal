@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
@@ -118,7 +119,13 @@ class OwnerChaletsList extends StatelessWidget {
 
                 final String id = data['id'] ?? '';
 
-                return OwnerChaletCard(chaletData: data, docId: id);
+                return FadeInUp(
+                  duration: const Duration(milliseconds: 500),
+                  delay: Duration(
+                    milliseconds: 100 * (i % 5),
+                  ), // Staggered delay
+                  child: OwnerChaletCard(chaletData: data, docId: id),
+                );
               },
             );
           },

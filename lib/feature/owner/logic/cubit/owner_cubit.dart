@@ -144,6 +144,9 @@ class OwnerCubit extends Cubit<OwnerState> {
   void updateDiscountValue(String? value) =>
       emit(state.copyWith(draft: state.draft.copyWith(discountValue: value)));
 
+  void updateDayUseEnabled(bool enabled) =>
+      emit(state.copyWith(draft: state.draft.copyWith(dayUseEnabled: enabled)));
+
   void toggleFeature(String feature) {
     final currentFeatures = List<String>.from(state.draft.features);
     if (currentFeatures.contains(feature)) {
@@ -630,6 +633,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       discountType: state.draft.discountType,
       discountValue: state.draft.discountValue,
       features: state.draft.features,
+      dayUseEnabled: state.draft.dayUseEnabled,
     );
 
     final result = await addChaletUseCase(
@@ -649,6 +653,7 @@ class OwnerCubit extends Cubit<OwnerState> {
         discountType: state.draft.discountType,
         discountValue: state.draft.discountValue,
         features: state.draft.features,
+        dayUseEnabled: state.draft.dayUseEnabled,
       ),
     );
 

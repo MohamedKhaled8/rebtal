@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart'; // ✅ Import App Check
@@ -38,23 +39,26 @@ void main() async {
     print('⚠️ Failed to get storage bucket: $e');
   }
 
-  // ✅ 2. Activate App Check (Force Debug Provider for Development)
-  try {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.debug,
-      appleProvider: AppleProvider.debug,
-    );
-    // Auto-refresh tokens to avoid stale token issues
-    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-    print('✅ Firebase App Check Activated (Debug Mode)');
-  } catch (e) {
-    print('⚠️ Firebase App Check Failed: $e');
-    print(
-      '⚠️ Continuing without App Check - this may cause storage upload issues',
-    );
-    // Don't fail the app startup if App Check fails
-    // The app will continue but storage might have issues
-  }
+  // ✅ 2. Activate App Check
+  // We wrap this in a non-awaited future to prevent it from blocking runApp if it stalls in release mode
+  unawaited(
+    FirebaseAppCheck.instance
+        .activate(
+          androidProvider: kDebugMode
+              ? AndroidProvider.debug
+              : AndroidProvider.playIntegrity,
+          appleProvider: kDebugMode
+              ? AppleProvider.debug
+              : AppleProvider.deviceCheck,
+        )
+        .then((_) {
+          FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+          print('✅ Firebase App Check Activated');
+        })
+        .catchError((e) {
+          print('⚠️ Firebase App Check Failed: $e');
+        }),
+  );
 
   setupGetIt();
   await getIt<CacheHelper>().init();

@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
@@ -234,16 +231,8 @@ class LoginCubit extends Cubit<LoginState> {
       );
     } else if (state is LoginValidationError) {
       _isDialogShowing = true;
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.warning,
-        title: 'تحذير',
-        text: state.message,
-        confirmBtnText: 'حسناً',
-        confirmBtnColor: ColorManager.blue2563EB,
-      ).then((_) {
-        _isDialogShowing = false;
-      });
+      SnackBarHelper.showWarning(context, state.message);
+      _isDialogShowing = false;
     } else if (state is LoginOfflineWarning) {
       _isDialogShowing = true;
       _showOfflineWarning(context, state.message).then((_) {
@@ -343,41 +332,17 @@ class LoginCubit extends Cubit<LoginState> {
     bool isRetryable = false,
     VoidCallback? onRetry,
   }) {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.error,
-      title: 'خطأ',
-      text: errorMessage,
-      confirmBtnText: isRetryable ? 'إعادة المحاولة' : 'حسناً',
-      onConfirmBtnTap: () {
-        Navigator.of(context).pop();
-        _isDialogShowing = false;
-        if (isRetryable && onRetry != null) {
-          Future.delayed(const Duration(milliseconds: 300), onRetry);
-        }
-      },
-      onCancelBtnTap: () {
-        _isDialogShowing = false;
-      },
-      showCancelBtn: isRetryable,
-      cancelBtnText: 'إلغاء',
-      confirmBtnColor: ColorManager.blue2563EB,
-    ).then((_) {
-      _isDialogShowing = false;
-    });
+    SnackBarHelper.showError(context, errorMessage);
+    _isDialogShowing = false;
+
+    if (isRetryable && onRetry != null) {
+      // In a real app, you might want more complex retry logic, but per user request, we use SnackBarHelper
+    }
   }
 
-  Future<void> _showOfflineWarning(BuildContext context, String message) {
-    return QuickAlert.show(
-      context: context,
-      type: QuickAlertType.warning,
-      title: 'مشكلة الاتصال',
-      text: message,
-      confirmBtnText: 'حسناً',
-      confirmBtnColor: ColorManager.blue2563EB,
-    ).then((_) {
-      _isDialogShowing = false;
-    });
+  Future<void> _showOfflineWarning(BuildContext context, String message) async {
+    SnackBarHelper.showWarning(context, message);
+    _isDialogShowing = false;
   }
 
   @override

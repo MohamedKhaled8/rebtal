@@ -10,7 +10,6 @@ import 'package:rebtal/core/utils/widgets/shimmers.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
 
@@ -35,9 +34,7 @@ class PublicChaletCard extends StatefulWidget {
 class _PublicChaletCardState extends State<PublicChaletCard> {
   bool _isFavorite = false;
   String? _userId;
-
   PageController? _pageController;
-  bool _favoriteChecked = false;
 
   @override
   void initState() {
@@ -45,12 +42,29 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     try {
       final user = context.read<AppCubit>().authCubit.getCurrentUser();
       _userId = user?.uid;
+      _checkInitialFavoriteStatus();
     } catch (_) {}
-    // Initialize carousel without auto-play for better performance
     final images = _collectChaletImages(widget.chaletData);
     if (images.length > 1) {
       _pageController = PageController();
     }
+  }
+
+  Future<void> _checkInitialFavoriteStatus() async {
+    if (_userId == null) return;
+    try {
+      final favDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_userId)
+          .collection('favorites')
+          .doc(widget.docId)
+          .get();
+      if (mounted && favDoc.exists) {
+        setState(() {
+          _isFavorite = true;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -59,24 +73,16 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     super.dispose();
   }
 
-  // Check favorite status on demand (lazy loading)
-  Future<bool> _checkFavoriteStatus() async {
-    if (_userId == null) return false;
-    try {
-      final favDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('favorites')
-          .doc(widget.docId)
-          .get();
-      return favDoc.exists;
-    } catch (_) {
-      return false;
-    }
-  }
-
   Future<void> _toggleFavorite() async {
     if (_userId == null) return;
+
+    final wasFavorite = _isFavorite;
+
+    // 1. Optimistic Update
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+
     try {
       final favRef = FirebaseFirestore.instance
           .collection('users')
@@ -84,9 +90,11 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           .collection('favorites')
           .doc(widget.docId);
 
-      if (_isFavorite) {
+      if (wasFavorite) {
+        // Was favorite, now removing
         await favRef.delete();
       } else {
+        // Was not favorite, now adding
         await favRef.set({
           'chaletId': widget.docId,
           'name': widget.chaletData['chaletName'] ?? 'Unnamed Chalet',
@@ -101,17 +109,12 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           'chaletData': widget.chaletData,
         });
       }
-
+    } catch (e) {
+      // 2. Rollback on failure
       if (mounted) {
         setState(() {
-          _isFavorite = !_isFavorite;
+          _isFavorite = wasFavorite;
         });
-        if (_isFavorite) {
-          bottomNavIndex.value = 1;
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('تعذر تحديث المفضلة: $e')));
@@ -227,41 +230,70 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           isBadge: true,
                         ),
 
-                        FutureBuilder<bool>(
-                          future: _favoriteChecked
-                              ? null
-                              : _checkFavoriteStatus(),
-                          builder: (context, snapshot) {
-                            if (!_favoriteChecked && snapshot.hasData) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  setState(() {
-                                    _isFavorite = snapshot.data ?? false;
-                                    _favoriteChecked = true;
-                                  });
-                                }
-                              });
-                            }
-                            return GestureDetector(
-                              onTap: _toggleFavorite,
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.3),
-                                  shape: BoxShape.circle,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_isNewChalet())
+                              Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                                child: Icon(
-                                  _isFavorite
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: _isFavorite
-                                      ? Colors.redAccent
-                                      : Colors.white,
-                                  size: 20,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2563EB),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Text(
+                                  'NEW',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ),
-                            );
-                          },
+                            GestureDetector(
+                              onTap: _toggleFavorite,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder:
+                                      (
+                                        Widget child,
+                                        Animation<double> animation,
+                                      ) {
+                                        return ScaleTransition(
+                                          scale: animation,
+                                          child: child,
+                                        );
+                                      },
+                                  child: Icon(
+                                    _isFavorite
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    key: ValueKey<bool>(_isFavorite),
+                                    color: _isFavorite
+                                        ? Colors.redAccent
+                                        : Colors.white,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -438,6 +470,24 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     );
   }
 
+  bool _isNewChalet() {
+    final createdAt = widget.chaletData['createdAt'];
+    if (createdAt == null) return false;
+
+    DateTime? date;
+    if (createdAt is Timestamp) {
+      date = createdAt.toDate();
+    } else if (createdAt is String) {
+      date = DateTime.tryParse(createdAt);
+    }
+
+    if (date == null) return false;
+
+    // Consider "New" if added in the last 48 hours
+    final difference = DateTime.now().difference(date);
+    return difference.inHours <= 48;
+  }
+
   bool _hasDiscount() {
     final discountEnabled = widget.chaletData['discountEnabled'] ?? false;
     final discountValue = widget.chaletData['discountValue'];
@@ -497,13 +547,145 @@ class PublicChaletsList extends StatefulWidget {
 }
 
 class _PublicChaletsListState extends State<PublicChaletsList> {
-  int _displayLimit = 10; // Start with 10 items as requested
+  int _displayLimit = 10;
   final int _increment = 10;
+
+  /// كاش آخر قائمة شاليهات لعدم إظهار شيمر عند الرجوع للهوم
+  static List<QueryDocumentSnapshot>? _cachedDocs;
 
   void _loadMore() {
     setState(() {
       _displayLimit += _increment;
     });
+  }
+
+  Widget _buildListFromDocs(
+    BuildContext context,
+    List<QueryDocumentSnapshot> docs,
+    bool isDark,
+  ) {
+    return ValueListenableBuilder<SearchFilters>(
+      valueListenable: HomeSearch.filters,
+      builder: (context, filters, _) {
+        final filtered = docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          if (widget.selectedCategory != null) {
+            final features = data['features'] as List<dynamic>?;
+            if (features == null ||
+                !features.contains(widget.selectedCategory)) {
+              return false;
+            }
+          }
+          final singleList = [data];
+          final result =
+              ChaletFilterService.filterChalets(singleList, filters);
+          return result.isNotEmpty;
+        }).toList();
+        filtered.sort((a, b) {
+          final aData = a.data() as Map<String, dynamic>;
+          final bData = b.data() as Map<String, dynamic>;
+          final aTime = aData['createdAt'];
+          final bTime = bData['createdAt'];
+          if (aTime == null) return 1;
+          if (bTime == null) return -1;
+          if (aTime is Timestamp && bTime is Timestamp) {
+            return bTime.compareTo(aTime);
+          }
+          return 0;
+        });
+        if (filtered.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.grey.withOpacity(0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.emptyIcon ?? Icons.search_off_rounded,
+                      size: 60,
+                      color: isDark ? Colors.white24 : Colors.grey[400],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    widget.emptyTitle ?? 'لا توجد نتائج',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        final isFiltering = !filters.isEmpty;
+        final int countToShow = isFiltering
+            ? filtered.length
+            : (_displayLimit > filtered.length
+                ? filtered.length
+                : _displayLimit);
+        final bool hasMore = !isFiltering && filtered.length > _displayLimit;
+        return Column(
+          children: [
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(top: 0, bottom: 20),
+              itemCount: countToShow,
+              itemBuilder: (context, i) {
+                final doc = filtered[i];
+                final data = doc.data() as Map<String, dynamic>;
+                return PublicChaletCard(chaletData: data, docId: doc.id);
+              },
+            ),
+            if (hasMore)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _loadMore,
+                    icon: const Icon(
+                      Icons.expand_more,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      'عرض المزيد (${filtered.length - countToShow} شاليه)',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: ColorManager.chaletAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 60),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -517,6 +699,9 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          if (_cachedDocs != null && _cachedDocs!.isNotEmpty) {
+            return _buildListFromDocs(context, _cachedDocs!, isDark);
+          }
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -524,6 +709,9 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
             itemCount: 3,
             itemBuilder: (context, i) => const PublicChaletCardShimmer(),
           );
+        }
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          _cachedDocs = snapshot.data!.docs;
         }
         if (snapshot.hasError) {
           return Center(
@@ -571,137 +759,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
           );
         }
         final docs = snapshot.data!.docs;
-
-        return ValueListenableBuilder<SearchFilters>(
-          valueListenable: HomeSearch.filters,
-          builder: (context, filters, _) {
-            // Debug logging
-            // print('🔍 === SEARCH DEBUG ===');
-            // print('📊 Total chalets from Firestore: ${docs.length}');
-
-            final filtered = docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-
-              // Category filter
-              if (widget.selectedCategory != null) {
-                final features = data['features'] as List<dynamic>?;
-                if (features == null ||
-                    !features.contains(widget.selectedCategory)) {
-                  return false;
-                }
-              }
-
-              // Apply search filters
-              final singleList = [data];
-              final result = ChaletFilterService.filterChalets(
-                singleList,
-                filters,
-              );
-              return result.isNotEmpty;
-            }).toList();
-
-            if (filtered.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.grey.withOpacity(0.05),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          widget.emptyIcon ?? Icons.search_off_rounded,
-                          size: 60,
-                          color: isDark ? Colors.white24 : Colors.grey[400],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        widget.emptyTitle ?? 'لا توجد نتائج',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            // Pagination Logic
-            // If user has filtered search, show all valid results to avoid hiding matches
-            // If default view, use pagination limit
-            final isFiltering = !filters.isEmpty;
-
-            final int countToShow = isFiltering
-                ? filtered.length
-                : (_displayLimit > filtered.length
-                      ? filtered.length
-                      : _displayLimit);
-            final bool hasMore =
-                !isFiltering && filtered.length > _displayLimit;
-
-            return Column(
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 0, bottom: 20),
-                  itemCount: countToShow,
-                  itemBuilder: (context, i) {
-                    final doc = filtered[i];
-                    final data = doc.data() as Map<String, dynamic>;
-                    return PublicChaletCard(chaletData: data, docId: doc.id);
-                  },
-                ),
-
-                if (hasMore)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _loadMore,
-                        icon: const Icon(
-                          Icons.expand_more,
-                          color: Colors.white,
-                        ),
-                        label: Text(
-                          'عرض المزيد (${filtered.length - countToShow} شاليه)',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: ColorManager.chaletAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 60),
-              ],
-            );
-          },
-        );
+        return _buildListFromDocs(context, docs, isDark);
       },
     );
   }

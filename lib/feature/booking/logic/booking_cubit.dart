@@ -266,6 +266,7 @@ class BookingCubit extends Cubit<BookingState> {
           transferredAt: data['transferredAt'] != null
               ? _parseDateTime(data['transferredAt'])
               : null,
+          isDayUse: data['isDayUse'] as bool? ?? false,
         );
       }).toList(),
     );

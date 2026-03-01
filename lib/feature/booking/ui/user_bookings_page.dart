@@ -5,8 +5,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-
-import 'package:rebtal/feature/booking/widgets/bookings_list.dart';
+import 'package:rebtal/feature/booking/widgets/booking_card_compact.dart';
 
 class UserBookingsPage extends StatefulWidget {
   const UserBookingsPage({super.key});
@@ -15,79 +14,91 @@ class UserBookingsPage extends StatefulWidget {
   State<UserBookingsPage> createState() => _UserBookingsPageState();
 }
 
-class _UserBookingsPageState extends State<UserBookingsPage> {
+class _UserBookingsPageState extends State<UserBookingsPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
-    // AppCubit automatically loads user data on auth success,
-    // but we can trigger a refresh if needed or rely on existing state.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appState = context.read<AppCubit>().state;
-      if (appState is AppAuthenticated) {
-        // Data should already be loading/loaded by AppCubit's listener
-        // But we can ensure it:
-        // context.read<AppCubit>().bookingCubit.loadUserBookings(appState.user.uid);
-      }
-    });
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access user via AppCubit state
     final appCubit = context.read<AppCubit>();
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: DynamicThemeManager.isDarkMode(context)
-          ? ColorManager.black
-          : ColorManager.white,
+      backgroundColor: isDark ? ColorManager.black : ColorManager.white,
       appBar: AppBar(
         title: const Text(
           'حجوزاتي',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
-        backgroundColor: DynamicThemeManager.isDarkMode(context)
-            ? ColorManager.transparent
-            : ColorManager.white,
-        foregroundColor: DynamicThemeManager.isDarkMode(context)
-            ? ColorManager.white
-            : ColorManager.black,
+        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        foregroundColor: isDark ? ColorManager.white : ColorManager.black,
         elevation: 0,
         shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: BlocBuilder<AppCubit, AppState>(
+            buildWhen: (prev, curr) =>
+                curr is AppAuthenticated &&
+                (prev is! AppAuthenticated ||
+                    prev.bookings != curr.bookings ||
+                    prev.isBookingsLoading != curr.isBookingsLoading),
+            builder: (context, state) {
+              if (state is! AppAuthenticated) return const SizedBox.shrink();
+              final myBookings = state.bookings
+                  .where((b) => b.userId == state.user.uid)
+                  .toList();
+              final current = _filterCurrent(myBookings);
+              final pending = _filterPending(myBookings);
+              final previous = _filterPrevious(myBookings);
+              return Container(
+                color: isDark ? ColorManager.black : ColorManager.white,
+                child: TabBar(
+                  controller: _tabController,
+                  labelColor: isDark ? Colors.white : Colors.black87,
+                  unselectedLabelColor: isDark ? Colors.white54 : Colors.grey.shade600,
+                  indicatorColor: const Color(0xFF2563EB),
+                  indicatorWeight: 3,
+                  tabs: [
+                    Tab(text: 'الحالية (${current.length})'),
+                    Tab(text: 'قيد الانتظار (${pending.length})'),
+                    Tab(text: 'السابقة (${previous.length})'),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: DynamicThemeManager.isDarkMode(context)
-                      ? ColorManager.black.withOpacity(0.06)
-                      : ColorManager.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.refresh_rounded,
-                  color: DynamicThemeManager.isDarkMode(context)
-                      ? ColorManager.white
-                      : ColorManager.black,
-                  size: 20,
-                ),
-              ),
-              onPressed: () {
-                final state = appCubit.state;
-                if (state is AppAuthenticated) {
-                  // Trigger refresh via exposed cubit or method
-                  appCubit.bookingCubit.loadUserBookings(state.user.uid);
-                  SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
-                }
-              },
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: isDark ? ColorManager.white : ColorManager.black,
+              size: 22,
             ),
+            onPressed: () {
+              final state = appCubit.state;
+              if (state is AppAuthenticated) {
+                appCubit.bookingCubit.loadUserBookings(state.user.uid);
+                SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
+              }
+            },
           ),
         ],
       ),
-      // Use AppCubit for reactive state
       body: BlocBuilder<AppCubit, AppState>(
         buildWhen: (previous, current) {
           if (current is AppAuthenticated && previous is AppAuthenticated) {
@@ -98,110 +109,105 @@ class _UserBookingsPageState extends State<UserBookingsPage> {
         },
         builder: (context, state) {
           if (state is! AppAuthenticated) {
-            // Not authenticated yet or error
             return const Center(child: CircularProgressIndicator());
           }
-
           if (state.isBookingsLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: ColorManager.primaryColor,
-              ),
+              child: CircularProgressIndicator(color: ColorManager.primaryColor),
             );
           }
 
-          // Filter bookings (if needed, though AppCubit loads specific user bookings)
-          final currentUid = state.user.uid;
-          final userBookings =
-              state.bookings; // AppCubit maintains filtered list usually?
-
-          // However, BookingCubit might hold ALL bookings if not careful.
-          // AppCubit calls loadUserBookings() which updates state.bookings with that specific list.
-          // So state.bookings SHOULD be correct.
-          // But to be safe and match previous logic:
-          final myBookings = userBookings
-              .where((b) => b.userId == currentUid)
+          final myBookings = state.bookings
+              .where((b) => b.userId == state.user.uid)
               .toList();
+          final current = _filterCurrent(myBookings);
+          final pending = _filterPending(myBookings);
+          final previous = _filterPrevious(myBookings);
 
-          debugPrint(
-            '🎨 UserBookingsPage Build: Total Bookings: ${state.bookings.length} -> Mine: ${myBookings.length}',
-          );
-
-        
-
-          // فصل الحجوزات حسب الحالة
-          final pendingBookings =
-              myBookings
-                  .where((b) => b.status == BookingStatus.pending)
-                  .toList()
-                ..sort((a, b) {
-                  final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
-                  final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
-                  return dateB.compareTo(dateA);
-                });
-
-          final approvedBookings =
-              myBookings
-                  .where(
-                    (b) =>
-                        b.status == BookingStatus.approved ||
-                        b.status == BookingStatus.awaitingPayment ||
-                        b.status == BookingStatus.paymentUnderReview ||
-                        b.status == BookingStatus.confirmed ||
-                        b.status == BookingStatus.completed ||
-                        b.status == BookingStatus.reOffered ||
-                        b.status == BookingStatus.pendingOwnerApproval,
-                  )
-                  .toList()
-                ..sort((a, b) {
-                  int getPriority(BookingStatus status) {
-                    switch (status) {
-                      case BookingStatus.paymentUnderReview:
-                        return 0;
-                      case BookingStatus.awaitingPayment:
-                        return 1;
-                      case BookingStatus.approved:
-                        return 2;
-                      case BookingStatus.confirmed:
-                        return 3;
-                      case BookingStatus.completed:
-                        return 4;
-                      default:
-                        return 5;
-                    }
-                  }
-
-                  final priorityA = getPriority(a.status);
-                  final priorityB = getPriority(b.status);
-                  if (priorityA != priorityB) {
-                    return priorityA.compareTo(priorityB);
-                  }
-
-                  final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
-                  final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
-                  return dateB.compareTo(dateA);
-                });
-
-          final rejectedBookings =
-              myBookings
-                  .where(
-                    (b) =>
-                        b.status == BookingStatus.rejected ||
-                        b.status == BookingStatus.cancelled,
-                  )
-                  .toList()
-                ..sort((a, b) {
-                  final dateA = a.createdAt ?? a.updatedAt ?? DateTime.now();
-                  final dateB = b.createdAt ?? b.updatedAt ?? DateTime.now();
-                  return dateB.compareTo(dateA);
-                });
-
-          return BookingsList(
-            pendingBookings: pendingBookings,
-            approvedBookings: approvedBookings,
-            rejectedBookings: rejectedBookings,
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildList(context, current),
+              _buildList(context, pending),
+              _buildList(context, previous),
+            ],
           );
         },
+      ),
+    );
+  }
+
+  List<Booking> _filterCurrent(List<Booking> list) {
+    final filtered = list
+        .where(
+          (b) =>
+              b.status == BookingStatus.approved ||
+              b.status == BookingStatus.awaitingPayment ||
+              b.status == BookingStatus.paymentUnderReview ||
+              b.status == BookingStatus.confirmed ||
+              b.status == BookingStatus.completed,
+        )
+        .toList();
+    filtered.sort((a, b) {
+      final da = a.from;
+      final db = b.from;
+      return da.compareTo(db);
+    });
+    return filtered;
+  }
+
+  List<Booking> _filterPending(List<Booking> list) {
+    final filtered = list
+        .where(
+          (b) =>
+              b.status == BookingStatus.pending ||
+              b.status == BookingStatus.reOffered ||
+              b.status == BookingStatus.pendingOwnerApproval,
+        )
+        .toList();
+    filtered.sort((a, b) {
+      final da = a.createdAt ?? a.updatedAt ?? DateTime.now();
+      final db = b.createdAt ?? b.updatedAt ?? DateTime.now();
+      return db.compareTo(da);
+    });
+    return filtered;
+  }
+
+  List<Booking> _filterPrevious(List<Booking> list) {
+    final filtered = list
+        .where(
+          (b) =>
+              b.status == BookingStatus.rejected ||
+              b.status == BookingStatus.cancelled,
+        )
+        .toList();
+    filtered.sort((a, b) {
+      final da = a.updatedAt ?? a.createdAt ?? DateTime.now();
+      final db = b.updatedAt ?? b.createdAt ?? DateTime.now();
+      return db.compareTo(da);
+    });
+    return filtered;
+  }
+
+  Widget _buildList(BuildContext context, List<Booking> bookings) {
+    if (bookings.isEmpty) {
+      return Center(
+        child: Text(
+          'لا توجد حجوزات',
+          style: TextStyle(
+            fontSize: 16,
+            color: DynamicThemeManager.isDarkMode(context)
+                ? Colors.white54
+                : Colors.grey.shade600,
+          ),
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 100),
+      itemCount: bookings.length,
+      itemBuilder: (context, index) => BookingCardCompact(
+        booking: bookings[index],
       ),
     );
   }

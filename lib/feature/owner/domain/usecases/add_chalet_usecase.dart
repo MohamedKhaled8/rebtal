@@ -27,6 +27,7 @@ class AddChaletUseCase {
       discountType: params.discountType,
       discountValue: params.discountValue,
       features: params.features,
+      dayUseEnabled: params.dayUseEnabled,
     );
   }
 }
@@ -47,6 +48,7 @@ class AddChaletParams extends Equatable {
   final String? discountType;
   final String? discountValue;
   final List<String>? features;
+  final bool? dayUseEnabled;
 
   const AddChaletParams({
     required this.chalet,
@@ -64,6 +66,7 @@ class AddChaletParams extends Equatable {
     this.discountType,
     this.discountValue,
     this.features,
+    this.dayUseEnabled,
   });
 
   @override
@@ -83,5 +86,6 @@ class AddChaletParams extends Equatable {
     discountType,
     discountValue,
     features,
+    dayUseEnabled,
   ];
 }

@@ -237,6 +237,13 @@ class _ChaletFormContent extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
+            
+              DayUseSection(
+                dayUseEnabled: draft.dayUseEnabled,
+                onDayUseChanged: ownerCubit.updateDayUseEnabled,
+              ),
+              const SizedBox(height: 20),
+
               // Availability Section
               AvailabilitySection(
                 availableFrom: draft.availableFrom,

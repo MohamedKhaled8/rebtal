@@ -24,23 +24,26 @@ class FavoritesPage extends StatelessWidget {
       create: (context) => FavoritesCubit()..getFavorites(userId),
       child: Scaffold(
         backgroundColor: DynamicThemeManager.isDarkMode(context)
-            ? const Color(0xFF001409)
-            : ColorManager.white,
+            ? Colors.black
+            : ColorManager.chaletBackgroundLight,
         appBar: AppBar(
           title: const Text(
             'المفضلة',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              letterSpacing: -0.5,
+            ),
           ),
           centerTitle: true,
           backgroundColor: DynamicThemeManager.isDarkMode(context)
-              ? ColorManager.transparent
-              : ColorManager.white,
+              ? Colors.black
+              : ColorManager.chaletBackgroundLight,
           foregroundColor: DynamicThemeManager.isDarkMode(context)
               ? ColorManager.white
               : ColorManager.black,
           elevation: 0,
-          shadowColor: ColorManager.transparent,
-          surfaceTintColor: ColorManager.transparent,
+          scrolledUnderElevation: 0,
         ),
         body: BlocBuilder<FavoritesCubit, FavoritesState>(
           builder: (context, state) {

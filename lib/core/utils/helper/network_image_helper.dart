@@ -7,6 +7,8 @@ class NetworkImageHelper extends StatelessWidget {
   final double width;
   final BoxFit fit;
   final double height;
+  final Widget? placeholder;
+  final Widget? errorWidget;
 
   const NetworkImageHelper({
     super.key,
@@ -14,6 +16,8 @@ class NetworkImageHelper extends StatelessWidget {
     this.width = double.infinity,
     this.fit = BoxFit.cover,
     this.height = 200.0,
+    this.placeholder,
+    this.errorWidget,
   });
 
   @override
@@ -23,10 +27,12 @@ class NetworkImageHelper extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+      placeholder: (context, url) =>
+          placeholder ?? const Center(child: CircularProgressIndicator()),
       errorWidget: (context, url, error) {
         debugPrint('❌ Image failed to load: $url');
-        return const Center(child: Icon(Icons.error, color: ColorManager.red));
+        return errorWidget ??
+            const Center(child: Icon(Icons.error, color: ColorManager.red));
       },
     );
   }

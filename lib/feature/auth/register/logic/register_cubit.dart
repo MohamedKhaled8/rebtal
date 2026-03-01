@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/models/quickalert_type.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/validators/auth_validator.dart';
 import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/feature/auth/domain/usecases/register_usecase.dart';
 
 part 'register_state.dart';
@@ -34,6 +35,26 @@ class RegisterCubit extends Cubit<RegisterState> {
   void setRole(String role) {
     selectedRole = role;
     emit(RegisterRoleChanged(role));
+  }
+
+  File? profileImage;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 800,
+        maxHeight: 800,
+      );
+      if (pickedFile != null) {
+        profileImage = File(pickedFile.path);
+        emit(RegisterInitial()); // Rebuild UI to show image
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+    }
   }
 
   Future<void> register() async {
@@ -70,12 +91,24 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     emit(RegisterLoading());
 
+    String? profileImageUrl;
+    if (profileImage != null) {
+      try {
+        // Use HelperImage to upload
+        profileImageUrl = await HelperImage().uploadToCloudinary(profileImage!);
+      } catch (e) {
+        emit(RegisterFailure("فشل رفع الصورة الشخصية: $e"));
+        return;
+      }
+    }
+
     final result = await _registerUseCase.call(
       email: email,
       password: password,
       name: name,
       role: role,
       phone: phone,
+      profileImageUrl: profileImageUrl,
     );
 
     result.fold(
@@ -91,21 +124,10 @@ class RegisterCubit extends Cubit<RegisterState> {
         );
       },
       (user) async {
-        // Store user data temporarily until email is verified (handled by AuthCubit essentially via shared prefs or similar mechanism if needed across app restart)
-        // But here, we just need to pass user to success state so we can navigate to verification
-        // Logic for "justRegistered" was in AuthCubit. We should duplicate it here or move it to a shared helper?
-        // CacheHelper is fine.
         await getIt<CacheHelper>().saveData(
           key: 'justRegistered',
           value: 'true',
         );
-
-        // We might want to let AuthCubit know about the pending user if it needs to hold it?
-        // AuthCubit had `_pendingUserData`. This is important for "confirmEmailVerification" which saves to Firestore.
-        // If we move confirm logic to EmailVerificationCubit, we need to pass this user data there.
-        // Or we save it in AuthRepository? Or pass it via arguments?
-        // AuthCubit typically held it in memory.
-        // If we navigate to EmailVerificationScreen, we can pass the user object.
 
         emit(RegisterSuccess(user: user, phoneNumber: phone));
       },
@@ -132,16 +154,8 @@ class RegisterCubit extends Cubit<RegisterState> {
       );
     } else if (state is RegisterValidationError) {
       _isDialogShowing = true;
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.warning,
-        title: 'تحذير',
-        text: state.message,
-        confirmBtnText: 'حسناً',
-        confirmBtnColor: ColorManager.blue2563EB,
-      ).then((_) {
-        _isDialogShowing = false;
-      });
+      SnackBarHelper.showWarning(context, state.message);
+      _isDialogShowing = false;
     } else if (state is RegisterOfflineWarning) {
       _isDialogShowing = true;
       _showOfflineWarning(context, state.message).then((_) {
@@ -170,41 +184,17 @@ class RegisterCubit extends Cubit<RegisterState> {
     bool isRetryable = false,
     VoidCallback? onRetry,
   }) {
-    QuickAlert.show(
-      context: context,
-      type: QuickAlertType.error,
-      title: 'خطأ',
-      text: errorMessage,
-      confirmBtnText: isRetryable ? 'إعادة المحاولة' : 'حسناً',
-      onConfirmBtnTap: () {
-        Navigator.of(context).pop();
-        _isDialogShowing = false;
-        if (isRetryable && onRetry != null) {
-          Future.delayed(const Duration(milliseconds: 300), onRetry);
-        }
-      },
-      onCancelBtnTap: () {
-        _isDialogShowing = false;
-      },
-      showCancelBtn: isRetryable,
-      cancelBtnText: 'إلغاء',
-      confirmBtnColor: const Color(0xFF2563EB),
-    ).then((_) {
-      _isDialogShowing = false;
-    });
+    SnackBarHelper.showError(context, errorMessage);
+    _isDialogShowing = false;
+
+    if (isRetryable && onRetry != null) {
+      // For retryable errors, we just allow the user to click the button again
+    }
   }
 
-  Future<void> _showOfflineWarning(BuildContext context, String message) {
-    return QuickAlert.show(
-      context: context,
-      type: QuickAlertType.warning,
-      title: 'مشكلة الاتصال',
-      text: message,
-      confirmBtnText: 'حسناً',
-      confirmBtnColor: const Color(0xFF2563EB),
-    ).then((_) {
-      _isDialogShowing = false;
-    });
+  Future<void> _showOfflineWarning(BuildContext context, String message) async {
+    SnackBarHelper.showWarning(context, message);
+    _isDialogShowing = false;
   }
 
   @override

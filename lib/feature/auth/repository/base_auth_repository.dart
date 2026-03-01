@@ -9,6 +9,7 @@ abstract class BaseAuthRepository {
     required String name,
     required String phone,
     required String role,
+    String? profileImageUrl,
   });
 
   Future<Either<Failure, UserModel>> login({
@@ -21,4 +22,17 @@ abstract class BaseAuthRepository {
   Future<Either<Failure, void>> sendPasswordResetEmail(String email);
 
   Future<Either<Failure, void>> sendEmailVerification();
+
+  Future<Either<Failure, UserModel>> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+    required String role,
+    String? profileImageUrl,
+  });
+
+  Future<Either<Failure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

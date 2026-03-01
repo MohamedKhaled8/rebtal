@@ -104,7 +104,7 @@ class AuthCubit extends Cubit<AuthState> {
                 .collection(col)
                 .doc(currentUser.uid)
                 .get()
-                .timeout(const Duration(seconds: 10));
+                .timeout(const Duration(seconds: 5));
             return d.exists ? d : null;
           } catch (e) {
             return null;
@@ -122,7 +122,12 @@ class AuthCubit extends Cubit<AuthState> {
 
           // ✅ Check if email is verified (skip for admin)
           if (!isAdmin) {
-            await currentUser.reload(); // Ensure fresh status
+            try {
+              await currentUser.reload().timeout(const Duration(seconds: 5));
+            } catch (e) {
+              debugPrint('⚠️ Network timeout during user reload: $e');
+              // Proceed with existing data if reload fails
+            }
 
             // Only redirect to verification if user just registered
             // Don't force verification on every app restart
@@ -163,7 +168,7 @@ class AuthCubit extends Cubit<AuthState> {
 
           emit(AuthSuccess(user));
         } else {
-          emit(AuthInitial());
+          emit(AuthUnauthenticated());
         }
       } catch (e) {
         final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
@@ -189,7 +194,7 @@ class AuthCubit extends Cubit<AuthState> {
         FirebaseErrorHandler.logError(e, context: 'CheckCurrentUser');
       }
     } else {
-      emit(AuthInitial());
+      emit(AuthUnauthenticated());
     }
   }
 
@@ -265,11 +270,48 @@ class AuthCubit extends Cubit<AuthState> {
         key: 'currentViewRole',
       ); // ✅ Clear saved view mode
       currentViewRole = null; // ✅ Reset in-memory view mode
-      emit(AuthInitial());
+      emit(AuthUnauthenticated());
     } catch (e) {
       // Fallback for any unexpected errors
       debugPrint("Logout error: $e");
       emit(AuthInitial());
     }
+  }
+
+  Future<void> updateProfile({
+    required String name,
+    required String phone,
+    String? profileImageUrl,
+  }) async {
+    if (state is AuthSuccess) {
+      final user = (state as AuthSuccess).user;
+      final result = await authRepository.updateProfile(
+        uid: user.uid,
+        name: name,
+        phone: phone,
+        role: user.role,
+        profileImageUrl: profileImageUrl,
+      );
+
+      result.fold(
+        (failure) => emit(AuthFailure(failure.message)),
+        (updatedUser) => emit(AuthSuccess(updatedUser)),
+      );
+    }
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final result = await authRepository.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (_) => null, // Success handled by UI showing snackbar
+    );
   }
 }

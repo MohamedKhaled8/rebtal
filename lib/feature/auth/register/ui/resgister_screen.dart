@@ -2,6 +2,8 @@ import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:rebtal/feature/auth/register/widget/glassmor_phic_card.dart';
 import 'package:rebtal/feature/auth/register/widget/login_link_widget.dart';
 import 'package:rebtal/feature/auth/widget/handwritten_animated_text.dart';
@@ -45,7 +47,81 @@ class RegisterScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      const SizedBox(height: 32),
+                      BlocBuilder<RegisterCubit, RegisterState>(
+                        builder: (context, state) {
+                          final cubit = context.read<RegisterCubit>();
+                          return Center(
+                            child: GestureDetector(
+                              onTap: () => _showImageSourceDialog(context),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isDark
+                                          ? const Color(0xFF333333)
+                                          : const Color(0xFFF5F5F5),
+                                      image: cubit.profileImage != null
+                                          ? DecorationImage(
+                                              image: FileImage(
+                                                cubit.profileImage!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white10
+                                            : Colors.black12,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: cubit.profileImage == null
+                                        ? Icon(
+                                            Icons.person_outline_rounded,
+                                            size: 40,
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF222222),
+                                          )
+                                        : null,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: isDark
+                                              ? ColorManager
+                                                    .darkBackground121212
+                                              : ColorManager.grey50,
+                                          width: 3,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        size: 14,
+                                        color: isDark
+                                            ? Colors.black
+                                            : Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      //const SizedBox(height: 32), // Remove duplicated sizedbox
                       BlocBuilder<RegisterCubit, RegisterState>(
                         builder: (context, registerState) {
                           final cubit = context.read<RegisterCubit>();
@@ -93,6 +169,44 @@ class RegisterScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext context) {
+    // Only if image_picker and dart:io are imported
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: DynamicThemeManager.isDarkMode(context)
+          ? ColorManager.darkBackground121212
+          : ColorManager.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('الكاميرا'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<RegisterCubit>().pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('معرض الصور'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<RegisterCubit>().pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

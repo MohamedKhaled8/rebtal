@@ -1,21 +1,22 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 
 class LocationMapCard extends StatelessWidget {
   final String location;
   final double? latitude;
   final double? longitude;
+  final String? fallbackImage;
 
   const LocationMapCard({
     super.key,
     required this.location,
     this.latitude,
     this.longitude,
+    this.fallbackImage,
   });
 
   Future<void> _openMapInApp(BuildContext context) async {
@@ -92,14 +93,11 @@ class LocationMapCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
+              const Text(
                 'الموقع',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? ColorManager.chaletTextPrimaryDark
-                      : ColorManager.chaletTextPrimaryLight,
                   fontFamily: 'Outfit',
                 ),
               ),
@@ -111,7 +109,7 @@ class LocationMapCard extends StatelessWidget {
           GestureDetector(
             onTap: () => _openMapInApp(context),
             child: Container(
-              height: 250, // Slightly taller for more impact
+              height: 220,
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
@@ -122,11 +120,6 @@ class LocationMapCard extends StatelessWidget {
                     offset: const Offset(0, 10),
                   ),
                 ],
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.05),
-                ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
@@ -134,6 +127,9 @@ class LocationMapCard extends StatelessWidget {
                   children: [
                     // The Map Image
                     _buildRealMapImage(isDark),
+
+                    // Center Pulse Marker (Visual indicator of target)
+                    const Center(child: _MapPulseMarker()),
 
                     // Top Glassmorphism Overlay (Address info)
                     Positioned(
@@ -203,13 +199,6 @@ class LocationMapCard extends StatelessWidget {
                             colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
                           ),
                           borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF2563EB).withOpacity(0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -224,7 +213,7 @@ class LocationMapCard extends StatelessWidget {
                               'عرض المسار',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -232,9 +221,6 @@ class LocationMapCard extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    // Center Pulse Marker (Visual indicator of target)
-                    const Center(child: _MapPulseMarker()),
                   ],
                 ),
               ),
@@ -248,9 +234,7 @@ class LocationMapCard extends StatelessWidget {
   String _getStaticMapImageUrl() {
     if (latitude != null && longitude != null) {
       const apiKey = 'AIzaSyBMO8r4waPphzE5AxGbe95OW8WRNNlbUo0';
-      final lat = latitude!;
-      final lon = longitude!;
-      return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lon&zoom=15&size=800x480&scale=2&maptype=roadmap&key=$apiKey';
+      return 'https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=15&size=800x480&scale=2&maptype=roadmap&markers=color:red%7C$latitude,$longitude&key=$apiKey';
     }
     return '';
   }
@@ -259,13 +243,13 @@ class LocationMapCard extends StatelessWidget {
     if (latitude != null && longitude != null) {
       final imageUrl = _getStaticMapImageUrl();
 
-      return CachedNetworkImage(
-        imageUrl: imageUrl,
+      return AppImageHelper(
+        path: imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (context, url) => _buildMapImagePlaceholder(isDark),
-        errorWidget: (context, url, error) => _buildMapImagePlaceholder(isDark),
+        placeholder: _buildMapImagePlaceholder(isDark),
+        errorWidget: _buildMapImagePlaceholder(isDark),
       );
     }
 
@@ -276,49 +260,60 @@ class LocationMapCard extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Premium Map Texture Background
+        // 1. Stylized Fake Map Image
         Image.network(
           isDark
-              ? 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200&auto=format&fit=crop' // Deep blueprint/dark map
-              : 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop', // Working clean map/aerial view
+              ? 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200'
+              : 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200',
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) => Container(
-            color: isDark ? Colors.black : Colors.grey[100],
-            child: Icon(
-              Icons.map_rounded,
-              color: isDark ? Colors.white12 : Colors.black12,
-              size: 40,
-            ),
+            color: isDark ? const Color(0xFF1A1A1A) : Colors.grey[100],
           ),
         ),
-        // Overlay for better contrast
-        Container(
-          color: (isDark ? Colors.black : Colors.white).withOpacity(0.4),
+
+        // 2. Subtle Dark overlay for readability
+        Container(color: Colors.black.withOpacity(isDark ? 0.4 : 0.1)),
+
+        // 3. Stylized Map Patterns
+        Opacity(
+          opacity: 0.1,
+          child: CustomPaint(painter: _MapPatternPainter(isDark: isDark)),
         ),
-        // Subtle Blur for glass effect
-        ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-        // Centered Icon to indicate it's a map
+
+        // 4. Center Content
         Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.map_rounded,
-                color: isDark ? Colors.white38 : Colors.black38,
-                size: 48,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.black.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.map_rounded,
+                  color: isDark ? Colors.white38 : Colors.black38,
+                  size: 40,
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'جاري تحميل الخريطة...',
+              const SizedBox(height: 16),
+              const Text(
+                'اضغط لفتح الموقع على الخريطة',
                 style: TextStyle(
-                  color: isDark ? Colors.white24 : Colors.black26,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'عرض تفاصيل الموقع بدقة عالية',
+                style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
             ],
@@ -327,6 +322,36 @@ class LocationMapCard extends StatelessWidget {
       ],
     );
   }
+}
+
+class _MapPatternPainter extends CustomPainter {
+  final bool isDark;
+  _MapPatternPainter({required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isDark ? Colors.white : Colors.black
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    // Draw some random grid lines to simulate a map
+    for (int i = 1; i < 5; i++) {
+      canvas.drawLine(
+        Offset(size.width * i / 5, 0),
+        Offset(size.width * i / 5, size.height),
+        paint,
+      );
+      canvas.drawLine(
+        Offset(0, size.height * i / 5),
+        Offset(size.width, size.height * i / 5),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _MapPulseMarker extends StatefulWidget {

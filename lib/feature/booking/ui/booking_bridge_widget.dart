@@ -40,6 +40,22 @@ class BookingBridgeWidget extends StatefulWidget {
 
 class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     with WidgetsBindingObserver {
+  /// تحويل تاريخ من requestData (قد يكون Timestamp أو String أو DateTime).
+  /// يُرجع التاريخ فقط (بدون وقت) لاستخدامه في منتقي الأيام.
+  static DateTime? _parseDate(dynamic val) {
+    if (val == null) return null;
+    DateTime? d;
+    if (val is Timestamp) {
+      d = val.toDate();
+    } else if (val is DateTime) {
+      d = val;
+    } else if (val is String) {
+      d = DateTime.tryParse(val);
+    }
+    if (d == null) return null;
+    return DateTime(d.year, d.month, d.day);
+  }
+
   // Normalize owner id formats (some code stores 'user:<uid>').
   String _normOwnerId(String id) {
     // Accept values like 'user:<uid>' or 'owner:<uid>' or raw uid and
@@ -238,32 +254,43 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                ColorManager.chaletAccent,
-                                Color(0xFF00A896),
-                              ],
-                            ),
+                            color: const Color(0xFF00D27F).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.calendar_month_rounded,
-                            color: Colors.white,
-                            size: 20,
+                            Icons.event_available_rounded,
+                            color: Color(0xFF00D27F),
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'اختر فترة الحجز',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF1A1A1A),
-                            letterSpacing: 0.3,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'اختر فترة الحجز',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'حدد تاريخ البداية والنهاية',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark
+                                      ? Colors.white60
+                                      : Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -280,41 +307,38 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             selectedDate: _from,
                             onTap: () async {
                               final now = DateTime.now();
-                              final availableFrom =
-                                  widget.requestData['availableFrom'];
-                              final availableTo =
-                                  widget.requestData['availableTo'];
+                              final today = DateTime(now.year, now.month, now.day);
+                              // قد تكون التواريخ في availableFrom/availableTo أو from/to (عروض/حجوزات)
+                              final rawFrom = widget.requestData['availableFrom'] ??
+                                  widget.requestData['from'];
+                              final rawTo = widget.requestData['availableTo'] ??
+                                  widget.requestData['to'];
 
-                              DateTime firstDate = now;
-                              DateTime lastDate = DateTime(now.year + 1);
+                              final from = _parseDate(rawFrom);
+                              final to = _parseDate(rawTo);
 
-                              if (availableFrom != null) {
-                                try {
-                                  firstDate = DateTime.parse(
-                                    availableFrom.toString(),
-                                  );
-                                } catch (e) {
-                                  firstDate = now;
+                              DateTime firstDate;
+                              DateTime lastDate;
+                              if (from != null && to != null && !to.isBefore(from)) {
+                                firstDate = from.isBefore(today) ? today : from;
+                                lastDate = to;
+                                if (lastDate.isBefore(firstDate)) {
+                                  lastDate = firstDate;
                                 }
-                              }
-
-                              if (availableTo != null) {
-                                try {
-                                  lastDate = DateTime.parse(
-                                    availableTo.toString(),
+                              } else {
+                                firstDate = today;
+                                lastDate = today.add(const Duration(days: 60));
+                                if (mounted) {
+                                  SnackBarHelper.showWarning(
+                                    context,
+                                    'فترة الحجز غير محددة. يمكنك اختيار من اليوم ولمدة 60 يوماً.',
                                   );
-                                } catch (e) {
-                                  lastDate = DateTime(now.year + 1);
                                 }
-                              }
-
-                              if (lastDate.isBefore(firstDate)) {
-                                lastDate = firstDate;
                               }
 
                               final picked = await showDatePicker(
-                                context: context,
-                                initialDate: firstDate,
+                                context: widget.parentContext,
+                                initialDate: _from ?? firstDate,
                                 firstDate: firstDate,
                                 lastDate: lastDate,
                                 builder: (context, child) {
@@ -342,7 +366,36 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+
+                        // Timeline Connector
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFF4CAF50),
+                                      const Color(0xFFFF5252),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 20,
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey.shade400,
+                              ),
+                            ],
+                          ),
+                        ),
+
                         Expanded(
                           child: _buildModernDateSelector(
                             context,
@@ -359,26 +412,19 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 return;
                               }
 
-                              final availableTo =
-                                  widget.requestData['availableTo'];
-                              DateTime lastDate = DateTime(
-                                DateTime.now().year + 1,
-                              );
-
-                              if (availableTo != null) {
-                                try {
-                                  lastDate = DateTime.parse(
-                                    availableTo.toString(),
-                                  );
-                                } catch (e) {
-                                  lastDate = DateTime(DateTime.now().year + 1);
-                                }
-                              }
+                              final fromDate = _from!;
+                              final rawTo = widget.requestData['availableTo'] ??
+                                  widget.requestData['to'];
+                              final parsedTo = _parseDate(rawTo);
+                              final lastDate = (parsedTo != null &&
+                                      !parsedTo.isBefore(fromDate))
+                                  ? parsedTo
+                                  : fromDate.add(const Duration(days: 60));
 
                               final picked = await showDatePicker(
-                                context: context,
-                                initialDate: _from!,
-                                firstDate: _from!,
+                                context: widget.parentContext,
+                                initialDate: _to ?? fromDate,
+                                firstDate: fromDate,
                                 lastDate: lastDate,
                                 builder: (context, child) {
                                   return Theme(
@@ -874,65 +920,84 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   }) {
     final isSelected = selectedDate != null;
 
+    // Color coding: green for start, red for end
+    final accentColor = label == 'من تاريخ'
+        ? const Color(0xFF4CAF50)
+        : const Color(0xFFFF5252);
+
+    final cardBg = isDark ? const Color(0xFF252525) : const Color(0xFFF8F9FA);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.08)
+        : Colors.grey.shade200;
+    final textPrimary = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final textSecondary = isDark ? Colors.white60 : Colors.grey.shade600;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark
-              ? (isSelected ? const Color(0xFF2A2A2A) : const Color(0xFF1F1F1F))
-              : (isSelected ? Colors.white : const Color(0xFFF5F5F5)),
-          borderRadius: BorderRadius.circular(14),
+          color: cardBg,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? ColorManager.chaletAccent
-                : (isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.grey.shade300),
+            color: isSelected ? accentColor.withOpacity(0.5) : borderColor,
             width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: accentColor.withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  color: isSelected
-                      ? ColorManager.chaletAccent
-                      : (isDark
-                            ? Colors.white.withOpacity(0.5)
-                            : Colors.grey[600]),
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? Colors.white.withOpacity(0.6)
-                        : Colors.grey[600],
-                  ),
-                ),
-              ],
+            // Icon Container
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? accentColor.withOpacity(0.15)
+                    : (isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.grey.shade100),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? accentColor : textSecondary,
+                size: 20,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+
+            // Label
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: textSecondary,
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 6),
+
+            // Date
             Text(
               selectedDate != null
                   ? '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'
                   : 'اختر التاريخ',
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: isSelected
-                    ? (isDark ? Colors.white : const Color(0xFF1A1A1A))
-                    : (isDark
-                          ? Colors.white.withOpacity(0.4)
-                          : Colors.grey[400]),
+                fontWeight: FontWeight.bold,
+                color: isSelected ? textPrimary : textSecondary,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

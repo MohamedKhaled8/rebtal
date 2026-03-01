@@ -30,6 +30,7 @@ class ChaletEntity extends Equatable {
   final String? discountType;
   final String? discountValue;
   final List<String>? features;
+  final bool dayUseEnabled;
 
   const ChaletEntity({
     required this.id,
@@ -56,6 +57,7 @@ class ChaletEntity extends Equatable {
     this.discountType,
     this.discountValue,
     this.features,
+    this.dayUseEnabled = false,
   });
 
   @override
@@ -84,5 +86,6 @@ class ChaletEntity extends Equatable {
     discountType,
     discountValue,
     features,
+    dayUseEnabled,
   ];
 }

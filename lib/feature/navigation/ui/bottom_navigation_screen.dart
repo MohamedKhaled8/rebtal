@@ -16,7 +16,7 @@ import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
 
 import 'package:rebtal/feature/chalet/ui/offers_page.dart';
 import 'package:rebtal/feature/favorites/ui/favorites_page.dart';
-import 'package:rebtal/feature/notifications/ui/notifications_page.dart';
+import 'package:rebtal/feature/chalet/ui/day_use_page.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 
 class BottomNavigationScreen extends StatefulWidget {
@@ -27,16 +27,73 @@ class BottomNavigationScreen extends StatefulWidget {
 }
 
 class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
+  String? _cachedRole;
+  List<Widget>? _screens;
+  List<NavItem>? _navItems;
+
   @override
   void initState() {
     super.initState();
-    // Reset to Home tab whenever this screen is initialized (app start or login)
     bottomNavIndex.value = 0;
+  }
+
+  void _buildScreensForRole(String role) {
+    if (role == _cachedRole && _screens != null) return;
+    _cachedRole = role;
+    if (role == 'admin') {
+      _screens = const [
+        HomeScreen(),
+        FavoritesPage(),
+        DayUsePage(),
+        UserBookingsPage(),
+        AdminDashboard(),
+        ProfilePage(),
+      ];
+      _navItems = const [
+        NavItem(icon: Icons.home, label: 'الرئيسية'),
+        NavItem(icon: Icons.favorite, label: 'المفضلة'),
+        NavItem(icon: Icons.wb_sunny_rounded, label: 'داي يوز'),
+        NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
+        NavItem(icon: Icons.admin_panel_settings, label: 'الإدارة'),
+        NavItem(icon: Icons.person, label: 'الملف'),
+      ];
+    } else if (role == 'owner') {
+      _screens = const [
+        OwnerChaletsPage(),
+        OwnerBookingsPage(),
+        BookingTransfersPage(),
+        OwnerCancellationsPage(),
+        ProfilePage(),
+      ];
+      _navItems = const [
+        NavItem(icon: Icons.villa, label: 'الشاليهات'),
+        NavItem(icon: Icons.book_online, label: 'الحجوزات'),
+        NavItem(icon: Icons.swap_horiz_rounded, label: 'انتقالات'),
+        NavItem(icon: Icons.cancel_presentation, label: 'الإلغاءات'),
+        NavItem(icon: Icons.person, label: 'الملف'),
+      ];
+    } else {
+      _screens = const [
+        HomeScreen(),
+        OffersPage(),
+        FavoritesPage(),
+        DayUsePage(),
+        UserBookingsPage(),
+        ProfilePage(),
+      ];
+      _navItems = const [
+        NavItem(icon: Icons.home, label: 'الرئيسية'),
+        NavItem(icon: Icons.local_offer, label: 'عروض'),
+        NavItem(icon: Icons.favorite, label: 'المفضلة'),
+        NavItem(icon: Icons.wb_sunny_rounded, label: 'داي يوز'),
+        NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
+        NavItem(icon: Icons.person, label: 'الملف'),
+      ];
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Access AuthCubit through AppCubit
     final appCubit = context.read<AppCubit>();
     final authCubit = appCubit.authCubit;
 
@@ -54,59 +111,9 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         }
 
         final role = authCubit.getCurrentRole();
-        final List<Widget> screens;
-        final List<NavItem> bottomNavItems;
-
-        if (role == 'admin') {
-          screens = const [
-            HomeScreen(),
-            FavoritesPage(),
-            NotificationsPage(),
-            UserBookingsPage(),
-            AdminDashboard(),
-            ProfilePage(),
-          ];
-          bottomNavItems = const [
-            NavItem(icon: Icons.home, label: 'الرئيسية'),
-            NavItem(icon: Icons.favorite, label: 'المفضلة'),
-            NavItem(icon: Icons.notifications, label: 'الإشعارات'),
-            NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
-            NavItem(icon: Icons.admin_panel_settings, label: 'الإدارة'),
-            NavItem(icon: Icons.person, label: 'الملف'),
-          ];
-        } else if (role == 'owner') {
-          screens = const [
-            OwnerChaletsPage(),
-            OwnerBookingsPage(),
-            BookingTransfersPage(),
-            OwnerCancellationsPage(),
-            ProfilePage(),
-          ];
-          bottomNavItems = const [
-            NavItem(icon: Icons.villa, label: 'الشاليهات'),
-            NavItem(icon: Icons.book_online, label: 'الحجوزات'),
-            NavItem(icon: Icons.swap_horiz_rounded, label: 'انتقالات'),
-            NavItem(icon: Icons.cancel_presentation, label: 'الإلغاءات'),
-            NavItem(icon: Icons.person, label: 'الملف'),
-          ];
-        } else {
-          screens = const [
-            HomeScreen(),
-            OffersPage(),
-            FavoritesPage(),
-            NotificationsPage(),
-            UserBookingsPage(),
-            ProfilePage(),
-          ];
-          bottomNavItems = const [
-            NavItem(icon: Icons.home, label: 'الرئيسية'),
-            NavItem(icon: Icons.local_offer, label: 'عروض'),
-            NavItem(icon: Icons.favorite, label: 'المفضلة'),
-            NavItem(icon: Icons.notifications, label: 'الإشعارات'),
-            NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
-            NavItem(icon: Icons.person, label: 'الملف'),
-          ];
-        }
+        _buildScreensForRole(role);
+        final screens = _screens!;
+        final bottomNavItems = _navItems!;
 
         return ValueListenableBuilder<int>(
           valueListenable: bottomNavIndex,
@@ -137,8 +144,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
               child: Scaffold(
                 resizeToAvoidBottomInset: false,
                 backgroundColor: Colors.transparent,
-                body: screens[safeIndex],
-
+                body: IndexedStack(index: safeIndex, children: screens),
                 bottomNavigationBar: _SimpleNavBar(
                   items: bottomNavItems,
                   currentIndex: safeIndex,

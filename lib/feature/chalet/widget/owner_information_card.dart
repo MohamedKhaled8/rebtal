@@ -192,16 +192,25 @@ class OwnerInformationCard extends StatelessWidget {
   Future<DocumentSnapshot?> _getOwnerData(String ownerId) async {
     if (ownerId.isEmpty) return null;
     try {
-      var doc = await FirebaseFirestore.instance
-          .collection('Owners')
-          .doc(ownerId)
-          .get();
-      if (doc.exists) return doc;
-      doc = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(ownerId)
-          .get();
-      return doc.exists ? doc : null;
+      final collections = [
+        'Owners',
+        'Users',
+        'Admin',
+        'Admins',
+        'owners',
+        'users',
+        'admins',
+      ];
+      for (final col in collections) {
+        try {
+          final doc = await FirebaseFirestore.instance
+              .collection(col)
+              .doc(ownerId)
+              .get();
+          if (doc.exists) return doc;
+        } catch (_) {}
+      }
+      return null;
     } catch (e) {
       debugPrint('Error: $e');
       return null;

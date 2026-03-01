@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
+import 'package:rebtal/feature/booking/ui/cancellation_details_page.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -430,7 +431,14 @@ class BookingCard extends StatelessWidget {
                               ),
                               elevation: 4,
                             ),
-                            onPressed: () => _confirmCancel(context, booking),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CancellationDetailsPage(booking: booking),
+                                ),
+                              );
+                            },
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

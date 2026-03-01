@@ -90,7 +90,7 @@ class AppCubit extends Cubit<AppState> {
 
       // Load user-specific data
       _loadUserData(user);
-    } else if (authState is AuthInitial) {
+    } else if (authState is AuthUnauthenticated || authState is AuthInitial) {
       emit(
         AppUnauthenticated(
           themeMode: _themeCubit.state.themeMode,
@@ -203,6 +203,22 @@ class AppCubit extends Cubit<AppState> {
   void toggleViewMode() => _authCubit.toggleViewMode();
   Future<void> logout() => _authCubit.logout();
   Future<void> reloadUserData() => _authCubit.reloadUserData();
+  Future<void> updateProfile({
+    required String name,
+    required String phone,
+    String? profileImageUrl,
+  }) => _authCubit.updateProfile(
+    name: name,
+    phone: phone,
+    profileImageUrl: profileImageUrl,
+  );
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) => _authCubit.changePassword(
+    currentPassword: currentPassword,
+    newPassword: newPassword,
+  );
 
   // --- Theme ---
   void toggleTheme() => _themeCubit.toggleTheme();

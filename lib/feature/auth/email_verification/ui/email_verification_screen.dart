@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quickalert/quickalert.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/email_verification/logic/email_verification_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -19,19 +19,9 @@ class EmailVerificationScreen extends StatelessWidget {
         if (state is EmailVerificationVerified) {
           context.read<EmailVerificationCubit>().handleVerified(context);
         } else if (state is EmailVerificationEmailSent) {
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.success,
-            title: 'تم الإرسال',
-            text: 'تم إرسال بريد التحقق مرة أخرى.',
-          );
+          SnackBarHelper.showSuccess(context, 'تم إرسال بريد التحقق مرة أخرى.');
         } else if (state is EmailVerificationError) {
-          QuickAlert.show(
-            context: context,
-            type: QuickAlertType.error,
-            title: 'خطأ',
-            text: state.message,
-          );
+          SnackBarHelper.showError(context, state.message);
         }
       },
       child: BlocBuilder<EmailVerificationCubit, EmailVerificationState>(
@@ -68,7 +58,9 @@ class EmailVerificationScreen extends StatelessWidget {
                             ),
                             child: Icon(
                               Icons.logout_rounded,
-                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletTextPrimaryLight,
                               size: 20,
                             ),
                           ),
@@ -86,7 +78,9 @@ class EmailVerificationScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              color: isDark
+                                  ? ColorManager.white
+                                  : ColorManager.chaletTextPrimaryLight,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -96,7 +90,9 @@ class EmailVerificationScreen extends StatelessWidget {
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontSize: 15,
-                              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                              color: isDark
+                                  ? ColorManager.white70
+                                  : ColorManager.grey600,
                             ),
                           ),
                           const SizedBox(height: 4),

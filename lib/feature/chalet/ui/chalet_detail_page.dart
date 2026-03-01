@@ -14,7 +14,9 @@ import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 import 'package:rebtal/feature/chalet/widget/section_title.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
+import 'package:animate_do/animate_do.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/feature/chalet/widget/booking_dates_display.dart';
 
 class ChaletDetailPage extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -151,189 +153,339 @@ class ChaletDetailPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // A. Title Section
-                                Text(
-                                  hotelName,
-                                  style: TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w600,
-                                    color: textColor,
-                                    letterSpacing: -0.2, // Tight spacing
-                                  ),
-                                  maxLines: 2,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  location,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: textColor,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "${area != null ? 'Area $area m² · ' : ''}${guests > 0 ? '$guests · ' : ''}$bedrooms bedroom · $beds beds",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: isDark
-                                        ? Colors.white70
-                                        : const Color(0xFF717171),
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          hotelName,
+                                          style: TextStyle(
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                            letterSpacing:
+                                                -0.2, // Tight spacing
+                                          ),
+                                          maxLines: 2,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          location,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: textColor,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${area != null ? 'Area $area m² · ' : ''}${guests > 0 ? '$guests · ' : ''}$bedrooms bedroom · $beds beds",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : const Color(0xFF717171),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
 
                                 // B. Stats Row
-                                _buildStatsRow(
-                                  isDark,
-                                  textColor,
-                                  formattedRating,
-                                  reviewsVal.toString(),
-                                ),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // C. Host Section
-                                OwnerInformationCard(requestData: requestData),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // D. Highlights (Property Features)
-                                PropertyFeaturesCard(
-                                  requestData: requestData,
-                                  isDark: isDark,
-                                ),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // F. Description
-                                _buildSectionTitle(
-                                  "About this place",
-                                  textColor,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  description,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    fontWeight: FontWeight.w400,
-                                    color: isDark
-                                        ? Colors.white70
-                                        : const Color(0xFF717171),
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: _buildStatsRow(
+                                      isDark,
+                                      textColor,
+                                      formattedRating,
+                                      reviewsVal.toString(),
+                                    ),
                                   ),
-                                  maxLines: 6,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildShowMoreButton(isDark, textColor),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
                                 ),
                                 const SizedBox(height: 24),
-
-                                // G. Gallery Strip
-                                _buildSectionTitle("Gallery", textColor),
-                                const SizedBox(height: 16),
-                                _buildGalleryStrip(context, images, isDark),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // H. Amenities (Map)
-                                LocationMapCard(
-                                  location: location,
-                                  latitude: requestData['latitude'] != null
-                                      ? (requestData['latitude'] as num)
-                                            .toDouble()
-                                      : (requestData['lat'] != null
-                                            ? (requestData['lat'] as num)
-                                                  .toDouble()
-                                            : null),
-                                  longitude: requestData['longitude'] != null
-                                      ? (requestData['longitude'] as num)
-                                            .toDouble()
-                                      : (requestData['lon'] != null
-                                            ? (requestData['lon'] as num)
-                                                  .toDouble()
-                                            : null),
-                                ),
-                                const SizedBox(height: 24),
-                                Divider(
-                                  height: 1,
-                                  color: isDark
-                                      ? Colors.white24
-                                      : const Color(0xFFDDDDDD),
-                                ),
-                                const SizedBox(height: 24),
-
-                                // Reviews
-                                ReviewsSection(
-                                  chaletId: docId,
-                                  isDark: isDark,
-                                  requestData: requestData,
-                                ),
-
-                                // Admin Sections
-                                if (role == 'admin' || role == 'owner') ...[
-                                  const SizedBox(height: 24),
-                                  Divider(
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 400),
+                                  child: Divider(
                                     height: 1,
                                     color: isDark
                                         ? Colors.white24
                                         : const Color(0xFFDDDDDD),
                                   ),
-                                  const SizedBox(height: 24),
+                                ),
+                                const SizedBox(height: 24),
 
-                                  _buildSectionTitle('Availability', textColor),
-                                  const SizedBox(height: 16),
-                                  AvailabilityCard(requestData: requestData),
-
-                                  if (role == 'admin') ...[
-                                    const SizedBox(height: 24),
-                                    _buildSectionTitle(
-                                      'Request Details',
-                                      textColor,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    RequestDetailsCard(
-                                      docId: docId,
+                                // C. Host Section
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 400),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: OwnerInformationCard(
                                       requestData: requestData,
                                     ),
-                                  ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 600),
+                                  child: Divider(
+                                    height: 1,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : const Color(0xFFDDDDDD),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
 
+                                // D. Highlights (Property Features)
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 600),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: PropertyFeaturesCard(
+                                      requestData: requestData,
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 800),
+                                  child: Divider(
+                                    height: 1,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : const Color(0xFFDDDDDD),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // F. Description
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 800),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildSectionTitle(
+                                          "About this place",
+                                          textColor,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          description,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            height: 1.5,
+                                            fontWeight: FontWeight.w400,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : const Color(0xFF717171),
+                                          ),
+                                          maxLines: 6,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildShowMoreButton(isDark, textColor),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 1000),
+                                  child: Divider(
+                                    height: 1,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : const Color(0xFFDDDDDD),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // G. Gallery Strip
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 1000),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        _buildSectionTitle(
+                                          "Gallery",
+                                          textColor,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _buildGalleryStrip(
+                                          context,
+                                          images,
+                                          isDark,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 1200),
+                                  child: Divider(
+                                    height: 1,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : const Color(0xFFDDDDDD),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // H. Amenities (Map)
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 1200),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: LocationMapCard(
+                                      location: location,
+                                      latitude: requestData['latitude'] != null
+                                          ? (requestData['latitude'] as num)
+                                                .toDouble()
+                                          : (requestData['lat'] != null
+                                                ? (requestData['lat'] as num)
+                                                      .toDouble()
+                                                : null),
+                                      longitude:
+                                          requestData['longitude'] != null
+                                          ? (requestData['longitude'] as num)
+                                                .toDouble()
+                                          : (requestData['lon'] != null
+                                                ? (requestData['lon'] as num)
+                                                      .toDouble()
+                                                : null),
+                                      fallbackImage: images.isNotEmpty
+                                          ? images.first
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                FadeIn(
+                                  delay: const Duration(milliseconds: 1400),
+                                  child: Divider(
+                                    height: 1,
+                                    color: isDark
+                                        ? Colors.white24
+                                        : const Color(0xFFDDDDDD),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Reviews
+                                FadeInUp(
+                                  duration: const Duration(milliseconds: 1000),
+                                  delay: const Duration(milliseconds: 1400),
+                                  curve: Curves.easeOutQuart,
+                                  child: RepaintBoundary(
+                                    child: ReviewsSection(
+                                      chaletId: docId,
+                                      isDark: isDark,
+                                      requestData: requestData,
+                                    ),
+                                  ),
+                                ),
+
+                                // Booking Dates (Start/End)
+                                if (requestData['availableFrom'] != null &&
+                                    requestData['availableTo'] != null) ...[
                                   const SizedBox(height: 24),
-                                  ActionButtons(
-                                    status: status,
-                                    docId: docId,
-                                    requestData: requestData,
+                                  FadeIn(
+                                    delay: const Duration(milliseconds: 1500),
+                                    child: Divider(
+                                      height: 1,
+                                      color: isDark
+                                          ? Colors.white24
+                                          : const Color(0xFFDDDDDD),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  FadeInUp(
+                                    duration: const Duration(
+                                      milliseconds: 1000,
+                                    ),
+                                    delay: const Duration(milliseconds: 1500),
+                                    curve: Curves.easeOutQuart,
+                                    child: RepaintBoundary(
+                                      child: BookingDatesDisplay(
+                                        requestData: requestData,
+                                        isDark: isDark,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
+                                // Admin Sections
+                                if (role == 'admin' || role == 'owner') ...[
+                                  FadeInUp(
+                                    duration: const Duration(
+                                      milliseconds: 1000,
+                                    ),
+                                    delay: const Duration(milliseconds: 1600),
+                                    curve: Curves.easeOutQuart,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 24),
+                                        Divider(
+                                          height: 1,
+                                          color: isDark
+                                              ? Colors.white24
+                                              : const Color(0xFFDDDDDD),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        _buildSectionTitle(
+                                          'Availability',
+                                          textColor,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        AvailabilityCard(
+                                          requestData: requestData,
+                                        ),
+                                        if (role == 'admin') ...[
+                                          const SizedBox(height: 24),
+                                          _buildSectionTitle(
+                                            'Request Details',
+                                            textColor,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          RequestDetailsCard(
+                                            docId: docId,
+                                            requestData: requestData,
+                                          ),
+                                        ],
+                                        const SizedBox(height: 24),
+                                        ActionButtons(
+                                          status: status,
+                                          docId: docId,
+                                          requestData: requestData,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ],

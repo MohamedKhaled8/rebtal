@@ -206,7 +206,7 @@ class AccentBarTitle extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-          ),
+           ),
         ],
       ),
     );
