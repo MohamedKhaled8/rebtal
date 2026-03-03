@@ -1,6 +1,6 @@
 // AmenitiesGrid widget for displaying amenities
 import 'package:flutter/material.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class AmenitiesGrid extends StatelessWidget {
   final Map<String, dynamic> requestData;

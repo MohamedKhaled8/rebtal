@@ -1,5 +1,6 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
@@ -76,7 +77,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'أهلاً بك 👋',
+                                  '${context.tr('owner_welcome')} 👋',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isDark
@@ -85,7 +86,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                   ),
                                 ),
                                 Text(
-                                  currentUser?.name ?? 'المالك',
+                                  currentUser?.name ?? context.tr('owner_default_name'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -150,7 +151,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                                   fontSize: 14,
                                 ),
                                 decoration: InputDecoration(
-                                  hintText: 'ابحث في شاليهاتك...',
+                                  hintText: context.tr('owner_search_chalets'),
                                   hintStyle: TextStyle(
                                     color: isDark
                                         ? Colors.white38
@@ -191,21 +192,21 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                         child: Row(
                           children: [
                             _UserStyleChip(
-                              label: 'الكل',
+                              label: context.tr('owner_all'),
                               count: count,
                               isSelected: true,
                               isDark: isDark,
                             ),
                             const SizedBox(width: 10),
                             _UserStyleChip(
-                              label: 'نشط',
+                              label: context.tr('owner_active'),
                               count: count,
                               isSelected: false, // Logic to be added
                               isDark: isDark,
                             ),
                             const SizedBox(width: 10),
                             _UserStyleChip(
-                              label: 'قيد المراجعة',
+                              label: context.tr('owner_pending_review'),
                               count: 0,
                               isSelected: false,
                               isDark: isDark,
@@ -240,7 +241,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'قائمة الشاليهات',
+                        context.tr('nav_chalets'),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -266,8 +267,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                     status: 'approved',
                     ownerId: ownerId,
                     emptyIcon: Icons.holiday_village_outlined,
-                    emptyTitle: 'لا توجد شاليهات',
-                    emptySubtitle: 'ابدأ بإضافة شاليهك الأول',
+                    emptyTitle: context.tr('owner_no_chalets'),
+                    emptySubtitle: context.tr('owner_start_add_first'),
                   ),
                 ),
               ),
@@ -297,8 +298,8 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
         backgroundColor: primaryBlue,
         elevation: 4,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text(
-          'إضافة شاليه',
+        label: Text(
+          context.tr('owner_add_chalet'),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -271,7 +272,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'اختر فترة الحجز',
+                                context.tr('booking_select_dates'),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -282,7 +283,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'حدد تاريخ البداية والنهاية',
+                                context.tr('booking_select_start_end'),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: isDark
@@ -302,7 +303,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           child: _buildModernDateSelector(
                             context,
                             isDark: isDark,
-                            label: 'من تاريخ',
+                            label: context.tr('booking_from_date'),
                             icon: Icons.login_rounded,
                             selectedDate: _from,
                             onTap: () async {
@@ -331,7 +332,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 if (mounted) {
                                   SnackBarHelper.showWarning(
                                     context,
-                                    'فترة الحجز غير محددة. يمكنك اختيار من اليوم ولمدة 60 يوماً.',
+                                    context.tr('booking_undef_period_msg'),
                                   );
                                 }
                               }
@@ -400,14 +401,14 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           child: _buildModernDateSelector(
                             context,
                             isDark: isDark,
-                            label: 'إلى تاريخ',
+                            label: context.tr('booking_to_date'),
                             icon: Icons.logout_rounded,
                             selectedDate: _to,
                             onTap: () async {
                               if (_from == null) {
                                 SnackBarHelper.showWarning(
                                   context,
-                                  'يرجى اختيار تاريخ البداية أولاً',
+                                  context.tr('booking_select_start_first'),
                                 );
                                 return;
                               }
@@ -476,7 +477,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'عدد الأيام:',
+                            context.tr('booking_days_label'),
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark ? Colors.white70 : Colors.grey[600],
@@ -497,7 +498,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'عدد الليالي:',
+                            context.tr('booking_nights_label'),
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark ? Colors.white70 : Colors.grey[600],
@@ -518,7 +519,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'سعر الليلة:',
+                            context.tr('booking_price_per_night'),
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark ? Colors.white70 : Colors.grey[600],
@@ -539,7 +540,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'الإجمالي:',
+                            context.tr('booking_total_label'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -579,10 +580,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         color: Colors.orange[700],
                         size: 22,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 12),  
                       Expanded(
                         child: Text(
-                          'يرجى اختيار فترة الحجز أولاً',
+                          context.tr('booking_select_period_first_msg'),
                           style: TextStyle(
                             color: Colors.orange[800],
                             fontWeight: FontWeight.w600,
@@ -620,7 +621,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           if (phone == null || phone.trim().isEmpty) {
                             SnackBarHelper.showWarning(
                               context,
-                              'رقم الهاتف غير متوفر',
+                              context.tr('booking_phone_unavailable'),
                               icon: Icons.phone_disabled,
                             );
                             return;
@@ -657,7 +658,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             context: context,
                             phone: phone,
                             message:
-                                'السلام عليكم، أريد حجز الشاليه للفترة من ${_from!.day}/${_from!.month}/${_from!.year} إلى ${_to!.day}/${_to!.month}/${_to!.year}',
+                                '${context.tr('booking_whatsapp_message')} ${_from!.day}/${_from!.month}/${_from!.year} ${context.tr('booking_to')} ${_to!.day}/${_to!.month}/${_to!.year}',
                           );
                         },
                         borderRadius: BorderRadius.circular(16),
@@ -665,7 +666,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children:  [
                               Icon(
                                 Icons.chat_bubble_rounded,
                                 color: Colors.white,
@@ -673,7 +674,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               ),
                               SizedBox(width: 12),
                               Text(
-                                'فتح WhatsApp',
+                                context.tr('booking_open_whatsapp'),
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 17,
@@ -712,7 +713,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     label: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        'الاتصال',
+                        context.tr('booking_call'),
                         style: TextStyle(
                           color: isDark
                               ? ColorManager.chaletAccent
@@ -773,7 +774,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children:  [
                             Icon(
                               Icons.check_circle_rounded,
                               color: Colors.white,
@@ -781,7 +782,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             ),
                             SizedBox(width: 12),
                             Text(
-                              'موافقة على الحجز',
+                              context.tr('booking_approve_booking_bridge'),
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
@@ -824,7 +825,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     // }
                     SnackBarHelper.showError(
                       widget.parentContext,
-                      'تم رفض الطلب',
+                      context.tr('booking_request_rejected'),
                     );
                     Navigator.of(context).pop();
                   },
@@ -832,10 +833,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     Icons.cancel_rounded,
                     color: Color(0xFFEF4444),
                   ),
-                  label: const Padding(
+                  label:   Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      'رفض الحجز',
+                      context.tr('booking_reject_booking_bridge'),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -920,8 +921,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   }) {
     final isSelected = selectedDate != null;
 
-    // Color coding: green for start, red for end
-    final accentColor = label == 'من تاريخ'
+    // Color coding: green for start, red for end (use isFromDate param)
+    final isFromDate = icon == Icons.login_rounded;
+    final accentColor = isFromDate
         ? const Color(0xFF4CAF50)
         : const Color(0xFFFF5252);
 
@@ -991,7 +993,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
             Text(
               selectedDate != null
                   ? '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'
-                  : 'اختر التاريخ',
+                  : context.tr('booking_select_date'),
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -1057,7 +1059,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'تأكيد الحجز',
+                      context.tr('booking_confirm'),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -1068,26 +1070,26 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     const SizedBox(height: 24),
                     _confirmationRow(
                       isDark,
-                      'السعر النهائي:',
+                      context.tr('booking_final_price'),
                       '${totalAmount.toStringAsFixed(0)} EGP',
                       valueColor: const Color(0xFF10B981),
                     ),
                     const SizedBox(height: 12),
                     _confirmationRow(
                       isDark,
-                      'من إلى:',
+                      context.tr('booking_from_to'),
                       '${dateStr(from)} → ${dateStr(to)}',
                     ),
                     const SizedBox(height: 10),
-                    _confirmationRow(isDark, 'عدد الأيام:', '$days'),
+                    _confirmationRow(isDark, context.tr('booking_days_label'), '$days'),
                     const SizedBox(height: 6),
-                    _confirmationRow(isDark, 'عدد الليالي:', '$nights'),
+                    _confirmationRow(isDark, context.tr('booking_nights_label'), '$nights'),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'عدد الأطفال:',
+                          context.tr('booking_children_count_label'),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1253,7 +1255,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'أوافق على سياسات الحجز والإلغاء',
+                                    context.tr('booking_agree_policies'),
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -1268,7 +1270,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '• الحساب بالليلة. الإلغاء: استرداد كامل قبل 7+ أيام، جزئي قبل 3–6 أيام، خصم 50% قبل أقل من 3 أيام، بدون استرداد يوم الوصول.',
+                            context.tr('booking_policy_summary'),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? Colors.white60 : Colors.grey[700],
@@ -1281,8 +1283,8 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             ),
                             child: Text(
                               expandedPolicy
-                                  ? 'إخفاء التفاصيل'
-                                  : 'عرض السياسة كاملة',
+                                  ? context.tr('booking_hide_details')
+                                  : context.tr('booking_view_full_policy'),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -1293,7 +1295,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           if (expandedPolicy) ...[
                             const SizedBox(height: 8),
                             Text(
-                              'الحجوزات تحسب بالليلة. الإلغاء: استرداد كامل (100%) إذا كان قبل 7 ليالٍ أو أكثر؛ استرداد حتى 50% إذا قبل 3–6 ليالٍ؛ خصم 50% إذا قبل أقل من 3 ليالٍ؛ لا استرداد في يوم الوصول.',
+                              context.tr('booking_policy_full'),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark
@@ -1325,8 +1327,8 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'تأكيد الحجز',
+                        child: Text(
+                          context.tr('booking_confirm'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1454,9 +1456,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
       await NotificationService().sendNotification(
         userId: bookingWithId.ownerId,
-        title: 'طلب حجز جديد 📩',
+        title: '${context.tr('booking_new_request_notif')} 📩',
         body:
-            'لديك طلب حجز جديد لشاليه ${bookingWithId.chaletName} من ${bookingWithId.userName}. يرجى المراجعة والموافقة.',
+            '${context.tr('booking_new_request_body')} ${bookingWithId.chaletName} ${context.tr('booking_from')} ${bookingWithId.userName}. ${context.tr('booking_review_approve')}',
         type: NotificationType.bookingRequest,
         relatedId: bookingWithId.id,
         data: {
@@ -1469,7 +1471,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
         PremiumLoadingOverlay.dismiss(context);
         SnackBarHelper.showSuccess(
           widget.parentContext,
-          'تم إرسال الطلب للمالك',
+          context.tr('booking_sent_to_owner'),
         );
         await _showRatingBottomSheet();
         if (mounted) {
@@ -1480,7 +1482,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
       debugPrint('Error confirming booking: $e');
       if (mounted) {
         PremiumLoadingOverlay.dismiss(context);
-        SnackBarHelper.showError(context, 'حدث خطأ في الحجز: $e');
+        SnackBarHelper.showError(context, '${context.tr('booking_error_msg')} $e');
       }
     }
   }
@@ -1526,8 +1528,8 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const Text(
-                          'قيّم تجربتك',
+                        Text(
+                          context.tr('booking_rate_experience'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -1535,7 +1537,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'برجاء تقييم الخدمة لمساعدتنا على تحسين التجربة',
+                          context.tr('booking_rate_help'),
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 16),
@@ -1560,7 +1562,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           const SizedBox(height: 12),
                           Center(
                             child: Text(
-                              _getRatingLabel(tempRating),
+                              _getRatingLabel(context, tempRating),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1585,7 +1587,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               color: Colors.black.withOpacity(0.5),
                               fontSize: 14,
                             ),
-                            hintText: 'اكتب تعليقك هنا (مطلوب)...',
+                            hintText: context.tr('booking_write_comment'),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
@@ -1624,7 +1626,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                     // Show loading overlay
                                     PremiumLoadingOverlay.show(
                                       context,
-                                      message: 'جاري إرسال التقييم...',
+                                      message: context.tr('common_loading'),
                                     );
 
                                     try {
@@ -1672,7 +1674,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                         Navigator.pop(context);
                                         SnackBarHelper.showSuccess(
                                           context,
-                                          'شكراً لتقييمك',
+                                          context.tr('booking_thanks_rating'),
                                           icon: Icons.star,
                                         );
                                       }
@@ -1681,7 +1683,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                         PremiumLoadingOverlay.dismiss(context);
                                         SnackBarHelper.showError(
                                           context,
-                                          'تعذر حفظ التقييم: $e',
+                                          '${context.tr('booking_save_rating_error')} $e',
                                         );
                                       }
                                     }
@@ -1717,8 +1719,8 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 const SizedBox(width: 8),
                                 Text(
                                   canSubmit
-                                      ? 'إرسال التقييم'
-                                      : 'أكمل البيانات للإرسال',
+                                      ? context.tr('booking_send_rating')
+                                      : context.tr('booking_complete_data'),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -1740,12 +1742,12 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     );
   }
 
-  String _getRatingLabel(double rating) {
-    if (rating == 5) return 'ممتاز! 🌟';
-    if (rating == 4) return 'جيد جداً 👍';
-    if (rating == 3) return 'جيد ✓';
-    if (rating == 2) return 'مقبول';
-    return 'ضعيف';
+  String _getRatingLabel(BuildContext ctx, double rating) {
+    if (rating == 5) return '${ctx.tr('booking_rating_excellent')} 🌟';
+    if (rating == 4) return '${ctx.tr('booking_rating_great')} 👍';
+    if (rating == 3) return '${ctx.tr('booking_rating_good')} ✓';
+    if (rating == 2) return ctx.tr('booking_rating_ok');
+    return ctx.tr('booking_weak');
   }
 
   Future<void> _updateChaletRatingAggregate({

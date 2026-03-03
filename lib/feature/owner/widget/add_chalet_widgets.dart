@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 // ==========================================
 // Owner Info Section
@@ -25,27 +26,27 @@ class OwnerInfoSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.person_outline_rounded,
-      title: 'معلومات المالك',
+      title: context.tr('owner_info'),
       color: ColorManager.blue2563EB,
       child: Column(
         children: [
           _InfoRow(
             isDark: isDark,
-            label: 'اسم المالك',
+            label: context.tr('owner_name'),
             value: name,
             icon: Icons.person_rounded,
           ),
           const SizedBox(height: 12),
           _InfoRow(
             isDark: isDark,
-            label: 'البريد الإلكتروني',
+            label: context.tr('common_email'),
             value: email,
             icon: Icons.email_rounded,
           ),
           const SizedBox(height: 12),
           _InfoRow(
             isDark: isDark,
-            label: 'رقم الهاتف',
+            label: context.tr('common_phone'),
             value: phone,
             icon: Icons.phone_rounded,
           ),
@@ -79,7 +80,7 @@ class ChaletDetailsSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.villa_rounded,
-      title: 'تفاصيل الشاليه',
+      title: context.tr('owner_chalet_details'),
       color: ColorManager.purple764BA2,
       child: Column(
         children: [
@@ -87,9 +88,9 @@ class ChaletDetailsSection extends StatelessWidget {
             key: const ValueKey('chalet_name'),
             isDark: isDark,
             initialValue: initialName,
-            label: 'اسم الشاليه',
+            label: context.tr('owner_chalet_name'),
             icon: Icons.villa_rounded,
-            hint: 'أدخل اسم الشاليه',
+            hint: context.tr('owner_enter_chalet_name'),
             onChanged: onNameChanged,
           ),
           const SizedBox(height: 16),
@@ -97,9 +98,9 @@ class ChaletDetailsSection extends StatelessWidget {
             key: const ValueKey('chalet_desc'),
             isDark: isDark,
             initialValue: initialDescription,
-            label: 'الوصف',
+            label: context.tr('owner_description'),
             icon: Icons.description_rounded,
-            hint: 'اكتب وصفاً للشاليه...',
+            hint: context.tr('booking_write_notes'),
             maxLines: 4,
             onChanged: onDescriptionChanged,
           ),
@@ -130,7 +131,7 @@ class LocationSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.location_on_rounded,
-      title: 'الموقع',
+      title: context.tr('owner_location'),
       color: ColorManager.orangeF59E0B,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,18 +156,18 @@ class LocationSection extends StatelessWidget {
               child: InkWell(
                 onTap: onPickLocation,
                 borderRadius: BorderRadius.circular(12),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.map_outlined,
                       color: ColorManager.white,
                       size: 20,
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
-                      'اختر الموقع على الخريطة',
-                      style: TextStyle(
+                      context.tr('owner_select_on_map'),
+                      style: const TextStyle(
                         color: ColorManager.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -181,7 +182,7 @@ class LocationSection extends StatelessWidget {
             const SizedBox(height: 12),
             _InfoRow(
               isDark: isDark,
-              label: 'العنوان المحدد',
+              label: context.tr('owner_selected_address'),
               value: address,
               icon: Icons.place_rounded,
             ),
@@ -224,7 +225,7 @@ class PropertyDetailsSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.attach_money_rounded,
-      title: 'تفاصيل العقار',
+      title: context.tr('owner_property_details'),
       color: ColorManager.mainBlue,
       child: Column(
         children: [
@@ -232,7 +233,7 @@ class PropertyDetailsSection extends StatelessWidget {
             key: const ValueKey('chalet_price'),
             isDark: isDark,
             initialValue: initialPrice,
-            label: 'السعر لليلة (جنيه)',
+            label: context.tr('owner_price_per_night'),
             icon: Icons.payments_rounded,
             hint: '0',
             keyboardType: TextInputType.number,
@@ -243,7 +244,7 @@ class PropertyDetailsSection extends StatelessWidget {
             key: const ValueKey('chalet_area'),
             isDark: isDark,
             initialValue: initialArea,
-            label: 'المساحة (م²)',
+            label: context.tr('owner_area_m2'),
             icon: Icons.square_foot_rounded,
             hint: '0',
             keyboardType: TextInputType.number,
@@ -257,7 +258,7 @@ class PropertyDetailsSection extends StatelessWidget {
                   key: const ValueKey('chalet_bedrooms'),
                   isDark: isDark,
                   initialValue: initialBedrooms,
-                  label: 'غرف النوم',
+                  label: context.tr('home_bedrooms'),
                   icon: Icons.bed_rounded,
                   hint: '0',
                   keyboardType: TextInputType.number,
@@ -270,7 +271,7 @@ class PropertyDetailsSection extends StatelessWidget {
                   key: const ValueKey('chalet_bathrooms'),
                   isDark: isDark,
                   initialValue: initialBathrooms,
-                  label: 'الحمامات',
+                  label: context.tr('home_bathrooms'),
                   icon: Icons.bathtub_rounded,
                   hint: '0',
                   keyboardType: TextInputType.number,
@@ -310,14 +311,14 @@ class AvailabilitySection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.calendar_today_rounded,
-      title: 'فترة التوفر',
+      title: context.tr('owner_availability_period'),
       color: ColorManager.cyan06B6D4,
       child: Row(
         children: [
           Expanded(
             child: _DateButton(
               isDark: isDark,
-              label: 'من تاريخ',
+              label: context.tr('booking_from_date'),
               value: availableFrom != null
                   ? dateFormat.format(availableFrom!)
                   : null,
@@ -328,7 +329,7 @@ class AvailabilitySection extends StatelessWidget {
           Expanded(
             child: _DateButton(
               isDark: isDark,
-              label: 'إلى تاريخ',
+              label: context.tr('booking_to_date'),
               value: availableTo != null
                   ? dateFormat.format(availableTo!)
                   : null,
@@ -362,37 +363,37 @@ class FeaturesSection extends StatelessWidget {
     final List<Map<String, dynamic>> featuresData = [
       {
         'key': 'Pool',
-        'label': 'مسبح',
+        'label': context.tr('chalet_pool'),
         'icon': Icons.pool_rounded,
         'color': ColorManager.cyan06B6D4,
       },
       {
         'key': 'Sea View',
-        'label': 'إطلالة بحرية',
+        'label': context.tr('chalet_beach_view'),
         'icon': Icons.waves_rounded,
         'color': ColorManager.blue2563EB,
       },
       {
         'key': 'Garden',
-        'label': 'حديقة',
+        'label': context.tr('chalet_garden'),
         'icon': Icons.local_florist_rounded,
         'color': ColorManager.mainBlue,
       },
       {
         'key': 'WiFi',
-        'label': 'واي فاي',
+        'label': context.tr('chalet_wifi'),
         'icon': Icons.wifi_rounded,
         'color': ColorManager.purple764BA2,
       },
       {
         'key': 'BBQ',
-        'label': 'منطقة شواء',
+        'label': context.tr('chalet_bbq'),
         'icon': Icons.outdoor_grill_rounded,
         'color': ColorManager.bookingsWarningOrange,
       },
       {
         'key': 'Parking',
-        'label': 'موقف سيارات',
+        'label': context.tr('chalet_parking'),
         'icon': Icons.local_parking_rounded,
         'color': ColorManager.grey600,
       },
@@ -401,7 +402,7 @@ class FeaturesSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.star_rounded,
-      title: 'المميزات الإضافية',
+      title: context.tr('owner_extra_features'),
       color: ColorManager.yellowEAB308,
       child: GridView.builder(
         shrinkWrap: true,
@@ -475,13 +476,13 @@ class DiscountSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.local_offer_rounded,
-      title: 'الخصومات والعروض',
+      title: context.tr('owner_discounts_offers'),
       color: ColorManager.redFF3B30,
       child: Column(
         children: [
           SwitchListTile(
             title: Text(
-              'تفعيل الخصم',
+              context.tr('owner_enable_discount'),
               style: TextStyle(
                 color: isDark ? ColorManager.white : ColorManager.black,
                 fontSize: 14,
@@ -489,7 +490,7 @@ class DiscountSection extends StatelessWidget {
               ),
             ),
             subtitle: Text(
-              'قم بتفعيل هذا الخيار لإضافة خصم على السعر',
+              context.tr('owner_enable_discount_hint'),
               style: TextStyle(
                 color: isDark ? ColorManager.grey400 : ColorManager.grey600,
                 fontSize: 12,
@@ -506,7 +507,7 @@ class DiscountSection extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                'نوع الخصم',
+                context.tr('owner_discount_type'),
                 style: TextStyle(
                   color: isDark ? ColorManager.grey400 : ColorManager.grey600,
                   fontSize: 13,
@@ -568,7 +569,7 @@ class DiscountSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'نسبة مئوية (%)',
+                              context.tr('owner_discount_percentage'),
                               style: TextStyle(
                                 color: discountType == 'percentage'
                                     ? ColorManager.white
@@ -638,7 +639,7 @@ class DiscountSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'مبلغ ثابت (EGP)',
+                              context.tr('owner_discount_fixed'),
                               style: TextStyle(
                                 color: discountType == 'fixed'
                                     ? ColorManager.white
@@ -665,8 +666,8 @@ class DiscountSection extends StatelessWidget {
               isDark: isDark,
               initialValue: discountValue,
               label: discountType == 'percentage'
-                  ? 'أدخل نسبة الخصم (%)'
-                  : 'أدخل قيمة الخصم (EGP)',
+                  ? context.tr('owner_enter_discount_percentage')
+                  : context.tr('owner_enter_discount_fixed'),
               icon: discountType == 'percentage'
                   ? Icons.percent_rounded
                   : Icons.attach_money_rounded,
@@ -702,7 +703,7 @@ class DiscountSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'السعر بعد الخصم: ',
+                    context.tr('owner_price_after_discount'),
                     style: TextStyle(
                       color: isDark
                           ? ColorManager.grey400
@@ -711,7 +712,7 @@ class DiscountSection extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${discountedPrice.toStringAsFixed(2)} جنيه',
+                    '${discountedPrice.toStringAsFixed(2)} ${context.tr('common_egp')}',
                     style: TextStyle(
                       color: isDark ? ColorManager.white : ColorManager.black,
                       fontSize: 15,
@@ -749,11 +750,11 @@ class DayUseSection extends StatelessWidget {
     return _ModernCard(
       isDark: isDark,
       icon: Icons.access_time_rounded,
-      title: 'خصائص الحجز (Day Use)',
+      title: context.tr('owner_day_use_feature'),
       color: ColorManager.green3DDC84,
       child: SwitchListTile(
         title: Text(
-          'تفعيل خاصية "Day Use"',
+          context.tr('owner_enable_day_use'),
           style: TextStyle(
             color: isDark ? ColorManager.white : ColorManager.black,
             fontSize: 14,
@@ -761,7 +762,7 @@ class DayUseSection extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          'السماح للمستخدمين بحجز الشاليه لقضاء اليوم فقط بدون مبيت',
+          context.tr('owner_day_use_hint'),
           style: TextStyle(
             color: isDark ? ColorManager.grey400 : ColorManager.grey600,
             fontSize: 12,
@@ -902,7 +903,7 @@ class _InfoRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  value.isNotEmpty ? value : 'غير محدد',
+                  value.isNotEmpty ? value : context.tr('common_undetermined'),
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1049,7 +1050,7 @@ class _DateButton extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    value ?? 'اختر التاريخ',
+                    value ?? context.tr('owner_select_date'),
                     style: TextStyle(
                       color: value != null
                           ? (isDark ? ColorManager.white : ColorManager.black)

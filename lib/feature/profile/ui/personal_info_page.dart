@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class PersonalInfoPage extends StatefulWidget {
@@ -66,12 +67,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
           _isEditingProfile = false;
           _isLoading = false;
         });
-        SnackBarHelper.showSuccess(context, 'تم تحديث البيانات بنجاح');
+        SnackBarHelper.showSuccess(
+          context,
+          context.tr('profile_updated_success'),
+        );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        SnackBarHelper.showError(context, 'فشل تحديث البيانات: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('profile_update_failed')} $e',
+        );
       }
     }
   }
@@ -80,7 +87,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
     if (_newPasswordController.text.length < 6) {
       SnackBarHelper.showError(
         context,
-        'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+        context.tr('profile_password_min_length'),
       );
       return;
     }
@@ -98,12 +105,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
           _currentPasswordController.clear();
           _newPasswordController.clear();
         });
-        SnackBarHelper.showSuccess(context, 'تم تغيير كلمة المرور بنجاح');
+        SnackBarHelper.showSuccess(
+          context,
+          context.tr('profile_password_changed'),
+        );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        SnackBarHelper.showError(context, 'فشل تغيير كلمة المرور: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('profile_password_change_failed')} $e',
+        );
       }
     }
   }
@@ -132,7 +145,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'المعلومات الشخصية',
+          context.tr('profile_personal_info'),
           style: TextStyle(
             color: primaryText,
             fontSize: 18,
@@ -238,7 +251,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'البيانات الأساسية',
+                            context.tr('profile_basic_info'),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -262,7 +275,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                                 ),
                               ),
                               child: Text(
-                                'تعديل',
+                                context.tr('common_edit'),
                                 style: TextStyle(
                                   color: primaryText,
                                   fontWeight: FontWeight.w600,
@@ -282,13 +295,13 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                         children: [
                           _buildTextField(
                             isDark,
-                            'الاسم الكامل',
+                            context.tr('auth_full_name'),
                             _nameController,
                           ),
                           const SizedBox(height: 16),
                           _buildTextField(
                             isDark,
-                            'رقم الهاتف',
+                            context.tr('auth_phone'),
                             _phoneController,
                             keyboardType: TextInputType.phone,
                           ),
@@ -344,9 +357,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                                                 : Colors.white,
                                           ),
                                         )
-                                      : const Text(
-                                          'حفظ',
-                                          style: TextStyle(
+                                      : Text(
+                                          context.tr('common_save'),
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -364,19 +377,19 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                         children: [
                           _buildInfoRow(
                             isDark,
-                            'الاسم',
+                            context.tr('common_name'),
                             user.name,
                             Icons.person_outline_rounded,
                           ),
                           _buildInfoRow(
                             isDark,
-                            'البريد الإلكتروني',
+                            context.tr('common_email'),
                             user.email,
                             Icons.email_outlined,
                           ),
                           _buildInfoRow(
                             isDark,
-                            'رقم الهاتف',
+                            context.tr('auth_phone'),
                             user.phone,
                             Icons.phone_iphone_rounded,
                             isLast: true,
@@ -400,7 +413,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
-                        'الأمان والخصوصية',
+                        context.tr('profile_security_privacy'),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -417,14 +430,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                         children: [
                           _buildTextField(
                             isDark,
-                            'كلمة المرور الحالية',
+                            context.tr('profile_current_password'),
                             _currentPasswordController,
                             isPassword: true,
                           ),
                           const SizedBox(height: 16),
                           _buildTextField(
                             isDark,
-                            'كلمة المرور الجديدة',
+                            context.tr('profile_new_password'),
                             _newPasswordController,
                             isPassword: true,
                           ),
@@ -483,9 +496,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                                                 : Colors.white,
                                           ),
                                         )
-                                      : const Text(
-                                          'تحديث',
-                                          style: TextStyle(
+                                      : Text(
+                                          context.tr('common_update'),
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -501,7 +514,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                       5,
                       _buildInfoRow(
                         isDark,
-                        'كلمة المرور',
+                        context.tr('auth_password'),
                         '••••••••',
                         Icons.lock_outline_rounded,
                         isLast: true,
@@ -575,7 +588,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
     final secondaryText = isDark ? Colors.white70 : const Color(0xFF717171);
 
     return InkWell(
-      onTap: label == 'كلمة المرور'
+      onTap: label == context.tr('auth_password')
           ? () => setState(() => _isChangingPassword = true)
           : null,
       borderRadius: BorderRadius.circular(12),
@@ -618,7 +631,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                 ],
               ),
             ),
-            if (label == 'كلمة المرور')
+            if (label == context.tr('auth_password'))
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,

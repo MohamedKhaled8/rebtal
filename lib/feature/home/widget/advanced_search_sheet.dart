@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/app_constants.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -127,7 +128,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'بحث متقدم',
+                  context.tr('home_advanced_search'),
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -137,7 +138,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 TextButton(
                   onPressed: _resetFilters,
                   child: Text(
-                    'إعادة تعيين',
+                    context.tr('home_reset'),
                     style: TextStyle(
                       color: Colors.red[400],
                       fontWeight: FontWeight.w600,
@@ -156,7 +157,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
               children: [
                 // Search Query
                 Text(
-                  'البحث',
+                  context.tr('home_search'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -168,7 +169,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                   controller: _queryController,
                   style: TextStyle(color: themeColor),
                   decoration: InputDecoration(
-                    hintText: 'ابحث عن شاليه بالاسم أو الوصف...',
+                    hintText: context.tr('home_search_hint'),
                     hintStyle: TextStyle(color: Colors.grey[500]),
                     prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
                     filled: true,
@@ -188,7 +189,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'نطاق السعر (لليلة)',
+                      context.tr('home_price_range_per_night'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -228,7 +229,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'مساحة الشاليه (م²)',
+                      context.tr('home_chalet_area_m2'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -236,7 +237,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                       ),
                     ),
                     Text(
-                      '${_minArea.round()} م²',
+                      '${_minArea.round()} ${context.tr('common_m2')}',
                       style: const TextStyle(
                         color: Color(0xFF10B981),
                         fontWeight: FontWeight.bold,
@@ -251,7 +252,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                   divisions: 100,
                   activeColor: const Color(0xFF10B981),
                   inactiveColor: Colors.grey.withOpacity(0.3),
-                  label: '${_minArea.round()} م²',
+                  label: '${_minArea.round()} ${context.tr('common_m2')}',
                   onChanged: (value) {
                     setState(() {
                       _minArea = value;
@@ -262,7 +263,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
 
                 // Rooms
                 Text(
-                  'الغرف والمرافق',
+                  context.tr('home_rooms_facilities'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -271,7 +272,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 ),
                 const SizedBox(height: 16),
                 _buildCounterRow(
-                  'غرف النوم',
+                  context.tr('home_bedrooms'),
                   _minBedrooms,
                   (val) {
                     setState(() => _minBedrooms = val);
@@ -281,7 +282,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 ),
                 const SizedBox(height: 16),
                 _buildCounterRow(
-                  'الحمامات',
+                  context.tr('home_bathrooms'),
                   _minBathrooms,
                   (val) {
                     setState(() => _minBathrooms = val);
@@ -294,7 +295,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
 
                 // Amenities
                 Text(
-                  'المميزات',
+                  context.tr('home_features'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -347,7 +348,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
 
                 // Facilities
                 Text(
-                  'المرافق والخدمات',
+                  context.tr('home_facilities_services'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -430,8 +431,8 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'عرض النتائج',
+                child: Text(
+                  context.tr('home_show_results'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -477,7 +478,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 icon: Icon(Icons.remove, size: 18, color: themeColor),
               ),
               Text(
-                count == 0 ? 'أي' : '$count+',
+                count == 0 ? context.tr('common_any') : '$count+',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,

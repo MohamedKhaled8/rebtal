@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -38,8 +39,8 @@ class _UserBookingsPageState extends State<UserBookingsPage>
     return Scaffold(
       backgroundColor: isDark ? ColorManager.black : ColorManager.white,
       appBar: AppBar(
-        title: const Text(
-          'حجوزاتي',
+        title: Text(
+          context.tr('booking_my_bookings'),
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: true,
@@ -73,9 +74,9 @@ class _UserBookingsPageState extends State<UserBookingsPage>
                   indicatorColor: const Color(0xFF2563EB),
                   indicatorWeight: 3,
                   tabs: [
-                    Tab(text: 'الحالية (${current.length})'),
-                    Tab(text: 'قيد الانتظار (${pending.length})'),
-                    Tab(text: 'السابقة (${previous.length})'),
+                    Tab(text: '${context.tr('booking_current')} (${current.length})'),
+                    Tab(text: '${context.tr('booking_pending')} (${pending.length})'),
+                    Tab(text: '${context.tr('booking_previous')} (${previous.length})'),
                   ],
                 ),
               );
@@ -93,7 +94,7 @@ class _UserBookingsPageState extends State<UserBookingsPage>
               final state = appCubit.state;
               if (state is AppAuthenticated) {
                 appCubit.bookingCubit.loadUserBookings(state.user.uid);
-                SnackBarHelper.showSuccess(context, 'تم تحديث البيانات');
+                SnackBarHelper.showSuccess(context, context.tr('booking_data_updated'));
               }
             },
           ),
@@ -193,7 +194,7 @@ class _UserBookingsPageState extends State<UserBookingsPage>
     if (bookings.isEmpty) {
       return Center(
         child: Text(
-          'لا توجد حجوزات',
+          context.tr('booking_no_bookings'),
           style: TextStyle(
             fontSize: 16,
             color: DynamicThemeManager.isDarkMode(context)

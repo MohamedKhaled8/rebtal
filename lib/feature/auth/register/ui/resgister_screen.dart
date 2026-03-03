@@ -1,9 +1,10 @@
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
+import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/feature/auth/register/widget/glassmor_phic_card.dart';
 import 'package:rebtal/feature/auth/register/widget/login_link_widget.dart';
 import 'package:rebtal/feature/auth/widget/handwritten_animated_text.dart';
@@ -151,6 +152,7 @@ class RegisterScreen extends StatelessWidget {
                                 ),
                               )
                             : _PrimaryButton(
+                                label: context.tr('auth_create_account'),
                                 isDark: isDark,
                                 onPressed: () {
                                   FocusScope.of(context).unfocus();
@@ -172,48 +174,22 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  void _showImageSourceDialog(BuildContext context) {
-    // Only if image_picker and dart:io are imported
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: DynamicThemeManager.isDarkMode(context)
-          ? ColorManager.darkBackground121212
-          : ColorManager.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('الكاميرا'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<RegisterCubit>().pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('معرض الصور'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<RegisterCubit>().pickImage(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _showImageSourceDialog(BuildContext context) async {
+    final image = await HelperImage().pickImageFile(context);
+    if (image != null && context.mounted) {
+      context.read<RegisterCubit>().setProfileImage(image);
+    }
   }
 }
 
 class _PrimaryButton extends StatelessWidget {
-  const _PrimaryButton({required this.onPressed, required this.isDark});
+  const _PrimaryButton({
+    required this.label,
+    required this.onPressed,
+    required this.isDark,
+  });
 
+  final String label;
   final VoidCallback onPressed;
   final bool isDark;
 
@@ -232,9 +208,9 @@ class _PrimaryButton extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(14),
-          child: const Center(
+          child: Center(
             child: Text(
-              'إنشاء حساب',
+              label,
               style: TextStyle(
                 color: ColorManager.white,
                 fontSize: 16,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AutomatedOffersSection extends StatelessWidget {
   const AutomatedOffersSection({super.key});
@@ -34,7 +35,7 @@ class AutomatedOffersSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'عروض حصرية',
+                    context.tr('home_exclusive_offers'),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -42,7 +43,7 @@ class AutomatedOffersSection extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${docs.length} عرض متاح',
+                    '${docs.length} ${context.tr('home_offers_available')}',
                     style: const TextStyle(
                       color: Color(0xFF2563EB),
                       fontSize: 13,
@@ -174,7 +175,7 @@ class AutomatedOffersSection extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'خصم $percentage%',
+                                      '${context.tr('common_discount')} $percentage%',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 12,
@@ -196,7 +197,8 @@ class AutomatedOffersSection extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    data['chaletName'] ?? 'شاليه مميز',
+                                    data['chaletName'] ??
+                                        context.tr('home_featured_chalet'),
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -216,7 +218,7 @@ class AutomatedOffersSection extends StatelessWidget {
                                   Row(
                                     children: [
                                       Text(
-                                        '${discountedPrice.round()} ج.م',
+                                        '${discountedPrice.round()} ${context.tr('booking_egp_currency')}',
                                         style: const TextStyle(
                                           color: Color(
                                             0xFF4ADE80,
@@ -234,7 +236,7 @@ class AutomatedOffersSection extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        '${price.round()} ج.م',
+                                        '${price.round()} ${context.tr('booking_egp_currency')}',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.7),
                                           fontSize: 13,

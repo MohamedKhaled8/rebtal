@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
 
@@ -38,7 +39,7 @@ class TopRatedSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Text(
-                'الأعلى تقييماً',
+                context.tr('home_top_rated'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -147,7 +148,8 @@ class TopRatedSection extends StatelessWidget {
                                     const SizedBox(width: 2),
                                     Expanded(
                                       child: Text(
-                                        data['location'] ?? 'الموقع',
+                                        data['location'] ??
+                                            context.tr('home_location_unknown'),
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: isDark

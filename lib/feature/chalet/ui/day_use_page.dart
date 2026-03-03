@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
@@ -16,7 +17,7 @@ class DayUsePage extends StatelessWidget {
           : ColorManager.chaletBackgroundLight,
       appBar: AppBar(
         title: Text(
-          'شاليهات داي يوز (Day Use)',
+          context.tr('chalet_day_use'),
           style: TextStyle(
             color: isDark ? ColorManager.white : ColorManager.black,
             fontWeight: FontWeight.bold,
@@ -54,7 +55,7 @@ class DayUsePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد شاليهات داي يوز حالياً',
+                    context.tr('chalet_no_day_use'),
                     style: TextStyle(
                       color: isDark
                           ? ColorManager.white70

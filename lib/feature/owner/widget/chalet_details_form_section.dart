@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -47,7 +48,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Chalet Details',
+                context.tr('owner_chalet_details'),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -59,8 +60,8 @@ class ChaletDetailsFormSection extends StatelessWidget {
           const SizedBox(height: 25),
           TextFormField(
             decoration: InputDecoration(
-              labelText: 'Chalet Name',
-              hintText: 'Enter your chalet name',
+              labelText: context.tr('owner_chalet_name'),
+              hintText: context.tr('owner_chalet_name_hint'),
               prefixIcon: Icon(Icons.home, color: ColorManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -75,7 +76,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter chalet name';
+                return context.tr('owner_enter_chalet_name');
               }
               return null;
             },
@@ -84,7 +85,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
           DropdownButtonFormField<String>(
             initialValue: selectedLocation,
             decoration: InputDecoration(
-              labelText: 'Geographical Location',
+              labelText: context.tr('owner_location'),
               prefixIcon: Icon(Icons.location_on, color: ColorManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -108,7 +109,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
             onChanged: onLocationChanged,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please select a location';
+                return context.tr('owner_select_location_error');
               }
               return null;
             },
@@ -120,7 +121,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                 child: TextFormField(
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Number of Rooms',
+                    labelText: context.tr('owner_num_rooms'),
                     prefixIcon: Icon(
                       Icons.bedroom_parent,
                       color: ColorManager.gray,
@@ -148,7 +149,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                 child: TextFormField(
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Number of Bathrooms',
+                    labelText: context.tr('owner_num_bathrooms'),
                     prefixIcon: Icon(
                       Icons.bathtub_outlined,
                       color: ColorManager.gray,
@@ -165,8 +166,10 @@ class ChaletDetailsFormSection extends StatelessWidget {
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Required';
-                    if (int.tryParse(value) == null) return 'Invalid number';
+                    if (value == null || value.isEmpty)
+                      return context.tr('common_required');
+                    if (int.tryParse(value) == null)
+                      return context.tr('common_invalid_number');
                     return null;
                   },
                 ),
@@ -177,8 +180,8 @@ class ChaletDetailsFormSection extends StatelessWidget {
           TextFormField(
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
-              labelText: 'Price per Night (\$)',
-              hintText: 'Enter price in USD',
+              labelText: context.tr('owner_price_per_night_usd'),
+              hintText: context.tr('owner_price_hint_usd'),
               prefixIcon: Icon(Icons.attach_money, color: ColorManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -193,25 +196,24 @@ class ChaletDetailsFormSection extends StatelessWidget {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter price per night';
+                return context.tr('owner_enter_price_error');
               }
               if (double.tryParse(value) == null) {
-                return 'Please enter a valid price';
+                return context.tr('owner_valid_price_error');
               }
               return null;
             },
           ),
           const SizedBox(height: 25),
           Text(
-            'Additional Features & Amenities',
+            context.tr('owner_extra_features'),
             style: TextStyle(fontSize: 13, color: ColorManager.gray),
           ),
           const SizedBox(height: 8),
           TextFormField(
             maxLines: 3,
             decoration: InputDecoration(
-              hintText:
-                  'Describe any additional features, amenities, or special notes about your chalet...',
+              hintText: context.tr('owner_extra_features_hint'),
               prefixIcon: Icon(
                 Icons.add_circle_outline,
                 color: ColorManager.gray,

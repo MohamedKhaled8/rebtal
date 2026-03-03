@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-// import 'package:screen_go/extensions/responsive_nums.dart';
+// import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class HeaderCard extends StatelessWidget {
   const HeaderCard({super.key, required this.requestData});

@@ -1,0 +1,9 @@
+# Flutter Localization (ARB) - إعدادات الترجمة
+# ملاحظة: المشروع يستخدم نظام JSON مخصص من assets/localization/
+# هذا الملف للتوافق مع Flutter generate وللاستخدام المستقبلي
+# output-class مختلف لتجنب التعارض مع AppLocalizations المخصص
+
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: arb_localizations.dart
+output-class: ArbLocalizations

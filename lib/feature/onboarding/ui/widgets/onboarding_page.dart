@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rebtal/feature/onboarding/data/models/onboarding_model.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 /// Reusable widget for displaying a single onboarding page
 /// Shows Lottie animation, title, and description with smooth animations

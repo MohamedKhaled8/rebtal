@@ -4,6 +4,7 @@ import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/widget/transfer_card.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class BookingTransfersPage extends StatelessWidget {
   const BookingTransfersPage({super.key});
@@ -17,9 +18,9 @@ class BookingTransfersPage extends StatelessWidget {
           ? ColorManager.darkBackground121212
           : ColorManager.profileBackgroundLight,
       appBar: AppBar(
-        title: const Text(
-          'انتقالات الحجوزات',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          context.tr('owner_booking_transfers'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
@@ -67,7 +68,7 @@ class BookingTransfersPage extends StatelessWidget {
                   const SizedBox(height: 16),
                   Center(
                     child: Text(
-                      'لا توجد انتقالات حتى الآن',
+                      context.tr('owner_no_transfers'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

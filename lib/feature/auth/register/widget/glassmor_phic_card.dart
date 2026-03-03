@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
 import 'package:rebtal/feature/auth/register/widget/role_selector.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'custom_input_field.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/helper/helper_image.dart';
 
 class GlassmorPhicCard extends StatelessWidget {
   final bool obscurePassword;
@@ -28,7 +30,7 @@ class GlassmorPhicCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          "Create Account",
+          context.tr('auth_create_account_title'),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
@@ -40,7 +42,7 @@ class GlassmorPhicCard extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 5.w),
           child: Text(
             textAlign: TextAlign.center,
-            "Create an account so you can start your journey with us",
+            context.tr('auth_create_account_desc'),
             style: TextStyle(
               fontSize: 15,
               color: isDark ? ColorManager.white : Colors.black,
@@ -50,28 +52,28 @@ class GlassmorPhicCard extends StatelessWidget {
         const SizedBox(height: 32),
         CustomInputField(
           controller: cubit.nameController,
-          label: 'الاسم الكامل',
+          label: context.tr('auth_full_name'),
           icon: Icons.person_outline,
           keyboardType: TextInputType.name,
         ),
         const SizedBox(height: 20),
         CustomInputField(
           controller: cubit.emailController,
-          label: 'البريد الإلكتروني',
+          label: context.tr('auth_email'),
           icon: Icons.mail_outline_rounded,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 20),
         CustomInputField(
           controller: cubit.phoneController,
-          label: 'رقم الهاتف',
+          label: context.tr('auth_phone'),
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
         CustomInputField(
           controller: cubit.passwordController,
-          label: 'كلمة المرور',
+          label: context.tr('auth_password'),
           icon: Icons.lock_outline_rounded,
           obscureText: obscurePassword,
           suffixIcon: IconButton(
@@ -85,6 +87,8 @@ class GlassmorPhicCard extends StatelessWidget {
             onPressed: togglePasswordVisibility,
           ),
         ),
+        const SizedBox(height: 24),
+        _buildIdCardUploader(context, cubit, isDark),
         const SizedBox(height: 24),
         RoleSelector(
           selectedRole: cubit.selectedRole,
@@ -113,6 +117,74 @@ class GlassmorPhicCard extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildIdCardUploader(
+    BuildContext context,
+    RegisterCubit cubit,
+    bool isDark,
+  ) {
+    return GestureDetector(
+      onTap: () async {
+        final image = await HelperImage().pickImageFile(context);
+        if (image != null && context.mounted) {
+          cubit.setIdCardImage(image);
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        height: 120,
+        decoration: BoxDecoration(
+          color: isDark ? ColorManager.darkSurface1E1E1E : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: cubit.idCardImage != null
+                ? ColorManager.bookingsAccentPrimary
+                : (isDark ? Colors.white12 : Colors.black12),
+            width: 1.5,
+          ),
+          image: cubit.idCardImage != null
+              ? DecorationImage(
+                  image: FileImage(cubit.idCardImage!),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.3),
+                    BlendMode.darken,
+                  ),
+                )
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              cubit.idCardImage != null
+                  ? Icons.check_circle_rounded
+                  : Icons.badge_outlined,
+              size: 32,
+              color: cubit.idCardImage != null
+                  ? Colors.white
+                  : ColorManager.bookingsAccentPrimary,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              cubit.idCardImage != null
+                  ? "تم إرفاق صورة البطاقة، اضغط للتغيير"
+                  : "أرفق صورة البطاقة الشخصية (مطلوب)",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: cubit.idCardImage != null
+                    ? FontWeight.w700
+                    : FontWeight.w600,
+                color: cubit.idCardImage != null
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black87),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

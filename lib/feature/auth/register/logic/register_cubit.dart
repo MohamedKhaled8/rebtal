@@ -38,7 +38,22 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   File? profileImage;
+  File? idCardImage;
   final ImagePicker _picker = ImagePicker();
+
+  void setProfileImage(File? file) {
+    if (file != null) {
+      profileImage = file;
+      emit(RegisterInitial());
+    }
+  }
+
+  void setIdCardImage(File? file) {
+    if (file != null) {
+      idCardImage = file;
+      emit(RegisterInitial());
+    }
+  }
 
   Future<void> pickImage(ImageSource source) async {
     try {
@@ -65,6 +80,16 @@ class RegisterCubit extends Cubit<RegisterState> {
     final role = selectedRole;
 
     // Input validation
+    if (profileImage == null) {
+      emit(RegisterValidationError("يرجى إرفاق الصورة الشخصية للمتابعة"));
+      return;
+    }
+
+    if (idCardImage == null) {
+      emit(RegisterValidationError("يرجى إرفاق صورة البطاقة الشخصية للمتابعة"));
+      return;
+    }
+
     final nameError = AuthValidator.validateName(name);
     if (nameError != null) {
       emit(RegisterValidationError(nameError));
@@ -92,14 +117,22 @@ class RegisterCubit extends Cubit<RegisterState> {
     emit(RegisterLoading());
 
     String? profileImageUrl;
+    String? idCardUrl;
+
     if (profileImage != null) {
       try {
-        // Use HelperImage to upload
         profileImageUrl = await HelperImage().uploadToCloudinary(profileImage!);
       } catch (e) {
         emit(RegisterFailure("فشل رفع الصورة الشخصية: $e"));
         return;
       }
+    }
+
+    try {
+      idCardUrl = await HelperImage().uploadToCloudinary(idCardImage!);
+    } catch (e) {
+      emit(RegisterFailure("فشل رفع صورة البطاقة: $e"));
+      return;
     }
 
     final result = await _registerUseCase.call(
@@ -109,6 +142,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       role: role,
       phone: phone,
       profileImageUrl: profileImageUrl,
+      idCardUrl: idCardUrl,
     );
 
     result.fold(

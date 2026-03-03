@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_cubit.dart';
@@ -27,8 +28,8 @@ class FavoritesPage extends StatelessWidget {
             ? Colors.black
             : ColorManager.chaletBackgroundLight,
         appBar: AppBar(
-          title: const Text(
-            'المفضلة',
+          title: Text(
+            context.tr('home_favorites'),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,
@@ -65,7 +66,7 @@ class FavoritesPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'حدث خطأ',
+                      context.tr('common_error'),
                       style: TextStyle(
                         color: DynamicThemeManager.isDarkMode(context)
                             ? ColorManager.white70
@@ -100,7 +101,7 @@ class FavoritesPage extends StatelessWidget {
 
                       const SizedBox(height: 16),
                       Text(
-                        'لا توجد مفضلات بعد',
+                        context.tr('favorites_no_favorites'),
                         style: TextStyle(
                           color: DynamicThemeManager.isDarkMode(context)
                               ? ColorManager.white70

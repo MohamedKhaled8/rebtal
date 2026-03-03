@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/widget/chalet/amenities_grid.dart';
-// import 'package:screen_go/extensions/responsive_nums.dart';
+// import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class AmenitiesSection extends StatelessWidget {
   const AmenitiesSection({super.key, required this.requestData});

@@ -1,7 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
@@ -30,14 +30,16 @@ class _RatingPageState extends State<RatingPage> {
 
   final Map<String, double> _aspectRatings = {};
 
+  final List<String> _aspectKeys = [];
+
   @override
   void initState() {
     super.initState();
-    final aspects = widget.isOwnerRating
-        ? ['الالتزام بالمواعيد', 'النظافة', 'التعامل', 'الالتزام بالقواعد']
-        : ['النظافة', 'الموقع', 'المرافق', 'القيمة مقابل السعر', 'التواصل'];
-    for (var aspect in aspects) {
-      _aspectRatings[aspect] = 0;
+    _aspectKeys.addAll(widget.isOwnerRating
+        ? ['booking_schedule_rating', 'booking_cleanliness', 'booking_handling', 'booking_rules']
+        : ['booking_cleanliness', 'booking_location', 'booking_facilities', 'booking_value', 'booking_communication']);
+    for (var key in _aspectKeys) {
+      _aspectRatings[key] = 0;
     }
     _reviewController.addListener(() => setState(() {}));
   }
@@ -50,14 +52,14 @@ class _RatingPageState extends State<RatingPage> {
 
   Future<void> _submitRating() async {
     if (_rating == 0 || _reviewController.text.trim().isEmpty) {
-      SnackBarHelper.showWarning(context, 'يرجى كتابة تعليق واختيار تقييم');
+      SnackBarHelper.showWarning(context, context.tr('booking_please_comment_rating'));
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     // Show loading immediately
-    PremiumLoadingOverlay.show(context, message: 'جاري إرسال التقييم...');
+    PremiumLoadingOverlay.show(context, message: context.tr('common_loading'));
 
     try {
       final appCubit = context.read<AppCubit>();
@@ -138,14 +140,14 @@ class _RatingPageState extends State<RatingPage> {
 
       if (mounted) {
         PremiumLoadingOverlay.dismiss(context);
-        SnackBarHelper.showSuccess(context, 'تم إرسال تقييمك بنجاح');
+        SnackBarHelper.showSuccess(context, context.tr('booking_rating_sent'));
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         PremiumLoadingOverlay.dismiss(context);
         setState(() => _isSubmitting = false);
-        SnackBarHelper.showError(context, 'حدث خطأ: $e');
+        SnackBarHelper.showError(context, '${context.tr('booking_error_msg')} $e');
       }
     }
   }
@@ -166,7 +168,7 @@ class _RatingPageState extends State<RatingPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          widget.isOwnerRating ? 'تقييم المستأجر' : 'تقييم الشاليه',
+          widget.isOwnerRating ? context.tr('booking_rating_tenant') : context.tr('booking_rating_chalet'),
           style: TextStyle(color: labelColor, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
@@ -217,7 +219,7 @@ class _RatingPageState extends State<RatingPage> {
 
               // Stars
               Text(
-                'التقييم الإجمالي',
+                context.tr('booking_total_rating'),
                 style: TextStyle(
                   color: labelColor,
                   fontSize: 18,
@@ -254,7 +256,7 @@ class _RatingPageState extends State<RatingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'اكتب تعليقك هنا:',
+                        '${context.tr('booking_write_comment')}:',
                         style: TextStyle(
                           color: labelColor,
                           fontWeight: FontWeight.bold,
@@ -270,7 +272,7 @@ class _RatingPageState extends State<RatingPage> {
                           fontWeight: FontWeight.bold,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'كيف كانت تجربتك؟',
+                          hintText: context.tr('booking_how_was_experience'),
                           hintStyle: TextStyle(color: Colors.grey[500]),
                           filled: true,
                           fillColor: inputFillColor, // FORCED WHITE
@@ -299,7 +301,7 @@ class _RatingPageState extends State<RatingPage> {
 
                 // Aspects
                 ..._aspectRatings.keys.map(
-                  (aspect) => _buildAspect(aspect, isDark, labelColor),
+                  (aspect) => _buildAspect(context, aspect, isDark, labelColor),
                 ),
 
                 const SizedBox(height: 30),
@@ -317,8 +319,8 @@ class _RatingPageState extends State<RatingPage> {
                       ),
                       elevation: 4,
                     ),
-                    child: const Text(
-                      'إرسال التقييم',
+                    child: Text(
+                      context.tr('booking_send_rating'),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -336,7 +338,7 @@ class _RatingPageState extends State<RatingPage> {
     );
   }
 
-  Widget _buildAspect(String aspect, bool isDark, Color textColor) {
+  Widget _buildAspect(BuildContext ctx, String aspectKey, bool isDark, Color textColor) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
@@ -354,7 +356,7 @@ class _RatingPageState extends State<RatingPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            aspect,
+            ctx.tr(aspectKey),
             style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
@@ -363,10 +365,10 @@ class _RatingPageState extends State<RatingPage> {
             children: List.generate(5, (index) {
               return GestureDetector(
                 onTap: () => setState(
-                  () => _aspectRatings[aspect] = (index + 1).toDouble(),
+                  () => _aspectRatings[aspectKey] = (index + 1).toDouble(),
                 ),
                 child: Icon(
-                  index < (_aspectRatings[aspect] ?? 0)
+                  index < (_aspectRatings[aspectKey] ?? 0)
                       ? Icons.star_rounded
                       : Icons.star_outline_rounded,
                   size: 32,

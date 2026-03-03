@@ -13,6 +13,7 @@ import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 // ======================= HelperImage =======================
 class HelperImage {
@@ -25,278 +26,49 @@ class HelperImage {
     await _showImageSourceDialog(true, context);
   }
 
+  Future<File?> pickImageFile(BuildContext context) async {
+    final ImageSource? source = await _showImageSourceBottomSheet(
+      context,
+      false,
+    );
+    if (source == null) return null;
+
+    final XFile? pickedFile = await _imagePicker.pickImage(
+      source: source,
+      imageQuality: 80,
+      maxWidth: 1000,
+      maxHeight: 1000,
+    );
+
+    return pickedFile != null ? File(pickedFile.path) : null;
+  }
+
   Future<void> _showImageSourceDialog(
     bool isChaletPhoto,
     BuildContext context,
   ) async {
-    final parentContext = context;
-    final isDark = DynamicThemeManager.isDarkMode(context);
-
-    showDialog(
-      context: context,
-      barrierColor: ColorManager.black.withOpacity(0.6),
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: ColorManager.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark
-                  ? ColorManager.bookingsCardDark
-                  : ColorManager.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorManager.black.withOpacity(isDark ? 0.5 : 0.2),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isDark
-                            ? ColorManager.white.withOpacity(0.1)
-                            : ColorManager.black.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: ColorManager.kPrimaryGradient.colors,
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: ColorManager.kPrimaryGradient.colors.first
-                                  .withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          isChaletPhoto ? Icons.photo_camera : Icons.person,
-                          color: ColorManager.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isChaletPhoto
-                                  ? 'إضافة صور الشاليه'
-                                  : 'تغيير الصورة الشخصية',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? ColorManager.white
-                                    : ColorManager.chaletGrey800,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isChaletPhoto
-                                  ? 'اختر مصدر الصور'
-                                  : 'اختر مصدر الصورة',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark
-                                    ? ColorManager.white70
-                                    : ColorManager.chaletGrey500,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: isDark
-                              ? ColorManager.white70
-                              : ColorManager.chaletGrey500,
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Options
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      // Camera Option
-                      _buildImageSourceOption(
-                        context: context,
-                        icon: Icons.camera_alt_rounded,
-                        title: 'الكاميرا',
-                        subtitle: isChaletPhoto
-                            ? 'التقاط صورة واحدة'
-                            : 'التقاط صورة جديدة',
-                        gradient: LinearGradient(
-                          colors: [
-                            ColorManager.bookingsAccentPrimary,
-                            ColorManager.bookingsAccentSecondary,
-                          ],
-                        ),
-                        isDark: isDark,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _pickImage(
-                            ImageSource.camera,
-                            isChaletPhoto,
-                            parentContext,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      // Gallery Option
-                      _buildImageSourceOption(
-                        context: context,
-                        icon: Icons.photo_library_rounded,
-                        title: 'المعرض',
-                        subtitle: isChaletPhoto
-                            ? 'اختيار صور متعددة'
-                            : 'اختيار صورة من المعرض',
-                        gradient: LinearGradient(
-                          colors: [
-                            ColorManager.cyan00C9FF,
-                            ColorManager.green92FE9D,
-                          ],
-                        ),
-                        isDark: isDark,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _pickImage(
-                            ImageSource.gallery,
-                            isChaletPhoto,
-                            parentContext,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    final ImageSource? source = await _showImageSourceBottomSheet(
+      context,
+      isChaletPhoto,
     );
+    if (source != null) {
+      _pickImage(source, isChaletPhoto, context);
+    }
   }
 
-  Widget _buildImageSourceOption({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Gradient gradient,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: ColorManager.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark
-                ? ColorManager.white.withOpacity(0.05)
-                : ColorManager.greyF9FAFB,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark
-                  ? ColorManager.white.withOpacity(0.1)
-                  : ColorManager.black.withOpacity(0.08),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: gradient.colors.first.withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(icon, color: ColorManager.white, size: 32),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? ColorManager.white
-                            : ColorManager.grey1F2937,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark
-                            ? ColorManager.white70
-                            : ColorManager.grey6B7280,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: isDark
-                    ? ColorManager.white.withOpacity(0.3)
-                    : ColorManager.grey9CA3AF,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
-      ),
+  Future<ImageSource?> _showImageSourceBottomSheet(
+    BuildContext context,
+    bool isChaletPhoto,
+  ) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
+
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5),
+      isScrollControlled: true,
+      builder: (context) =>
+          _ImagePickerBottomSheet(isChaletPhoto: isChaletPhoto, isDark: isDark),
     );
   }
 
@@ -323,15 +95,15 @@ class HelperImage {
           SnackBarHelper.showSuccess(
             context,
             source == ImageSource.gallery
-                ? 'Chalet photos added successfully!'
-                : 'Chalet photo added successfully!',
+                ? context.tr('owner_chalet_photos_added_success')
+                : context.tr('owner_chalet_photo_added_success'),
           );
         } else {
           // Show validation errors
           final errorMessage = validationErrors.join('\n');
           SnackBarHelper.showError(
             context,
-            'Some images were not added:\n$errorMessage',
+            '${context.tr('owner_some_images_not_added')}\n$errorMessage',
           );
         }
       } else {
@@ -343,7 +115,7 @@ class HelperImage {
         if (!hasPermission) {
           SnackBarHelper.showError(
             context,
-            'Permission denied. Please grant camera/gallery access in settings.',
+            context.tr('owner_permission_denied_settings'),
           );
           return;
         }
@@ -390,22 +162,25 @@ class HelperImage {
             Navigator.of(context).pop();
             SnackBarHelper.showSuccess(
               context,
-              'تم تحديث الصورة الشخصية بنجاح!',
+              context.tr('profile_picture_updated_success'),
             );
           } catch (e) {
             Navigator.of(context).pop();
-            SnackBarHelper.showError(context, 'خطأ في رفع الصورة: $e');
+            SnackBarHelper.showError(
+              context,
+              '${context.tr('common_error_uploading_image')} $e',
+            );
           }
         }
       }
     } catch (e) {
       if (Navigator.canPop(context)) Navigator.of(context).pop();
 
-      String errorMessage = 'Error picking image';
+      String errorMessage = context.tr('common_error_picking_image');
       if (e.toString().contains('PlatformException')) {
-        errorMessage = 'Camera/Gallery access error. Please check permissions.';
+        errorMessage = context.tr('common_access_error_permissions');
       } else if (e.toString().contains('channel')) {
-        errorMessage = 'Plugin connection error. Please restart the app.';
+        errorMessage = context.tr('common_plugin_error_restart');
       }
 
       SnackBarHelper.showError(context, errorMessage);
@@ -426,10 +201,6 @@ class HelperImage {
       }
       return cameraStatus.isGranted;
     } else {
-      // On Android there are two common gallery permission sets:
-      // - older devices: READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE (Permission.storage)
-      // - Android 13+: separate media permissions (Permission.photos maps to READ_MEDIA_IMAGES)
-      // We'll try storage first, then photos, to cover both cases.
       if (Platform.isAndroid) {
         PermissionStatus storageStatus = await Permission.storage.status;
         if (storageStatus.isDenied) {
@@ -437,14 +208,12 @@ class HelperImage {
         }
         if (storageStatus.isGranted) return true;
 
-        // Fallback / Android 13+
         PermissionStatus photosStatus = await Permission.photos.status;
         if (photosStatus.isDenied) {
           photosStatus = await Permission.photos.request();
         }
         return photosStatus.isGranted;
       } else {
-        // iOS: request photos permission
         PermissionStatus photosStatus = await Permission.photos.status;
         if (photosStatus.isDenied) {
           photosStatus = await Permission.photos.request();
@@ -462,7 +231,10 @@ class HelperImage {
     if (!formKey.currentState!.validate()) return;
 
     if (data.uploadedImages.isEmpty) {
-      SnackBarHelper.showWarning(context, 'Upload chalet images');
+      SnackBarHelper.showWarning(
+        context,
+        context.tr('owner_upload_chalet_images'),
+      );
       return;
     }
     if ((data.chaletName?.isEmpty ?? true) ||
@@ -470,7 +242,7 @@ class HelperImage {
         (data.phoneNumber?.isEmpty ?? true) ||
         (data.selectedLocation.isEmpty) ||
         (data.chaletArea?.isEmpty ?? true)) {
-      SnackBarHelper.showWarning(context, 'Fill all fields');
+      SnackBarHelper.showWarning(context, context.tr('owner_fill_all_fields'));
       return;
     }
 
@@ -481,7 +253,6 @@ class HelperImage {
     );
 
     try {
-      // Upload all chalet images concurrently for better performance
       List<String> chaletImageUrls = await Future.wait(
         data.uploadedImages.map((img) => uploadToCloudinary(img)),
       );
@@ -495,7 +266,7 @@ class HelperImage {
 
       final firestore = FirebaseFirestore.instance;
       final docRef = await firestore.collection("chalets").add({
-        "ownerId": ownerId, // 🆕 Add ownerId
+        "ownerId": ownerId,
         "images": chaletImageUrls,
         "location": data.selectedLocation,
         "phoneNumber": data.phoneNumber,
@@ -518,23 +289,23 @@ class HelperImage {
         "createdAt": FieldValue.serverTimestamp(),
         "merchantName": data.merchantName,
         "price": data.price,
-        "chaletArea": data.chaletArea, // 🆕
-        "bedrooms": data.bedrooms, // 🆕
-        "bathrooms": data.bathrooms, // 🆕
+        "chaletArea": data.chaletArea,
+        "bedrooms": data.bedrooms,
+        "bathrooms": data.bathrooms,
         "availableFrom": data.availableFrom?.toIso8601String(),
         "availableTo": data.availableTo?.toIso8601String(),
         "email": data.email,
-        "amenities": _getAmenitiesList(data), // 🆕 Add amenities list
-        "childrenCount": data.childrenCount, // 🆕
-        "discountEnabled": data.discountEnabled, // 🆕
-        "discountType": data.discountType, // 🆕
-        "discountValue": data.discountValue, // 🆕
-        "features": data.features, // 🆕
+        "amenities": _getAmenitiesList(data),
+        "childrenCount": data.childrenCount,
+        "discountEnabled": data.discountEnabled,
+        "discountType": data.discountType,
+        "discountValue": data.discountValue,
+        "features": data.features,
       });
 
       final realtimeDB = FirebaseDatabase.instance.ref("chalets");
       await realtimeDB.child(docRef.id).set({
-        "ownerId": ownerId, // 🆕 Add ownerId
+        "ownerId": ownerId,
         "images": chaletImageUrls,
         "location": data.selectedLocation,
         "phoneNumber": data.phoneNumber,
@@ -557,23 +328,25 @@ class HelperImage {
         "createdAt": ServerValue.timestamp,
         "merchantName": data.merchantName,
         "price": data.price,
-        "chaletArea": data.chaletArea, // 🆕
-        "bedrooms": data.bedrooms, // 🆕
-        "bathrooms": data.bathrooms, // 🆕
+        "chaletArea": data.chaletArea,
+        "bedrooms": data.bedrooms,
+        "bathrooms": data.bathrooms,
         "availableFrom": data.availableFrom?.toIso8601String(),
         "availableTo": data.availableTo?.toIso8601String(),
-        "amenities": _getAmenitiesList(data), // 🆕 Add amenities list
-        "childrenCount": data.childrenCount, // 🆕
-        "discountEnabled": data.discountEnabled, // 🆕
-        "discountType": data.discountType, // 🆕
-        "discountValue": data.discountValue, // 🆕
-        "features": data.features, // 🆕
+        "amenities": _getAmenitiesList(data),
+        "childrenCount": data.childrenCount,
+        "discountEnabled": data.discountEnabled,
+        "discountType": data.discountType,
+        "discountValue": data.discountValue,
+        "features": data.features,
       });
 
       Navigator.of(context).pop();
-      SnackBarHelper.showSuccess(context, 'Chalet submitted successfully');
+      SnackBarHelper.showSuccess(
+        context,
+        context.tr('owner_chalet_submitted_success'),
+      );
 
-      // ✅ Send notification to admins
       try {
         final adminsSnapshot = await FirebaseFirestore.instance
             .collection('Admin')
@@ -581,9 +354,11 @@ class HelperImage {
         for (var adminDoc in adminsSnapshot.docs) {
           await NotificationService().sendNotification(
             userId: adminDoc.id,
-            title: 'شاليه جديد قيد المراجعة 🏗️',
-            body:
-                'قام ${data.merchantName} برفع شاليه جديد (${data.chaletName}) وهو بانتظار موافقتك.',
+            title: context.tr('notif_new_chalet_review'),
+            body: context
+                .tr('notif_new_chalet_body')
+                .replaceFirst('{name}', data.merchantName ?? '')
+                .replaceFirst('{chalet}', data.chaletName ?? ''),
             type: NotificationType.chaletSubmission,
             relatedId: docRef.id,
             data: {'chaletId': docRef.id, 'ownerId': ownerId},
@@ -593,9 +368,9 @@ class HelperImage {
         debugPrint('Error sending admin notification: $e');
       }
 
-      // Close the OwnerScreen and return `true` so callers can refresh their list
       Navigator.of(context).pop(true);
     } catch (e) {
+      if (Navigator.canPop(context)) Navigator.of(context).pop();
       SnackBarHelper.showError(context, "Error: $e");
     }
   }
@@ -645,5 +420,238 @@ class HelperImage {
     if (data.hasKitchen) amenities.add('hasKitchen');
     if (data.hasTV) amenities.add('hasTV');
     return amenities;
+  }
+}
+
+class _ImagePickerBottomSheet extends StatelessWidget {
+  final bool isChaletPhoto;
+  final bool isDark;
+
+  const _ImagePickerBottomSheet({
+    required this.isChaletPhoto,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      decoration: BoxDecoration(
+        color: isDark
+            ? ColorManager.darkBackground0A0E27.withOpacity(0.95)
+            : ColorManager.white.withOpacity(0.95),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ColorManager.blue2563EB.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    isChaletPhoto
+                        ? Icons.collections_rounded
+                        : Icons.account_circle_rounded,
+                    color: ColorManager.blue2563EB,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isChaletPhoto
+                            ? context.tr('owner_add_chalet_images')
+                            : context.tr('profile_change_photo'),
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        context.tr('common_select_source'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _ImageSourceOption(
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+              icon: Icons.camera_enhance_rounded,
+              title: context.tr('auth_camera'),
+              subtitle: isChaletPhoto
+                  ? context.tr('owner_capture_single_photo')
+                  : context.tr('profile_capture_new_photo'),
+              gradient: const LinearGradient(
+                colors: [ColorManager.blue2563EB, ColorManager.purple764BA2],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 16),
+            _ImageSourceOption(
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+              icon: Icons.photo_library_rounded,
+              title: context.tr('auth_gallery'),
+              subtitle: isChaletPhoto
+                  ? context.tr('owner_select_multiple_photos')
+                  : context.tr('profile_select_from_gallery'),
+              gradient: const LinearGradient(
+                colors: [
+                  ColorManager.purple764BA2,
+                  ColorManager.bookingsAccentPrimary,
+                ], // Standard branding gradient reversed for variety
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              isDark: isDark,
+            ),
+            const SizedBox(height: 12),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isDark
+                        ? Colors.white12
+                        : Colors.black.withOpacity(0.08),
+                  ),
+                ),
+              ),
+              child: Text(
+                context.tr('common_cancel'),
+                style: TextStyle(
+                  color: isDark ? Colors.white60 : Colors.black45,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageSourceOption extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Gradient gradient;
+  final bool isDark;
+
+  const _ImageSourceOption({
+    required this.onTap,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.gradient,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+        ],
+      ),
+      child: Material(
+        color: isDark ? ColorManager.darkSurface1E1E1E : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: isDark ? Colors.white24 : Colors.black12,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

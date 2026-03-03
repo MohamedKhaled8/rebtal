@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
@@ -81,7 +82,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
 
     if (_userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('يرجى تسجيل الدخول لإضافة للمفضلة')),
+        SnackBar(content: Text(context.tr('chalet_login_to_favorite'))),
       );
       return;
     }
@@ -111,8 +112,8 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
         await favRef.delete();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تم الحذف من المفضلة'),
+            SnackBar(
+              content: Text(context.tr('chalet_removed_from_favorites')),
               duration: Duration(milliseconds: 500),
             ),
           );
@@ -134,8 +135,8 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تم الإضافة للمفضلة'),
+            SnackBar(
+              content: Text(context.tr('chalet_added_to_favorites')),
               duration: Duration(milliseconds: 500),
             ),
           );
@@ -164,8 +165,8 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
       debugPrint('Share Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('لا يمكن المشاركة الآن. تأكد من تثبيت التطبيق.'),
+          SnackBar(
+            content: Text(context.tr('chalet_share_error')),
           ),
         );
       }

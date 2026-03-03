@@ -76,7 +76,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _handlePendingNavigation() {
-    if (!_animationComplete || _pendingAuthState == null || _hasNavigated) return;
+    if (!_animationComplete || _pendingAuthState == null || _hasNavigated)
+      return;
     if (!mounted) return;
 
     _maxWaitTimer?.cancel();
@@ -127,28 +128,31 @@ class _SplashScreenState extends State<SplashScreen>
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.villa_rounded,
-                size: 80,
-                color: const Color(0xFFFF5A5F),
-              ),
-              const SizedBox(height: 16),
-              _LiquidText(
-                fillAnimation: _fillAnimation,
-                text: 'REBTAL',
-                style: const TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFE0E0E0),
-                  letterSpacing: 4,
+        body: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.villa_rounded,
+                  size: 80,
+                  color: const Color(0xFFFF5A5F),
                 ),
-                liquidColor: const Color(0xFFFF5A5F),
-              ),
-            ],
+                const SizedBox(height: 16),
+                _LiquidText(
+                  fillAnimation: _fillAnimation,
+                  text: 'REBTAL',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFE0E0E0),
+                    letterSpacing: 4,
+                  ),
+                  liquidColor: const Color(0xFFFF5A5F),
+                ),
+              ],
+            ),
           ),
         ),
       ),

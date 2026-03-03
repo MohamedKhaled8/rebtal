@@ -24,8 +24,20 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
   String _selectedFilter = 'all';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  // Track expanded cards
+  final Set<String> _expandedCards = {};
   // Cache for booking data to avoid reloading all cards
   final Map<String, Booking> _bookingCache = {};
+  late final Stream<QuerySnapshot> _paymentProofsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _paymentProofsStream = FirebaseFirestore.instance
+        .collection('payment_proofs')
+        .orderBy('uploadedAt', descending: true)
+        .snapshots();
+  }
 
   @override
   void dispose() {
@@ -49,10 +61,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
               : ColorManager.bookingsBackgroundLight,
           body: SafeArea(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('payment_proofs')
-                  .orderBy('uploadedAt', descending: true)
-                  .snapshots(),
+              stream: _paymentProofsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -114,85 +123,25 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                   );
                 }
 
-                // Full scrollable page
-                return SingleChildScrollView(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      _buildHeaderSection(isDark),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                        child: Column(
-                          children: [
-                            // Payment Cards List with individual StreamBuilders
-                            ...filteredDocs.map((doc) {
-                              return StreamBuilder<DocumentSnapshot>(
-                                stream: FirebaseFirestore.instance
-                                    .collection('payment_proofs')
-                                    .doc(doc.id)
-                                    .snapshots(),
-                                builder: (context, docSnapshot) {
-                                  if (!docSnapshot.hasData ||
-                                      !docSnapshot.data!.exists) {
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  final data = docSnapshot.data!.data();
-                                  if (data == null) {
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  final proof = PaymentProof.fromMap({
-                                    ...data as Map<String, dynamic>,
-                                    'id': docSnapshot.data!.id,
-                                  });
-
-                                  // Apply filters again in case status changed
-                                  if (_selectedFilter != 'all') {
-                                    if (_selectedFilter == 'pending' &&
-                                        proof.status !=
-                                            PaymentProofStatus.pending) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    if (_selectedFilter == 'approved' &&
-                                        proof.status !=
-                                            PaymentProofStatus.approved) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    if (_selectedFilter == 'rejected' &&
-                                        proof.status !=
-                                            PaymentProofStatus.rejected) {
-                                      return const SizedBox.shrink();
-                                    }
-                                  }
-                                  if (_searchQuery.isNotEmpty) {
-                                    final query = _searchQuery.toLowerCase();
-                                    if (!proof.bookingId.toLowerCase().contains(
-                                          query,
-                                        ) &&
-                                        !proof.id.toLowerCase().contains(
-                                          query,
-                                        ) &&
-                                        !proof.userName.toLowerCase().contains(
-                                          query,
-                                        )) {
-                                      return const SizedBox.shrink();
-                                    }
-                                  }
-
-                                  return _buildPaymentCard(
-                                    context,
-                                    proof,
-                                    isDark,
-                                  );
-                                },
-                              );
-                            }),
-                          ],
-                        ),
+                // Full scrollable page lazily loaded, scrolling together
+                return CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(child: _buildHeaderSection(isDark)),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final doc = filteredDocs[index];
+                          final proofData = doc.data() as Map<String, dynamic>;
+                          final proof = PaymentProof.fromMap({
+                            ...proofData,
+                            'id': doc.id,
+                          });
+                          return _buildPaymentCard(context, proof, isDark);
+                        }, childCount: filteredDocs.length),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -551,24 +500,17 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     PaymentProof proof,
     bool isDark,
   ) {
-    // Use StreamBuilder with cache to avoid reloading all cards
+    // Use cached booking if available
     Booking? cachedBooking = _bookingCache[proof.bookingId];
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(proof.bookingId)
-          .snapshots(),
-      builder: (context, snapshot) {
-        // Use cached data if available while loading
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            cachedBooking != null) {
-          return _buildCardContent(context, proof, cachedBooking, isDark);
-        }
+    if (cachedBooking != null) {
+      return _buildCardContent(context, proof, cachedBooking, isDark);
+    }
 
-        // Show loading only if no cached data
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            cachedBooking == null) {
+    return FutureBuilder<Booking?>(
+      future: _fetchAndCacheBooking(proof.bookingId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(32),
@@ -591,41 +533,24 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
           );
         }
 
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          // Try to use cached data if available
-          if (cachedBooking != null) {
-            return _buildCardContent(context, proof, cachedBooking, isDark);
-          }
+        if (!snapshot.hasData || snapshot.data == null) {
           return const SizedBox.shrink();
         }
 
-        // Parse booking from snapshot
-        final data = snapshot.data!.data();
-        if (data == null) {
-          if (cachedBooking != null) {
-            return _buildCardContent(context, proof, cachedBooking, isDark);
-          }
-          return const SizedBox.shrink();
-        }
-
-        final booking = _parseBookingFromData(
-          snapshot.data!.id,
-          data as Map<String, dynamic>,
-        );
-
-        if (booking == null) {
-          if (cachedBooking != null) {
-            return _buildCardContent(context, proof, cachedBooking, isDark);
-          }
-          return const SizedBox.shrink();
-        }
-
-        // Update cache
-        _bookingCache[proof.bookingId] = booking;
-
-        return _buildCardContent(context, proof, booking, isDark);
+        return _buildCardContent(context, proof, snapshot.data!, isDark);
       },
     );
+  }
+
+  Future<Booking?> _fetchAndCacheBooking(String bookingId) async {
+    if (_bookingCache.containsKey(bookingId)) {
+      return _bookingCache[bookingId];
+    }
+    final booking = await _fetchBooking(bookingId);
+    if (booking != null) {
+      _bookingCache[bookingId] = booking;
+    }
+    return booking;
   }
 
   Widget _buildCardContent(
@@ -641,6 +566,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     final shortId = proof.bookingId.length > 8
         ? proof.bookingId.substring(0, 8).toUpperCase()
         : proof.bookingId.toUpperCase();
+
+    final isExpanded = _expandedCards.contains(proof.id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
@@ -664,192 +591,75 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header & Order ID
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            // Header Section (Always Visible)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (isExpanded) {
+                    _expandedCards.remove(proof.id);
+                  } else {
+                    _expandedCards.add(proof.id);
+                  }
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.receipt_long_rounded,
-                              size: 16,
-                              color: isDark
-                                  ? ColorManager.white70
-                                  : ColorManager.grey600,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'رقم الطلب',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? ColorManager.white70
-                                    : ColorManager.grey600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      ColorManager.chaletAccent.withOpacity(
-                                        0.15,
-                                      ),
-                                      ColorManager.chaletAccent.withOpacity(
-                                        0.08,
-                                      ),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: ColorManager.chaletAccent
-                                        .withOpacity(0.4),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Text(
-                                  '#$shortId',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: ColorManager.chaletAccent,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Material(
-                              color: ColorManager.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  Clipboard.setData(
-                                    ClipboardData(text: shortId),
-                                  );
-                                  SnackBarHelper.showSuccess(
-                                    context,
-                                    'تم نسخ رقم الطلب',
-                                    icon: Icons.copy_rounded,
-                                  );
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? ColorManager.white.withOpacity(0.1)
-                                        : ColorManager.grey100,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    Icons.copy_rounded,
-                                    size: 18,
-                                    color: isDark
-                                        ? ColorManager.white70
-                                        : ColorManager.grey700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  _buildStatusBadge(proof.status),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-              Divider(
-                height: 1,
-                thickness: 1.5,
-                color: isDark
-                    ? ColorManager.white.withOpacity(0.12)
-                    : ColorManager.grey300,
-              ),
-              const SizedBox(height: 24),
-
-              // Chalet Name
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          booking.chaletName,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: isDark
-                                ? ColorManager.white
-                                : ColorManager.chaletTextPrimaryLight,
-                            height: 1.3,
-                          ),
-                        ),
-                        if (booking.chaletLocation != null) ...[
-                          const SizedBox(height: 8),
-                          Row(
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.location_on_rounded,
-                                size: 16,
-                                color: isDark
-                                    ? ColorManager.white70
-                                    : ColorManager.grey600,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  booking.chaletLocation!,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: isDark
-                                        ? ColorManager.white70
-                                        : ColorManager.grey700,
-                                  ),
+                              Text(
+                                booking.chaletName,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? ColorManager.white
+                                      : ColorManager.chaletTextPrimaryLight,
                                 ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
+                                    'رقم الطلب:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? ColorManager.white70
+                                          : ColorManager.grey600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '#$shortId',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: ColorManager.chaletAccent,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                        const SizedBox(height: 6),
+                        ),
                         Row(
                           children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 14,
-                              color: isDark
-                                  ? ColorManager.white70
-                                  : ColorManager.grey600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _getTimeAgo(proof.uploadedAt),
-                              style: TextStyle(
-                                fontSize: 12,
+                            _buildStatusBadge(proof.status),
+                            const SizedBox(width: 12),
+                            AnimatedRotation(
+                              duration: const Duration(milliseconds: 200),
+                              turns: isExpanded ? 0.5 : 0,
+                              child: Icon(
+                                Icons.keyboard_arrow_down_rounded,
                                 color: isDark
                                     ? ColorManager.white70
                                     : ColorManager.grey600,
@@ -858,245 +668,276 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                           ],
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // Booking Details - كل البيانات في سطور واضحة
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? ColorManager.darkGrey2A2A3E
-                      : ColorManager.grey50,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isDark
-                        ? ColorManager.white.withOpacity(0.15)
-                        : ColorManager.grey200,
-                    width: 1.5,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // الوصول
-                    _buildDetailRow(
-                      icon: Icons.calendar_today_rounded,
-                      label: 'تاريخ الوصول',
-                      value: dateFormat.format(booking.from),
-                      color: ColorManager.primaryColor,
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 16),
-                    // المغادرة
-                    _buildDetailRow(
-                      icon: Icons.calendar_month_rounded,
-                      label: 'تاريخ المغادرة',
-                      value: dateFormat.format(booking.to),
-                      color: ColorManager.red,
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 16),
-                    // المدة
-                    _buildDetailRow(
-                      icon: Icons.nights_stay_rounded,
-                      label: 'المدة',
-                      value: '$nights ليالي',
-                      color: ColorManager.purple,
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 16),
-                    // المبلغ
-                    _buildDetailRow(
-                      icon: Icons.monetization_on_rounded,
-                      label: 'المبلغ الإجمالي',
-                      value: '${booking.amount?.toInt() ?? 0} جنيه',
-                      color: ColorManager.green,
-                      isDark: isDark,
-                      isBold: true,
                     ),
                   ],
                 ),
               ),
+            ),
 
-              const SizedBox(height: 24),
-
-              // Contact Info - كل البيانات في سطور واضحة
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // معلومات الضيف
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
+            // Expandable Content
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity),
+              secondChild: Container(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Divider(
+                      height: 32,
+                      thickness: 1,
                       color: isDark
-                          ? ColorManager.mainBlue.withOpacity(0.15)
-                          : Color(0xFFEFF6FF),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? ColorManager.mainBlue.withOpacity(0.4)
-                            : ColorManager.mainBlue.withOpacity(0.35),
-                        width: 1.5,
-                      ),
+                          ? ColorManager.white.withOpacity(0.1)
+                          : ColorManager.grey200,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle(
-                          'معلومات الضيف',
-                          Icons.person_rounded,
-                          ColorManager.green,
-                          isDark,
+                    const SizedBox(height: 8),
+
+                    // Booking Details - كل البيانات في سطور واضحة
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? ColorManager.darkGrey2A2A3E
+                            : ColorManager.grey50,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isDark
+                              ? ColorManager.white.withOpacity(0.15)
+                              : ColorManager.grey200,
+                          width: 1.5,
                         ),
-                        const SizedBox(height: 16),
-                        _buildContactRowFull(
-                          icon: Icons.person_outline_rounded,
-                          label: 'الاسم',
-                          value: booking.userName ?? 'غير متوفر',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildContactRowFull(
-                          icon: Icons.phone_iphone_rounded,
-                          label: 'رقم الهاتف',
-                          value: booking.userPhone ?? 'غير متوفر',
-                          isDark: isDark,
-                        ),
-                        if (booking.userEmail != null &&
-                            booking.userEmail!.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _buildContactRowFull(
-                            icon: Icons.email_rounded,
-                            label: 'البريد الإلكتروني',
-                            value: booking.userEmail!,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // الوصول
+                          _buildDetailRow(
+                            icon: Icons.calendar_today_rounded,
+                            label: 'تاريخ الوصول',
+                            value: dateFormat.format(booking.from),
+                            color: ColorManager.primaryColor,
                             isDark: isDark,
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // معلومات المالك
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? ColorManager.orange.withOpacity(0.15)
-                          : ColorManager.grey50,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? ColorManager.orange.withOpacity(0.4)
-                            : ColorManager.orange.withOpacity(0.35),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle(
-                          'معلومات المالك',
-                          Icons.business_rounded,
-                          ColorManager.orange,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildContactRowFull(
-                          icon: Icons.person_outline_rounded,
-                          label: 'الاسم',
-                          value: booking.ownerName ?? 'غير متوفر',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildContactRowFull(
-                          icon: Icons.phone_iphone_rounded,
-                          label: 'رقم الهاتف',
-                          value: booking.ownerPhone ?? 'غير متوفر',
-                          isDark: isDark,
-                        ),
-                        if (booking.ownerEmail != null &&
-                            booking.ownerEmail!.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _buildContactRowFull(
-                            icon: Icons.email_rounded,
-                            label: 'البريد الإلكتروني',
-                            value: booking.ownerEmail!,
+                          const SizedBox(height: 16),
+                          // المغادرة
+                          _buildDetailRow(
+                            icon: Icons.calendar_month_rounded,
+                            label: 'تاريخ المغادرة',
+                            value: dateFormat.format(booking.to),
+                            color: ColorManager.red,
                             isDark: isDark,
                           ),
+                          const SizedBox(height: 16),
+                          // المدة
+                          _buildDetailRow(
+                            icon: Icons.nights_stay_rounded,
+                            label: 'المدة',
+                            value: '$nights ليالي',
+                            color: ColorManager.purple,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 16),
+                          // المبلغ
+                          _buildDetailRow(
+                            icon: Icons.monetization_on_rounded,
+                            label: 'المبلغ الإجمالي',
+                            value: '${booking.amount?.toInt() ?? 0} جنيه',
+                            color: ColorManager.green,
+                            isDark: isDark,
+                            isBold: true,
+                          ),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              // Actions
-              Row(
-                children: [
-                  if (proof.imageUrl != null)
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () =>
-                            _showProofImage(context, proof.imageUrl!),
-                        icon: const Icon(Icons.image_rounded, size: 20),
-                        label: const Text(
-                          'عرض الإيصال',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          side: BorderSide(
+                    // Contact Info - كل البيانات في سطور واضحة
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // معلومات الضيف
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
                             color: isDark
-                                ? ColorManager.white.withOpacity(0.25)
-                                : ColorManager.grey300,
-                            width: 1.5,
+                                ? ColorManager.mainBlue.withOpacity(0.15)
+                                : Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark
+                                  ? ColorManager.mainBlue.withOpacity(0.4)
+                                  : ColorManager.mainBlue.withOpacity(0.35),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle(
+                                'معلومات الضيف',
+                                Icons.person_rounded,
+                                ColorManager.green,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildContactRowFull(
+                                icon: Icons.person_outline_rounded,
+                                label: 'الاسم',
+                                value: booking.userName ?? 'غير متوفر',
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildContactRowFull(
+                                icon: Icons.phone_iphone_rounded,
+                                label: 'رقم الهاتف',
+                                value: booking.userPhone ?? 'غير متوفر',
+                                isDark: isDark,
+                              ),
+                              if (booking.userEmail != null &&
+                                  booking.userEmail!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _buildContactRowFull(
+                                  icon: Icons.email_rounded,
+                                  label: 'البريد الإلكتروني',
+                                  value: booking.userEmail!,
+                                  isDark: isDark,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        // معلومات المالك
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? ColorManager.orange.withOpacity(0.15)
+                                : ColorManager.grey50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark
+                                  ? ColorManager.orange.withOpacity(0.4)
+                                  : ColorManager.orange.withOpacity(0.35),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle(
+                                'معلومات المالك',
+                                Icons.business_rounded,
+                                ColorManager.orange,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildContactRowFull(
+                                icon: Icons.person_outline_rounded,
+                                label: 'الاسم',
+                                value: booking.ownerName ?? 'غير متوفر',
+                                isDark: isDark,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildContactRowFull(
+                                icon: Icons.phone_iphone_rounded,
+                                label: 'رقم الهاتف',
+                                value: booking.ownerPhone ?? 'غير متوفر',
+                                isDark: isDark,
+                              ),
+                              if (booking.ownerEmail != null &&
+                                  booking.ownerEmail!.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _buildContactRowFull(
+                                  icon: Icons.email_rounded,
+                                  label: 'البريد الإلكتروني',
+                                  value: booking.ownerEmail!,
+                                  isDark: isDark,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  if (proof.imageUrl != null) const SizedBox(width: 14),
-                  if (proof.status == PaymentProofStatus.pending)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          _showReviewDialog(context, proof, booking);
-                        },
-                        icon: const Icon(Icons.check_circle_rounded, size: 20),
-                        label: const Text(
-                          'مراجعة',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+
+                    const SizedBox(height: 24),
+
+                    // Actions
+                    Row(
+                      children: [
+                        if (proof.imageUrl != null)
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () =>
+                                  _showProofImage(context, proof.imageUrl!),
+                              icon: const Icon(Icons.image_rounded, size: 20),
+                              label: const Text(
+                                'عرض الإيصال',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                side: BorderSide(
+                                  color: isDark
+                                      ? ColorManager.white.withOpacity(0.25)
+                                      : ColorManager.grey300,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorManager.green,
-                          foregroundColor: ColorManager.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        if (proof.imageUrl != null) const SizedBox(width: 14),
+                        if (proof.status == PaymentProofStatus.pending)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                _showReviewDialog(context, proof, booking);
+                              },
+                              icon: const Icon(
+                                Icons.check_circle_rounded,
+                                size: 20,
+                              ),
+                              label: const Text(
+                                'مراجعة',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorManager.green,
+                                foregroundColor: ColorManager.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                elevation: 2,
+                              ),
+                            ),
                           ),
-                          elevation: 2,
-                        ),
-                      ),
+                      ],
                     ),
-                ],
+                  ],
+                ),
               ),
-            ],
-          ),
+              crossFadeState: isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 300),
+              sizeCurve: Curves.easeInOut,
+            ),
+          ],
         ),
       ),
     );
@@ -1364,65 +1205,6 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     return 'الآن';
   }
 
-  // Parse booking from Firestore data (used by StreamBuilder)
-  Booking? _parseBookingFromData(String docId, Map<String, dynamic> data) {
-    try {
-      DateTime? parseDate(dynamic value) {
-        if (value == null) return null;
-        if (value is Timestamp) return value.toDate();
-        if (value is String) {
-          try {
-            return DateTime.parse(value);
-          } catch (e) {
-            return null;
-          }
-        }
-        return null;
-      }
-
-      final fromDate = parseDate(data['from']) ?? DateTime.now();
-      final toDate = parseDate(data['to']) ?? DateTime.now();
-
-      DateTime? parseDateField(dynamic value) {
-        if (value == null) return null;
-        if (value is Timestamp) return value.toDate();
-        if (value is String) {
-          try {
-            return DateTime.parse(value);
-          } catch (e) {
-            return null;
-          }
-        }
-        return null;
-      }
-
-      return Booking(
-        id: docId,
-        chaletId: data['chaletId'] ?? '',
-        chaletName: data['chaletName'] ?? 'شاليه',
-        ownerId: data['ownerId'] ?? '',
-        ownerName: data['ownerName'] ?? 'غير معروف',
-        userId: data['userId'] ?? '',
-        userName: data['userName'] ?? 'غير معروف',
-        from: fromDate,
-        to: toDate,
-        status: _parseStatus(data['status']),
-        amount: (data['amount'] as num?)?.toDouble() ?? 0,
-        userPhone: data['userPhone'] as String?,
-        userEmail: data['userEmail'] as String?,
-        ownerPhone: data['ownerPhone'] as String?,
-        ownerEmail: data['ownerEmail'] as String?,
-        chaletLocation: data['chaletLocation'] as String?,
-        adminPaymentNotes: data['adminPaymentNotes'] as String?,
-        paymentRejected: data['paymentRejected'] as bool? ?? false,
-        paymentRejectedAt: parseDateField(data['paymentRejectedAt']),
-      );
-    } catch (e) {
-      debugPrint('Error parsing booking: $e');
-      return null;
-    }
-  }
-
   Future<Booking?> _fetchBooking(String bookingId) async {
     try {
       final doc = await FirebaseFirestore.instance
@@ -1574,48 +1356,43 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     PaymentProof proof,
     Booking booking,
   ) {
-    final notesController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('مراجعة الدفع'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('هل تريد الموافقة على هذا الدفع أم رفضه؟'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(
-                hintText: 'ملاحظات (اختياري)',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
+        content: const Text('الرجاء اختيار الإجراء المناسب لطلب الدفع هذا:'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('إلغاء'),
           ),
-          TextButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              _rejectPayment(proof.id, notesController.text, booking);
+              _rejectPayment(proof.id, 'تم رفض الدفع من قبل الإدارة', booking);
             },
-            child: const Text('رفض', style: TextStyle(color: ColorManager.red)),
+            icon: const Icon(Icons.close_rounded, size: 18),
+            label: const Text('رفض'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorManager.red,
+              foregroundColor: ColorManager.white,
+              elevation: 0,
+            ),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              _approvePayment(proof.id, booking, notesController.text);
+              _approvePayment(proof.id, booking, 'تمت الموافقة من قبل الإدارة');
             },
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: const Text('موافقة'),
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorManager.green,
+              foregroundColor: ColorManager.white,
+              elevation: 0,
             ),
-            child: const Text('موافقة'),
           ),
         ],
       ),

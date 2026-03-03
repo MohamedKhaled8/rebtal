@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
@@ -16,7 +17,7 @@ class RoleSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'أنا...',
+          context.tr('auth_i_am'),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -29,7 +30,7 @@ class RoleSelector extends StatelessWidget {
             Expanded(
               child: _RoleCard(
                 icon: Icons.person_rounded,
-                label: 'مستخدم',
+                label: context.tr('auth_role_user'),
                 value: 'user',
                 isSelected: selectedRole == 'user',
                 color: ColorManager.skyBlue0EA5E9,
@@ -41,7 +42,7 @@ class RoleSelector extends StatelessWidget {
             Expanded(
               child: _RoleCard(
                 icon: Icons.home_work_rounded,
-                label: 'مالك',
+                label: context.tr('auth_role_owner'),
                 value: 'owner',
                 isSelected: selectedRole == 'owner',
                 color: ColorManager.chaletActionDarkBlue,

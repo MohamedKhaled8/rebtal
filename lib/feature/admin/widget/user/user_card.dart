@@ -29,9 +29,7 @@ class UserCard extends StatelessWidget {
         color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.1)
-              : Colors.grey[200]!,
+          color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200]!,
           width: 1,
         ),
         boxShadow: [
@@ -98,8 +96,9 @@ class UserCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: UserManager.roleColor(role)
-                                  .withOpacity(0.15),
+                              color: UserManager.roleColor(
+                                role,
+                              ).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -117,9 +116,7 @@ class UserCard extends StatelessWidget {
                       Text(
                         email,
                         style: TextStyle(
-                          color: isDark
-                              ? Colors.white70
-                              : Colors.grey[600],
+                          color: isDark ? Colors.white70 : Colors.grey[600],
                           fontSize: 14,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -132,24 +129,12 @@ class UserCard extends StatelessWidget {
             const SizedBox(height: 20),
             Container(
               height: 1,
-              color: isDark
-                  ? Colors.white.withOpacity(0.1)
-                  : Colors.grey[200],
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey[200],
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(
-              context,
-              Icons.phone_outlined,
-              phone,
-              isDark,
-            ),
+            _buildInfoRow(context, Icons.phone_outlined, phone, isDark),
             const SizedBox(height: 12),
-            _buildInfoRow(
-              context,
-              Icons.fingerprint,
-              uid,
-              isDark,
-            ),
+            _buildInfoRow(context, Icons.fingerprint, uid, isDark),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -189,9 +174,112 @@ class UserCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (userData['idCardUrl'] != null &&
+                userData['idCardUrl'].toString().isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildActionButton(
+                context: context,
+                icon: Icons.badge_outlined,
+                label: 'عرض البطاقة الشخصية',
+                color: const Color(0xFF10B981), // Green color
+                onPressed: () {
+                  _showIdCardDialog(
+                    context,
+                    userData['idCardUrl'],
+                    name,
+                    isDark,
+                  );
+                },
+                isDark: isDark,
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  void _showIdCardDialog(
+    BuildContext context,
+    String imageUrl,
+    String userName,
+    bool isDark,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'البطاقة الشخصية: $userName',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(
+                          Icons.close,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: Icon(
+                              Icons.broken_image_rounded,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -214,9 +302,7 @@ class UserCard extends StatelessWidget {
           child: Icon(
             icon,
             size: 18,
-            color: isDark
-                ? const Color(0xFF667EEA)
-                : const Color(0xFF667EEA),
+            color: isDark ? const Color(0xFF667EEA) : const Color(0xFF667EEA),
           ),
         ),
         const SizedBox(width: 12),
@@ -245,14 +331,9 @@ class UserCard extends StatelessWidget {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: isDark
-            ? color.withOpacity(0.15)
-            : color.withOpacity(0.1),
+        color: isDark ? color.withOpacity(0.15) : color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -262,11 +343,7 @@ class UserCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 20,
-                color: color,
-              ),
+              Icon(icon, size: 20, color: color),
               const SizedBox(width: 8),
               Text(
                 label,

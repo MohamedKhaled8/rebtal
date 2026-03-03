@@ -10,6 +10,7 @@ abstract class BaseAuthRepository {
     required String phone,
     required String role,
     String? profileImageUrl,
+    String? idCardUrl,
   });
 
   Future<Either<Failure, UserModel>> login({

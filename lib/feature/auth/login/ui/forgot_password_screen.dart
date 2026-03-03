@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/forgot_password/logic/forgot_password_cubit.dart';
 import 'package:rebtal/feature/auth/register/widget/custom_input_field.dart';
@@ -60,7 +61,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'نسيت كلمة المرور',
+                            context.tr('auth_forgot_password_title'),
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
@@ -70,7 +71,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'أدخل بريدك الإلكتروني وسنرسل لك\nرابط إعادة تعيين كلمة المرور',
+                            context.tr('auth_forgot_password_desc'),
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               fontSize: 15,
@@ -86,7 +87,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                     const SizedBox(height: 40),
                     CustomInputField(
                       controller: cubit.emailController,
-                      label: 'البريد الإلكتروني',
+                      label: context.tr('auth_email'),
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
                     ),

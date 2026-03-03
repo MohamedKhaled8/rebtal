@@ -7,7 +7,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class ChaletRequestCard extends StatelessWidget {
   final Map<String, dynamic> requestData;

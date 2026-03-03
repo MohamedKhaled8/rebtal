@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class HomePromoBanners extends StatefulWidget {
   const HomePromoBanners({super.key});
@@ -14,25 +15,25 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
   late Timer _timer;
   int _currentPage = 0;
 
-  final List<Map<String, String>> _bannerData = [
+  List<Map<String, String>> get _bannerData => [
     {
-      'title': 'استمتع بأفضل شاليهات\nالساحل الشمالي',
-      'subtitle': 'خصومات تصل إلى 25% مع تطبيق ريبتال',
-      'tag': 'عرض خاص',
+      'title': context.tr('home_banner_title_1'),
+      'subtitle': context.tr('home_banner_subtitle_1'),
+      'tag': context.tr('home_banner_tag_1'),
       'image':
           'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=400&auto=format&fit=crop',
     },
     {
-      'title': 'هدوء ورفاهية في\nالعين السخنة',
-      'subtitle': 'احجز الآن واستلم خصم فوري 15%',
-      'tag': 'حجز مبكر',
+      'title': context.tr('home_banner_title_2'),
+      'subtitle': context.tr('home_banner_subtitle_2'),
+      'tag': context.tr('home_banner_tag_2'),
       'image':
           'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=400&auto=format&fit=crop',
     },
     {
-      'title': 'أجواء لا تُنسى في\nمدينة دهب',
-      'subtitle': 'عروض حصرية للعائلات والمجموعات',
-      'tag': 'الأكثر طلباً',
+      'title': context.tr('home_banner_title_3'),
+      'subtitle': context.tr('home_banner_subtitle_3'),
+      'tag': context.tr('home_banner_tag_3'),
       'image':
           'https://images.unsplash.com/photo-1510074377623-8cf13fb86c08?q=80&w=400&auto=format&fit=crop',
     },
@@ -101,7 +102,10 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                     Expanded(
                       flex: 3,
                       child: Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 15,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
@@ -133,9 +137,11 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               banner['title']!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black,
                                 fontSize: 18,
@@ -143,7 +149,7 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                                 height: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               banner['subtitle']!,
                               style: TextStyle(

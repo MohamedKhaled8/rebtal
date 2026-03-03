@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class RegisterActionButton extends StatelessWidget {
@@ -43,15 +44,15 @@ class RegisterActionButton extends StatelessWidget {
     // Given the props, we should use them.
 
     if (nameController.text.trim().isEmpty) {
-      SnackBarHelper.showWarning(context, 'Please enter your name');
+      SnackBarHelper.showWarning(context, context.tr('auth_name_required'));
       return false;
     }
     if (emailController.text.trim().isEmpty) {
-      SnackBarHelper.showWarning(context, 'Please enter your email');
+      SnackBarHelper.showWarning(context, context.tr('auth_email_required'));
       return false;
     }
     if (passwordController.text.trim().isEmpty) {
-      SnackBarHelper.showWarning(context, 'Please enter a password');
+      SnackBarHelper.showWarning(context, context.tr('auth_password_required'));
       return false;
     }
     return true;
@@ -144,7 +145,7 @@ class RegisterButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Create My Account',
+                  context.tr('auth_create_account_btn'),
                   style: TextStyle(
                     color: ColorManager.white,
                     fontSize: 15.sp,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/owner/widget/booking_card.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
@@ -32,9 +33,9 @@ class OwnerBookingsPage extends StatelessWidget {
             backgroundColor: isDark
                 ? ColorManager.transparent
                 : ColorManager.white,
-            title: const Text(
-              'حجوزاتي',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            title: Text(
+              context.tr('owner_my_bookings'),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
             actions: [
@@ -99,7 +100,7 @@ class OwnerBookingsPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'لا توجد حجوزات',
+                          context.tr('owner_no_bookings'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

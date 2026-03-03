@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class ExclusiveOffersSection extends StatelessWidget {
   const ExclusiveOffersSection({super.key});
@@ -9,11 +10,11 @@ class ExclusiveOffersSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
-            'عروض حصرية',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            context.tr('home_exclusive_offers'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(
@@ -72,9 +73,9 @@ class ExclusiveOffersSection extends StatelessWidget {
                               color: Colors.redAccent,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              'خصم 20%',
-                              style: TextStyle(
+                            child: Text(
+                              '${context.tr('common_discount')} 20%',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -82,17 +83,17 @@ class ExclusiveOffersSection extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'استمتع بأفضل عروض الشتاء',
-                            style: TextStyle(
+                          Text(
+                            context.tr('home_winter_offers_title'),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text(
-                            'لفترة محدودة فقط',
-                            style: TextStyle(
+                          Text(
+                            context.tr('home_limited_time'),
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
                             ),

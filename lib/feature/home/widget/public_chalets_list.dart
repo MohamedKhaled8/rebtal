@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
@@ -115,9 +116,11 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
         setState(() {
           _isFavorite = wasFavorite;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('تعذر تحديث المفضلة: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.tr('favorites_update_error')}: $e'),
+          ),
+        );
       }
     }
   }
@@ -153,8 +156,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
   @override
   Widget build(BuildContext context) {
-    final chaletName = widget.chaletData['chaletName'] ?? 'شاليه بدون اسم';
-    final location = widget.chaletData['location'] ?? 'الموقع غير محدد';
+    final chaletName =
+        widget.chaletData['chaletName'] ?? context.tr('home_chalet_no_name');
+    final location =
+        widget.chaletData['location'] ?? context.tr('home_location_unknown');
 
     final images = _collectChaletImages(widget.chaletData);
     final isDark = DynamicThemeManager.isDarkMode(context);
@@ -250,9 +255,9 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                                     ),
                                   ],
                                 ),
-                                child: const Text(
-                                  'NEW',
-                                  style: TextStyle(
+                                child: Text(
+                                  context.tr('common_new_badge'),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
@@ -314,7 +319,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'عرض خاص',
+                          context.tr('home_special_offer'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -380,20 +385,20 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                       children: [
                         _buildStat(
                           Icons.bed_outlined,
-                          '${widget.chaletData['bedrooms'] ?? 0} نوم',
+                          '${widget.chaletData['bedrooms'] ?? 0} ${context.tr('common_beds_short')}',
                           isDark,
                         ),
                         const SizedBox(width: 16),
                         _buildStat(
                           Icons.bathtub_outlined,
-                          '${widget.chaletData['bathrooms'] ?? 0} حمام',
+                          '${widget.chaletData['bathrooms'] ?? 0} ${context.tr('common_baths_short')}',
                           isDark,
                         ),
                         const SizedBox(width: 16),
                         if (widget.chaletData['chaletArea'] != null)
                           _buildStat(
                             Icons.square_foot_outlined,
-                            '${widget.chaletData['chaletArea']} م²',
+                            '${widget.chaletData['chaletArea']} ${context.tr('common_m2')}',
                             isDark,
                           ),
                       ],
@@ -457,7 +462,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
             ),
             const SizedBox(width: 4),
             Text(
-              'ج.م',
+              context.tr('booking_egp_currency'),
               style: TextStyle(
                 fontSize: 10,
                 color: isDark ? Colors.white54 : Colors.grey[600],
@@ -577,8 +582,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
             }
           }
           final singleList = [data];
-          final result =
-              ChaletFilterService.filterChalets(singleList, filters);
+          final result = ChaletFilterService.filterChalets(singleList, filters);
           return result.isNotEmpty;
         }).toList();
         filtered.sort((a, b) {
@@ -616,7 +620,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    widget.emptyTitle ?? 'لا توجد نتائج',
+                    widget.emptyTitle ?? context.tr('home_no_results'),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -632,8 +636,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
         final int countToShow = isFiltering
             ? filtered.length
             : (_displayLimit > filtered.length
-                ? filtered.length
-                : _displayLimit);
+                  ? filtered.length
+                  : _displayLimit);
         final bool hasMore = !isFiltering && filtered.length > _displayLimit;
         return Column(
           children: [
@@ -658,12 +662,9 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: _loadMore,
-                    icon: const Icon(
-                      Icons.expand_more,
-                      color: Colors.white,
-                    ),
+                    icon: const Icon(Icons.expand_more, color: Colors.white),
                     label: Text(
-                      'عرض المزيد (${filtered.length - countToShow} شاليه)',
+                      '${context.tr('home_show_more')} (${filtered.length - countToShow} ${context.tr('common_chalet')})',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -725,7 +726,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'خطأ في تحميل الشاليهات',
+                  context.tr('home_load_error'),
                   style: TextStyle(
                     fontSize: 18,
                     color: ColorManager.chaletGrey500,
@@ -747,7 +748,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  widget.emptyTitle ?? 'لا توجد شاليهات متاحة',
+                  widget.emptyTitle ?? context.tr('home_no_chalets'),
                   style: TextStyle(
                     fontSize: 18,
                     color: ColorManager.chaletGrey500,

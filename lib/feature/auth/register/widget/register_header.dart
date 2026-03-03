@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
-import 'package:screen_go/functions/screen_type_value_func.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class RegisterHeader extends StatelessWidget {

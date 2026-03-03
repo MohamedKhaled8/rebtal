@@ -4,7 +4,7 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/feature/onboarding/data/constants/terms_content.dart';
 import 'package:rebtal/feature/onboarding/logic/cubit/terms_cubit.dart';
 import 'package:rebtal/feature/onboarding/logic/cubit/terms_state.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 /// Terms & Conditions screen with scroll detection and smart checkbox
 /// Checkbox is disabled until user scrolls to the very bottom

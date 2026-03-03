@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
@@ -49,9 +50,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ? ColorManager.chaletBackgroundDark
           : ColorManager.chaletBackgroundLight,
       appBar: AppBar(
-        title: const Text(
-          'الإشعارات',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+        title: Text(
+          context.tr('notifications_title'),
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
         ),
         backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         foregroundColor: isDark
@@ -65,14 +66,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
               if (state is NotificationLoaded && state.unreadCount > 0) {
                 return IconButton(
                   icon: const Icon(Icons.done_all_rounded),
-                  tooltip: 'تحديد الكل كمقروء',
+                  tooltip: context.tr('notifications_mark_all_read'),
                   onPressed: () {
                     context.read<AppCubit>().notificationCubit.markAllAsRead(
                       userId,
                     );
                     SnackBarHelper.showSuccess(
                       context,
-                      'تم تحديد جميع الإشعارات كمقروءة',
+                      context.tr('notifications_all_marked'),
                     );
                   },
                 );
@@ -88,13 +89,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'clear',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_sweep_rounded, size: 20),
-                    SizedBox(width: 12),
-                    Text('حذف الكل'),
+                    const Icon(Icons.delete_sweep_rounded, size: 20),
+                    const SizedBox(width: 12),
+                    Text(context.tr('notifications_delete_all')),
                   ],
                 ),
               ),
@@ -130,13 +131,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   child: Row(
                     children: [
                       _buildFilterChip(
-                        label: 'الكل (${state.notifications.length})',
+                        label: '${context.tr('notifications_all')} (${state.notifications.length})',
                         isSelected: !_showUnreadOnly,
                         onTap: () => setState(() => _showUnreadOnly = false),
                       ),
                       const SizedBox(width: 12),
                       _buildFilterChip(
-                        label: 'غير المقروءة (${state.unreadCount})',
+                        label: '${context.tr('notifications_unread')} (${state.unreadCount})',
                         isSelected: _showUnreadOnly,
                         onTap: () => setState(() => _showUnreadOnly = true),
                       ),
@@ -286,7 +287,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ElevatedButton.icon(
               onPressed: _loadNotifications,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('إعادة المحاولة'),
+              label: Text(context.tr('common_retry')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorManager.chaletAccent,
                 foregroundColor: ColorManager.white,
@@ -376,7 +377,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            child: Text(context.tr('common_cancel')),
           ),
           ElevatedButton(
             onPressed: () {
@@ -388,7 +389,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               backgroundColor: ColorManager.chaletActionRed,
               foregroundColor: ColorManager.white,
             ),
-            child: const Text('حذف'),
+            child: Text(context.tr('common_delete')),
           ),
         ],
       ),

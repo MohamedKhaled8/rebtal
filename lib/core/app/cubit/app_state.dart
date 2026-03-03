@@ -4,14 +4,23 @@ part of 'app_cubit.dart';
 abstract class AppState {
   final ThemeMode themeMode;
   final Color primaryColor;
+  final Locale locale;
 
-  const AppState({required this.themeMode, required this.primaryColor});
+  const AppState({
+    required this.themeMode,
+    required this.primaryColor,
+    required this.locale,
+  });
 }
 
 /// Initial app state (loading)
 class AppInitial extends AppState {
   AppInitial()
-    : super(themeMode: ThemeMode.system, primaryColor: const Color(0xFF6200EE));
+    : super(
+        themeMode: ThemeMode.system,
+        primaryColor: const Color(0xFF6200EE),
+        locale: const Locale('ar'),
+      );
 }
 
 /// Unauthenticated state
@@ -19,12 +28,18 @@ class AppUnauthenticated extends AppState {
   const AppUnauthenticated({
     required super.themeMode,
     required super.primaryColor,
+    required super.locale,
   });
 
-  AppUnauthenticated copyWith({ThemeMode? themeMode, Color? primaryColor}) {
+  AppUnauthenticated copyWith({
+    ThemeMode? themeMode,
+    Color? primaryColor,
+    Locale? locale,
+  }) {
     return AppUnauthenticated(
       themeMode: themeMode ?? this.themeMode,
       primaryColor: primaryColor ?? this.primaryColor,
+      locale: locale ?? this.locale,
     );
   }
 }
@@ -43,6 +58,7 @@ class AppAuthenticated extends AppState {
     required this.user,
     required super.themeMode,
     required super.primaryColor,
+    required super.locale,
     this.unreadNotifications = 0,
     this.ownerChalets = const [],
     this.isOwnerChaletsLoading = false,
@@ -55,6 +71,7 @@ class AppAuthenticated extends AppState {
     UserModel? user,
     ThemeMode? themeMode,
     Color? primaryColor,
+    Locale? locale,
     int? unreadNotifications,
     List<dynamic>? ownerChalets,
     bool? isOwnerChaletsLoading,
@@ -66,6 +83,7 @@ class AppAuthenticated extends AppState {
       user: user ?? this.user,
       themeMode: themeMode ?? this.themeMode,
       primaryColor: primaryColor ?? this.primaryColor,
+      locale: locale ?? this.locale,
       unreadNotifications: unreadNotifications ?? this.unreadNotifications,
       ownerChalets: ownerChalets ?? this.ownerChalets,
       isOwnerChaletsLoading:
@@ -85,5 +103,6 @@ class AppError extends AppState {
     required this.message,
     required super.themeMode,
     required super.primaryColor,
+    required super.locale,
   });
 }

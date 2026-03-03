@@ -3,6 +3,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:intl/intl.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class TransferCard extends StatelessWidget {
   final Booking booking;
@@ -45,7 +46,11 @@ class TransferCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildTicketBadge('نقل ملكية الحجز', isDark, accentBlue),
+                      _buildTicketBadge(
+                        context.tr('owner_booking_transfer_title'),
+                        isDark,
+                        accentBlue,
+                      ),
                       if (formattedTransferDate.isNotEmpty)
                         Text(
                           formattedTransferDate,
@@ -63,8 +68,10 @@ class TransferCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _TenantTicketInfo(
-                          title: 'المستأجر القديم',
-                          name: booking.originalTenantName ?? 'غير معروف',
+                          title: context.tr('owner_old_tenant'),
+                          name:
+                              booking.originalTenantName ??
+                              context.tr('common_unknown'),
                           phone: booking.originalTenantPhone ?? '---',
                           isDark: isDark,
                           primaryColor: isDark
@@ -87,7 +94,7 @@ class TransferCard extends StatelessWidget {
                       ),
                       Expanded(
                         child: _TenantTicketInfo(
-                          title: 'المستأجر الجديد',
+                          title: context.tr('owner_new_tenant'),
                           name: booking.userName,
                           phone: booking.userPhone ?? '---',
                           isDark: isDark,
@@ -110,11 +117,15 @@ class TransferCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionLabel('بيانات الحجز المحول', isDark, labelColor),
+                  _buildSectionLabel(
+                    context.tr('owner_transferred_booking_data'),
+                    isDark,
+                    labelColor,
+                  ),
                   const SizedBox(height: 18),
                   _TicketDetailRow(
                     icon: Icons.villa_rounded,
-                    label: 'اسم الشاليه:',
+                    label: context.tr('chalet_name_label'),
                     value: booking.chaletName,
                     isDark: isDark,
                     valueColor: primaryTextColor,
@@ -122,7 +133,7 @@ class TransferCard extends StatelessWidget {
                   ),
                   _TicketDetailRow(
                     icon: Icons.calendar_month_rounded,
-                    label: 'تاريخ الإقامة:',
+                    label: context.tr('owner_stay_date'),
                     value:
                         '${_formatShortDate(booking.from)} - ${_formatShortDate(booking.to)}',
                     isDark: isDark,
@@ -131,7 +142,7 @@ class TransferCard extends StatelessWidget {
                   ),
                   _TicketDetailRow(
                     icon: Icons.payments_rounded,
-                    label: 'قيمة الحجز:',
+                    label: context.tr('owner_booking_value'),
                     value: '${booking.amount?.toStringAsFixed(0)} EGP',
                     isDark: isDark,
                     valueColor: ColorManager.chaletAccent,

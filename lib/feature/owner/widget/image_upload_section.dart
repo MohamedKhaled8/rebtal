@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class ImageUploadSection extends StatelessWidget {
@@ -70,7 +71,7 @@ class ImageUploadSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'صور الشاليه',
+                      context.tr('owner_chalet_photos'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -79,7 +80,7 @@ class ImageUploadSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'أضف 3 صور عالية الجودة على الأقل',
+                      context.tr('owner_add_3_photos_hint'),
                       style: TextStyle(
                         color: isDark
                             ? ColorManager.grey400
@@ -118,7 +119,7 @@ class ImageUploadSection extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${images.length}',
+                        '${images.length} ${context.tr('owner_selected_count')}',
                         style: const TextStyle(
                           color: ColorManager.mainBlue,
                           fontSize: 13,
@@ -200,7 +201,9 @@ class ImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    images.isEmpty ? 'أضف صورتك الأولى' : 'أضف المزيد من الصور',
+                    images.isEmpty
+                        ? context.tr('owner_add_first_photo')
+                        : context.tr('owner_add_more_photos'),
                     style: TextStyle(
                       color: isDark ? ColorManager.white : ColorManager.black,
                       fontSize: 15,
@@ -209,7 +212,7 @@ class ImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'اضغط للاختيار من المعرض',
+                    context.tr('owner_tap_to_select'),
                     style: TextStyle(
                       color: isDark
                           ? ColorManager.grey400
@@ -296,13 +299,17 @@ class _ImageCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.star_rounded, color: ColorManager.white, size: 12),
-                  SizedBox(width: 4),
+                  const Icon(
+                    Icons.star_rounded,
+                    color: ColorManager.white,
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    'غلاف',
+                    context.tr('owner_image_cover'),
                     style: TextStyle(
                       color: ColorManager.white,
                       fontSize: 10,

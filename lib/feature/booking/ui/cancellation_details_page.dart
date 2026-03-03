@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 
 class CancellationDetailsPage extends StatelessWidget {
@@ -31,9 +32,9 @@ class CancellationDetailsPage extends StatelessWidget {
           ? const Color(0xFF121212)
           : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'تفاصيل الإلغاء',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          context.tr('booking_cancellation_details'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -46,16 +47,16 @@ class CancellationDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 2. Cancellation Policy Timeline
-            const Text(
-              'سياسة الإلغاء المتبعة',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+            Text(
+              context.tr('booking_policy_timeline'),
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
             ),
             const SizedBox(height: 16),
             _buildPolicyItem(
               isDarkMode,
-              '7 ليالٍ أو أكثر قبل الوصول',
-              'استرداد المبلغ بالكامل (100%)',
-              'تمنح هذه الفترة وقتاً كافياً لإعادة تأجير الوحدة دون خسائر للمالك.',
+              context.tr('booking_policy_7_nights'),
+              context.tr('booking_policy_7_refund'),
+              context.tr('booking_policy_7_nights_desc'),
               const Color(0xFF10B981),
               refundInfo.tier == 0,
               Icons.check_circle_rounded,
@@ -63,9 +64,9 @@ class CancellationDetailsPage extends StatelessWidget {
             ),
             _buildPolicyItem(
               isDarkMode,
-              '3-6 ليالٍ قبل الوصول',
-              'خصم حتى 50% من المبلغ',
-              'نظراً لقصر المدة المتبقية، يتم خصم نسبة لتعويض المالك عن ضيق وقت إعادة العرض.',
+              context.tr('booking_policy_3_6_nights'),
+              context.tr('booking_policy_3_6_refund'),
+              context.tr('booking_policy_3_6_nights_desc'),
               const Color(0xFFF59E0B),
               refundInfo.tier == 1,
               Icons.info_rounded,
@@ -73,9 +74,9 @@ class CancellationDetailsPage extends StatelessWidget {
             ),
             _buildPolicyItem(
               isDarkMode,
-              'أقل من 3 ليالٍ قبل الوصول',
-              'خصم 50% من قيمة الحجز',
-              'الإلغاء المتأخر جداً يصعّب إيجاد مستأجر بديل لهذه الفترة.',
+              context.tr('booking_policy_less_3'),
+              context.tr('booking_policy_less_3_refund'),
+              context.tr('booking_policy_less_3_desc'),
               const Color(0xFFEF4444),
               refundInfo.tier == 2,
               Icons.warning_rounded,
@@ -83,9 +84,9 @@ class CancellationDetailsPage extends StatelessWidget {
             ),
             _buildPolicyItem(
               isDarkMode,
-              'يوم الوصول',
-              'لا يوجد مبلغ مسترد (0%)',
-              'لا يمكن الإلغاء في نفس اليوم نظراً لالتزام المالك بتجهيز الوحدة وتعطيل الطلبات الأخرى.',
+              context.tr('booking_policy_same_day'),
+              context.tr('booking_policy_no_refund'),
+              context.tr('booking_policy_same_day_desc'),
               const Color(0xFF991B1B),
               refundInfo.tier == 3,
               Icons.block_rounded,
@@ -95,12 +96,18 @@ class CancellationDetailsPage extends StatelessWidget {
             const SizedBox(height: 32),
 
             // 3. Financial Breakdown
-            const Text(
-              'تفاصيل الحساب النقدي',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+            Text(
+              context.tr('booking_financial_details'),
+              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
             ),
             const SizedBox(height: 16),
-            _buildFinancialCard(isDarkMode, booking, refundInfo, daysRemaining),
+            _buildFinancialCard(
+              context,
+              isDarkMode,
+              booking,
+              refundInfo,
+              daysRemaining,
+            ),
 
             const SizedBox(height: 40),
 
@@ -118,9 +125,12 @@ class CancellationDetailsPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'تأكيد إلغاء الحجز',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  context.tr('booking_cancel_booking'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -131,7 +141,7 @@ class CancellationDetailsPage extends StatelessWidget {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'التراجع والعودة',
+                  context.tr('booking_revert_and_back'),
                   style: TextStyle(
                     color: isDarkMode ? Colors.white60 : Colors.grey.shade600,
                     fontWeight: FontWeight.w600,
@@ -234,6 +244,7 @@ class CancellationDetailsPage extends StatelessWidget {
   }
 
   Widget _buildFinancialCard(
+    BuildContext context,
     bool isDarkMode,
     Booking booking,
     dynamic refundInfo,
@@ -251,8 +262,8 @@ class CancellationDetailsPage extends StatelessWidget {
       child: Column(
         children: [
           _buildAmountRow(
-            'المبلغ الإجمالي المدفوع',
-            '${(booking.amount ?? 0).toStringAsFixed(0)} ج.م',
+            context.tr('booking_total_paid'),
+            '${(booking.amount ?? 0).toStringAsFixed(0)} ${context.tr('booking_egp')}',
             isDarkMode,
           ),
           const Padding(
@@ -260,8 +271,8 @@ class CancellationDetailsPage extends StatelessWidget {
             child: Divider(height: 1),
           ),
           _buildAmountRow(
-            'قيمة الخصم المستحق',
-            '-${((booking.amount ?? 0) - refundInfo.refundAmount).toStringAsFixed(0)} ج.م',
+            context.tr('booking_deduction_value'),
+            '-${((booking.amount ?? 0) - refundInfo.refundAmount).toStringAsFixed(0)} ${context.tr('booking_egp')}',
             isDarkMode,
             valueColor: Colors.red,
           ),
@@ -278,12 +289,15 @@ class CancellationDetailsPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'المبلغ المسترد الصافي',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  context.tr('booking_net_refund'),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
-                  '${refundInfo.refundAmount.toStringAsFixed(0)} ج.م',
+                  '${refundInfo.refundAmount.toStringAsFixed(0)} ${context.tr('booking_egp')}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 22,
@@ -357,14 +371,12 @@ class CancellationDetailsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('تأكيد الإلغاء النهائي'),
-        content: const Text(
-          'هل أنت متأكد من رغبتك في إلغاء الحجز بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء بعد تنفيذه.',
-        ),
+        title: Text(context.tr('booking_confirm_cancellation_final')),
+        content: Text(context.tr('booking_cancel_confirm_question')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('تراجع'),
+            child: Text(context.tr('booking_revert')),
           ),
           ElevatedButton(
             onPressed: () {
@@ -380,7 +392,7 @@ class CancellationDetailsPage extends StatelessWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('تأكيد الإلغاء'),
+            child: Text(context.tr('booking_confirm_cancel')),
           ),
         ],
       ),

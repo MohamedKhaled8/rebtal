@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 import 'package:rebtal/feature/notifications/ui/notifications_page.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
@@ -47,14 +48,14 @@ class HomeTopBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'مرحباً بك 👋',
+                    context.tr('home_welcome_back'),
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
                   ),
                   Text(
-                    user?.name ?? 'مستخدم جديد',
+                    user?.name ?? context.tr('home_new_user'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

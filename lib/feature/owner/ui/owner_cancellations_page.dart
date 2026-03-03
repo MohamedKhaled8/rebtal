@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class OwnerCancellationsPage extends StatelessWidget {
   const OwnerCancellationsPage({super.key});
@@ -19,7 +20,7 @@ class OwnerCancellationsPage extends StatelessWidget {
           ? ColorManager.darkBackground121212
           : ColorManager.lightGreyF9F9F9,
       appBar: AppBar(
-        title: const Text('سجل الإلغاءات'),
+        title: Text(context.tr('owner_cancellation_log')),
         centerTitle: true,
         backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
         elevation: 0,
@@ -59,7 +60,7 @@ class OwnerCancellationsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد حجوزات ملغاة',
+                    context.tr('owner_no_cancellations'),
                     style: TextStyle(
                       fontSize: 18,
                       color: isDark ? ColorManager.white70 : ColorManager.grey,
@@ -145,9 +146,9 @@ class _CancelledBookingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'تم الإلغاء',
-                  style: TextStyle(
+                Text(
+                  context.tr('booking_status_cancelled'),
+                  style: const TextStyle(
                     color: ColorManager.red,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -199,7 +200,7 @@ class _CancelledBookingCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _buildFinancialItem(
-                        'المبلغ الأصلي',
+                        context.tr('owner_original_amount'),
                         currencyFormat.format(originalAmount),
                         isDark ? ColorManager.white70 : ColorManager.grey700,
                         isDark ? ColorManager.white : ColorManager.black,
@@ -207,7 +208,7 @@ class _CancelledBookingCard extends StatelessWidget {
                     ),
                     Expanded(
                       child: _buildFinancialItem(
-                        'المسترد للعميل',
+                        context.tr('owner_refunded_to_client'),
                         currencyFormat.format(refundAmount),
                         ColorManager.red.withOpacity(0.7),
                         ColorManager.red,
@@ -215,7 +216,7 @@ class _CancelledBookingCard extends StatelessWidget {
                     ),
                     Expanded(
                       child: _buildFinancialItem(
-                        'صافي لك',
+                        context.tr('owner_net_for_you'),
                         currencyFormat.format(keptAmount),
                         ColorManager.green.withOpacity(0.7),
                         ColorManager.green,
@@ -244,14 +245,14 @@ class _CancelledBookingCard extends StatelessWidget {
                     children: [
                       _buildDetailRow(
                         Icons.person_outline,
-                        'العميل',
+                        context.tr('common_client'),
                         booking.userName,
                         isDark,
                       ),
                       const SizedBox(height: 12),
                       _buildDetailRow(
                         Icons.calendar_today_outlined,
-                        'تاريخ الحجز',
+                        context.tr('owner_booking_date'),
                         '${dateFormat.format(booking.from)} - ${dateFormat.format(booking.to)}',
                         isDark,
                       ),
@@ -259,7 +260,7 @@ class _CancelledBookingCard extends StatelessWidget {
                         const SizedBox(height: 12),
                         _buildDetailRow(
                           Icons.info_outline,
-                          'سبب/سياسة',
+                          context.tr('owner_reason_policy'),
                           booking.refundReason!,
                           isDark,
                           textColor: ColorManager.orange,
@@ -277,7 +278,7 @@ class _CancelledBookingCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => _contactUser(booking.userPhone),
                     icon: const Icon(Icons.phone),
-                    label: const Text('تواصل مع العميل'),
+                    label: Text(context.tr('owner_contact_client')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorManager.mainBlue,
                       foregroundColor: ColorManager.white,

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
@@ -19,10 +20,11 @@ class OffersPage extends StatelessWidget {
           : ColorManager.chaletBackgroundLight,
       appBar: AppBar(
         title: Text(
-          'عروض إعادة البيع',
+          context.tr('chalet_resale_offers'),
           style: TextStyle(
             color: isDark ? ColorManager.white : ColorManager.black,
             fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -42,7 +44,9 @@ class OffersPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text('${context.tr('common_error')}: ${snapshot.error}'),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
@@ -53,7 +57,7 @@ class OffersPage extends StatelessWidget {
 
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد عروض',
+                    context.tr('chalet_no_offers'),
                     style: TextStyle(
                       color: DynamicThemeManager.isDarkMode(context)
                           ? ColorManager.white70
@@ -130,14 +134,14 @@ class _ReOfferItem extends StatelessWidget {
                 BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4),
               ],
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.swap_horiz, color: Colors.white, size: 14),
                 SizedBox(width: 4),
                 Text(
-                  'متاح للنقاش',
-                  style: TextStyle(
+                  context.tr('booking_status_under_discussion'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

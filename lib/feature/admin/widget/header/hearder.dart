@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 class HeaderAdmin extends StatelessWidget {

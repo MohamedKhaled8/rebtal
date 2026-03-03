@@ -43,6 +43,7 @@ class AuthRepository implements BaseAuthRepository {
     required String phone,
     required String role,
     String? profileImageUrl,
+    String? idCardUrl,
   }) async {
     try {
       final emailError = AuthValidator.validateEmail(email);
@@ -107,6 +108,7 @@ class AuthRepository implements BaseAuthRepository {
         createdAt: DateTime.now(),
         phone: phone.trim(),
         profileImageUrl: profileImageUrl,
+        idCardUrl: idCardUrl,
       );
 
       return Right(userModel);

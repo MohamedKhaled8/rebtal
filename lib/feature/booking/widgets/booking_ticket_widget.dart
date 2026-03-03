@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:intl/intl.dart';
@@ -46,7 +47,7 @@ class BookingTicketWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'فاتورة الحجز',
+                    context.tr('booking_invoice'),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -108,43 +109,43 @@ class BookingTicketWidget extends StatelessWidget {
               const SizedBox(height: 20),
 
               // Chalet Details
-              _buildSectionTitle('تفاصيل الشاليه', isDark),
-              _buildDetailRow('الاسم:', booking.chaletName, isDark),
+              _buildSectionTitle(context.tr('booking_chalet_details'), isDark),
+              _buildDetailRow(context.tr('booking_name_label'), booking.chaletName, isDark),
               _buildDetailRow(
-                'الموقع:',
-                booking.chaletLocation ?? 'غير محدد',
+                context.tr('booking_location_label'),
+                booking.chaletLocation ?? context.tr('common_undetermined'),
                 isDark,
               ),
 
               const SizedBox(height: 16),
 
               // Host Details
-              _buildSectionTitle('بيانات المضيف (المالك)', isDark),
-              _buildDetailRow('الاسم:', booking.ownerName, isDark),
+              _buildSectionTitle(context.tr('booking_host_info'), isDark),
+              _buildDetailRow(context.tr('booking_name_label'), booking.ownerName, isDark),
               _buildDetailRow(
-                'الهاتف:',
-                booking.ownerPhone ?? ownerPhone ?? 'غير متوفر',
+                context.tr('booking_phone_label'),
+                booking.ownerPhone ?? ownerPhone ?? context.tr('common_unavailable_short'),
                 isDark,
               ),
               _buildDetailRow(
-                'البريد:',
-                booking.ownerEmail ?? 'غير متوفر',
+                context.tr('booking_email_label'),
+                booking.ownerEmail ?? context.tr('common_unavailable_short'),
                 isDark,
               ),
 
               const SizedBox(height: 16),
 
               // Guest Details
-              _buildSectionTitle('بيانات الضيف (أنت)', isDark),
-              _buildDetailRow('الاسم:', booking.userName, isDark),
+              _buildSectionTitle(context.tr('booking_guest_info'), isDark),
+              _buildDetailRow(context.tr('booking_name_label'), booking.userName, isDark),
               _buildDetailRow(
-                'الهاتف:',
-                booking.userPhone ?? 'غير متوفر',
+                context.tr('booking_phone_label'),
+                booking.userPhone ?? context.tr('common_unavailable_short'),
                 isDark,
               ),
               _buildDetailRow(
-                'البريد:',
-                booking.userEmail ?? 'غير متوفر',
+                context.tr('booking_email_label'),
+                booking.userEmail ?? context.tr('common_unavailable_short'),
                 isDark,
               ),
 
@@ -153,30 +154,30 @@ class BookingTicketWidget extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Booking Dates
-              _buildSectionTitle('تفاصيل الحجز', isDark),
+              _buildSectionTitle(context.tr('booking_booking_details'), isDark),
               _buildDetailRow(
-                'الوصول:',
+                context.tr('booking_arrival_label'),
                 dateFormat.format(booking.from),
                 isDark,
               ),
               _buildDetailRow(
-                'المغادرة:',
+                context.tr('booking_departure_label'),
                 dateFormat.format(booking.to),
                 isDark,
               ),
               _buildDetailRow(
-                'عدد الأيام:',
+                context.tr('booking_days_count'),
                 '${_getDays(booking.from, booking.to)}',
                 isDark,
               ),
               _buildDetailRow(
-                'عدد الليالي:',
+                context.tr('booking_nights_count'),
                 '${_getNights(booking.from, booking.to)}',
                 isDark,
               ),
               if (booking.childrenCount != null)
                 _buildDetailRow(
-                  'عدد الأطفال:',
+                  context.tr('booking_children_count'),
                   '${booking.childrenCount}',
                   isDark,
                 ),
@@ -187,17 +188,17 @@ class BookingTicketWidget extends StatelessWidget {
 
               // Payment Details
               _buildDetailRow(
-                'المبلغ الإجمالي:',
+                context.tr('booking_total_amount'),
                 currencyFormat.format(booking.amount ?? 0),
                 isDark,
                 isBold: true,
                 valueColor: const Color(0xFF10B981),
               ),
               _buildDetailRow(
-                'حالة الدفع:',
+                context.tr('booking_payment_status'),
                 booking.status == BookingStatus.confirmed
-                    ? 'مدفوع بالكامل'
-                    : 'قيد المراجعة',
+                    ? context.tr('booking_paid_full')
+                    : context.tr('booking_under_review'),
                 isDark,
                 valueColor: booking.status == BookingStatus.confirmed
                     ? const Color(0xFF10B981)
@@ -208,7 +209,7 @@ class BookingTicketWidget extends StatelessWidget {
               // Barcode placeholder
               Center(
                 child: Text(
-                  'مسح للتفاصيل',
+                  context.tr('booking_swipe_details'),
                   style: TextStyle(
                     fontSize: 10,
                     color: isDark ? Colors.white30 : Colors.grey,

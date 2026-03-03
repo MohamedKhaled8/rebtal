@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/booking/logic/booking_cubit.dart';
@@ -13,6 +14,8 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 part 'app_state.dart';
 
 class AppCubit extends Cubit<AppState> {
+  static const String _localeKey = 'app_locale';
+
   /// Feature Cubits - internal implementation details (Private)
   final AuthCubit _authCubit;
   final BookingCubit _bookingCubit;
@@ -41,6 +44,26 @@ class AppCubit extends Cubit<AppState> {
        _ownerCubit = ownerCubit,
        super(AppInitial()) {
     _setupListeners();
+    _loadLocale();
+  }
+
+  Locale _savedLocale = const Locale('ar');
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCode = prefs.getString(_localeKey);
+    final locale = savedCode != null ? Locale(savedCode) : const Locale('ar');
+    _savedLocale = locale;
+    _emitWithLocale(locale);
+  }
+
+  void _emitWithLocale(Locale locale) {
+    final current = state;
+    if (current is AppAuthenticated) {
+      emit(current.copyWith(locale: locale));
+    } else if (current is AppUnauthenticated) {
+      emit(current.copyWith(locale: locale));
+    }
   }
 
   /// Setup cross-cubit listeners for coordination
@@ -77,6 +100,7 @@ class AppCubit extends Cubit<AppState> {
           user: user,
           themeMode: _themeCubit.state.themeMode,
           primaryColor: _themeCubit.state.primaryColor,
+          locale: _savedLocale,
           unreadNotifications: _getUnreadNotificationCount(),
           // Preserve existing data if available
           bookings: currentAppState?.bookings ?? [],
@@ -95,6 +119,7 @@ class AppCubit extends Cubit<AppState> {
         AppUnauthenticated(
           themeMode: _themeCubit.state.themeMode,
           primaryColor: _themeCubit.state.primaryColor,
+          locale: _savedLocale,
         ),
       );
     } else if (authState is AuthFailure) {
@@ -103,6 +128,7 @@ class AppCubit extends Cubit<AppState> {
           message: authState.error,
           themeMode: _themeCubit.state.themeMode,
           primaryColor: _themeCubit.state.primaryColor,
+          locale: _savedLocale,
         ),
       );
     }
@@ -224,6 +250,14 @@ class AppCubit extends Cubit<AppState> {
   void toggleTheme() => _themeCubit.toggleTheme();
   void changeTheme(ThemeMode mode) => _themeCubit.changeTheme(mode);
   void changePrimaryColor(Color color) => _themeCubit.changeColor(color);
+
+  // --- Locale ---
+  Future<void> changeLocale(Locale locale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_localeKey, locale.languageCode);
+    _savedLocale = locale;
+    _emitWithLocale(locale);
+  }
 
   // --- Owner (Chalets) ---
   Future<void> fetchOwnerChalets() {

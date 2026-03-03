@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;
@@ -21,8 +22,10 @@ class OwnerChaletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ownerCubit = context.read<AppCubit>().ownerCubit;
-    final chaletName = chaletData['chaletName'] ?? 'Unnamed Chalet';
-    final location = chaletData['location'] ?? 'Location not specified';
+    final chaletName =
+        chaletData['chaletName'] ?? context.tr('home_chalet_no_name');
+    final location =
+        chaletData['location'] ?? context.tr('home_location_unknown');
     final price = chaletData['price'];
     final images = OwnerHelper.collectChaletImages(chaletData);
     final status = chaletData['status'] ?? 'pending';
@@ -79,14 +82,18 @@ class OwnerChaletCard extends StatelessWidget {
                   child: Row(
                     children: [
                       _CompactBadge(
-                        label: isVisible ? 'مرئي' : 'مخفي',
+                        label: isVisible
+                            ? context.tr('common_visible')
+                            : context.tr('common_hidden'),
                         color: isVisible
                             ? ColorManager.chaletActionBlue
                             : ColorManager.grey,
                       ),
                       const SizedBox(width: 8),
                       _CompactBadge(
-                        label: isBookingAvailable ? 'متاح' : 'مغلق',
+                        label: isBookingAvailable
+                            ? context.tr('common_available')
+                            : context.tr('common_closed'),
                         color: isBookingAvailable
                             ? ColorManager.green
                             : ColorManager.red,
@@ -124,13 +131,15 @@ class OwnerChaletCard extends StatelessWidget {
                     children: [
                       _InfoBadge(
                         icon: Icons.bed_outlined,
-                        text: '${chaletData['bedrooms'] ?? 0} غرف',
+                        text:
+                            '${chaletData['bedrooms'] ?? 0} ${context.tr('common_rooms')}',
                         isDark: isDark,
                       ),
                       const SizedBox(width: 12),
                       _InfoBadge(
                         icon: Icons.bathtub_outlined,
-                        text: '${chaletData['bathrooms'] ?? 0} حمام',
+                        text:
+                            '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths')}',
                         isDark: isDark,
                       ),
                       if (chaletData['childrenCount'] != null &&
@@ -138,7 +147,8 @@ class OwnerChaletCard extends StatelessWidget {
                         const SizedBox(width: 12),
                         _InfoBadge(
                           icon: Icons.child_care_outlined,
-                          text: '${chaletData['childrenCount']} أطفال',
+                          text:
+                              '${chaletData['childrenCount']} ${context.tr('common_children')}',
                           isDark: isDark,
                         ),
                       ],
@@ -147,7 +157,8 @@ class OwnerChaletCard extends StatelessWidget {
                         const SizedBox(width: 12),
                         _InfoBadge(
                           icon: Icons.square_foot_rounded,
-                          text: '${chaletData['chaletArea']} م²',
+                          text:
+                              '${chaletData['chaletArea']} ${context.tr('common_m2')}',
                           isDark: isDark,
                         ),
                       ],
@@ -207,7 +218,9 @@ class OwnerChaletCard extends StatelessWidget {
                           icon: isVisible
                               ? Icons.visibility_off
                               : Icons.visibility,
-                          label: isVisible ? 'إخفاء' : 'إظهار',
+                          label: isVisible
+                              ? context.tr('common_hide')
+                              : context.tr('common_show'),
                           color: isVisible
                               ? ColorManager.orange
                               : ColorManager.green,
@@ -224,8 +237,8 @@ class OwnerChaletCard extends StatelessWidget {
                               ? Icons.lock
                               : Icons.lock_open,
                           label: isBookingAvailable
-                              ? 'إيقاف الحجز'
-                              : 'فتح الحجز',
+                              ? context.tr('owner_stop_booking')
+                              : context.tr('owner_open_booking'),
                           color: isBookingAvailable
                               ? ColorManager.red
                               : ColorManager.green,
@@ -259,7 +272,7 @@ class OwnerChaletCard extends StatelessWidget {
                         ),
                         side: BorderSide(color: ColorManager.purple),
                       ),
-                      child: const Text('عرض التفاصيل كامله'),
+                      child: Text(context.tr('owner_view_full_details')),
                     ),
                   ),
                 ],
@@ -292,10 +305,10 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status == 'approved'
-            ? 'موافق'
+            ? context.tr('common_approved')
             : status == 'rejected'
-            ? 'مرفوض'
-            : 'معلق',
+            ? context.tr('common_rejected')
+            : context.tr('booking_status_pending'),
         style: const TextStyle(
           color: Colors.white,
           fontSize: 11,
@@ -522,7 +535,7 @@ class _RatingRow extends StatelessWidget {
         }),
         const SizedBox(width: 6),
         Text(
-          '$rating ($count تقييم)',
+          '$rating ($count ${context.tr('common_ratings')})',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

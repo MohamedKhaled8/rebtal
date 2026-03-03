@@ -11,6 +11,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -144,7 +145,8 @@ class BookingCard extends StatelessWidget {
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
-                                        booking.chaletLocation ?? 'غير محدد',
+                                        booking.chaletLocation ??
+                                            context.tr('common_undetermined'),
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: ColorManager.white,
@@ -215,7 +217,7 @@ class BookingCard extends StatelessWidget {
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'تاريخ الوصول',
+                                          context.tr('booking_check_in'),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: isDark
@@ -265,7 +267,7 @@ class BookingCard extends StatelessWidget {
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
-                                          'تاريخ المغادرة',
+                                          context.tr('booking_check_out'),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: isDark
@@ -312,7 +314,7 @@ class BookingCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '$nights ليلة',
+                                  '$nights ${context.tr('booking_nights')}',
                                   style: const TextStyle(
                                     color: ColorManager.white,
                                     fontSize: 15,
@@ -353,7 +355,7 @@ class BookingCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'رقم الحجز',
+                                  context.tr('owner_booking_number'),
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isDark
@@ -389,7 +391,7 @@ class BookingCard extends StatelessWidget {
                               if (context.mounted) {
                                 SnackBarHelper.showSuccess(
                                   context,
-                                  'تم نسخ رقم الحجز',
+                                  context.tr('owner_booking_copied'),
                                   icon: Icons.copy,
                                 );
                               }
@@ -411,7 +413,7 @@ class BookingCard extends StatelessWidget {
                                 BookingStatus.approved,
                               ),
                               icon: const Icon(Icons.check_circle, size: 20),
-                              label: const Text('قبول الحجز'),
+                              label: Text(context.tr('owner_accept_booking')),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF1D4ED8),
                                 foregroundColor: Colors.white,
@@ -432,7 +434,7 @@ class BookingCard extends StatelessWidget {
                                 BookingStatus.rejected,
                               ),
                               icon: const Icon(Icons.cancel, size: 20),
-                              label: const Text('رفض الحجز'),
+                              label: Text(context.tr('owner_reject_booking')),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red.shade600,
                                 foregroundColor: Colors.white,
@@ -471,7 +473,7 @@ class BookingCard extends StatelessWidget {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                'تم قبول الحجز بنجاح',
+                                context.tr('owner_accept_success'),
                                 style: TextStyle(
                                   color: Color(0xFF1E40AF),
                                   fontWeight: FontWeight.bold,
@@ -517,7 +519,7 @@ class BookingCard extends StatelessWidget {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'تم إلغاء الحجز من قبل العميل',
+                                    context.tr('owner_cancelled_by_client'),
                                     style: TextStyle(
                                       color: Colors.grey.shade800,
                                       fontWeight: FontWeight.bold,
@@ -552,7 +554,9 @@ class BookingCard extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'تاريخ ووقت الإلغاء',
+                                            context.tr(
+                                              'owner_cancellation_datetime',
+                                            ),
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: Colors.grey.shade600,
@@ -612,16 +616,26 @@ class BookingCard extends StatelessWidget {
 
         final isApproved = status == BookingStatus.approved;
         if (isApproved) {
-          SnackBarHelper.showSuccess(context, 'تم قبول الحجز بنجاح');
+          SnackBarHelper.showSuccess(
+            context,
+            context.tr('owner_accept_success'),
+          );
         } else {
-          SnackBarHelper.showError(context, 'تم رفض الحجز', icon: Icons.info);
+          SnackBarHelper.showError(
+            context,
+            context.tr('owner_reject_success'),
+            icon: Icons.info,
+          );
         }
       }
     } catch (e) {
       if (context.mounted) {
         // إخفاء التحميل عند الخطأ
         PremiumLoadingOverlay.dismiss(context);
-        SnackBarHelper.showError(context, 'خطأ: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('booking_error_msg')} $e',
+        );
       }
     }
   }
@@ -632,139 +646,147 @@ class BookingCard extends StatelessWidget {
     final daysRemaining = booking.from.difference(now).inDays;
 
     return await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                color: ColorManager.chaletAccent,
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'ملخص سياسة الإلغاء',
-                style: TextStyle(fontSize: 18),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: ColorManager.chaletAccent,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    context.tr('owner_cancellation_summary'),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
               ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'سيتم تطبيق سياسة الإلغاء التالية على هذا الحجز:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white70 : Colors.grey[700],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildPolicyCard(
-                  isDark,
-                  '7 ليالٍ أو أكثر قبل الوصول',
-                  'استرداد كامل (100%)',
-                  const Color(0xFF4CAF50),
-                  daysRemaining >= 7,
-                ),
-                const SizedBox(height: 10),
-                _buildPolicyCard(
-                  isDark,
-                  '3–6 ليالٍ قبل الوصول',
-                  'خصم حتى 50%',
-                  const Color(0xFFFF9800),
-                  daysRemaining >= 3 && daysRemaining < 7,
-                ),
-                const SizedBox(height: 10),
-                _buildPolicyCard(
-                  isDark,
-                  'أقل من 3 ليالٍ قبل الوصول',
-                  'خصم 50%',
-                  const Color(0xFFF44336),
-                  daysRemaining > 0 && daysRemaining < 3,
-                ),
-                const SizedBox(height: 10),
-                _buildPolicyCard(
-                  isDark,
-                  'يوم الوصول',
-                  'لا استرداد (0%)',
-                  const Color(0xFFD32F2F),
-                  daysRemaining <= 0,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: ColorManager.chaletAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: ColorManager.chaletAccent.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 18,
-                        color: ColorManager.chaletAccent,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('owner_policy_apply_msg'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white70 : Colors.grey[700],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          daysRemaining < 0
-                              ? 'مضى موعد الوصول'
-                              : (daysRemaining == 0
-                                  ? 'اليوم'
-                                  : 'المتبقي: $daysRemaining يوم'),
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildPolicyCard(
+                      isDark,
+                      context.tr('booking_policy_7_nights'),
+                      context.tr('booking_policy_7_refund'),
+                      const Color(0xFF4CAF50),
+                      daysRemaining >= 7,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildPolicyCard(
+                      isDark,
+                      context.tr('booking_policy_3_6_nights'),
+                      context.tr('booking_policy_3_6_refund'),
+                      const Color(0xFFFF9800),
+                      daysRemaining >= 3 && daysRemaining < 7,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildPolicyCard(
+                      isDark,
+                      context.tr('booking_policy_less_3'),
+                      context.tr('booking_policy_less_3_refund'),
+                      const Color(0xFFF44336),
+                      daysRemaining > 0 && daysRemaining < 3,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildPolicyCard(
+                      isDark,
+                      context.tr('booking_policy_same_day'),
+                      context.tr('booking_policy_no_refund'),
+                      const Color(0xFFD32F2F),
+                      daysRemaining <= 0,
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: ColorManager.chaletAccent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: ColorManager.chaletAccent.withOpacity(0.3),
                         ),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 18,
+                            color: ColorManager.chaletAccent,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              daysRemaining < 0
+                                  ? context.tr('booking_arrival_passed_short')
+                                  : (daysRemaining == 0
+                                        ? context.tr('booking_today')
+                                        : context
+                                              .tr('booking_remaining_days')
+                                              .replaceFirst(
+                                                '{}',
+                                                daysRemaining.toString(),
+                                              )),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      context.tr('booking_policy_summary'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  '• الحساب بالليلة. الإلغاء: استرداد كامل قبل 7+ أيام، جزئي قبل 3–6 أيام، خصم 50% قبل أقل من 3 أيام، بدون استرداد يوم الوصول.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white60 : Colors.grey[600],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: TextButton.styleFrom(
+                    foregroundColor: isDark
+                        ? Colors.white70
+                        : Colors.grey.shade700,
                   ),
+                  child: Text(context.tr('common_cancel')),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorManager.chaletAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(context.tr('owner_accept_booking')),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              style: TextButton.styleFrom(
-                foregroundColor: isDark ? Colors.white70 : Colors.grey.shade700,
-              ),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.chaletAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text('موافقة على الحجز'),
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+            );
+          },
+        ) ??
+        false;
   }
 
   Widget _buildPolicyCard(

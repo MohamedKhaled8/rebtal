@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/home/ui/home_screen.dart';
@@ -37,8 +38,12 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
     bottomNavIndex.value = 0;
   }
 
-  void _buildScreensForRole(String role) {
-    if (role == _cachedRole && _screens != null) return;
+  void _buildScreensForRole(BuildContext context, String role) {
+    final t = (String k) => context.tr(k);
+    if (role == _cachedRole && _screens != null) {
+      _navItems = _buildNavItemsForRole(role, t);
+      return;
+    }
     _cachedRole = role;
     if (role == 'admin') {
       _screens = const [
@@ -49,14 +54,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         AdminDashboard(),
         ProfilePage(),
       ];
-      _navItems = const [
-        NavItem(icon: Icons.home, label: 'الرئيسية'),
-        NavItem(icon: Icons.favorite, label: 'المفضلة'),
-        NavItem(icon: Icons.wb_sunny_rounded, label: 'داي يوز'),
-        NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
-        NavItem(icon: Icons.admin_panel_settings, label: 'الإدارة'),
-        NavItem(icon: Icons.person, label: 'الملف'),
-      ];
+      _navItems = _buildNavItemsForRole('admin', t);
     } else if (role == 'owner') {
       _screens = const [
         OwnerChaletsPage(),
@@ -65,13 +63,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         OwnerCancellationsPage(),
         ProfilePage(),
       ];
-      _navItems = const [
-        NavItem(icon: Icons.villa, label: 'الشاليهات'),
-        NavItem(icon: Icons.book_online, label: 'الحجوزات'),
-        NavItem(icon: Icons.swap_horiz_rounded, label: 'انتقالات'),
-        NavItem(icon: Icons.cancel_presentation, label: 'الإلغاءات'),
-        NavItem(icon: Icons.person, label: 'الملف'),
-      ];
+      _navItems = _buildNavItemsForRole('owner', t);
     } else {
       _screens = const [
         HomeScreen(),
@@ -81,14 +73,38 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         UserBookingsPage(),
         ProfilePage(),
       ];
-      _navItems = const [
-        NavItem(icon: Icons.home, label: 'الرئيسية'),
-        NavItem(icon: Icons.local_offer, label: 'عروض'),
-        NavItem(icon: Icons.favorite, label: 'المفضلة'),
-        NavItem(icon: Icons.wb_sunny_rounded, label: 'داي يوز'),
-        NavItem(icon: Icons.confirmation_number, label: 'الحجوزات'),
-        NavItem(icon: Icons.person, label: 'الملف'),
-      ];
+      _navItems = _buildNavItemsForRole('user', t);
+    }
+  }
+
+  List<NavItem> _buildNavItemsForRole(String role, String Function(String) t) {
+    switch (role) {
+      case 'admin':
+        return [
+          NavItem(icon: Icons.home, label: t('nav_home')),
+          NavItem(icon: Icons.favorite, label: t('nav_favorites')),
+          NavItem(icon: Icons.wb_sunny_rounded, label: t('nav_day_use')),
+          NavItem(icon: Icons.confirmation_number, label: t('nav_bookings')),
+          NavItem(icon: Icons.admin_panel_settings, label: t('nav_admin')),
+          NavItem(icon: Icons.person, label: t('nav_profile')),
+        ];
+      case 'owner':
+        return [
+          NavItem(icon: Icons.villa, label: t('nav_chalets')),
+          NavItem(icon: Icons.book_online, label: t('nav_bookings')),
+          NavItem(icon: Icons.swap_horiz_rounded, label: t('nav_transfers')),
+          NavItem(icon: Icons.cancel_presentation, label: t('nav_cancellations')),
+          NavItem(icon: Icons.person, label: t('nav_profile')),
+        ];
+      default:
+        return [
+          NavItem(icon: Icons.home, label: t('nav_home')),
+          NavItem(icon: Icons.local_offer, label: t('nav_offers')),
+          NavItem(icon: Icons.favorite, label: t('nav_favorites')),
+          NavItem(icon: Icons.wb_sunny_rounded, label: t('nav_day_use')),
+          NavItem(icon: Icons.confirmation_number, label: t('nav_bookings')),
+          NavItem(icon: Icons.person, label: t('nav_profile')),
+        ];
     }
   }
 
@@ -111,7 +127,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         }
 
         final role = authCubit.getCurrentRole();
-        _buildScreensForRole(role);
+        _buildScreensForRole(context, role);
         final screens = _screens!;
         final bottomNavItems = _navItems!;
 

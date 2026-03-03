@@ -1,5 +1,6 @@
 import 'package:rebtal/core/Router/export_routes.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/auth/login/logic/login_cubit.dart';
@@ -88,7 +89,7 @@ class _LogoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            'Login herer',
+            context.tr('auth_login_title'),
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -98,7 +99,7 @@ class _LogoSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Welcome back you\'ve been missed',
+            context.tr('auth_login_subtitle'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -138,14 +139,14 @@ class _LoginFormState extends State<_LoginForm> {
       children: [
         CustomInputField(
           controller: widget.cubit.emailController,
-          label: 'البريد الإلكتروني',
+          label: context.tr('auth_email'),
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 20),
         CustomInputField(
           controller: widget.cubit.passwordController,
-          label: 'كلمة المرور',
+          label: context.tr('auth_password'),
           icon: Icons.lock_outline_rounded,
           obscureText: widget.cubit.obscurePassword,
           suffixIcon: IconButton(
@@ -174,7 +175,7 @@ class _LoginFormState extends State<_LoginForm> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             ),
             child: Text(
-              'نسيت كلمة المرور؟',
+              context.tr('auth_forgot_password'),
               style: TextStyle(
                 fontSize: 14,
                 color: widget.isDark
@@ -224,7 +225,7 @@ class _LoginFormState extends State<_LoginForm> {
                         height: 1.4,
                       ),
                       children: [
-                        const TextSpan(text: 'أوافق على '),
+                        TextSpan(text: context.tr('auth_agree_terms')),
                         WidgetSpan(
                           child: GestureDetector(
                             onTap: () {
@@ -233,7 +234,7 @@ class _LoginFormState extends State<_LoginForm> {
                               ).pushNamed(Routes.termsScreen);
                             },
                             child: Text(
-                              'الشروط والأحكام',
+                              context.tr('auth_terms'),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: widget.isDark
@@ -245,7 +246,7 @@ class _LoginFormState extends State<_LoginForm> {
                             ),
                           ),
                         ),
-                        const TextSpan(text: ' وسياسة الخصوصية'),
+                        TextSpan(text: context.tr('auth_and_privacy')),
                       ],
                     ),
                   ),
@@ -258,7 +259,7 @@ class _LoginFormState extends State<_LoginForm> {
           Padding(
             padding: const EdgeInsets.only(left: 48, top: 4),
             child: Text(
-              'يجب الموافقة على الشروط والأحكام للمتابعة',
+              context.tr('auth_must_agree'),
               style: TextStyle(
                 fontSize: 11,
                 color: ColorManager.chaletUnavailableRed,
@@ -284,7 +285,7 @@ class _LoginFormState extends State<_LoginForm> {
                 )
               : _PrimaryButton(
                   isDark: widget.isDark,
-                  label: 'تسجيل الدخول',
+                  label: context.tr('auth_login'),
                   onPressed: _termsAccepted ? () => loginCubit.login() : null,
                 ),
         ),
@@ -354,7 +355,7 @@ class _SignUpLink extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'ليس لديك حساب؟',
+          context.tr('auth_no_account'),
           style: TextStyle(
             fontSize: 15,
             color: isDark ? ColorManager.white70 : ColorManager.chaletGrey500,
@@ -369,7 +370,7 @@ class _SignUpLink extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           ),
           child: Text(
-            'إنشاء حساب',
+            context.tr('auth_create_account'),
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

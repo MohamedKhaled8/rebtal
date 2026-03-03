@@ -6,9 +6,10 @@ import 'package:rebtal/feature/home/widget/automated_offers_section.dart';
 import 'package:rebtal/feature/home/widget/top_rated_section.dart';
 import 'package:rebtal/feature/home/widget/advanced_search_sheet.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -87,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen>
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'إلى أين تريد الذهاب؟',
+                            context.tr('home_search_placeholder'),
                             style: TextStyle(
                               color: isDark ? Colors.white60 : Colors.black54,
                               fontSize: 14,
@@ -123,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'استكشف الشاليهات',
+                      context.tr('home_explore_chalets'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -136,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen>
                         if (filters.isEmpty) return const SizedBox.shrink();
                         return TextButton(
                           onPressed: () => HomeSearch.clear(),
-                          child: const Text('إعادة تعيين'),
+                          child: Text(context.tr('home_reset')),
                         );
                       },
                     ),
@@ -149,8 +150,8 @@ class _HomeScreenState extends State<HomeScreen>
               child: PublicChaletsList(
                 key: const ValueKey('public-chalets-list'),
                 emptyIcon: Icons.search_off_rounded,
-                emptyTitle: 'لا توجد نتائج مطابقة',
-                emptySubtitle: 'جرب البحث عن شيء آخر',
+                emptyTitle: context.tr('home_no_results'),
+                emptySubtitle: context.tr('home_try_other_search'),
               ),
             ),
 
@@ -198,15 +199,15 @@ class AccentBarTitle extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {},
-            child: const Text(
-              'عرض الكل',
+            child: Text(
+              context.tr('home_view_all'),
               style: TextStyle(
                 color: Color(0xFF2563EB),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
-           ),
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/owner/widget/owner_chalets_list.dart';
 
 class ChaletStatusPage extends StatelessWidget {
@@ -20,14 +21,14 @@ class ChaletStatusPage extends StatelessWidget {
     IconData emptyIcon;
 
     if (status == 'approved') {
-      title = 'الشاليهات الموافق عليها';
-      emptyTitle = 'لا توجد شاليهات موافق عليها';
-      emptySubtitle = 'ستظهر الشاليهات الموافق عليها هنا';
+      title = context.tr('owner_approved_chalets');
+      emptyTitle = context.tr('owner_no_approved_chalets');
+      emptySubtitle = context.tr('owner_approved_chalets_hint');
       emptyIcon = Icons.check_circle_outline;
     } else {
-      title = 'الشاليهات المرفوضة';
-      emptyTitle = 'لا توجد شاليهات مرفوضة';
-      emptySubtitle = 'ستظهر الشاليهات المرفوضة هنا';
+      title = context.tr('owner_rejected_chalets');
+      emptyTitle = context.tr('owner_no_rejected_chalets');
+      emptySubtitle = context.tr('owner_rejected_chalets_hint');
       emptyIcon = Icons.cancel_outlined;
     }
 

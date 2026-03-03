@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/booking_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class GuestInfoCard extends StatelessWidget {
   final Booking booking;
@@ -14,10 +15,10 @@ class GuestInfoCard extends StatelessWidget {
     // Show phone/email with placeholder if missing
     final phone = booking.userPhone?.isNotEmpty == true
         ? booking.userPhone!
-        : 'غير متوفر';
+        : context.tr('common_unavailable');
     final email = booking.userEmail?.isNotEmpty == true
         ? booking.userEmail!
-        : 'غير متوفر';
+        : context.tr('common_unavailable');
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -47,7 +48,7 @@ class GuestInfoCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _DateColumn(
-                  label: 'تاريخ الوصول',
+                  label: context.tr('booking_arrival'),
                   date: booking.from,
                   icon: Icons.login_rounded,
                   color: ColorManager.green,
@@ -62,7 +63,7 @@ class GuestInfoCard extends StatelessWidget {
               ),
               Expanded(
                 child: _DateColumn(
-                  label: 'تاريخ المغادرة',
+                  label: context.tr('booking_departure'),
                   date: booking.to,
                   icon: Icons.logout_rounded,
                   color: ColorManager.red,
@@ -82,7 +83,7 @@ class GuestInfoCard extends StatelessWidget {
           // Contact Info - Always show
           ContactRow(
             icon: Icons.phone_rounded,
-            label: 'رقم الهاتف',
+          label: context.tr('common_phone'),
             value: phone,
             color: ColorManager.green,
             bgColor: ColorManager.green.withOpacity(0.1),
@@ -91,7 +92,7 @@ class GuestInfoCard extends StatelessWidget {
           const SizedBox(height: 12),
           ContactRow(
             icon: Icons.email_rounded,
-            label: 'البريد الإلكتروني',
+          label: context.tr('common_email'),
             value: email,
             color: ColorManager.orange,
             bgColor: ColorManager.orange.withOpacity(0.1),
@@ -126,7 +127,7 @@ class _GuestHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'معلومات الضيف',
+                context.tr('admin_guest_info'),
                 style: TextStyle(
                   fontSize: 12,
                   color: isDark ? ColorManager.white70 : ColorManager.grey600,

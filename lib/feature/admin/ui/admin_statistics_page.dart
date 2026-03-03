@@ -41,9 +41,6 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
     'Revenue': true,
   };
 
-  // Subscriptions
-  final List<StreamSubscription> _subscriptions = [];
-
   // Local caches
   Map<String, Map<String, dynamic>> _allUsersData = {};
 
@@ -58,86 +55,60 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
 
   @override
   void dispose() {
-    for (var sub in _subscriptions) {
-      sub.cancel();
-    }
     super.dispose();
   }
 
   void _setupRealtimeListeners() {
-    // 1. Listen to Users (Regular) - Check both 'users' and 'Users' due to inconsistency
-    _subscribeToCollection('Users', 'user');
-    _subscribeToCollection('users', 'user'); // Legacy lower case check
+    // 1. Fetch Users (Regular) - Check both 'users' and 'Users' due to inconsistency
+    _fetchCollection('Users', 'user');
+    _fetchCollection('users', 'user'); // Legacy lower case check
 
-    // 2. Listen to Owners
-    _subscribeToCollection('Owners', 'owner');
+    // 2. Fetch Owners
+    _fetchCollection('Owners', 'owner');
 
-    // 3. Listen to Admins
-    _subscribeToCollection('Admin', 'admin');
+    // 3. Fetch Admins
+    _fetchCollection('Admin', 'admin');
 
-    // 4. Listen to Chalets
-    _subscriptions.add(
-      FirebaseFirestore.instance.collection('chalets').snapshots().listen((
-        snapshot,
-      ) {
-        _processChalets(snapshot);
-      }),
-    );
+    // 4. Fetch Chalets
+    FirebaseFirestore.instance.collection('chalets').get().then((snapshot) {
+      _processChalets(snapshot);
+    });
 
-    // 5. Listen to Bookings
-    _subscriptions.add(
-      FirebaseFirestore.instance.collection('bookings').snapshots().listen((
-        snapshot,
-      ) {
-        _processBookings(snapshot);
-      }),
-    );
+    // 5. Fetch Bookings
+    FirebaseFirestore.instance.collection('bookings').get().then((snapshot) {
+      _processBookings(snapshot);
+    });
   }
 
-  void _subscribeToCollection(String collName, String defaultRole) {
-    _subscriptions.add(
-      FirebaseFirestore.instance
-          .collection(collName)
-          .snapshots()
-          .listen(
-            (snapshot) {
-              _processUserSnapshot(snapshot, defaultRole, collName);
-            },
-            onError: (e) {
-              debugPrint('Error listening to $collName: $e');
-            },
-          ),
-    );
+  void _fetchCollection(String collName, String defaultRole) {
+    FirebaseFirestore.instance
+        .collection(collName)
+        .get()
+        .then(
+          (snapshot) {
+            _processUserSnapshot(snapshot, defaultRole, collName);
+          },
+          onError: (e) {
+            debugPrint('Error fetching $collName: $e');
+          },
+        );
   }
 
   // --- Processing Logic ---
 
-  // We accumulate users from different collections.
-  // To avoid duplication if a doc exists in multiple (unlikely but possible during migration), we key by ID.
-  // Actually, simplest is to treat them as distinct separate buckets for this dashboard unless UIDs collide.
-  // We'll store them in _allUsersData map: Key=UID, Value=Data + SourceCollection
   void _processUserSnapshot(
     QuerySnapshot snapshot,
     String roleHint,
     String sourceColl,
   ) {
     if (!mounted) return; // Safety check
-    for (var change in snapshot.docChanges) {
-      final docId = change.doc.id;
-      if (change.type == DocumentChangeType.removed) {
-        _allUsersData.remove(docId);
-      } else {
-        var data = change.doc.data() as Map<String, dynamic>? ?? {};
-        // Inject role/source for internal tracking
-        data['__internal_role'] = data['role'] ?? roleHint;
-        data['__source'] = sourceColl;
-        // Ensure creation date exists for chart
-        if (data['createdAt'] == null) {
-          // If missing, use a fallback like "now" or "start of month" just so it appears distributed
-          // But for "live" logic, we just want correct counts.
-        }
-        _allUsersData[docId] = data;
-      }
+    for (var doc in snapshot.docs) {
+      final docId = doc.id;
+      var data = doc.data() as Map<String, dynamic>? ?? {};
+      // Inject role/source for internal tracking
+      data['__internal_role'] = data['role'] ?? roleHint;
+      data['__source'] = sourceColl;
+      _allUsersData[docId] = data;
     }
     _recalculateUserStats();
   }
@@ -355,30 +326,45 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
                     ),
                   ],
                 ),
-                // Live Indicator Pulse
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.red.withOpacity(0.5)),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.circle, color: Colors.red, size: 10),
-                      SizedBox(width: 6),
-                      Text(
-                        'LIVE',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                // Refresh Button
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isLoading = true;
+                      _allUsersData.clear();
+                    });
+                    _setupRealtimeListeners();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ColorManager.chaletAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: ColorManager.chaletAccent.withOpacity(0.5),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.refresh,
+                          color: ColorManager.chaletAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'تحديث',
+                          style: TextStyle(
+                            color: ColorManager.chaletAccent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

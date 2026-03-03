@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/helper/extensions.dart';
-import 'package:screen_go/extensions/responsive_nums.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -88,7 +88,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     verticalSpace(0.5),
                     Text(
                       "Rent and showcase beautiful chalets with a couple of taps.",
-                      style: TextStyle(color: ColorManager.white.withOpacity(0.8)),
+                      style: TextStyle(
+                        color: ColorManager.white.withOpacity(0.8),
+                      ),
                     ),
                     verticalSpace(5),
                     Expanded(
@@ -243,7 +245,7 @@ class _OnboardingCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-                            color: ColorManager.white,
+        color: ColorManager.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(

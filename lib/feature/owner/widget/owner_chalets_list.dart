@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -73,7 +74,7 @@ class OwnerChaletsList extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  emptyTitle ?? 'لا توجد شاليهات',
+                  emptyTitle ?? context.tr('home_no_chalets'),
                   style: TextStyle(
                     fontSize: 18,
                     color: isDark ? ColorManager.white70 : ColorManager.grey600,

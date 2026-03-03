@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class BookingStatusChip extends StatelessWidget {
   final BookingStatus status;
@@ -16,7 +17,7 @@ class BookingStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final config = _getStatusConfig(status);
+    final config = _getStatusConfig(context, status);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -49,18 +50,21 @@ class BookingStatusChip extends StatelessWidget {
     );
   }
 
-  Map<String, dynamic> _getStatusConfig(BookingStatus status) {
+  Map<String, dynamic> _getStatusConfig(
+    BuildContext context,
+    BookingStatus status,
+  ) {
     switch (status) {
       case BookingStatus.pending:
         return {
           'color': ColorManager.orange,
-          'text': 'معلق',
+          'text': context.tr('booking_status_pending'),
           'icon': Icons.schedule,
         };
       case BookingStatus.approved:
         return {
           'color': ColorManager.chaletActionGreen,
-          'text': 'مقبول',
+          'text': context.tr('booking_status_accepted'),
           'icon': Icons.check_circle,
         };
       case BookingStatus.awaitingPayment:
@@ -75,50 +79,50 @@ class BookingStatusChip extends StatelessWidget {
               ? ColorManager.red
               : ColorManager.chaletActionBlue,
           'text': isPaymentRejected
-              ? 'في انتظار الدفع - مرفوض'
-              : 'في انتظار الدفع',
+              ? '${context.tr('booking_status_awaiting_payment')} - ${context.tr('booking_status_rejected')}'
+              : context.tr('booking_status_awaiting_payment'),
           'icon': isPaymentRejected ? Icons.cancel : Icons.payment,
         };
       case BookingStatus.paymentUnderReview:
         return {
           'color': ColorManager.purple,
-          'text': 'قيد المراجعة',
+          'text': context.tr('booking_status_payment_review'),
           'icon': Icons.hourglass_empty,
         };
       case BookingStatus.confirmed:
         return {
           'color': ColorManager.teal,
-          'text': 'مؤكد',
+          'text': context.tr('booking_status_confirmed'),
           'icon': Icons.verified,
         };
       case BookingStatus.completed:
         return {
           'color': ColorManager.indigo6366F1,
-          'text': 'مكتمل',
+          'text': context.tr('booking_status_completed'),
           'icon': Icons.done_all,
         };
       case BookingStatus.rejected:
         return {
           'color': ColorManager.red,
-          'text': 'مرفوض',
+          'text': context.tr('booking_status_rejected'),
           'icon': Icons.cancel,
         };
       case BookingStatus.cancelled:
         return {
           'color': ColorManager.grey600,
-          'text': 'تم الإلغاء',
+          'text': context.tr('booking_status_cancelled'),
           'icon': Icons.block,
         };
       case BookingStatus.reOffered:
         return {
           'color': ColorManager.chaletActionBlue,
-          'text': 'معروض للنقاش',
+          'text': context.tr('booking_status_under_discussion'),
           'icon': Icons.swap_horiz,
         };
       case BookingStatus.pendingOwnerApproval:
         return {
           'color': ColorManager.orange,
-          'text': 'في انتظار موافقة المالك',
+          'text': context.tr('booking_status_awaiting_approval'),
           'icon': Icons.pending_actions,
         };
     }

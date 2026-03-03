@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -15,29 +16,33 @@ class BookingCardCompact extends StatelessWidget {
 
   const BookingCardCompact({super.key, required this.booking});
 
-  static String _statusText(BookingStatus status, bool isPaymentRejected) {
-    if (isPaymentRejected) return 'مرفوض الدفع';
+  static String _statusText(
+    BuildContext ctx,
+    BookingStatus status,
+    bool isPaymentRejected,
+  ) {
+    if (isPaymentRejected) return ctx.tr('booking_status_payment_rejected');
     switch (status) {
       case BookingStatus.confirmed:
-        return 'مؤكد';
+        return ctx.tr('booking_status_confirmed');
       case BookingStatus.cancelled:
-        return 'تم الإلغاء';
+        return ctx.tr('booking_status_cancelled');
       case BookingStatus.approved:
-        return 'مقبول';
+        return ctx.tr('booking_status_accepted');
       case BookingStatus.rejected:
-        return 'مرفوض';
+        return ctx.tr('booking_status_rejected');
       case BookingStatus.paymentUnderReview:
-        return 'مراجعة الدفع';
+        return ctx.tr('booking_status_payment_review');
       case BookingStatus.awaitingPayment:
-        return 'في انتظار الدفع';
+        return ctx.tr('booking_status_awaiting_payment');
       case BookingStatus.completed:
-        return 'مكتمل';
+        return ctx.tr('booking_status_completed');
       case BookingStatus.reOffered:
-        return 'معروض للنقاش';
+        return ctx.tr('booking_status_under_discussion');
       case BookingStatus.pendingOwnerApproval:
-        return 'بانتظار الموافقة';
+        return ctx.tr('booking_status_awaiting_approval');
       case BookingStatus.pending:
-        return 'قيد الانتظار';
+        return ctx.tr('booking_status_pending');
     }
   }
 
@@ -63,7 +68,8 @@ class BookingCardCompact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final isPaymentRejected = booking.status == BookingStatus.awaitingPayment &&
+    final isPaymentRejected =
+        booking.status == BookingStatus.awaitingPayment &&
         (booking.paymentRejected == true ||
             (booking.adminPaymentNotes != null &&
                 booking.adminPaymentNotes!.isNotEmpty));
@@ -73,7 +79,10 @@ class BookingCardCompact extends StatelessWidget {
     final isCompleted = booking.status == BookingStatus.completed;
     final statusColor = _statusColor(booking.status, isPaymentRejected);
     final nights = _nights(booking.from, booking.to);
-    final locationName = _locationDisplay(booking.chaletLocation, booking.chaletName);
+    final locationName = _locationDisplay(
+      booking.chaletLocation,
+      booking.chaletName,
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -102,17 +111,22 @@ class BookingCardCompact extends StatelessWidget {
                 SizedBox(
                   height: 180,
                   width: double.infinity,
-                  child: booking.chaletImage != null &&
+                  child:
+                      booking.chaletImage != null &&
                           booking.chaletImage!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: booking.chaletImage!,
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
-                            color: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
+                            color: isDark
+                                ? Colors.grey.shade900
+                                : Colors.grey.shade200,
                             child: const Center(
-                                child: CircularProgressIndicator()),
+                              child: CircularProgressIndicator(),
+                            ),
                           ),
-                          errorWidget: (_, __, ___) => _placeholderImage(isDark),
+                          errorWidget: (_, __, ___) =>
+                              _placeholderImage(isDark),
                         )
                       : _placeholderImage(isDark),
                 ),
@@ -120,7 +134,10 @@ class BookingCardCompact extends StatelessWidget {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(20),
@@ -139,7 +156,11 @@ class BookingCardCompact extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          _statusText(booking.status, isPaymentRejected),
+                          _statusText(
+                            context,
+                            booking.status,
+                            isPaymentRejected,
+                          ),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -171,7 +192,7 @@ class BookingCardCompact extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${(booking.amount ?? 0).toStringAsFixed(0)} ج.م',
+                        '${(booking.amount ?? 0).toStringAsFixed(0)} ${context.tr('booking_egp')}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -194,26 +215,26 @@ class BookingCardCompact extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 14),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _dateChip(
-                        Icons.arrow_forward,
-                        'الوصول',
+                        Icons.login_rounded,
+                        context.tr('booking_arrival'),
                         '${booking.from.day}/${booking.from.month}',
                         isDark,
                       ),
-                      const SizedBox(width: 12),
                       _dateChip(
-                        Icons.arrow_back,
-                        'المغادرة',
+                        Icons.logout_rounded,
+                        context.tr('booking_departure'),
                         '${booking.to.day}/${booking.to.month}',
                         isDark,
                       ),
-                      const SizedBox(width: 12),
                       _dateChip(
-                        Icons.bed_outlined,
-                        'المدة',
-                        '$nights ليال',
+                        Icons.nightlight_round,
+                        context.tr('admin_duration'),
+                        '${nights} ${context.tr('booking_nights')}',
                         isDark,
                       ),
                     ],
@@ -228,7 +249,7 @@ class BookingCardCompact extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'المضيف : ${booking.ownerName}',
+                        '${context.tr('booking_host')} : ${booking.ownerName}',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark ? Colors.white54 : Colors.grey.shade600,
@@ -273,7 +294,11 @@ class BookingCardCompact extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: isDark ? Colors.white54 : Colors.grey.shade600),
+        Icon(
+          icon,
+          size: 14,
+          color: isDark ? Colors.white54 : Colors.grey.shade600,
+        ),
         const SizedBox(width: 4),
         Text(
           '$label $value',
@@ -318,11 +343,14 @@ class BookingCardCompact extends StatelessWidget {
                   context: context,
                   phone: '201008422234',
                   message:
-                      'مرحباً، تم رفض إثبات الدفع لحجز رقم: ${booking.id.substring(0, 8)}',
+                      '${context.tr('booking_whatsapp_contact')} ${booking.id.substring(0, 8)}',
                 );
               },
               icon: const Icon(Icons.chat_rounded, size: 18),
-              label: const Text('واتساب', style: TextStyle(fontSize: 13)),
+              label: Text(
+                context.tr('booking_whatsapp'),
+                style: const TextStyle(fontSize: 13),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF25D366),
                 foregroundColor: Colors.white,
@@ -339,7 +367,10 @@ class BookingCardCompact extends StatelessWidget {
               onPressed: () =>
                   UriLauncherService.launchPhoneCall(context, '201008422234'),
               icon: const Icon(Icons.phone_rounded, size: 18),
-              label: const Text('اتصال', style: TextStyle(fontSize: 13)),
+              label: Text(
+                context.tr('booking_call'),
+                style: const TextStyle(fontSize: 13),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade600,
                 foregroundColor: Colors.white,
@@ -375,12 +406,18 @@ class BookingCardCompact extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.cancel_outlined, size: 20),
-                  SizedBox(width: 8),
-                  Text('إلغاء الحجز', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Icon(Icons.cancel_outlined, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    context.tr('booking_cancel_booking_btn'),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -390,11 +427,13 @@ class BookingCardCompact extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () {
                 context.read<AppCubit>().bookingCubit.updateBookingStatus(
-                      booking.id,
-                      BookingStatus.reOffered,
-                    );
+                  booking.id,
+                  BookingStatus.reOffered,
+                );
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('تم عرض الحجز للنقاش بنجاح')),
+                  SnackBar(
+                    content: Text(context.tr('booking_reoffer_success_msg')),
+                  ),
                 );
               },
               style: OutlinedButton.styleFrom(
@@ -404,7 +443,7 @@ class BookingCardCompact extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('إعادة عرض'),
+              child: Text(context.tr('booking_reoffer_btn')),
             ),
           ),
         ],
@@ -433,12 +472,18 @@ class BookingCardCompact extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.payment_rounded, size: 20),
-              SizedBox(width: 8),
-              Text('إتمام الدفع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Icon(Icons.payment_rounded, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                context.tr('booking_complete_payment_btn'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
@@ -452,9 +497,7 @@ class BookingCardCompact extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => RatingPage(booking: booking),
-              ),
+              MaterialPageRoute(builder: (_) => RatingPage(booking: booking)),
             );
           },
           style: ElevatedButton.styleFrom(
@@ -465,12 +508,18 @@ class BookingCardCompact extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.star_rounded, size: 20),
-              SizedBox(width: 8),
-              Text('تقييم الشاليه', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Icon(Icons.star_rounded, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                context.tr('booking_rate_chalet_btn'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ),
@@ -483,7 +532,9 @@ class BookingCardCompact extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () async {
             try {
-              await context.read<AppCubit>().bookingCubit.finalizeTransfer(booking.id);
+              await context.read<AppCubit>().bookingCubit.finalizeTransfer(
+                booking.id,
+              );
               if (context.mounted) {
                 final appCubit = context.read<AppCubit>();
                 final state = appCubit.state;
@@ -491,13 +542,19 @@ class BookingCardCompact extends StatelessWidget {
                   appCubit.bookingCubit.loadUserBookings(state.user.uid);
                 }
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('تم نقل الحجز بنجاح ✅')),
+                  SnackBar(
+                    content: Text(
+                      '${context.tr('booking_transfer_success_msg')} ✅',
+                    ),
+                  ),
                 );
               }
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('حدث خطأ: $e')),
+                  SnackBar(
+                    content: Text('${context.tr('notifications_error')}: $e'),
+                  ),
                 );
               }
             }
@@ -510,7 +567,7 @@ class BookingCardCompact extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Text('إتمام قبول الموافقة النهائية'),
+          child: Text(context.tr('booking_final_approval_btn')),
         ),
       );
     }

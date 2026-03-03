@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/profile/widget/profile_content.dart';
 import 'package:rebtal/feature/owner/ui/chalet_status_page.dart';
 
@@ -37,7 +38,9 @@ class ProfilePage extends StatelessWidget {
           );
         } else if (state is AppUnauthenticated) {
           // Should have navigated away, but show placeholder
-          return const Scaffold(body: Center(child: Text('يرجى تسجيل الدخول')));
+          return Scaffold(
+            body: Center(child: Text(context.tr('profile_please_login'))),
+          );
         } else {
           // Fallback
           return const Scaffold(
@@ -53,26 +56,26 @@ class ProfilePage extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.logout, color: Color(0xFFEF4444)),
-            SizedBox(width: 12),
+            const Icon(Icons.logout, color: Color(0xFFEF4444)),
+            const SizedBox(width: 12),
             Text(
-              'تسجيل الخروج',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              context.tr('profile_logout'),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
         ),
-        content: const Text(
-          'هل أنت متأكد من رغبتك في تسجيل الخروج؟',
-          style: TextStyle(fontSize: 16),
+        content: Text(
+          context.tr('profile_logout_confirm'),
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'إلغاء',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+            child: Text(
+              context.tr('common_cancel'),
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
           ),
           ElevatedButton(
@@ -87,9 +90,9 @@ class ProfilePage extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text(
-              'تسجيل الخروج',
-              style: TextStyle(
+            child: Text(
+              context.tr('profile_logout'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

@@ -574,6 +574,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.3"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_map:
     dependency: "direct main"
     description:
@@ -1360,6 +1365,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  responsive_screen_master:
+    dependency: "direct main"
+    description:
+      name: responsive_screen_master
+      sha256: "7cbecd7cc006875c3efaf4c124217bafc2a1baa9e9d7e72bb45389d82f758800"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   rxdart:
     dependency: transitive
     description:
@@ -1376,14 +1389,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  screen_go:
-    dependency: "direct main"
-    description:
-      name: screen_go
-      sha256: c7c0757df3201cc11ceeee23dce0bbe70f3bdfaf061362041fb6b1075ebeacb2
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.8"
   screenshot:
     dependency: "direct main"
     description:

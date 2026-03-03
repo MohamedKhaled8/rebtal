@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
@@ -11,7 +12,8 @@ import 'package:rebtal/feature/profile/ui/privacy_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/delivery_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/personal_info_page.dart';
-import 'package:rebtal/feature/localization/language_selection_page.dart';
+import 'package:rebtal/feature/localization/logic/locale_cubit.dart';
+import 'package:rebtal/feature/localization/ui/language_selection_page.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -37,7 +39,9 @@ class ProfileContent extends StatelessWidget {
     final dividerColor = isDark ? Colors.white12 : Colors.grey.shade200;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+      backgroundColor: isDark
+          ? const Color(0xFF121212)
+          : const Color(0xFFF5F5F5),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -55,7 +59,8 @@ class ProfileContent extends StatelessWidget {
                           CircleAvatar(
                             radius: 44,
                             backgroundColor: Colors.grey.shade800,
-                            child: user.profileImageUrl != null &&
+                            child:
+                                user.profileImageUrl != null &&
                                     user.profileImageUrl!.isNotEmpty
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(44),
@@ -65,7 +70,8 @@ class ProfileContent extends StatelessWidget {
                                       width: 88,
                                       height: 88,
                                       placeholder: (_, __) => const Center(
-                                          child: CircularProgressIndicator()),
+                                        child: CircularProgressIndicator(),
+                                      ),
                                       errorWidget: (_, __, ___) => Text(
                                         user.name.isNotEmpty
                                             ? user.name[0].toUpperCase()
@@ -98,10 +104,11 @@ class ProfileContent extends StatelessWidget {
                                 color: Colors.grey.shade700,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF121212)
-                                        : Colors.white,
-                                    width: 2),
+                                  color: isDark
+                                      ? const Color(0xFF121212)
+                                      : Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(
                                 Icons.camera_alt,
@@ -125,10 +132,7 @@ class ProfileContent extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: subColor,
-                      ),
+                      style: TextStyle(fontSize: 14, color: subColor),
                     ),
                     const SizedBox(height: 14),
                     SizedBox(
@@ -150,7 +154,7 @@ class ProfileContent extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('عرض الملف الشخصي'),
+                        child: Text(context.tr('profile_view_profile')),
                       ),
                     ),
                   ],
@@ -159,195 +163,172 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— إعدادات الحساب ——
-            _sectionTitle('إعدادات الحساب', textColor),
+            _sectionTitle(context.tr('profile_account_settings'), textColor),
             SliverToBoxAdapter(
-              child: _buildCard(
-                context,
-                cardColor,
-                dividerColor,
-                [
-                  _settingsTile(
+              child: _buildCard(context, cardColor, dividerColor, [
+                _settingsTile(
+                  context,
+                  icon: Icons.person_outline,
+                  title: context.tr('profile_personal_info'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.person_outline,
-                    title: 'المعلومات الشخصية',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PersonalInfoPage(user: user),
-                      ),
+                    MaterialPageRoute(
+                      builder: (_) => PersonalInfoPage(user: user),
                     ),
-                    textColor: textColor,
                   ),
-                  if (user.role.toLowerCase().trim() == 'owner')
-                    _settingsTile(
-                      context,
-                      icon: Icons.home_work_outlined,
-                      title: 'التبديل إلى وضع المالك',
-                      subtitle: 'العودة لوحة التحكم أو التصفح',
-                      onTap: () {
-                        bottomNavIndex.value = 0;
-                        context.read<AppCubit>().toggleViewMode();
-                      },
-                      textColor: textColor,
-                      subColor: subColor,
-                    ),
+                  textColor: textColor,
+                ),
+                if (user.role.toLowerCase().trim() == 'owner')
                   _settingsTile(
                     context,
-                    icon: Icons.receipt_long_outlined,
-                    title: 'الفواتير والمدفوعات',
-                    subtitle: 'عرض تفاصيل مدفوعاتك',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const UserInvoicesPage(),
-                      ),
-                    ),
+                    icon: Icons.home_work_outlined,
+                    title: context.tr('profile_switch_to_owner'),
+                    subtitle: context.tr('profile_switch_owner_subtitle'),
+                    onTap: () {
+                      bottomNavIndex.value = 0;
+                      context.read<AppCubit>().toggleViewMode();
+                    },
                     textColor: textColor,
                     subColor: subColor,
                   ),
-                ],
-              ),
+                _settingsTile(
+                  context,
+                  icon: Icons.receipt_long_outlined,
+                  title: context.tr('profile_invoices_payments'),
+                  subtitle: context.tr('profile_invoices_subtitle'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserInvoicesPage()),
+                  ),
+                  textColor: textColor,
+                  subColor: subColor,
+                ),
+              ]),
             ),
 
             // —— الدعم والمساعدة ——
-            _sectionTitle('الدعم والمساعدة', textColor),
+            _sectionTitle(context.tr('profile_support'), textColor),
             SliverToBoxAdapter(
-              child: _buildCard(
-                context,
-                cardColor,
-                dividerColor,
-                [
-                  _settingsTile(
+              child: _buildCard(context, cardColor, dividerColor, [
+                _settingsTile(
+                  context,
+                  icon: Icons.help_outline,
+                  title: context.tr('profile_contact'),
+                  subtitle: context.tr('profile_contact_subtitle'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.help_outline,
-                    title: 'اتصل بنا',
-                    subtitle: 'فريق الدعم متاح للمساعدة',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ContactUsPage(),
-                      ),
-                    ),
-                    textColor: textColor,
-                    subColor: subColor,
+                    MaterialPageRoute(builder: (_) => const ContactUsPage()),
                   ),
-                  _settingsTile(
+                  textColor: textColor,
+                  subColor: subColor,
+                ),
+                _settingsTile(
+                  context,
+                  icon: Icons.info_outline,
+                  title: context.tr('profile_about_app'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.info_outline,
-                    title: 'عن التطبيق',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AboutUsPage(),
-                      ),
-                    ),
-                    textColor: textColor,
+                    MaterialPageRoute(builder: (_) => const AboutUsPage()),
                   ),
-                ],
-              ),
+                  textColor: textColor,
+                ),
+              ]),
             ),
 
             // —— القانونية ——
-            _sectionTitle('القانونية', textColor),
+            _sectionTitle(context.tr('profile_legal'), textColor),
             SliverToBoxAdapter(
-              child: _buildCard(
-                context,
-                cardColor,
-                dividerColor,
-                [
-                  _settingsTile(
+              child: _buildCard(context, cardColor, dividerColor, [
+                _settingsTile(
+                  context,
+                  icon: Icons.shield_outlined,
+                  title: context.tr('profile_privacy'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.shield_outlined,
-                    title: 'سياسة الخصوصية',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PrivacyPolicyPage(),
-                      ),
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyPage(),
                     ),
-                    textColor: textColor,
                   ),
-                  _settingsTile(
+                  textColor: textColor,
+                ),
+                _settingsTile(
+                  context,
+                  icon: Icons.description_outlined,
+                  title: context.tr('profile_terms'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.description_outlined,
-                    title: 'الشروط والأحكام',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DeliveryPolicyPage(),
-                      ),
+                    MaterialPageRoute(
+                      builder: (_) => const DeliveryPolicyPage(),
                     ),
-                    textColor: textColor,
                   ),
-                  _settingsTile(
+                  textColor: textColor,
+                ),
+                _settingsTile(
+                  context,
+                  icon: Icons.replay_outlined,
+                  title: context.tr('profile_refund_policy'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.replay_outlined,
-                    title: 'سياسة الاسترجاع',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RefundPolicyPage(),
-                      ),
-                    ),
-                    textColor: textColor,
+                    MaterialPageRoute(builder: (_) => const RefundPolicyPage()),
                   ),
-                ],
-              ),
+                  textColor: textColor,
+                ),
+              ]),
             ),
 
             // —— تفضيلات التطبيق ——
-            _sectionTitle('تفضيلات التطبيق', textColor),
+            _sectionTitle(context.tr('profile_app_preferences'), textColor),
             SliverToBoxAdapter(
-              child: _buildCard(
-                context,
-                cardColor,
-                dividerColor,
-                [
-                  BlocBuilder<AppCubit, AppState>(
-                    buildWhen: (p, c) =>
-                        p.themeMode != c.themeMode,
-                    builder: (context, appState) {
-                      final isDarkMode =
-                          appState.themeMode == ThemeMode.dark;
-                      return ListTile(
-                        leading: Icon(
-                          Icons.dark_mode_outlined,
+              child: _buildCard(context, cardColor, dividerColor, [
+                BlocBuilder<AppCubit, AppState>(
+                  buildWhen: (p, c) => p.themeMode != c.themeMode,
+                  builder: (context, appState) {
+                    final isDarkMode = appState.themeMode == ThemeMode.dark;
+                    return ListTile(
+                      leading: Icon(
+                        Icons.dark_mode_outlined,
+                        color: textColor,
+                        size: 24,
+                      ),
+                      title: Text(
+                        context.tr('profile_dark_mode'),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
                           color: textColor,
-                          size: 24,
                         ),
-                        title: Text(
-                          'الوضع الليلي',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: textColor,
-                          ),
-                        ),
-                        trailing: Switch(
-                          value: isDarkMode,
-                          onChanged: (_) =>
-                              context.read<AppCubit>().toggleTheme(),
-                          activeColor: Colors.white,
-                          activeTrackColor: Colors.blue,
-                        ),
-                      );
-                    },
-                  ),
-                  _settingsTile(
+                      ),
+                      trailing: Switch(
+                        value: isDarkMode,
+                        onChanged: (_) =>
+                            context.read<AppCubit>().toggleTheme(),
+                        activeColor: Colors.white,
+                        activeTrackColor: Colors.blue,
+                      ),
+                    );
+                  },
+                ),
+                _settingsTile(
+                  context,
+                  icon: Icons.language,
+                  title: context.tr('profile_language'),
+                  subtitle:
+                      context.read<AppCubit>().state.locale.languageCode == 'ar'
+                      ? context.tr('language_arabic')
+                      : context.tr('language_english'),
+                  onTap: () => Navigator.push(
                     context,
-                    icon: Icons.language,
-                    title: 'اللغة',
-                    subtitle: 'العربية',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const LanguageSelectionPage(),
+                    MaterialPageRoute(
+                      builder: (ctx) => BlocProvider<LocaleCubit>(
+                        create: (context) =>
+                            LocaleCubit(appCubit: context.read<AppCubit>()),
+                        child: const LanguageSelectionPage(),
                       ),
                     ),
-                    textColor: textColor,
-                    subColor: subColor,
                   ),
-                ],
-              ),
+                  textColor: textColor,
+                  subColor: subColor,
+                ),
+              ]),
             ),
 
             // —— تسجيل الخروج + الإصدار ——
@@ -368,16 +349,13 @@ class ProfileContent extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('تسجيل الخروج'),
+                        child: Text(context.tr('profile_logout')),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'الإصدار 1.0.0',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: subColor,
-                      ),
+                      context.tr('profile_version'),
+                      style: TextStyle(fontSize: 12, color: subColor),
                     ),
                     const SizedBox(height: 90),
                   ],
@@ -449,19 +427,16 @@ class ProfileContent extends StatelessWidget {
       leading: Icon(icon, color: tx, size: 24),
       title: Text(
         title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: tx,
-          fontSize: 15,
-        ),
+        style: TextStyle(fontWeight: FontWeight.w600, color: tx, fontSize: 15),
       ),
       subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: TextStyle(fontSize: 12, color: sx),
-            )
+          ? Text(subtitle, style: TextStyle(fontSize: 12, color: sx))
           : null,
-      trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        size: 14,
+        color: Colors.grey,
+      ),
       onTap: onTap,
     );
   }

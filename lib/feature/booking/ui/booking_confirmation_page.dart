@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/helper/extensions.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -46,7 +47,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('طلبات الحجز الخاصة بي'),
+        title: Text(context.tr('booking_my_requests')),
         centerTitle: true,
         backgroundColor: ColorManager.white,
         foregroundColor: ColorManager.chaletTextPrimaryLight,
@@ -88,7 +89,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
               Icon(Icons.check_circle, color: ColorManager.green, size: 80),
               const SizedBox(height: 24),
               Text(
-                'تم استلام طلبك بنجاح',
+                context.tr('booking_request_received'),
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -122,7 +123,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         );
                       },
                       icon: const Icon(Icons.print),
-                      label: const Text('طباعة'),
+                      label: Text(context.tr('booking_print')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: isDark
                             ? ColorManager.white
@@ -150,7 +151,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         );
                       },
                       icon: const Icon(Icons.save_alt),
-                      label: const Text('حفظ'),
+                      label: Text(context.tr('booking_save')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: isDark
                             ? ColorManager.white
@@ -172,7 +173,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
 
               const SizedBox(height: 24),
               Text(
-                'سيقوم الأدمن بمراجعة الدفع وتأكيد حجزك قريباً.',
+                context.tr('booking_admin_review'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -196,8 +197,8 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                     backgroundColor: ColorManager.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
-                    'العودة للرئيسية',
+                  child: Text(
+                    context.tr('booking_back_home'),
                     style: TextStyle(color: ColorManager.white, fontSize: 18),
                   ),
                 ),
@@ -233,13 +234,13 @@ class _EmptyRequestsView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
-            'لا توجد طلبات حجز حتى الآن',
+          Text(
+            context.tr('booking_no_requests'),
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'عند استلام طلبات جديدة ستظهر هنا. يمكنك تحديث الصفحة أو التواصل مع الدعم.',
+          Text(
+            context.tr('booking_no_requests_hint'),
             textAlign: TextAlign.center,
             style: TextStyle(color: ColorManager.grey600),
           ),
@@ -250,7 +251,7 @@ class _EmptyRequestsView extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRefresh,
                 icon: const Icon(Icons.refresh),
-                label: const Text('تحديث'),
+                label: Text(context.tr('booking_refresh')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ColorManager.chaletActionDarkBlue,
                 ),
@@ -262,7 +263,7 @@ class _EmptyRequestsView extends StatelessWidget {
                   await UriLauncherService.launchPhoneCall(context, '');
                 },
                 icon: const Icon(Icons.phone),
-                label: const Text('اتصل بالدعم'),
+                label: Text(context.tr('booking_contact_support_btn')),
               ),
             ],
           ),
@@ -294,7 +295,7 @@ class BookingRequestCard extends StatelessWidget {
                   radius: 26,
                   backgroundColor: ColorManager.chaletIconBackgroundLight,
                   child: Text(
-                    (chat.chaletName.isNotEmpty ? chat.chaletName[0] : 'ش'),
+                    (chat.chaletName.isNotEmpty ? chat.chaletName[0] : context.tr('common_fallback_chalet')),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -316,13 +317,13 @@ class BookingRequestCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'صاحب الشاليه: ${chat.ownerName}',
+                        '${context.tr('booking_chalet_owner')} ${chat.ownerName}',
                         style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                   ),
                 ),
-                _StatusChip(status: chat.status),
+                _StatusChip(status: chat.status, context: context),
               ],
             ),
             const SizedBox(height: 12),
@@ -335,7 +336,7 @@ class BookingRequestCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'تاريخ الطلب: ${_formatDate(chat.createdAt)}',
+                  '${context.tr('booking_request_date')} ${_formatDate(chat.createdAt)}',
                   style: const TextStyle(color: Colors.black54),
                 ),
               ],
@@ -350,7 +351,7 @@ class BookingRequestCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'آخر تحديث: ${_formatTime(chat.lastMessageTime)}',
+                  '${context.tr('booking_last_update')} ${_formatTime(context, chat.lastMessageTime)}',
                   style: const TextStyle(color: Colors.black54),
                 ),
               ],
@@ -365,7 +366,7 @@ class BookingRequestCard extends StatelessWidget {
                       await UriLauncherService.launchPhoneCall(context, phone);
                     },
                     icon: const Icon(Icons.phone),
-                    label: const Text('اتصال'),
+                    label: Text(context.tr('booking_call')),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -374,7 +375,7 @@ class BookingRequestCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () => _showCancelDialog(context),
                       icon: const Icon(Icons.cancel),
-                      label: const Text('إلغاء الطلب'),
+                      label: Text(context.tr('booking_cancel_request_btn')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ColorManager.red,
                       ),
@@ -391,20 +392,20 @@ class BookingRequestCard extends StatelessWidget {
   void _showCancelDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('إلغاء الطلب'),
-        content: const Text('هل أنت متأكد أنك تريد إلغاء طلب الحجز؟'),
+      builder: (ctx) => AlertDialog(
+        title: Text(ctx.tr('booking_cancel_dialog_title')),
+        content: Text(ctx.tr('booking_cancel_dialog_content')),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('لا'),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(ctx.tr('common_no')),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               // implement cancellation logic in calling code or via bloc/cubit
             },
-            child: const Text('نعم'),
+            child: Text(ctx.tr('common_yes')),
           ),
         ],
       ),
@@ -413,19 +414,20 @@ class BookingRequestCard extends StatelessWidget {
 
   String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 
-  String _formatTime(DateTime time) {
+  String _formatTime(BuildContext context, DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    if (diff.inDays > 0) return '${diff.inDays} يوم';
-    if (diff.inHours > 0) return '${diff.inHours} ساعة';
-    if (diff.inMinutes > 0) return '${diff.inMinutes} دقيقة';
-    return 'الآن';
+    if (diff.inDays > 0) return '${diff.inDays} ${context.tr('booking_day')}';
+    if (diff.inHours > 0) return '${diff.inHours} ${context.tr('booking_hour')}';
+    if (diff.inMinutes > 0) return '${diff.inMinutes} ${context.tr('booking_minute')}';
+    return context.tr('common_now');
   }
 }
 
 class _StatusChip extends StatelessWidget {
   final String status;
-  const _StatusChip({required this.status});
+  final BuildContext parentContext;
+  const _StatusChip({required this.status, required BuildContext context}) : parentContext = context;
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +439,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        _getStatusText(status),
+        _getStatusText(parentContext, status),
         style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
     );
@@ -462,22 +464,22 @@ class _StatusChip extends StatelessWidget {
     }
   }
 
-  String _getStatusText(String status) {
+  String _getStatusText(BuildContext ctx, String status) {
     switch (status) {
       case 'pending':
-        return 'قيد الانتظار';
+        return ctx.tr('booking_status_pending');
       case 'approved':
-        return 'مقبول';
+        return ctx.tr('booking_status_accepted');
       case 'rejected':
-        return 'مرفوض';
+        return ctx.tr('booking_status_rejected');
       case 'cancelled':
-        return 'تم الإلغاء';
+        return ctx.tr('booking_status_cancelled');
       case 'completed':
-        return 'مكتمل';
+        return ctx.tr('booking_status_completed');
       case 'paymentUnderReview':
-        return 'قيد مراجعة الدفع';
+        return ctx.tr('booking_status_payment_review');
       default:
-        return 'غير معروف';
+        return ctx.tr('common_unknown_status');
     }
   }
 }

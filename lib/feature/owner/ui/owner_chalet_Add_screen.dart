@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
@@ -53,7 +54,10 @@ class OwnerChaletAddScreen extends StatelessWidget {
               previous.formError != current.formError,
           listener: (context, state) {
             if (state.isFormSuccess) {
-              SnackBarHelper.showSuccess(context, 'تم إضافة الشاليه بنجاح!');
+              SnackBarHelper.showSuccess(
+                context,
+                context.tr('owner_chalet_added'),
+              );
               Navigator.pop(context);
             } else if (state.formError != null) {
               SnackBarHelper.showError(context, state.formError!);
@@ -78,7 +82,10 @@ class OwnerChaletAddScreen extends StatelessWidget {
                 if (user != null) {
                   ownerCubit.submitChalet(user.uid, user.name);
                 } else {
-                  SnackBarHelper.showError(context, "المستخدم غير مسجل");
+                  SnackBarHelper.showError(
+                    context,
+                    context.tr('owner_user_not_registered'),
+                  );
                 }
               },
             ),
@@ -115,7 +122,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "إضافة شاليه جديد",
+            context.tr('owner_add_new_chalet'),
             style: TextStyle(
               color: isDark ? ColorManager.white : ColorManager.black,
               fontSize: 20,
@@ -123,7 +130,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
             ),
           ),
           Text(
-            "املأ البيانات أدناه",
+            context.tr('owner_fill_data'),
             style: TextStyle(
               color: isDark ? ColorManager.grey400 : ColorManager.grey600,
               fontSize: 12,
@@ -154,7 +161,7 @@ class _ChaletFormContent extends StatelessWidget {
           child: Column(
             children: [
               // Progress Indicator
-              _buildProgressCard(isDark),
+              _buildProgressCard(context, isDark),
               const SizedBox(height: 24),
 
               // Owner Info Section
@@ -237,7 +244,6 @@ class _ChaletFormContent extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-            
               DayUseSection(
                 dayUseEnabled: draft.dayUseEnabled,
                 onDayUseChanged: ownerCubit.updateDayUseEnabled,
@@ -300,7 +306,7 @@ class _ChaletFormContent extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressCard(bool isDark) {
+  Widget _buildProgressCard(BuildContext context, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -344,7 +350,7 @@ class _ChaletFormContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "إنشاء إعلانك",
+                  context.tr("owner_create_ad"),
                   style: TextStyle(
                     color: isDark ? ColorManager.white : ColorManager.black,
                     fontSize: 16,
@@ -353,7 +359,7 @@ class _ChaletFormContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "أضف الصور والتفاصيل والمرافق",
+                  context.tr("owner_add_details_hint"),
                   style: TextStyle(
                     color: isDark ? ColorManager.grey400 : ColorManager.grey600,
                     fontSize: 13,
@@ -445,7 +451,7 @@ class _SubmitButton extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            "جاري الإرسال...",
+                            context.tr("common_sending"),
                             style: TextStyle(
                               color: isDark
                                   ? ColorManager.grey400
@@ -465,9 +471,9 @@ class _SubmitButton extends StatelessWidget {
                             size: 22,
                           ),
                           const SizedBox(width: 10),
-                          const Text(
-                            "إرسال الشاليه",
-                            style: TextStyle(
+                          Text(
+                            context.tr("owner_submit_chalet"),
+                            style: const TextStyle(
                               color: ColorManager.white,
                               fontSize: 17,
                               fontWeight: FontWeight.bold,

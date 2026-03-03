@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
 import 'package:rebtal/feature/booking/ui/cancellation_details_page.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -235,17 +236,17 @@ class BookingCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               isConfirmed
-                                  ? 'مؤكد'
+                                  ? context.tr('booking_status_confirmed')
                                   : isCancelled
-                                  ? 'تم الإلغاء'
+                                  ? context.tr('booking_status_cancelled')
                                   : isApproved
-                                  ? 'مقبول'
+                                  ? context.tr('booking_status_accepted')
                                   : isRejected
-                                  ? 'مرفوض'
+                                  ? context.tr('booking_status_rejected')
                                   : booking.status ==
                                         BookingStatus.paymentUnderReview
-                                  ? 'قيد المراجعة'
-                                  : 'معلق',
+                                  ? context.tr('booking_status_payment_review')
+                                  : context.tr('booking_status_pending'),
                               style: TextStyle(
                                 color: statusColor,
                                 fontWeight: FontWeight.w700,
@@ -270,7 +271,7 @@ class BookingCard extends StatelessWidget {
                       Expanded(
                         child: _DetailItem(
                           icon: Icons.calendar_today_rounded,
-                          label: 'من',
+                          label: context.tr('booking_from'),
                           value: _formatDate(booking.from),
                           isDarkMode: isDarkMode,
                         ),
@@ -279,7 +280,7 @@ class BookingCard extends StatelessWidget {
                       Expanded(
                         child: _DetailItem(
                           icon: Icons.event_available_rounded,
-                          label: 'إلى',
+                          label: context.tr('booking_to'),
                           value: _formatDate(booking.to),
                           isDarkMode: isDarkMode,
                         ),
@@ -288,9 +289,9 @@ class BookingCard extends StatelessWidget {
                       Expanded(
                         child: _DetailItem(
                           icon: Icons.nights_stay_rounded,
-                          label: 'المدة',
+                          label: context.tr('booking_duration'),
                           value:
-                              '${_calculateDays(booking.from, booking.to)} ليال',
+                              '${_calculateNights(booking.from, booking.to)} ${context.tr('booking_nights')}',
                           isDarkMode: isDarkMode,
                         ),
                       ),
@@ -322,7 +323,9 @@ class BookingCard extends StatelessWidget {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'تم رفض إثبات الدفع',
+                                  context.tr(
+                                    'booking_payment_rejected_msg_short',
+                                  ),
                                   style: TextStyle(
                                     color: Colors.red.shade700,
                                     fontWeight: FontWeight.bold,
@@ -336,7 +339,7 @@ class BookingCard extends StatelessWidget {
                               booking.adminPaymentNotes!.isNotEmpty) ...[
                             const SizedBox(height: 8),
                             Text(
-                              'السبب: ${booking.adminPaymentNotes}',
+                              '${context.tr('common_reason')} ${booking.adminPaymentNotes}',
                               style: TextStyle(
                                 color: isDarkMode
                                     ? Colors.white70
@@ -355,16 +358,16 @@ class BookingCard extends StatelessWidget {
                                       context: context,
                                       phone: '201008422234',
                                       message:
-                                          'مرحباً، تم رفض إثبات الدفع لحجز رقم: ${booking.id.substring(0, 8)}',
+                                          '${context.tr('booking_whatsapp_contact')} ${booking.id.substring(0, 8)}',
                                     );
                                   },
                                   icon: const Icon(
                                     Icons.chat_rounded,
                                     size: 18,
                                   ),
-                                  label: const Text(
-                                    'واتساب',
-                                    style: TextStyle(fontSize: 13),
+                                  label: Text(
+                                    context.tr('booking_whatsapp'),
+                                    style: const TextStyle(fontSize: 13),
                                   ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF25D366),
@@ -391,9 +394,9 @@ class BookingCard extends StatelessWidget {
                                     Icons.phone_rounded,
                                     size: 18,
                                   ),
-                                  label: const Text(
-                                    'اتصال',
-                                    style: TextStyle(fontSize: 13),
+                                  label: Text(
+                                    context.tr('booking_call'),
+                                    style: const TextStyle(fontSize: 13),
                                   ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue.shade600,
@@ -435,11 +438,12 @@ class BookingCard extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => CancellationDetailsPage(booking: booking),
+                                  builder: (_) =>
+                                      CancellationDetailsPage(booking: booking),
                                 ),
                               );
                             },
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
@@ -449,8 +453,8 @@ class BookingCard extends StatelessWidget {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  'إلغاء الحجز',
-                                  style: TextStyle(
+                                  context.tr('booking_cancel_booking'),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),
@@ -472,14 +476,14 @@ class BookingCard extends StatelessWidget {
                               elevation: 4,
                             ),
                             onPressed: () => _reList(context, booking),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.swap_horiz, size: 20),
                                 SizedBox(width: 8),
                                 Text(
-                                  'إعادة عرض',
-                                  style: TextStyle(
+                                  context.tr('booking_reoffer'),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),
@@ -562,22 +566,24 @@ class BookingCard extends StatelessWidget {
                             ],
                             Text(
                               isApproved
-                                  ? 'إتمام الدفع'
+                                  ? context.tr('booking_complete_payment')
                                   : booking.status == BookingStatus.completed
-                                  ? 'تقييم الشاليه'
+                                  ? context.tr('booking_rate_chalet')
                                   : isCancelled
-                                  ? 'تم إلغاء هذا الطلب'
+                                  ? context.tr('booking_cancelled_msg')
                                   : isRejected
-                                  ? 'تم رفض هذا الطلب'
+                                  ? context.tr('booking_status_rejected')
                                   : booking.status ==
                                         BookingStatus.paymentUnderReview
-                                  ? 'جاري مراجعة الدفع'
+                                  ? context.tr('booking_status_payment_review')
                                   : booking.status == BookingStatus.reOffered
-                                  ? 'معروض للنقاش'
+                                  ? context.tr(
+                                      'booking_status_under_discussion',
+                                    )
                                   : booking.status ==
                                         BookingStatus.pendingOwnerApproval
-                                  ? 'إتمام قبول الموافقة النهائية'
-                                  : 'بانتظار موافقة المضيف',
+                                  ? context.tr('booking_final_approval')
+                                  : context.tr('booking_awaiting_host'),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -627,15 +633,15 @@ class BookingCard extends StatelessWidget {
         if (currentState is AppAuthenticated) {
           appCubit.bookingCubit.loadUserBookings(currentState.user.uid);
         }
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('تم نقل الحجز بنجاح ✅')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('booking_transfer_success_msg'))),
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('حدث خطأ: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${context.tr('booking_error_msg')} $e')),
+        );
       }
     }
   }
@@ -674,7 +680,10 @@ class BookingCard extends StatelessWidget {
             children: [
               const Icon(Icons.info_outline_rounded, color: Colors.orange),
               const SizedBox(width: 8),
-              const Text('سياسة إلغاء الحجز', style: TextStyle(fontSize: 18)),
+              Text(
+                context.tr('booking_cancellation_policy_title'),
+                style: const TextStyle(fontSize: 18),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -684,8 +693,8 @@ class BookingCard extends StatelessWidget {
               children: [
                 _buildCancellationPolicyCard(
                   isDarkMode,
-                  title: '7 ليالٍ أو أكثر قبل الوصول',
-                  text: 'استرداد كامل (100%)',
+                  title: context.tr('booking_policy_7_nights'),
+                  text: context.tr('booking_policy_7_refund'),
                   color: const Color(0xFF4CAF50),
                   isActive: refundInfo.tier == 0,
                   icon: Icons.calendar_today_rounded,
@@ -693,8 +702,8 @@ class BookingCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildCancellationPolicyCard(
                   isDarkMode,
-                  title: '3–6 ليالٍ قبل الوصول',
-                  text: 'خصم حتى 50%',
+                  title: context.tr('booking_policy_3_6_nights'),
+                  text: context.tr('booking_policy_3_6_refund'),
                   color: const Color(0xFFFF9800),
                   isActive: refundInfo.tier == 1,
                   icon: Icons.savings_outlined,
@@ -702,8 +711,8 @@ class BookingCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildCancellationPolicyCard(
                   isDarkMode,
-                  title: 'أقل من 3 ليالٍ قبل الوصول',
-                  text: 'خصم 50%',
+                  title: context.tr('booking_policy_less_3'),
+                  text: context.tr('booking_policy_less_3_refund'),
                   color: const Color(0xFFF44336),
                   isActive: refundInfo.tier == 2,
                   icon: Icons.warning_amber_rounded,
@@ -711,8 +720,8 @@ class BookingCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 _buildCancellationPolicyCard(
                   isDarkMode,
-                  title: 'يوم الوصول',
-                  text: 'لا استرداد (0%)',
+                  title: context.tr('booking_policy_same_day'),
+                  text: context.tr('booking_policy_no_refund'),
                   color: const Color(0xFFD32F2F),
                   isActive: refundInfo.tier == 3,
                   icon: Icons.block_rounded,
@@ -722,7 +731,7 @@ class BookingCard extends StatelessWidget {
 
                 // 2. تفاصيل الحجز (مدة الحجز + المتبقي للوصول)
                 Text(
-                  'تفاصيل الحجز والتواريخ:',
+                  context.tr('booking_details_dates'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white70 : Colors.black87,
@@ -730,20 +739,22 @@ class BookingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 _buildDateRow(
-                  'مدة الحجز:',
-                  '${_calculateDays(booking.from, booking.to)} أيام، ${_calculateNights(booking.from, booking.to)} ليالٍ',
+                  context.tr('booking_duration'),
+                  '${_calculateDays(booking.from, booking.to)} ${context.tr('booking_days_label')}, ${_calculateNights(booking.from, booking.to)} ${context.tr('booking_nights')}',
                   isDarkMode,
                 ),
                 _buildDateRow(
-                  'تاريخ الوصول:',
+                  context.tr('booking_arrival_date'),
                   _formatDate(booking.from),
                   isDarkMode,
                 ),
                 _buildDateRow(
-                  'المتبقي للوصول:',
+                  context.tr('booking_remaining'),
                   daysRemaining < 0
-                      ? 'مضى موعد الوصول'
-                      : (daysRemaining == 0 ? 'اليوم' : '$daysRemaining يوم'),
+                      ? context.tr('booking_arrival_passed_short')
+                      : (daysRemaining == 0
+                            ? context.tr('booking_today')
+                            : context.tr('booking_remaining_days').replaceFirst('{}', daysRemaining.toString())),
                   isDarkMode,
                   isBold: true,
                   valueColor: daysRemaining < 0 ? Colors.red : null,
@@ -772,7 +783,7 @@ class BookingCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'المبلغ المدفوع:',
+                      context.tr('booking_amount_paid'),
                       style: TextStyle(
                         color: isDarkMode
                             ? Colors.white60
@@ -780,7 +791,7 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${(booking.amount ?? 0).toStringAsFixed(0)} جنية',
+                      '${(booking.amount ?? 0).toStringAsFixed(0)} ${context.tr('booking_egp_currency')}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: isDarkMode ? Colors.white : Colors.black,
@@ -793,7 +804,7 @@ class BookingCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'قيمة الخصم:',
+                      context.tr('booking_discount_value'),
                       style: TextStyle(
                         color: isDarkMode
                             ? Colors.white60
@@ -801,7 +812,7 @@ class BookingCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '-${((booking.amount ?? 0) - refundInfo.refundAmount).toStringAsFixed(0)} جنية',
+                      '-${((booking.amount ?? 0) - refundInfo.refundAmount).toStringAsFixed(0)} ${context.tr('booking_egp_currency')}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.red,
@@ -822,16 +833,16 @@ class BookingCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'المبلغ المسترد:',
-                        style: TextStyle(
+                      Text(
+                        context.tr('booking_refund_amount_label'),
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
                           fontSize: 15,
                         ),
                       ),
                       Text(
-                        '${refundInfo.refundAmount.toStringAsFixed(0)} جنية',
+                        '${refundInfo.refundAmount.toStringAsFixed(0)} ${context.tr('booking_egp_currency')}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
@@ -852,7 +863,7 @@ class BookingCard extends StatelessWidget {
                     ? Colors.white70
                     : Colors.grey.shade700,
               ),
-              child: const Text('تراجع'),
+              child: Text(context.tr('booking_revert_btn')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -870,7 +881,7 @@ class BookingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('تأكيد الإلغاء'),
+              child: Text(context.tr('booking_confirm_cancel_btn')),
             ),
           ],
         );
@@ -941,14 +952,12 @@ class BookingCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("إعادة عرض الحجز"),
-        content: const Text(
-          "هل تريد عرض هذا الحجز للنقاش مع مستأجرين آخرين؟\nسيتمكن المستخدمون الآخرون من رؤية الحجز وطلب نقله.",
-        ),
+        title: Text(context.tr('booking_reoffer_dialog_title')),
+        content: Text(context.tr('booking_reoffer_dialog_content')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("تراجع"),
+            child: Text(context.tr('booking_revert_btn')),
           ),
           ElevatedButton(
             onPressed: () {
@@ -958,10 +967,12 @@ class BookingCard extends StatelessWidget {
                 BookingStatus.reOffered,
               );
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('تم عرض الحجز للنقاش بنجاح')),
+                SnackBar(
+                  content: Text(context.tr('booking_reoffer_success_snack')),
+                ),
               );
             },
-            child: const Text("تأكيد والعرض"),
+            child: Text(context.tr('booking_confirm_reoffer_btn')),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -18,7 +19,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
   final TextEditingController _reasonController = TextEditingController();
   double _refundPercentage = 0;
   double _refundAmount = 0;
-  String _refundPolicy = '';
+  String _refundPolicyKey = '';
 
   @override
   void initState() {
@@ -33,13 +34,13 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
 
     if (daysUntilBooking >= 7) {
       _refundPercentage = 100;
-      _refundPolicy = 'إلغاء قبل 7 أيام - استرداد كامل';
+      _refundPolicyKey = 'booking_refund_7_days';
     } else if (daysUntilBooking >= 3) {
       _refundPercentage = 50;
-      _refundPolicy = 'إلغاء قبل 3-7 أيام - استرداد 50%';
+      _refundPolicyKey = 'booking_refund_3_7_days';
     } else {
       _refundPercentage = 0;
-      _refundPolicy = 'إلغاء قبل أقل من 3 أيام - لا يوجد استرداد';
+      _refundPolicyKey = 'booking_refund_less_3';
     }
 
     _refundAmount = amount * (_refundPercentage / 100);
@@ -62,8 +63,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
       appBar: AppBar(
         backgroundColor: ColorManager.transparent,
         elevation: 0,
-        title: const Text(
-          'طلب استرداد',
+        title: Text(
+          context.tr('booking_refund_request_title'),
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -98,7 +99,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'معلومات الحجز',
+                          context.tr('booking_booking_info'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -110,16 +111,16 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow('الشاليه', widget.booking.chaletName, isDark),
+                    _buildInfoRow(context.tr('common_chalet'), widget.booking.chaletName, isDark),
                     const SizedBox(height: 8),
                     _buildInfoRow(
-                      'المبلغ المدفوع',
-                      '${widget.booking.amount?.toStringAsFixed(0) ?? 0} جنيه',
+                      context.tr('booking_amount_paid_label'),
+                      '${widget.booking.amount?.toStringAsFixed(0) ?? 0} ${context.tr('booking_egp_currency')}',
                       isDark,
                     ),
                     const SizedBox(height: 8),
                     _buildInfoRow(
-                      'تاريخ الحجز',
+                      context.tr('booking_booking_date'),
                       '${widget.booking.from.day}/${widget.booking.from.month}/${widget.booking.from.year}',
                       isDark,
                     ),
@@ -146,7 +147,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 child: Column(
                   children: [
                     Text(
-                      _refundPolicy,
+                      context.tr(_refundPolicyKey),
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.white,
@@ -169,8 +170,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                'نسبة الاسترداد',
+                              Text(
+                                context.tr('booking_refund_percentage'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: ColorManager.white70,
@@ -200,8 +201,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                'المبلغ المسترد',
+                              Text(
+                                context.tr('booking_refund_amount'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: ColorManager.white70,
@@ -229,7 +230,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
 
               // Reason Input
               Text(
-                'سبب الإلغاء',
+                context.tr('booking_cancel_reason'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -243,7 +244,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 controller: _reasonController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'يرجى توضيح سبب إلغاء الحجز...',
+                  hintText: context.tr('booking_cancel_reason_hint'),
                   filled: true,
                   fillColor: isDark
                       ? ColorManager.darkSurface1E1E1E
@@ -302,7 +303,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'لن يتم استرداد أي مبلغ حسب سياسة الإلغاء',
+                          context.tr('booking_no_refund_policy'),
                           style: TextStyle(
                             fontSize: 14,
                             color: ColorManager.chaletActionDarkRed,
@@ -324,7 +325,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     if (_reasonController.text.trim().isEmpty) {
                       SnackBarHelper.showWarning(
                         context,
-                        'يرجى إدخال سبب الإلغاء',
+                        context.tr('booking_enter_cancel_reason'),
                       );
                       return;
                     }
@@ -339,20 +340,20 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       if (context.mounted) {
                         SnackBarHelper.showSuccess(
                           context,
-                          'تم تقديم طلب الاسترداد بنجاح',
+                          context.tr('booking_refund_success'),
                         );
 
                         Navigator.pop(context);
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        SnackBarHelper.showError(context, 'خطأ: $e');
+                        SnackBarHelper.showError(context, '${context.tr('notifications_error')}: $e');
                       }
                     }
                   },
                   icon: const Icon(Icons.send, size: 20),
-                  label: const Text(
-                    'تقديم طلب الاسترداد',
+                  label: Text(
+                    context.tr('booking_submit_refund'),
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -377,8 +378,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     Navigator.pushNamed(context, '/cancellation-policy');
                   },
                   icon: const Icon(Icons.policy, size: 20),
-                  label: const Text(
-                    'عرض سياسة الإلغاء',
+                  label: Text(
+                    context.tr('booking_view_cancel_policy'),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: OutlinedButton.styleFrom(

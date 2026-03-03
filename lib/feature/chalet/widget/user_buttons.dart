@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class UserButtons extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -83,7 +84,10 @@ class _BookingButton extends StatelessWidget {
                 requestData: requestData,
               )
             : () {
-                SnackBarHelper.showError(context, 'الحجز غير متاح حالياً');
+                SnackBarHelper.showError(
+                  context,
+                  context.tr('booking_unavailable_hint'),
+                );
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: ColorManager.transparent,
@@ -103,7 +107,9 @@ class _BookingButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              isBookingAvailable ? 'Booking Now' : 'الحجز مغلق',
+              isBookingAvailable
+                  ? context.tr('booking_book_now')
+                  : context.tr('booking_closed'),
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

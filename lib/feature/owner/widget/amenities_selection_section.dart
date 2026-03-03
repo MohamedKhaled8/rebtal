@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 
@@ -63,7 +64,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'المرافق والخدمات',
+                      context.tr('home_facilities_services'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -72,7 +73,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'اختر جميع المرافق المتوفرة',
+                      context.tr('owner_select_amenities_hint'),
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
@@ -102,7 +103,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '$selectedCount محدد',
+                    '$selectedCount ${context.tr('owner_selected_count')}',
                     style: const TextStyle(
                       color: ColorManager.purple764BA2,
                       fontSize: 12,
@@ -135,7 +136,33 @@ class AmenitiesSelectionSection extends StatelessWidget {
               final label = amenity['label'] as String;
 
               return _BouncyAmenityCard(
-                label: label,
+                label: context.tr(
+                  key == 'hasWifi'
+                      ? 'chalet_wifi'
+                      : key == 'hasPool'
+                      ? 'chalet_pool'
+                      : key == 'hasAirConditioning'
+                      ? 'chalet_ac'
+                      : key == 'hasParking'
+                      ? 'chalet_parking'
+                      : key == 'hasGarden'
+                      ? 'chalet_garden'
+                      : key == 'hasBBQ'
+                      ? 'chalet_bbq'
+                      : key == 'hasBeachView'
+                      ? 'chalet_beach_view'
+                      : key == 'hasHousekeeping'
+                      ? 'chalet_housekeeping'
+                      : key == 'hasPetsAllowed'
+                      ? 'chalet_pets'
+                      : key == 'hasGym'
+                      ? 'chalet_gym'
+                      : key == 'hasKitchen'
+                      ? 'chalet_kitchen'
+                      : key == 'hasTV'
+                      ? 'chalet_tv'
+                      : label,
+                ),
                 icon: icon,
                 color: color,
                 isSelected: isSelected,
