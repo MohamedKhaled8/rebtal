@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/logic/wizard_cubit/booking_wizard_state.d
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:confetti/confetti.dart';
 
 // Premium Colors
@@ -123,8 +124,6 @@ class _BookingWizardViewState extends State<BookingWizardView> {
                     child: _buildHeader(context, isDark, text),
                   ),
 
-                  const SizedBox(height: 10),
-
                   // 2. Progress Indicator
                   FadeInDown(
                     delay: const Duration(milliseconds: 200),
@@ -197,7 +196,10 @@ class _BookingWizardViewState extends State<BookingWizardView> {
 
   Widget _buildHeader(BuildContext context, bool isDark, Color textColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw),
+        vertical: otv(context: context, portrait: 16.sh, landscape: 8.sh),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -205,18 +207,18 @@ class _BookingWizardViewState extends State<BookingWizardView> {
             onPressed: () => Navigator.of(context).pop(),
             icon: Icon(
               Icons.close_rounded,
-              size: 28,
+              size: stv(context: context, mobile: 24.spScaled, tablet: 28.spScaled, desktop: 32.spScaled),
               color: isDark ? Colors.white70 : Colors.black54,
             ),
             style: IconButton.styleFrom(
               backgroundColor: isDark ? Colors.white10 : Colors.grey[100],
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(stv(context: context, mobile: 6.sw, tablet: 8.sw, desktop: 10.sw)),
             ),
           ),
           Text(
             'تأكيد الحجز',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled),
               fontWeight: FontWeight.bold,
               color: textColor,
             ),
@@ -260,7 +262,10 @@ class _WizardProgressBar extends StatelessWidget {
         final isDark = Theme.of(context).brightness == Brightness.dark;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: EdgeInsets.symmetric(
+            horizontal: stv(context: context, mobile: 32.sw, tablet: 40.sw, desktop: 48.sw),
+          ),
+          margin: EdgeInsets.only(bottom: otv(context: context, portrait: 10.sh, landscape: 5.sh)),
           child: Row(
             children: [
               _buildDot(0, step, "التاريخ", isDark),
@@ -330,34 +335,72 @@ class _DateSelectionStep extends StatelessWidget {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(stv(context: context, mobile: 24.sw, tablet: 28.sw, desktop: 32.sw)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "اختر موعد رحلتك",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: textColor,
-              letterSpacing: -0.5,
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+              if (isLandscape) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "اختر موعد رحلتك",
+                        style: TextStyle(
+                          fontSize: stv(context: context, mobile: 24.spScaled, tablet: 26.spScaled, desktop: 28.spScaled),
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        "حدد تواريخ الإقامة المناسبة لك.",
+                        style: TextStyle(
+                          fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
+                          color: isDark ? Colors.white60 : Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "اختر موعد رحلتك",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "حدد تواريخ الإقامة المناسبة لك.",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white60 : Colors.grey[600],
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 8),
-          Text(
-            "حدد تواريخ الإقامة المناسبة لك.",
-            style: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white60 : Colors.grey[600],
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
+          SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
 
           BlocBuilder<BookingWizardCubit, BookingWizardState>(
             builder: (context, state) {
               return Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw)),
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(24),
@@ -372,47 +415,82 @@ class _DateSelectionStep extends StatelessWidget {
                     color: isDark ? Colors.white10 : Colors.grey[100]!,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    _buildDateInput(
-                      context,
-                      label: "الوصول",
-                      date: state.startDate,
-                      icon: Icons.login_rounded,
-                      color: const Color(0xFF4CAF50),
-                      onTap: () => _pickDateRange(context, cubit, state),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              color: isDark ? Colors.white10 : Colors.grey[200],
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_downward_rounded,
-                            size: 16,
-                            color: isDark ? Colors.white24 : Colors.grey[300],
-                          ),
-                          Expanded(
-                            child: Divider(
-                              color: isDark ? Colors.white10 : Colors.grey[200],
-                            ),
-                          ),
-                        ],
+                child: otv(
+                  context: context,
+                  portrait: Column(
+                    children: [
+                      _buildDateInput(
+                        context,
+                        label: "الوصول",
+                        date: state.startDate,
+                        icon: Icons.login_rounded,
+                        color: const Color(0xFF4CAF50),
+                        onTap: () => _pickDateRange(context, cubit, state),
                       ),
-                    ),
-                    _buildDateInput(
-                      context,
-                      label: "المغادرة",
-                      date: state.endDate,
-                      icon: Icons.logout_rounded,
-                      color: const Color(0xFFFF5252),
-                      onTap: () => _pickDateRange(context, cubit, state),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: isDark ? Colors.white10 : Colors.grey[200],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_downward_rounded,
+                              size: 16,
+                              color: isDark ? Colors.white24 : Colors.grey[300],
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: isDark ? Colors.white10 : Colors.grey[200],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _buildDateInput(
+                        context,
+                        label: "المغادرة",
+                        date: state.endDate,
+                        icon: Icons.logout_rounded,
+                        color: const Color(0xFFFF5252),
+                        onTap: () => _pickDateRange(context, cubit, state),
+                      ),
+                    ],
+                  ),
+                  landscape: Row(
+                    children: [
+                      Expanded(
+                        child: _buildDateInput(
+                          context,
+                          label: "الوصول",
+                          date: state.startDate,
+                          icon: Icons.login_rounded,
+                          color: const Color(0xFF4CAF50),
+                          onTap: () => _pickDateRange(context, cubit, state),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 20,
+                          color: isDark ? Colors.white24 : Colors.grey[300],
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildDateInput(
+                          context,
+                          label: "المغادرة",
+                          date: state.endDate,
+                          icon: Icons.logout_rounded,
+                          color: const Color(0xFFFF5252),
+                          onTap: () => _pickDateRange(context, cubit, state),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -837,7 +915,7 @@ class _WizardBottomBar extends StatelessWidget {
         final isValid = isLast ? state.termsAccepted : state.isDatesSelected;
 
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(otv(context: context, portrait: 24.sh, landscape: 12.sh)),
           decoration: BoxDecoration(
             color: isDark ? kDarkCard : kLightCard,
             boxShadow: [
@@ -858,7 +936,7 @@ class _WizardBottomBar extends StatelessWidget {
                     onTap: cubit.previousStep,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(otv(context: context, portrait: 16.sh, landscape: 8.sh)),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: isDark ? Colors.white24 : Colors.grey[300]!,
@@ -868,6 +946,7 @@ class _WizardBottomBar extends StatelessWidget {
                       child: Icon(
                         Icons.arrow_back,
                         color: isDark ? Colors.white70 : Colors.black54,
+                        size: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
                       ),
                     ),
                   ),
@@ -883,7 +962,7 @@ class _WizardBottomBar extends StatelessWidget {
                         ? Colors.white10
                         : Colors.grey[300],
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 20.sh, landscape: 12.sh)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -894,14 +973,14 @@ class _WizardBottomBar extends StatelessWidget {
                     children: [
                       Text(
                         isLast ? "تأكيد واستمرار" : "التالي",
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: stv(context: context, mobile: 16.spScaled, tablet: 17.spScaled, desktop: 18.spScaled),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       if (!isLast) ...[
                         const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 18),
+                        Icon(Icons.arrow_forward_rounded, size: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled)),
                       ],
                     ],
                   ),
@@ -941,7 +1020,12 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
         color: bg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 24, 24, keyboardPadding + 24),
+      padding: EdgeInsets.fromLTRB(
+        stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+        12,
+        stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+        keyboardPadding + 24,
+      ),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -955,11 +1039,11 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
               Text(
                 'كيف كانت تجربتك؟',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: stv(context: context, mobile: 22.spScaled, tablet: 24.spScaled, desktop: 26.spScaled),
                   fontWeight: FontWeight.bold,
                   color: text,
                 ),
@@ -968,11 +1052,11 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
               Text(
                 'تقييمك يساعدنا على تحسين الخدمة',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
                   color: isDark ? Colors.white54 : Colors.grey,
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: otv(context: context, portrait: 32.sh, landscape: 16.sh)),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -982,7 +1066,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                     onTap: () =>
                         setState(() => tempRating = (i + 1).toDouble()),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: EdgeInsets.symmetric(horizontal: stv(context: context, mobile: 4.sw, tablet: 6.sw, desktop: 8.sw)),
                       child: Icon(
                         active
                             ? Icons.star_rounded
@@ -990,18 +1074,18 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                         color: active
                             ? const Color(0xFFFFC107)
                             : (isDark ? Colors.white24 : Colors.grey[300]),
-                        size: 48,
+                        size: stv(context: context, mobile: 48.spScaled, tablet: 56.spScaled, desktop: 64.spScaled),
                       ),
                     ),
                   );
                 }),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: otv(context: context, portrait: 32.sh, landscape: 16.sh)),
 
               TextField(
                 controller: controller,
-                maxLines: 4,
+                maxLines: otv(context: context, portrait: 4, landscape: 2),
                 onChanged: (v) =>
                     setState(() {}), // Update canSubmit in real-time
                 style: TextStyle(color: text),
@@ -1009,6 +1093,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                   hintText: 'اكتبي ملاحظاتك هنا...',
                   hintStyle: TextStyle(
                     color: isDark ? Colors.white30 : Colors.grey[400],
+                    fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
                   ),
                   filled: true,
                   fillColor: isDark ? Colors.black12 : Colors.grey[50],
@@ -1020,7 +1105,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: otv(context: context, portrait: 32.sh, landscape: 16.sh)),
 
               SizedBox(
                 width: double.infinity,
@@ -1031,7 +1116,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                     disabledBackgroundColor: isDark
                         ? Colors.white10
                         : Colors.grey[200],
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 18.sh, landscape: 12.sh)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1045,11 +1130,11 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           "إرسال التقييم",
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: stv(context: context, mobile: 16.spScaled, tablet: 17.spScaled, desktop: 18.spScaled),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

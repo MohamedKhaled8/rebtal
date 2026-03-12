@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/helper/extensions.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/services/invoice_service.dart';
@@ -55,14 +56,20 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: stv(context: context, mobile: 12.sw, tablet: 16.sw, desktop: 20.sw),
+            vertical: 8,
+          ),
           child: widget.requests == null || widget.requests!.isEmpty
               ? _EmptyRequestsView(onRefresh: () => setState(() {}))
               : RefreshIndicator(
                   onRefresh: () async => setState(() {}),
                   child: ListView.separated(
-                    padding: const EdgeInsets.only(top: 8, bottom: 12),
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    padding: EdgeInsets.only(
+                      top: 8,
+                      bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
+                    ),
+                    separatorBuilder: (_, __) => SizedBox(height: otv(context: context, portrait: 8.sh, landscape: 4.sh)),
                     itemCount: widget.requests!.length,
                     itemBuilder: (context, index) =>
                         BookingRequestCard(chat: widget.requests![index]),
@@ -82,25 +89,51 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
           : ColorsManager.white,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle, color: ColorsManager.green, size: 80),
-              const SizedBox(height: 24),
-              Text(
-                context.tr('booking_request_received'),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? ColorsManager.white
-                      : ColorsManager.chaletTextPrimaryLight,
-                ),
-                textAlign: TextAlign.center,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                  if (isLandscape) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle, color: ColorsManager.green, size: stv(context: context, mobile: 60.spScaled, tablet: 70.spScaled, desktop: 80.spScaled)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            context.tr('booking_request_received'),
+                            style: TextStyle(
+                              fontSize: stv(context: context, mobile: 20.spScaled, tablet: 24.spScaled, desktop: 28.spScaled),
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      Icon(Icons.check_circle, color: ColorsManager.green, size: 80),
+                      const SizedBox(height: 24),
+                      Text(
+                        context.tr('booking_request_received'),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  );
+                }
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 16.sh)),
 
               // Display Ticket wrapped in RepaintBoundary
               RepaintBoundary(
@@ -108,7 +141,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 child: BookingTicketWidget(booking: booking),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: otv(context: context, portrait: 16.sh, landscape: 8.sh)),
 
               // Print and Save Buttons with Dark Mode support
               Row(
@@ -128,7 +161,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         foregroundColor: isDark
                             ? ColorsManager.white
                             : ColorsManager.chaletTextPrimaryLight,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 12.sh, landscape: 8.sh)),
                         side: BorderSide(
                           color: isDark
                               ? ColorsManager.white.withOpacity(0.3)
@@ -156,7 +189,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         foregroundColor: isDark
                             ? ColorsManager.white
                             : ColorsManager.chaletTextPrimaryLight,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 12.sh, landscape: 8.sh)),
                         side: BorderSide(
                           color: isDark
                               ? ColorsManager.white.withOpacity(0.3)
@@ -171,18 +204,18 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 16.sh)),
               Text(
                 context.tr('booking_admin_review'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
                   color: isDark
                       ? ColorsManager.white70
                       : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: otv(context: context, portrait: 48.sh, landscape: 24.sh)),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -195,11 +228,14 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorsManager.green,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 16.sh, landscape: 12.sh)),
                   ),
                   child: Text(
                     context.tr('booking_back_home'),
-                    style: TextStyle(color: ColorsManager.white, fontSize: 18),
+                    style: TextStyle(
+                      color: ColorsManager.white,
+                      fontSize: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled),
+                    ),
                   ),
                 ),
               ),
@@ -222,29 +258,35 @@ class _EmptyRequestsView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(stv(context: context, mobile: 18.sw, tablet: 22.sw, desktop: 26.sw)),
             decoration: BoxDecoration(
               color: ColorsManager.grey100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.event_available,
-              size: 64,
+              size: stv(context: context, mobile: 64.spScaled, tablet: 72.spScaled, desktop: 80.spScaled),
               color: ColorsManager.chaletActionDarkBlue,
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: otv(context: context, portrait: 18.sh, landscape: 12.sh)),
           Text(
             context.tr('booking_no_requests'),
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled),
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             context.tr('booking_no_requests_hint'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: ColorsManager.grey600),
+            style: TextStyle(
+              color: ColorsManager.grey600,
+              fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
+            ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: otv(context: context, portrait: 18.sh, landscape: 12.sh)),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -254,6 +296,10 @@ class _EmptyRequestsView extends StatelessWidget {
                 label: Text(context.tr('booking_refresh')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ColorsManager.chaletActionDarkBlue,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: stv(context: context, mobile: 16.sw, tablet: 20.sw, desktop: 24.sw),
+                    vertical: otv(context: context, portrait: 12.sh, landscape: 8.sh),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -264,6 +310,12 @@ class _EmptyRequestsView extends StatelessWidget {
                 },
                 icon: const Icon(Icons.phone),
                 label: Text(context.tr('booking_contact_support_btn')),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: stv(context: context, mobile: 16.sw, tablet: 20.sw, desktop: 24.sw),
+                    vertical: otv(context: context, portrait: 12.sh, landscape: 8.sh),
+                  ),
+                ),
               ),
             ],
           ),
@@ -292,14 +344,14 @@ class BookingRequestCard extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  radius: 26,
+                  radius: stv(context: context, mobile: 26.sw, tablet: 30.sw, desktop: 34.sw),
                   backgroundColor: ColorsManager.chaletIconBackgroundLight,
                   child: Text(
                     (chat.chaletName.isNotEmpty
                         ? chat.chaletName[0]
                         : context.tr('common_fallback_chalet')),
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
                       fontWeight: FontWeight.bold,
                       color: ColorsManager.primaryColor,
                     ),
