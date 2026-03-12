@@ -4,19 +4,19 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 
 class AppTheme {
   static ThemeData getLightTheme({
-    Color primaryColor = ColorManager.primaryColor,
+    Color primaryColor = ColorsManager.primaryColor,
   }) {
     return ThemeData(
-      scaffoldBackgroundColor: ColorManager.white,
+      scaffoldBackgroundColor: ColorsManager.white,
       useMaterial3: true,
       brightness: Brightness.light,
       appBarTheme: const AppBarTheme(
-        backgroundColor: ColorManager.white,
+        backgroundColor: ColorsManager.white,
         centerTitle: true,
         scrolledUnderElevation: 0.0,
-        iconTheme: IconThemeData(color: ColorManager.black),
+        iconTheme: IconThemeData(color: ColorsManager.black),
         titleTextStyle: TextStyle(
-          color: ColorManager.black,
+          color: ColorsManager.black,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
@@ -30,19 +30,19 @@ class AppTheme {
   }
 
   static ThemeData getDarkTheme({
-    Color primaryColor = ColorManager.primaryColor,
+    Color primaryColor = ColorsManager.primaryColor,
   }) {
     return ThemeData(
-      scaffoldBackgroundColor: ColorManager.scaffolColor,
+      scaffoldBackgroundColor: ColorsManager.scaffolColor,
       useMaterial3: true,
       brightness: Brightness.dark,
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         scrolledUnderElevation: 0.0,
-        backgroundColor: ColorManager.transparent,
-        iconTheme: IconThemeData(color: ColorManager.white),
+        backgroundColor: ColorsManager.transparent,
+        iconTheme: IconThemeData(color: ColorsManager.white),
         titleTextStyle: TextStyle(
-          color: ColorManager.white,
+          color: ColorsManager.white,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),
@@ -51,7 +51,7 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.dark,
-        background: ColorManager.scaffolColor,
+        background: ColorsManager.scaffolColor,
       ),
     );
   }

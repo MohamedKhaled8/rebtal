@@ -75,8 +75,8 @@ class _AvailabilityCardState extends State<AvailabilityCard>
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: isDark
-                      ? ColorManager.chaletTextPrimaryDark
-                      : ColorManager.chaletTextPrimaryLight,
+                      ? ColorsManager.chaletTextPrimaryDark
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -98,8 +98,8 @@ class _AvailabilityCardState extends State<AvailabilityCard>
                           return CustomPaint(
                             painter: _DiagramConnectorPainter(
                               color: isAvailable
-                                  ? ColorManager.chaletAvailableGreen
-                                  : ColorManager.chaletUnavailableRed,
+                                  ? ColorsManager.chaletAvailableGreen
+                                  : ColorsManager.chaletUnavailableRed,
                               isDark: isDark,
                               progress: _controller.value,
                             ),
@@ -164,8 +164,8 @@ class _AvailabilityCardState extends State<AvailabilityCard>
 
   Widget _buildStatusBadge(bool isAvailable, bool isDark) {
     final color = isAvailable
-        ? ColorManager.chaletAvailableGreen
-        : ColorManager.chaletUnavailableRed;
+        ? ColorsManager.chaletAvailableGreen
+        : ColorsManager.chaletUnavailableRed;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -211,8 +211,8 @@ class _AvailabilityCardState extends State<AvailabilityCard>
     bool isAvailable,
   ) {
     final accentColor = isAvailable
-        ? ColorManager.chaletActionBlue
-        : ColorManager.chaletGrey400;
+        ? ColorsManager.chaletActionBlue
+        : ColorsManager.chaletGrey400;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -413,12 +413,12 @@ class _BookedDatesList extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white10
-                    : ColorManager.chaletUnavailableRed.withOpacity(0.05),
+                    : ColorsManager.chaletUnavailableRed.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isDark
                       ? Colors.transparent
-                      : ColorManager.chaletUnavailableRed.withOpacity(0.2),
+                      : ColorsManager.chaletUnavailableRed.withOpacity(0.2),
                 ),
               ),
               child: Text(
@@ -427,7 +427,7 @@ class _BookedDatesList extends StatelessWidget {
                   fontSize: 12,
                   color: isDark
                       ? Colors.white70
-                      : ColorManager.chaletUnavailableRed,
+                      : ColorsManager.chaletUnavailableRed,
                   fontWeight: FontWeight.w600,
                 ),
               ),

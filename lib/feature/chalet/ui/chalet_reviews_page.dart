@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart'; // To reuse ReviewAvatar
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class ChaletReviewsPage extends StatelessWidget {
   final String chaletId;
@@ -30,12 +30,12 @@ class ChaletReviewsPage extends StatelessWidget {
           "Reviews for $chaletName",
           style: TextStyle(
             color: textColor,
-            fontSize: 18,
+            fontSize: stv(context: context, mobile: 18.spScaled, tablet: 22.spScaled, desktop: 26.spScaled),
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: textColor, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new, color: textColor, size: stv(context: context, mobile: 20.spScaled, tablet: 24.spScaled, desktop: 28.spScaled)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -69,15 +69,15 @@ class ChaletReviewsPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.rate_review_outlined,
-                    size: 64,
+                    size: stv(context: context, mobile: 64.spScaled, tablet: 80.spScaled, desktop: 96.spScaled),
                     color: isDark ? Colors.white24 : Colors.grey[300],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: otv(context: context, portrait: 16.sh, landscape: 8.sh)),
                   Text(
                     "No reviews found yet",
                     style: TextStyle(
                       color: isDark ? Colors.white54 : Colors.grey[600],
-                      fontSize: 16,
+                      fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
                     ),
                   ),
                 ],
@@ -98,10 +98,10 @@ class ChaletReviewsPage extends StatelessWidget {
           });
 
           return ListView.separated(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw)),
             itemCount: docs.length,
             separatorBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
               child: Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
             ),
             itemBuilder: (context, index) {
@@ -149,7 +149,7 @@ class FullReviewItem extends StatelessWidget {
                   Text(
                     userName,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF222222),
                     ),
@@ -157,7 +157,7 @@ class FullReviewItem extends StatelessWidget {
                   Text(
                     dateStr,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: stv(context: context, mobile: 13.spScaled, tablet: 15.spScaled, desktop: 17.spScaled),
                       color: isDark ? Colors.white54 : Colors.grey[600],
                     ),
                   ),
@@ -166,8 +166,8 @@ class FullReviewItem extends StatelessWidget {
             ),
             Row(
               children: [
-                const Icon(Icons.star, size: 14, color: Colors.amber),
-                const SizedBox(width: 4),
+                Icon(Icons.star, size: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled), color: Colors.amber),
+                SizedBox(width: stv(context: context, mobile: 4.sw, tablet: 6.sw, desktop: 8.sw)),
                 Text(
                   (data['rating'] as num?)?.toStringAsFixed(1) ?? '5.0',
                   style: TextStyle(
@@ -179,7 +179,7 @@ class FullReviewItem extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: otv(context: context, portrait: 16.sh, landscape: 8.sh)),
         ExpandableText(text: reviewText, isDark: isDark, maxLines: 5),
       ],
     );

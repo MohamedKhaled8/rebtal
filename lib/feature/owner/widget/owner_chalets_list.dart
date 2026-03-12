@@ -70,14 +70,16 @@ class OwnerChaletsList extends StatelessWidget {
                 Icon(
                   emptyIcon ?? Icons.home_outlined,
                   size: 72,
-                  color: isDark ? ColorManager.white70 : ColorManager.grey400,
+                  color: isDark ? ColorsManager.white70 : ColorsManager.grey400,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   emptyTitle ?? context.tr('home_no_chalets'),
                   style: TextStyle(
                     fontSize: 18,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey600,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -88,8 +90,8 @@ class OwnerChaletsList extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       color: isDark
-                          ? ColorManager.white70
-                          : ColorManager.grey700,
+                          ? ColorsManager.white70
+                          : ColorsManager.grey700,
                     ),
                     textAlign: TextAlign.center,
                   ),

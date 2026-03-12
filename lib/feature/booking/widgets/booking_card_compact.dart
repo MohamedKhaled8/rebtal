@@ -10,11 +10,14 @@ import 'package:rebtal/feature/booking/ui/rating_page.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:responsive_screen_master/responsive_screen_master.dart';
+
 /// بطاقة حجز بتصميم الصورة: صورة أعلى، حالة، موقع وسعر، عنوان، تواريخ، مضيف، وأزرار.
 class BookingCardCompact extends StatelessWidget {
   final Booking booking;
+  final EdgeInsetsGeometry? margin;
 
-  const BookingCardCompact({super.key, required this.booking});
+  const BookingCardCompact({super.key, required this.booking, this.margin});
 
   static String _statusText(
     BuildContext ctx,
@@ -85,7 +88,7 @@ class BookingCardCompact extends StatelessWidget {
     );
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -109,7 +112,7 @@ class BookingCardCompact extends StatelessWidget {
             Stack(
               children: [
                 SizedBox(
-                  height: 180,
+                  height: otv(context: context, portrait: 180.sh, landscape: 130.sh),
                   width: double.infinity,
                   child:
                       booking.chaletImage != null &&
@@ -126,9 +129,9 @@ class BookingCardCompact extends StatelessWidget {
                             ),
                           ),
                           errorWidget: (_, __, ___) =>
-                              _placeholderImage(isDark),
+                              _placeholderImage(context, isDark),
                         )
-                      : _placeholderImage(isDark),
+                      : _placeholderImage(context, isDark),
                 ),
                 Positioned(
                   top: 12,
@@ -185,7 +188,7 @@ class BookingCardCompact extends StatelessWidget {
                         child: Text(
                           locationName,
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
                             fontWeight: FontWeight.bold,
                             color: isDark ? Colors.white : Colors.black87,
                           ),
@@ -193,10 +196,10 @@ class BookingCardCompact extends StatelessWidget {
                       ),
                       Text(
                         '${(booking.amount ?? 0).toStringAsFixed(0)} ${context.tr('booking_egp')}',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2563EB),
+                          color: const Color(0xFF2563EB),
                         ),
                       ),
                     ],
@@ -223,18 +226,21 @@ class BookingCardCompact extends StatelessWidget {
                         Icons.login_rounded,
                         context.tr('booking_arrival'),
                         '${booking.from.day}/${booking.from.month}',
+                        context,
                         isDark,
                       ),
                       _dateChip(
                         Icons.logout_rounded,
                         context.tr('booking_departure'),
                         '${booking.to.day}/${booking.to.month}',
+                        context,
                         isDark,
                       ),
                       _dateChip(
                         Icons.nightlight_round,
                         context.tr('admin_duration'),
                         '${nights} ${context.tr('booking_nights')}',
+                        context,
                         isDark,
                       ),
                     ],
@@ -278,9 +284,9 @@ class BookingCardCompact extends StatelessWidget {
     );
   }
 
-  Widget _placeholderImage(bool isDark) {
+  Widget _placeholderImage(BuildContext context, bool isDark) {
     return Container(
-      height: 180,
+      height: otv(context: context, portrait: 180.sh, landscape: 130.sh),
       color: isDark ? Colors.grey.shade900 : Colors.grey.shade300,
       child: Icon(
         Icons.holiday_village,
@@ -290,20 +296,20 @@ class BookingCardCompact extends StatelessWidget {
     );
   }
 
-  Widget _dateChip(IconData icon, String label, String value, bool isDark) {
+  Widget _dateChip(IconData icon, String label, String value, BuildContext context, bool isDark) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
-          size: 14,
+          size: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
           color: isDark ? Colors.white54 : Colors.grey.shade600,
         ),
         const SizedBox(width: 4),
         Text(
           '$label $value',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: stv(context: context, mobile: 11.spScaled, tablet: 13.spScaled, desktop: 15.spScaled),
             color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),

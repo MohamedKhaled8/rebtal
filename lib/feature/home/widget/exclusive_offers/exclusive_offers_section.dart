@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 
 class ExclusiveOffersSection extends StatelessWidget {
   const ExclusiveOffersSection({super.key});
@@ -11,17 +12,17 @@ class ExclusiveOffersSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
           child: Text(
             context.tr('home_exclusive_offers'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(
-          height: 180,
+          height: 30.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 5.w),
             itemCount: 3,
             itemBuilder: (context, index) {
               return Container(

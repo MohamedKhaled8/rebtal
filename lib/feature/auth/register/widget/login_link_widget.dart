@@ -18,7 +18,7 @@ class LoginLinkWidget extends StatelessWidget {
           context.tr('auth_have_account'),
           style: TextStyle(
             fontSize: 15,
-            color: isDark ? ColorManager.white70 : ColorManager.grey600,
+            color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
           ),
         ),
         const SizedBox(width: 8),
@@ -32,7 +32,9 @@ class LoginLinkWidget extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB,
+              color: isDark
+                  ? ColorsManager.bookingsAccentPrimary
+                  : ColorsManager.blue2563EB,
             ),
           ),
         ),

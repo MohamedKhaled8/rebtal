@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:responsive_screen_master/responsive_screen_master.dart';
+import 'package:rebtal/core/Router/export_routes.dart';
+import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 
-SizedBox verticalSpace(double heigth) => SizedBox(height: heigth);
+SizedBox horizintalSpace(double width) =>
+   SizedBox(width: width.w,);
 
-SizedBox horizintalSpace(double width) => SizedBox(width: width);
+
+SizedBox verticalSpace(double height)  =>
+  SizedBox(height: height.h,);

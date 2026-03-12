@@ -1,7 +1,9 @@
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class HomePromoBanners extends StatefulWidget {
   const HomePromoBanners({super.key});
@@ -75,8 +77,8 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
       children: [
         Container(
           width: double.infinity,
-          height: 170,
-          margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+          height: otv(context: context, portrait: 22.h, landscape: 30.h),
+          margin: EdgeInsets.symmetric(horizontal: 0, vertical: otv(context: context, portrait: 20.sh, landscape: 10.sh)),
           child: PageView.builder(
             controller: _pageController,
             itemCount: _bannerData.length,
@@ -86,13 +88,13 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
             itemBuilder: (context, index) {
               final banner = _bannerData[index];
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                margin: EdgeInsets.symmetric(horizontal: stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 36.sw)),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF111111) : Colors.white,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                      blurRadius: 10,
+                      blurRadius: stv(context: context, mobile: 10.sw, tablet: 14.sw, desktop: 18.sw),
                       offset: const Offset(0, 5),
                     ),
                   ],
@@ -102,9 +104,9 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                     Expanded(
                       flex: 3,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 36.sw),
+                          vertical: otv(context: context, portrait: 15.sh, landscape: 10.sh),
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -123,38 +125,43 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: stv(context: context, mobile: 8.sw, tablet: 12.sw, desktop: 16.sw),
+                                vertical: otv(context: context, portrait: 4.sh, landscape: 2.sh),
                               ),
                               color: const Color(0xFF2563EB),
                               child: Text(
                                 banner['tag']!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 9,
+                                  fontSize: stv(context: context, mobile: 9.spScaled, tablet: 11.spScaled, desktop: 13.spScaled),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: otv(context: context, portrait: 8.sh, landscape: 4.sh)),
                             Text(
                               banner['title']!,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black,
-                                fontSize: 18,
+                                fontSize: stv(context: context, mobile: 18.spScaled, tablet: 22.spScaled, desktop: 26.spScaled),
                                 fontWeight: FontWeight.w900,
                                 height: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: otv(context: context, portrait: 8.sh, landscape: 4.sh)),
                             Text(
                               banner['subtitle']!,
                               style: TextStyle(
                                 color: isDark ? Colors.white60 : Colors.black54,
-                                fontSize: 11,
+                                fontSize: stv(
+                                  context: context,
+                                  mobile: 11.spScaled,
+                                  tablet: 15.spScaled,
+                                  desktop: 20.spScaled,
+                                ),
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -184,14 +191,16 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
             _bannerData.length,
             (index) => AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: _currentPage == index ? 20 : 8,
-              height: 4,
+              margin: EdgeInsets.symmetric(horizontal: stv(context: context, mobile: 4.sw, tablet: 6.sw, desktop: 8.sw)),
+              width: _currentPage == index 
+                ? stv(context: context, mobile: 20.sw, tablet: 26.sw, desktop: 32.sw) 
+                : stv(context: context, mobile: 8.sw, tablet: 12.sw, desktop: 16.sw),
+              height: otv(context: context, portrait: 4.sh, landscape: 2.sh),
               decoration: BoxDecoration(
                 color: _currentPage == index
                     ? const Color(0xFF2563EB)
                     : (isDark ? Colors.white24 : Colors.black12),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.sw),
               ),
             ),
           ),

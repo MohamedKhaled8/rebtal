@@ -58,10 +58,10 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground0A0E27
-          : ColorManager.lightBackgroundF5F7FA,
+          ? ColorsManager.darkBackground0A0E27
+          : ColorsManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: ColorManager.transparent,
+        backgroundColor: ColorsManager.transparent,
         elevation: 0,
         title: Text(
           context.tr('booking_refund_request_title'),
@@ -80,11 +80,13 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? ColorManager.darkSurface1E1E1E
-                      : ColorManager.white,
+                      ? ColorsManager.darkSurface1E1E1E
+                      : ColorsManager.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                    color: isDark
+                        ? ColorsManager.white10
+                        : ColorsManager.grey300,
                   ),
                 ),
                 child: Column(
@@ -94,7 +96,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       children: [
                         Icon(
                           Icons.villa,
-                          color: ColorManager.chaletAccent,
+                          color: ColorsManager.chaletAccent,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
@@ -104,14 +106,18 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: isDark
-                                ? ColorManager.white
-                                : ColorManager.chaletTextPrimaryLight,
+                                ? ColorsManager.white
+                                : ColorsManager.chaletTextPrimaryLight,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow(context.tr('common_chalet'), widget.booking.chaletName, isDark),
+                    _buildInfoRow(
+                      context.tr('common_chalet'),
+                      widget.booking.chaletName,
+                      isDark,
+                    ),
                     const SizedBox(height: 8),
                     _buildInfoRow(
                       context.tr('booking_amount_paid_label'),
@@ -137,10 +143,13 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                   gradient: LinearGradient(
                     colors: _refundPercentage > 0
                         ? [
-                            ColorManager.mainBlue,
-                            ColorManager.chaletActionDarkBlue,
+                            ColorsManager.mainBlue,
+                            ColorsManager.chaletActionDarkBlue,
                           ]
-                        : [ColorManager.red, ColorManager.chaletActionDarkRed],
+                        : [
+                            ColorsManager.red,
+                            ColorsManager.chaletActionDarkRed,
+                          ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -165,7 +174,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: ColorManager.white.withOpacity(0.2),
+                            color: ColorsManager.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -174,7 +183,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 context.tr('booking_refund_percentage'),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: ColorManager.white70,
+                                  color: ColorsManager.white70,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -183,7 +192,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: ColorManager.white,
+                                  color: ColorsManager.white,
                                 ),
                               ),
                             ],
@@ -196,7 +205,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: ColorManager.white.withOpacity(0.2),
+                            color: ColorsManager.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -205,7 +214,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 context.tr('booking_refund_amount'),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: ColorManager.white70,
+                                  color: ColorsManager.white70,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -214,7 +223,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: ColorManager.white,
+                                  color: ColorsManager.white,
                                 ),
                               ),
                             ],
@@ -247,36 +256,36 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                   hintText: context.tr('booking_cancel_reason_hint'),
                   filled: true,
                   fillColor: isDark
-                      ? ColorManager.darkSurface1E1E1E
-                      : ColorManager.white,
+                      ? ColorsManager.darkSurface1E1E1E
+                      : ColorsManager.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
                       color: isDark
-                          ? ColorManager.white10
-                          : ColorManager.grey300,
+                          ? ColorsManager.white10
+                          : ColorsManager.grey300,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
                       color: isDark
-                          ? ColorManager.white10
-                          : ColorManager.grey300,
+                          ? ColorsManager.white10
+                          : ColorsManager.grey300,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: ColorManager.chaletAccent,
+                      color: ColorsManager.chaletAccent,
                       width: 2,
                     ),
                   ),
                 ),
                 style: TextStyle(
                   color: isDark
-                      ? ColorManager.white
-                      : ColorManager.chaletTextPrimaryLight,
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
 
@@ -287,17 +296,17 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: ColorManager.red.withOpacity(0.1),
+                    color: ColorsManager.red.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: ColorManager.red.withOpacity(0.3),
+                      color: ColorsManager.red.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: ColorManager.chaletActionDarkRed,
+                        color: ColorsManager.chaletActionDarkRed,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -306,7 +315,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                           context.tr('booking_no_refund_policy'),
                           style: TextStyle(
                             fontSize: 14,
-                            color: ColorManager.chaletActionDarkRed,
+                            color: ColorsManager.chaletActionDarkRed,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -347,7 +356,10 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                       }
                     } catch (e) {
                       if (context.mounted) {
-                        SnackBarHelper.showError(context, '${context.tr('notifications_error')}: $e');
+                        SnackBarHelper.showError(
+                          context,
+                          '${context.tr('notifications_error')}: $e',
+                        );
                       }
                     }
                   },
@@ -357,8 +369,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorManager.red,
-                    foregroundColor: ColorManager.white,
+                    backgroundColor: ColorsManager.red,
+                    foregroundColor: ColorsManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -383,8 +395,8 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: ColorManager.chaletAccent,
-                    side: BorderSide(color: ColorManager.chaletAccent),
+                    foregroundColor: ColorsManager.chaletAccent,
+                    side: BorderSide(color: ColorsManager.chaletAccent),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -407,7 +419,7 @@ class _RefundRequestPageState extends State<RefundRequestPage> {
           label,
           style: TextStyle(
             fontSize: 14,
-            color: isDark ? ColorManager.white70 : ColorManager.grey600,
+            color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
           ),
         ),
         Text(

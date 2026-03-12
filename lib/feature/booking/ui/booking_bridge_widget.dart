@@ -140,19 +140,19 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                   gradient: LinearGradient(
                     colors: isDark
                         ? [
-                            ColorManager.chaletAccent.withOpacity(0.15),
-                            ColorManager.chaletAccent.withOpacity(0.05),
+                            ColorsManager.chaletAccent.withOpacity(0.15),
+                            ColorsManager.chaletAccent.withOpacity(0.05),
                           ]
                         : [
-                            ColorManager.chaletAccent.withOpacity(0.1),
-                            ColorManager.chaletAccent.withOpacity(0.03),
+                            ColorsManager.chaletAccent.withOpacity(0.1),
+                            ColorsManager.chaletAccent.withOpacity(0.03),
                           ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: ColorManager.chaletAccent.withOpacity(0.2),
+                    color: ColorsManager.chaletAccent.withOpacity(0.2),
                     width: 1,
                   ),
                 ),
@@ -164,14 +164,14 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [
-                            ColorManager.chaletAccent,
+                            ColorsManager.chaletAccent,
                             Color(0xFF00A896),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: ColorManager.chaletAccent.withOpacity(0.3),
+                            color: ColorsManager.chaletAccent.withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -308,11 +308,17 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             selectedDate: _from,
                             onTap: () async {
                               final now = DateTime.now();
-                              final today = DateTime(now.year, now.month, now.day);
+                              final today = DateTime(
+                                now.year,
+                                now.month,
+                                now.day,
+                              );
                               // قد تكون التواريخ في availableFrom/availableTo أو from/to (عروض/حجوزات)
-                              final rawFrom = widget.requestData['availableFrom'] ??
+                              final rawFrom =
+                                  widget.requestData['availableFrom'] ??
                                   widget.requestData['from'];
-                              final rawTo = widget.requestData['availableTo'] ??
+                              final rawTo =
+                                  widget.requestData['availableTo'] ??
                                   widget.requestData['to'];
 
                               final from = _parseDate(rawFrom);
@@ -320,7 +326,9 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
                               DateTime firstDate;
                               DateTime lastDate;
-                              if (from != null && to != null && !to.isBefore(from)) {
+                              if (from != null &&
+                                  to != null &&
+                                  !to.isBefore(from)) {
                                 firstDate = from.isBefore(today) ? today : from;
                                 lastDate = to;
                                 if (lastDate.isBefore(firstDate)) {
@@ -346,7 +354,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                   return Theme(
                                     data: Theme.of(context).copyWith(
                                       colorScheme: ColorScheme.light(
-                                        primary: ColorManager.chaletAccent,
+                                        primary: ColorsManager.chaletAccent,
                                         onPrimary: Colors.white,
                                         surface: Colors.white,
                                         onSurface: Colors.black,
@@ -414,10 +422,12 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               }
 
                               final fromDate = _from!;
-                              final rawTo = widget.requestData['availableTo'] ??
+                              final rawTo =
+                                  widget.requestData['availableTo'] ??
                                   widget.requestData['to'];
                               final parsedTo = _parseDate(rawTo);
-                              final lastDate = (parsedTo != null &&
+                              final lastDate =
+                                  (parsedTo != null &&
                                       !parsedTo.isBefore(fromDate))
                                   ? parsedTo
                                   : fromDate.add(const Duration(days: 60));
@@ -431,7 +441,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                   return Theme(
                                     data: Theme.of(context).copyWith(
                                       colorScheme: ColorScheme.light(
-                                        primary: ColorManager.chaletAccent,
+                                        primary: ColorsManager.chaletAccent,
                                         onPrimary: Colors.white,
                                         surface: Colors.white,
                                         onSurface: Colors.black,
@@ -461,7 +471,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: ColorManager.chaletAccent.withOpacity(0.3),
+                      color: ColorsManager.chaletAccent.withOpacity(0.3),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -509,7 +519,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
-                              color: ColorManager.chaletAccent,
+                              color: ColorsManager.chaletAccent,
                             ),
                           ),
                         ],
@@ -552,7 +562,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: ColorManager.chaletAccent,
+                              color: ColorsManager.chaletAccent,
                             ),
                           ),
                         ],
@@ -580,7 +590,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         color: Colors.orange[700],
                         size: 22,
                       ),
-                      const SizedBox(width: 12),  
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           context.tr('booking_select_period_first_msg'),
@@ -666,7 +676,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children:  [
+                            children: [
                               Icon(
                                 Icons.chat_bubble_rounded,
                                 color: Colors.white,
@@ -707,7 +717,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     icon: Icon(
                       Icons.call_rounded,
                       color: isDark
-                          ? ColorManager.chaletAccent
+                          ? ColorsManager.chaletAccent
                           : const Color(0xFF1D4ED8),
                     ),
                     label: Padding(
@@ -716,7 +726,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         context.tr('booking_call'),
                         style: TextStyle(
                           color: isDark
-                              ? ColorManager.chaletAccent
+                              ? ColorsManager.chaletAccent
                               : const Color(0xFF1D4ED8),
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -728,7 +738,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                       minimumSize: const Size.fromHeight(56),
                       side: BorderSide(
                         color: isDark
-                            ? ColorManager.chaletAccent
+                            ? ColorsManager.chaletAccent
                             : const Color(0xFF1D4ED8),
                         width: 2,
                       ),
@@ -774,7 +784,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children:  [
+                          children: [
                             Icon(
                               Icons.check_circle_rounded,
                               color: Colors.white,
@@ -833,7 +843,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                     Icons.cancel_rounded,
                     color: Color(0xFFEF4444),
                   ),
-                  label:   Padding(
+                  label: Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Text(
                       context.tr('booking_reject_booking_bridge'),
@@ -1081,9 +1091,17 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                       '${dateStr(from)} → ${dateStr(to)}',
                     ),
                     const SizedBox(height: 10),
-                    _confirmationRow(isDark, context.tr('booking_days_label'), '$days'),
+                    _confirmationRow(
+                      isDark,
+                      context.tr('booking_days_label'),
+                      '$days',
+                    ),
                     const SizedBox(height: 6),
-                    _confirmationRow(isDark, context.tr('booking_nights_label'), '$nights'),
+                    _confirmationRow(
+                      isDark,
+                      context.tr('booking_nights_label'),
+                      '$nights',
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1249,7 +1267,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                     onChanged: (v) => setModalState(
                                       () => termsAccepted = v ?? false,
                                     ),
-                                    activeColor: ColorManager.chaletAccent,
+                                    activeColor: ColorsManager.chaletAccent,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -1288,7 +1306,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: ColorManager.chaletAccent,
+                                color: ColorsManager.chaletAccent,
                               ),
                             ),
                           ),
@@ -1320,7 +1338,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: canConfirm
-                              ? ColorManager.chaletAccent
+                              ? ColorsManager.chaletAccent
                               : Colors.grey,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
@@ -1482,7 +1500,10 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
       debugPrint('Error confirming booking: $e');
       if (mounted) {
         PremiumLoadingOverlay.dismiss(context);
-        SnackBarHelper.showError(context, '${context.tr('booking_error_msg')} $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('booking_error_msg')} $e',
+        );
       }
     }
   }
@@ -1566,7 +1587,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: ColorManager.chaletAccent,
+                                color: ColorsManager.chaletAccent,
                               ),
                             ),
                           ),
@@ -1691,7 +1712,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size.fromHeight(56),
                               backgroundColor: canSubmit
-                                  ? ColorManager.chaletAccent
+                                  ? ColorsManager.chaletAccent
                                   : (isDark
                                         ? Colors.grey[800]
                                         : Colors.grey[300]),

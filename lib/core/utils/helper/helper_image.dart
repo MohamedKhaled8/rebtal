@@ -438,8 +438,8 @@ class _ImagePickerBottomSheet extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.darkBackground0A0E27.withOpacity(0.95)
-            : ColorManager.white.withOpacity(0.95),
+            ? ColorsManager.darkBackground0A0E27.withOpacity(0.95)
+            : ColorsManager.white.withOpacity(0.95),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
@@ -467,14 +467,14 @@ class _ImagePickerBottomSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: ColorManager.blue2563EB.withOpacity(0.1),
+                    color: ColorsManager.blue2563EB.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
                     isChaletPhoto
                         ? Icons.collections_rounded
                         : Icons.account_circle_rounded,
-                    color: ColorManager.blue2563EB,
+                    color: ColorsManager.blue2563EB,
                     size: 28,
                   ),
                 ),
@@ -514,7 +514,7 @@ class _ImagePickerBottomSheet extends StatelessWidget {
                   ? context.tr('owner_capture_single_photo')
                   : context.tr('profile_capture_new_photo'),
               gradient: const LinearGradient(
-                colors: [ColorManager.blue2563EB, ColorManager.purple764BA2],
+                colors: [ColorsManager.blue2563EB, ColorsManager.purple764BA2],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -530,8 +530,8 @@ class _ImagePickerBottomSheet extends StatelessWidget {
                   : context.tr('profile_select_from_gallery'),
               gradient: const LinearGradient(
                 colors: [
-                  ColorManager.purple764BA2,
-                  ColorManager.bookingsAccentPrimary,
+                  ColorsManager.purple764BA2,
+                  ColorsManager.bookingsAccentPrimary,
                 ], // Standard branding gradient reversed for variety
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -601,7 +601,7 @@ class _ImageSourceOption extends StatelessWidget {
         ],
       ),
       child: Material(
-        color: isDark ? ColorManager.darkSurface1E1E1E : Colors.white,
+        color: isDark ? ColorsManager.darkSurface1E1E1E : Colors.white,
         borderRadius: BorderRadius.circular(24),
         child: InkWell(
           onTap: onTap,

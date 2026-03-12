@@ -165,9 +165,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
       debugPrint('Share Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr('chalet_share_error')),
-          ),
+          SnackBar(content: Text(context.tr('chalet_share_error'))),
         );
       }
     }
@@ -193,7 +191,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
           return Container(
             height: 300, // Roughly 40% height visually
             width: double.infinity,
-            color: ColorManager.chaletGrey200,
+            color: ColorsManager.chaletGrey200,
           );
         }
 

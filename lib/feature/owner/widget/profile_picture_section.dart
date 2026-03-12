@@ -17,12 +17,15 @@ class ProfilePictureSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorManager.gray.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: ColorsManager.gray.withOpacity(0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -35,7 +38,7 @@ class ProfilePictureSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.person,
-                color: ColorManager.kPrimaryGradient.colors.first,
+                color: ColorsManager.kPrimaryGradient.colors.first,
                 size: 24,
               ),
               const SizedBox(width: 10),
@@ -44,7 +47,7 @@ class ProfilePictureSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: ColorManager.black,
+                  color: ColorsManager.black,
                 ),
               ),
             ],
@@ -58,15 +61,15 @@ class ProfilePictureSection extends StatelessWidget {
                 height: 120,
                 decoration: BoxDecoration(
                   color: profileImage != null
-                      ? ColorManager.transparent
-                      : ColorManager.kPrimaryGradient.colors.first.withOpacity(
+                      ? ColorsManager.transparent
+                      : ColorsManager.kPrimaryGradient.colors.first.withOpacity(
                           0.1,
                         ),
                   borderRadius: BorderRadius.circular(60),
                   border: Border.all(
                     color: profileImage != null
-                        ? ColorManager.kPrimaryGradient.colors.first
-                        : ColorManager.kPrimaryGradient.colors.first
+                        ? ColorsManager.kPrimaryGradient.colors.first
+                        : ColorsManager.kPrimaryGradient.colors.first
                               .withOpacity(0.3),
                     width: 2,
                     style: BorderStyle.solid,
@@ -82,14 +85,15 @@ class ProfilePictureSection extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.add_a_photo,
-                            color: ColorManager.kPrimaryGradient.colors.first,
+                            color: ColorsManager.kPrimaryGradient.colors.first,
                             size: 40,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Add Photo',
                             style: TextStyle(
-                              color: ColorManager.kPrimaryGradient.colors.first,
+                              color:
+                                  ColorsManager.kPrimaryGradient.colors.first,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -102,7 +106,7 @@ class ProfilePictureSection extends StatelessWidget {
           const SizedBox(height: 15),
           Text(
             'Upload a clear profile picture to build trust with guests',
-            style: TextStyle(color: ColorManager.gray, fontSize: 14),
+            style: TextStyle(color: ColorsManager.gray, fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],

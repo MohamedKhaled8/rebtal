@@ -5,8 +5,9 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
+import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_card.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class OffersPage extends StatelessWidget {
   const OffersPage({super.key});
@@ -16,22 +17,27 @@ class OffersPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.chaletBackgroundDark
-          : ColorManager.chaletBackgroundLight,
+          ? ColorsManager.chaletBackgroundDark
+          : ColorsManager.chaletBackgroundLight,
       appBar: AppBar(
         title: Text(
           context.tr('chalet_resale_offers'),
           style: TextStyle(
-            color: isDark ? ColorManager.white : ColorManager.black,
+            color: isDark ? ColorsManager.white : ColorsManager.black,
             fontWeight: FontWeight.bold,
-            fontSize: 22,
+            fontSize: stv(
+              context: context,
+              mobile: 22.spScaled,
+              tablet: 26.spScaled,
+              desktop: 30.spScaled,
+            ),
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(
-          color: isDark ? ColorManager.white : ColorManager.black,
+          color: isDark ? ColorsManager.white : ColorsManager.black,
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -53,16 +59,39 @@ class OffersPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppImageHelper(path: ImageAssetsManger.couponDiscount),
-
-                  const SizedBox(height: 16),
+                  AppImageHelper(
+                    path: ImageAssetsManger.couponDiscount,
+                    height: otv(
+                      context: context,
+                      portrait: 200.sh,
+                      landscape: 150.sh,
+                    ),
+                    width: otv(
+                      context: context,
+                      portrait: 200.sw,
+                      landscape: 150.sw,
+                    ),
+                    fit: BoxFit.contain,
+                  ),
+                  SizedBox(
+                    height: otv(
+                      context: context,
+                      portrait: 16.sh,
+                      landscape: 8.sh,
+                    ),
+                  ),
                   Text(
                     context.tr('chalet_no_offers'),
                     style: TextStyle(
                       color: DynamicThemeManager.isDarkMode(context)
-                          ? ColorManager.white70
-                          : ColorManager.chaletGrey500,
-                      fontSize: 18,
+                          ? ColorsManager.white70
+                          : ColorsManager.chaletGrey500,
+                      fontSize: stv(
+                        context: context,
+                        mobile: 18.spScaled,
+                        tablet: 22.spScaled,
+                        desktop: 26.spScaled,
+                      ),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -73,12 +102,59 @@ class OffersPage extends StatelessWidget {
 
           final bookings = snapshot.data!.docs;
 
-          return ListView.builder(
-            itemCount: bookings.length,
-            padding: const EdgeInsets.only(bottom: 80),
-            itemBuilder: (context, index) {
-              final bookingDoc = bookings[index];
-              return _ReOfferItem(bookingDoc: bookingDoc);
+          return Builder(
+            builder: (context) {
+              final bool showTwoColumns = otv(
+                context: context,
+                portrait: stv(
+                  context: context,
+                  mobile: false,
+                  tablet: true,
+                  desktop: true,
+                ),
+                landscape: true,
+              );
+
+              if (showTwoColumns) {
+                final int rowCount = (bookings.length / 2).ceil();
+                return ListView.builder(
+                  padding: EdgeInsets.symmetric(vertical: 16.sh),
+                  itemCount: rowCount,
+                  itemBuilder: (context, index) {
+                    final firstIndex = index * 2;
+                    final secondIndex = firstIndex + 1;
+
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _ReOfferItem(
+                            bookingDoc: bookings[firstIndex],
+                            isLeft: true,
+                          ),
+                        ),
+                        if (secondIndex < bookings.length)
+                          Expanded(
+                            child: _ReOfferItem(
+                              bookingDoc: bookings[secondIndex],
+                              isLeft: false,
+                            ),
+                          )
+                        else
+                          const Expanded(child: SizedBox.shrink()),
+                      ],
+                    );
+                  },
+                );
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.symmetric(vertical: 16.sh),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) {
+                  return _ReOfferItem(bookingDoc: bookings[index]);
+                },
+              );
             },
           );
         },
@@ -89,12 +165,12 @@ class OffersPage extends StatelessWidget {
 
 class _ReOfferItem extends StatelessWidget {
   final DocumentSnapshot bookingDoc;
+  final bool? isLeft;
 
-  const _ReOfferItem({required this.bookingDoc});
+  const _ReOfferItem({required this.bookingDoc, this.isLeft});
 
   @override
   Widget build(BuildContext context) {
-    // bookingData has chaletId
     final bookingData = bookingDoc.data() as Map<String, dynamic>;
     final chaletId = bookingData['chaletId'];
 
@@ -107,11 +183,10 @@ class _ReOfferItem extends StatelessWidget {
           .get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: SizedBox(
-              height: 300,
-              child: Center(child: CircularProgressIndicator()),
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(20.sw),
+              child: const CircularProgressIndicator(),
             ),
           );
         }
@@ -125,11 +200,64 @@ class _ReOfferItem extends StatelessWidget {
         return PublicChaletCard(
           chaletData: chaletData,
           docId: chaletId,
+          margin: EdgeInsets.only(
+            bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
+            left:
+                isLeft == null
+                    ? stv(
+                      context: context,
+                      mobile: 16.sw,
+                      tablet: 24.sw,
+                      desktop: 32.sw,
+                    )
+                    : (isLeft == true
+                        ? stv(
+                          context: context,
+                          mobile: 16.sw,
+                          tablet: 24.sw,
+                          desktop: 32.sw,
+                        )
+                        : stv(
+                          context: context,
+                          mobile: 12.sw,
+                          tablet: 16.sw,
+                          desktop: 20.sw,
+                        )),
+            right:
+                isLeft == null
+                    ? stv(
+                      context: context,
+                      mobile: 16.sw,
+                      tablet: 24.sw,
+                      desktop: 32.sw,
+                    )
+                    : (isLeft == true
+                        ? stv(
+                          context: context,
+                          mobile: 12.sw,
+                          tablet: 16.sw,
+                          desktop: 20.sw,
+                        )
+                        : stv(
+                          context: context,
+                          mobile: 16.sw,
+                          tablet: 24.sw,
+                          desktop: 32.sw,
+                        )),
+          ),
           badge: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: EdgeInsets.symmetric(
+              horizontal: stv(
+                context: context,
+                mobile: 10.sw,
+                tablet: 14.sw,
+                desktop: 18.sw,
+              ),
+              vertical: otv(context: context, portrait: 6.sh, landscape: 3.sh),
+            ),
             decoration: BoxDecoration(
-              color: ColorManager.chaletActionBlue,
-              borderRadius: BorderRadius.circular(8),
+              color: ColorsManager.chaletActionBlue,
+              borderRadius: BorderRadius.circular(8.sw),
               boxShadow: [
                 BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 4),
               ],
@@ -137,13 +265,34 @@ class _ReOfferItem extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.swap_horiz, color: Colors.white, size: 14),
-                SizedBox(width: 4),
+                Icon(
+                  Icons.swap_horiz,
+                  color: Colors.white,
+                  size: stv(
+                    context: context,
+                    mobile: 14.spScaled,
+                    tablet: 16.spScaled,
+                    desktop: 18.spScaled,
+                  ),
+                ),
+                SizedBox(
+                  width: stv(
+                    context: context,
+                    mobile: 4.sw,
+                    tablet: 6.sw,
+                    desktop: 8.sw,
+                  ),
+                ),
                 Text(
                   context.tr('booking_status_under_discussion'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: stv(
+                      context: context,
+                      mobile: 12.spScaled,
+                      tablet: 14.spScaled,
+                      desktop: 16.spScaled,
+                    ),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -158,8 +307,8 @@ class _ReOfferItem extends StatelessWidget {
                   requestData: chaletData,
                   docId: chaletId,
                   status: 'approved',
-                  bookingId: bookingDoc.id, // Will add this param
-                  isReOffer: true, // Will add this param
+                  bookingId: bookingDoc.id,
+                  isReOffer: true,
                 ),
               ),
             );

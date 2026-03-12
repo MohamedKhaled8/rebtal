@@ -21,18 +21,18 @@ class ModernAmenitiesSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? ColorManager.grey800.withOpacity(0.3)
-              : ColorManager.grey200,
+              ? ColorsManager.grey800.withOpacity(0.3)
+              : ColorsManager.grey200,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? ColorManager.black.withOpacity(0.3)
-                : ColorManager.black.withOpacity(0.05),
+                ? ColorsManager.black.withOpacity(0.3)
+                : ColorsManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -47,12 +47,12 @@ class ModernAmenitiesSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: ColorManager.purple764BA2.withOpacity(0.15),
+                  color: ColorsManager.purple764BA2.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.star_rounded,
-                  color: ColorManager.purple764BA2,
+                  color: ColorsManager.purple764BA2,
                   size: 22,
                 ),
               ),
@@ -66,7 +66,9 @@ class ModernAmenitiesSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? ColorManager.white : ColorManager.black,
+                        color: isDark
+                            ? ColorsManager.white
+                            : ColorsManager.black,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -75,8 +77,8 @@ class ModernAmenitiesSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
-                            ? ColorManager.grey400
-                            : ColorManager.grey600,
+                            ? ColorsManager.grey400
+                            : ColorsManager.grey600,
                       ),
                     ),
                   ],
@@ -91,19 +93,19 @@ class ModernAmenitiesSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        ColorManager.purple764BA2.withOpacity(0.2),
-                        ColorManager.blue2563EB.withOpacity(0.2),
+                        ColorsManager.purple764BA2.withOpacity(0.2),
+                        ColorsManager.blue2563EB.withOpacity(0.2),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: ColorManager.purple764BA2.withOpacity(0.3),
+                      color: ColorsManager.purple764BA2.withOpacity(0.3),
                     ),
                   ),
                   child: Text(
                     '$selectedCount selected',
                     style: const TextStyle(
-                      color: ColorManager.purple764BA2,
+                      color: ColorsManager.purple764BA2,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -184,15 +186,15 @@ class _ModernAmenityCard extends StatelessWidget {
           color: isSelected
               ? null
               : (isDark
-                    ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                    : ColorManager.grey50),
+                    ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+                    : ColorsManager.grey50),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? color
                 : (isDark
-                      ? ColorManager.grey800.withOpacity(0.3)
-                      : ColorManager.grey300),
+                      ? ColorsManager.grey800.withOpacity(0.3)
+                      : ColorsManager.grey300),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -218,8 +220,8 @@ class _ModernAmenityCard extends StatelessWidget {
                     color: isSelected
                         ? color.withOpacity(0.2)
                         : (isDark
-                              ? ColorManager.grey800.withOpacity(0.3)
-                              : ColorManager.grey200),
+                              ? ColorsManager.grey800.withOpacity(0.3)
+                              : ColorsManager.grey200),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -227,8 +229,8 @@ class _ModernAmenityCard extends StatelessWidget {
                     color: isSelected
                         ? color
                         : (isDark
-                              ? ColorManager.grey400
-                              : ColorManager.grey600),
+                              ? ColorsManager.grey400
+                              : ColorsManager.grey600),
                     size: 24,
                   ),
                 ),
@@ -244,14 +246,14 @@ class _ModernAmenityCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isDark
-                              ? ColorManager.darkBlue1A1A2E
-                              : ColorManager.white,
+                              ? ColorsManager.darkBlue1A1A2E
+                              : ColorsManager.white,
                           width: 2,
                         ),
                       ),
                       child: const Icon(
                         Icons.check_rounded,
-                        color: ColorManager.white,
+                        color: ColorsManager.white,
                         size: 10,
                       ),
                     ),
@@ -271,7 +273,9 @@ class _ModernAmenityCard extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? color
-                      : (isDark ? ColorManager.grey300 : ColorManager.grey700),
+                      : (isDark
+                            ? ColorsManager.grey300
+                            : ColorsManager.grey700),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

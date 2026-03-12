@@ -47,16 +47,16 @@ class _BookingToggleButton extends StatelessWidget {
         gradient: isBookingAvailable
             ? const LinearGradient(
                 colors: [
-                  ColorManager.chaletActionRed,
-                  ColorManager.chaletActionDarkRed,
+                  ColorsManager.chaletActionRed,
+                  ColorsManager.chaletActionDarkRed,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
                 colors: [
-                  ColorManager.chaletActionBlue,
-                  ColorManager.chaletActionDarkBlue,
+                  ColorsManager.chaletActionBlue,
+                  ColorsManager.chaletActionDarkBlue,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -66,8 +66,8 @@ class _BookingToggleButton extends StatelessWidget {
           BoxShadow(
             color:
                 (isBookingAvailable
-                        ? ColorManager.chaletActionRed
-                        : ColorManager.chaletActionGreen)
+                        ? ColorsManager.chaletActionRed
+                        : ColorsManager.chaletActionGreen)
                     .withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -80,8 +80,8 @@ class _BookingToggleButton extends StatelessWidget {
           requestData: requestData,
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: ColorManager.transparent,
-          shadowColor: ColorManager.transparent,
+          backgroundColor: ColorsManager.transparent,
+          shadowColor: ColorsManager.transparent,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -93,7 +93,7 @@ class _BookingToggleButton extends StatelessWidget {
             Icon(
               isBookingAvailable ? Icons.pause : Icons.play_arrow,
               size: 22,
-              color: ColorManager.white,
+              color: ColorsManager.white,
             ),
             const SizedBox(width: 12),
             Text(
@@ -101,7 +101,7 @@ class _BookingToggleButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: ColorManager.white,
+                color: ColorsManager.white,
               ),
             ),
           ],
@@ -119,7 +119,7 @@ class _OwnerStatusButton extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: ColorManager.grey[300],
+        color: ColorsManager.grey[300],
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -127,14 +127,14 @@ class _OwnerStatusButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.info_outline, size: 22, color: ColorManager.grey[600]),
+            Icon(Icons.info_outline, size: 22, color: ColorsManager.grey[600]),
             const SizedBox(width: 12),
             Text(
               'Your Chalet',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: ColorManager.grey[600],
+                color: ColorsManager.grey[600],
               ),
             ),
           ],

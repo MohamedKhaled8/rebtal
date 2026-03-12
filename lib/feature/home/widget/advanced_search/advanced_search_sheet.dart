@@ -283,7 +283,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 const SizedBox(height: 16),
                 _buildCounterRow(
                   context.tr('home_bathrooms'),
-                  _minBathrooms,
+                  _minBedrooms,
                   (val) {
                     setState(() => _minBathrooms = val);
                   },

@@ -21,7 +21,9 @@ class RoleSelector extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+            color: isDark
+                ? ColorsManager.white
+                : ColorsManager.chaletTextPrimaryLight,
           ),
         ),
         const SizedBox(height: 12),
@@ -33,7 +35,7 @@ class RoleSelector extends StatelessWidget {
                 label: context.tr('auth_role_user'),
                 value: 'user',
                 isSelected: selectedRole == 'user',
-                color: ColorManager.skyBlue0EA5E9,
+                color: ColorsManager.skyBlue0EA5E9,
                 onTap: () => onChanged?.call('user'),
                 isDark: isDark,
               ),
@@ -45,7 +47,7 @@ class RoleSelector extends StatelessWidget {
                 label: context.tr('auth_role_owner'),
                 value: 'owner',
                 isSelected: selectedRole == 'owner',
-                color: ColorManager.chaletActionDarkBlue,
+                color: ColorsManager.chaletActionDarkBlue,
                 onTap: () => onChanged?.call('owner'),
                 isDark: isDark,
               ),
@@ -86,14 +88,16 @@ class _RoleCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? color.withOpacity(isDark ? 0.15 : 0.1)
-              : (isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white),
+              : (isDark
+                    ? ColorsManager.darkSurface1E1E1E
+                    : ColorsManager.white),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
                 ? color
                 : (isDark
-                    ? ColorManager.white.withOpacity(0.1)
-                    : ColorManager.grey300),
+                      ? ColorsManager.white.withOpacity(0.1)
+                      : ColorsManager.grey300),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -105,7 +109,7 @@ class _RoleCard extends StatelessWidget {
               size: 32,
               color: isSelected
                   ? color
-                  : (isDark ? ColorManager.white70 : ColorManager.grey600),
+                  : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
             ),
             const SizedBox(height: 12),
             Text(
@@ -115,7 +119,7 @@ class _RoleCard extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 color: isSelected
                     ? color
-                    : (isDark ? ColorManager.white70 : ColorManager.grey600),
+                    : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
               ),
             ),
           ],

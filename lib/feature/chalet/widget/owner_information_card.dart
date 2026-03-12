@@ -267,7 +267,7 @@ class OwnerInfoRow extends StatelessWidget {
         Icon(
           icon,
           // Colored icons in light mode
-          color: isDark ? Colors.white38 : ColorManager.chaletActionBlue,
+          color: isDark ? Colors.white38 : ColorsManager.chaletActionBlue,
           size: 20,
         ),
         const SizedBox(width: 12),

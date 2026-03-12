@@ -55,11 +55,11 @@ class LocationPicker extends StatelessWidget {
               Container(
                 constraints: const BoxConstraints(maxHeight: 180),
                 decoration: BoxDecoration(
-                  color: ColorManager.white,
+                  color: ColorsManager.white,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
-                      color: ColorManager.black.withOpacity(0.05),
+                      color: ColorsManager.black.withOpacity(0.05),
                       blurRadius: 8,
                     ),
                   ],
@@ -73,7 +73,7 @@ class LocationPicker extends StatelessWidget {
                       dense: true,
                       leading: Icon(
                         Icons.place,
-                        color: ColorManager.primaryColor,
+                        color: ColorsManager.primaryColor,
                       ),
                       title: Text(
                         item['display'],
@@ -124,7 +124,7 @@ class LocationPicker extends StatelessWidget {
                             point: selectedLatLng,
                             child: const Icon(
                               Icons.location_on,
-                              color: ColorManager.red,
+                              color: ColorsManager.red,
                               size: 36,
                             ),
                           ),
@@ -140,7 +140,7 @@ class LocationPicker extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ColorManager.grey50,
+                  color: ColorsManager.grey50,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

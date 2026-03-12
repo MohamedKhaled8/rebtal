@@ -45,11 +45,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
         title: const Text('الإشعارات'),
         backgroundColor: DynamicThemeManager.isDarkMode(context)
-            ? ColorManager.transparent
-            : ColorManager.white,
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         foregroundColor: DynamicThemeManager.isDarkMode(context)
-            ? ColorManager.white
-            : ColorManager.black,
+            ? ColorsManager.white
+            : ColorsManager.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -110,8 +110,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    ColorManager.chaletActionBlue.withOpacity(0.2),
-                    ColorManager.chaletActionBlue.withOpacity(0.1),
+                    ColorsManager.chaletActionBlue.withOpacity(0.2),
+                    ColorsManager.chaletActionBlue.withOpacity(0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -119,7 +119,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: ColorManager.chaletActionBlue.withOpacity(0.1),
+                    color: ColorsManager.chaletActionBlue.withOpacity(0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -128,7 +128,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Icon(
                 Icons.notifications_none,
                 size: 60,
-                color: ColorManager.chaletActionBlue,
+                color: ColorsManager.chaletActionBlue,
               ),
             ),
             const SizedBox(height: 32),
@@ -139,7 +139,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: ColorManager.chaletGrey800,
+                color: ColorsManager.chaletGrey800,
               ),
               textAlign: TextAlign.center,
             ),
@@ -150,7 +150,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               'ستظهر هنا الإشعارات الخاصة بحجوزاتك عند تحديث حالتها',
               style: TextStyle(
                 fontSize: 16,
-                color: ColorManager.chaletGrey500,
+                color: ColorsManager.chaletGrey500,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -166,8 +166,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               icon: const Icon(Icons.refresh),
               label: const Text('تحديث'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.chaletActionBlue,
-                foregroundColor: ColorManager.white,
+                backgroundColor: ColorsManager.chaletActionBlue,
+                foregroundColor: ColorsManager.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
@@ -194,22 +194,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                ColorManager.chaletActionBlue.withOpacity(0.1),
-                ColorManager.chaletActionBlue.withOpacity(0.2),
+                ColorsManager.chaletActionBlue.withOpacity(0.1),
+                ColorsManager.chaletActionBlue.withOpacity(0.2),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: ColorManager.chaletActionBlue.withOpacity(0.4),
+              color: ColorsManager.chaletActionBlue.withOpacity(0.4),
             ),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.notifications_active,
-                color: ColorManager.chaletActionBlue,
+                color: ColorsManager.chaletActionBlue,
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -222,14 +222,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: ColorManager.chaletActionDarkBlue,
+                        color: ColorsManager.chaletActionDarkBlue,
                       ),
                     ),
                     Text(
                       '${notifications.length} إشعار جديد',
                       style: TextStyle(
                         fontSize: 14,
-                        color: ColorManager.chaletActionBlue,
+                        color: ColorsManager.chaletActionBlue,
                       ),
                     ),
                   ],
@@ -270,12 +270,12 @@ class _NotificationCard extends StatelessWidget {
         gradient: LinearGradient(
           colors: isApproved
               ? [
-                  ColorManager.chaletAvailableGreen.withOpacity(0.1),
-                  ColorManager.chaletAvailableGreen.withOpacity(0.2),
+                  ColorsManager.chaletAvailableGreen.withOpacity(0.1),
+                  ColorsManager.chaletAvailableGreen.withOpacity(0.2),
                 ]
               : [
-                  ColorManager.chaletUnavailableRed.withOpacity(0.1),
-                  ColorManager.chaletUnavailableRed.withOpacity(0.2),
+                  ColorsManager.chaletUnavailableRed.withOpacity(0.1),
+                  ColorsManager.chaletUnavailableRed.withOpacity(0.2),
                 ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -283,12 +283,12 @@ class _NotificationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
           BoxShadow(
-            color: (isApproved ? ColorManager.green : ColorManager.red)
+            color: (isApproved ? ColorsManager.green : ColorsManager.red)
                 .withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
@@ -296,8 +296,8 @@ class _NotificationCard extends StatelessWidget {
         ],
         border: Border.all(
           color: isApproved
-              ? ColorManager.chaletAvailableGreen.withOpacity(0.3)
-              : ColorManager.chaletUnavailableRed.withOpacity(0.3),
+              ? ColorsManager.chaletAvailableGreen.withOpacity(0.3)
+              : ColorsManager.chaletUnavailableRed.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -317,12 +317,12 @@ class _NotificationCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isApproved
                           ? [
-                              ColorManager.chaletAvailableGreen,
-                              ColorManager.chaletActionDarkBlue,
+                              ColorsManager.chaletAvailableGreen,
+                              ColorsManager.chaletActionDarkBlue,
                             ]
                           : [
-                              ColorManager.chaletUnavailableRed,
-                              ColorManager.chaletActionDarkRed,
+                              ColorsManager.chaletUnavailableRed,
+                              ColorsManager.chaletActionDarkRed,
                             ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -331,7 +331,7 @@ class _NotificationCard extends StatelessWidget {
                   ),
                   child: Icon(
                     isApproved ? Icons.check_circle : Icons.cancel,
-                    color: ColorManager.white,
+                    color: ColorsManager.white,
                     size: 24,
                   ),
                 ),
@@ -347,7 +347,7 @@ class _NotificationCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: ColorManager.black,
+                          color: ColorsManager.black,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -355,7 +355,7 @@ class _NotificationCard extends StatelessWidget {
                         'صاحب الشاليه: ${booking.ownerName}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: ColorManager.chaletGrey500,
+                          color: ColorsManager.chaletGrey500,
                         ),
                       ),
                     ],
@@ -372,12 +372,12 @@ class _NotificationCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: isApproved
                           ? [
-                              ColorManager.chaletAvailableGreen,
-                              ColorManager.chaletActionDarkBlue,
+                              ColorsManager.chaletAvailableGreen,
+                              ColorsManager.chaletActionDarkBlue,
                             ]
                           : [
-                              ColorManager.chaletUnavailableRed,
-                              ColorManager.chaletActionDarkRed,
+                              ColorsManager.chaletUnavailableRed,
+                              ColorsManager.chaletActionDarkRed,
                             ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -387,7 +387,7 @@ class _NotificationCard extends StatelessWidget {
                   child: Text(
                     isApproved ? 'مقبول' : 'مرفوض',
                     style: const TextStyle(
-                      color: ColorManager.white,
+                      color: ColorsManager.white,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -402,10 +402,10 @@ class _NotificationCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: ColorManager.white,
+                color: ColorsManager.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: (isApproved ? ColorManager.green : ColorManager.red)
+                  color: (isApproved ? ColorsManager.green : ColorsManager.red)
                       .withValues(alpha: 0.3),
                 ),
               ),
@@ -419,7 +419,7 @@ class _NotificationCard extends StatelessWidget {
                           icon: Icons.calendar_today,
                           label: 'تاريخ البداية',
                           value: _formatDate(booking.from),
-                          color: ColorManager.chaletActionBlue,
+                          color: ColorsManager.chaletActionBlue,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -428,7 +428,7 @@ class _NotificationCard extends StatelessWidget {
                           icon: Icons.event,
                           label: 'تاريخ النهاية',
                           value: _formatDate(booking.to),
-                          color: ColorManager.chaletActionBlue,
+                          color: ColorsManager.chaletActionBlue,
                         ),
                       ),
                     ],
@@ -441,7 +441,7 @@ class _NotificationCard extends StatelessWidget {
                     icon: Icons.schedule,
                     label: 'مدة الإقامة',
                     value: '${_calculateDays(booking.from, booking.to)} أيام',
-                    color: ColorManager.purple8B5CF6,
+                    color: ColorsManager.purple8B5CF6,
                   ),
                 ],
               ),
@@ -457,12 +457,12 @@ class _NotificationCard extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: isApproved
                       ? [
-                          ColorManager.green.withValues(alpha: 0.1),
-                          ColorManager.green.withValues(alpha: 0.2),
+                          ColorsManager.green.withValues(alpha: 0.1),
+                          ColorsManager.green.withValues(alpha: 0.2),
                         ]
                       : [
-                          ColorManager.red.withValues(alpha: 0.1),
-                          ColorManager.red.withValues(alpha: 0.2),
+                          ColorsManager.red.withValues(alpha: 0.1),
+                          ColorsManager.red.withValues(alpha: 0.2),
                         ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -470,15 +470,15 @@ class _NotificationCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isApproved
-                      ? ColorManager.green.withValues(alpha: 0.3)
-                      : ColorManager.red.withValues(alpha: 0.3),
+                      ? ColorsManager.green.withValues(alpha: 0.3)
+                      : ColorsManager.red.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     isApproved ? Icons.celebration : Icons.info_outline,
-                    color: isApproved ? ColorManager.green : ColorManager.red,
+                    color: isApproved ? ColorsManager.green : ColorsManager.red,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -492,8 +492,8 @@ class _NotificationCard extends StatelessWidget {
                               : 'تم رفض طلب الحجز',
                           style: TextStyle(
                             color: isApproved
-                                ? ColorManager.green
-                                : ColorManager.red,
+                                ? ColorsManager.green
+                                : ColorsManager.red,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -505,8 +505,8 @@ class _NotificationCard extends StatelessWidget {
                               : 'للأسف، لم يتم قبول طلب حجزك في ${booking.chaletName}',
                           style: TextStyle(
                             color: isApproved
-                                ? ColorManager.green.withValues(alpha: 0.8)
-                                : ColorManager.red.withValues(alpha: 0.8),
+                                ? ColorsManager.green.withValues(alpha: 0.8)
+                                : ColorsManager.red.withValues(alpha: 0.8),
                             fontSize: 14,
                           ),
                         ),
@@ -549,7 +549,7 @@ class _DetailItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
@@ -561,7 +561,7 @@ class _DetailItem extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: ColorManager.grey600,
+              color: ColorsManager.grey600,
               fontWeight: FontWeight.w500,
             ),
           ),

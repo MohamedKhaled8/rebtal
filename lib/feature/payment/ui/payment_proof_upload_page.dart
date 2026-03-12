@@ -103,7 +103,7 @@ class _PaymentProofUploadPageState extends State<PaymentProofUploadPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = ColorManager.chaletAccent;
+    final primaryColor = ColorsManager.chaletAccent;
 
     return Scaffold(
       backgroundColor: isDark

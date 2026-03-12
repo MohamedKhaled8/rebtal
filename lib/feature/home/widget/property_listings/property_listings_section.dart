@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
-import 'package:rebtal/feature/home/widget/property_detail.dart';
+import 'package:rebtal/feature/home/widget/property_listings/property_detail.dart';
 
 class PropertyListingsSection extends StatelessWidget {
   const PropertyListingsSection({super.key});
@@ -94,11 +94,11 @@ class PropertyCard extends StatelessWidget {
             bottom: 20,
           ),
           decoration: BoxDecoration(
-            color: ColorManager.white,
+            color: ColorsManager.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: ColorManager.black.withOpacity(0.08),
+                color: ColorsManager.black.withOpacity(0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -117,8 +117,8 @@ class PropertyCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       property['name'],
-                      style: TextStyle(
-                        color: ColorManager.black,
+                      style: const TextStyle(
+                        color: ColorsManager.black,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -138,7 +138,7 @@ class PropertyCard extends StatelessWidget {
                       withSuffixPerNight: true,
                     ),
                     style: TextStyle(
-                      color: ColorManager.kPrimaryGradient.colors.first,
+                      color: ColorsManager.kPrimaryGradient.colors.first,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -151,8 +151,8 @@ class PropertyCard extends StatelessWidget {
               // Location
               Text(
                 property['location'],
-                style: TextStyle(
-                  color: ColorManager.gray,
+                style: const TextStyle(
+                  color: ColorsManager.gray,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -199,7 +199,7 @@ class PropertyCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: ColorManager.black.withOpacity(0.15),
+                      color: ColorsManager.black.withOpacity(0.15),
                       blurRadius: 24,
                       offset: const Offset(0, 12),
                     ),
@@ -221,11 +221,11 @@ class PropertyCard extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: ColorManager.white,
+                    color: ColorsManager.white,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: ColorManager.black.withOpacity(0.12),
+                        color: ColorsManager.black.withOpacity(0.12),
                         blurRadius: 12,
                         offset: const Offset(0, 6),
                       ),
@@ -235,7 +235,7 @@ class PropertyCard extends StatelessWidget {
                     property['isFavorite']
                         ? Icons.favorite
                         : Icons.favorite_border,
-                    color: ColorManager.red,
+                    color: ColorsManager.red,
                     size: 18,
                   ),
                 ),

@@ -16,6 +16,7 @@ import 'package:rebtal/feature/localization/logic/locale_cubit.dart';
 import 'package:rebtal/feature/localization/ui/language_selection_page.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 /// صفحة الإعدادات كما في التصميم: رأس الملف الشخصي + أقسام إعدادات الحساب، الدعم، القانونية، تفضيلات التطبيق.
 class ProfileContent extends StatelessWidget {
@@ -48,7 +49,12 @@ class ProfileContent extends StatelessWidget {
             // —— رأس الملف: صورة + اسم + إيميل + زر عرض الملف الشخصي ——
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                padding: EdgeInsets.fromLTRB(
+                  stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+                  otv(context: context, portrait: 24.sh, landscape: 12.sh),
+                  stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+                  otv(context: context, portrait: 20.sh, landscape: 10.sh),
+                ),
                 child: Column(
                   children: [
                     GestureDetector(
@@ -57,7 +63,7 @@ class ProfileContent extends StatelessWidget {
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
-                            radius: 44,
+                            radius: stv(context: context, mobile: 44.sw, tablet: 54.sw, desktop: 64.sw),
                             backgroundColor: Colors.grey.shade800,
                             child:
                                 user.profileImageUrl != null &&
@@ -99,7 +105,7 @@ class ProfileContent extends StatelessWidget {
                             right: 0,
                             bottom: 0,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: EdgeInsets.all(stv(context: context, mobile: 6.sw, tablet: 8.sw, desktop: 10.sw)),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade700,
                                 shape: BoxShape.circle,
@@ -120,21 +126,21 @@ class ProfileContent extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: otv(context: context, portrait: 12.sh, landscape: 6.sh)),
                     Text(
                       user.name,
                       style: TextStyle(
-                        fontSize: 22,
+                        fontSize: stv(context: context, mobile: 22.spScaled, tablet: 26.spScaled, desktop: 30.spScaled),
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: otv(context: context, portrait: 4.sh, landscape: 2.sh)),
                     Text(
                       user.email,
-                      style: TextStyle(fontSize: 14, color: subColor),
+                      style: TextStyle(fontSize: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled), color: subColor),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: otv(context: context, portrait: 14.sh, landscape: 8.sh)),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
@@ -163,7 +169,7 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— إعدادات الحساب ——
-            _sectionTitle(context.tr('profile_account_settings'), textColor),
+            _sectionTitle(context, context.tr('profile_account_settings'), textColor),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 _settingsTile(
@@ -207,7 +213,7 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— الدعم والمساعدة ——
-            _sectionTitle(context.tr('profile_support'), textColor),
+            _sectionTitle(context, context.tr('profile_support'), textColor),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 _settingsTile(
@@ -236,7 +242,7 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— القانونية ——
-            _sectionTitle(context.tr('profile_legal'), textColor),
+            _sectionTitle(context, context.tr('profile_legal'), textColor),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 _settingsTile(
@@ -277,7 +283,7 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— تفضيلات التطبيق ——
-            _sectionTitle(context.tr('profile_app_preferences'), textColor),
+            _sectionTitle(context, context.tr('profile_app_preferences'), textColor),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 BlocBuilder<AppCubit, AppState>(
@@ -368,14 +374,19 @@ class ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String title, Color textColor) {
+  Widget _sectionTitle(BuildContext context, String title, Color textColor) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+        padding: EdgeInsets.fromLTRB(
+          stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+          otv(context: context, portrait: 16.sh, landscape: 8.sh),
+          stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+          otv(context: context, portrait: 8.sh, landscape: 4.sh),
+        ),
         child: Text(
           title,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
@@ -391,10 +402,10 @@ class ProfileContent extends StatelessWidget {
     List<Widget> children,
   ) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw)),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.sw),
         border: Border.all(color: dividerColor),
       ),
       child: Column(
@@ -423,18 +434,21 @@ class ProfileContent extends StatelessWidget {
     final sx = subColor ?? (isDark ? Colors.white54 : Colors.grey.shade600);
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Icon(icon, color: tx, size: 24),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: stv(context: context, mobile: 16.sw, tablet: 20.sw, desktop: 24.sw),
+        vertical: otv(context: context, portrait: 4.sh, landscape: 2.sh)
+      ),
+      leading: Icon(icon, color: tx, size: stv(context: context, mobile: 24.spScaled, tablet: 28.spScaled, desktop: 32.spScaled)),
       title: Text(
         title,
-        style: TextStyle(fontWeight: FontWeight.w600, color: tx, fontSize: 15),
+        style: TextStyle(fontWeight: FontWeight.w600, color: tx, fontSize: stv(context: context, mobile: 15.spScaled, tablet: 17.spScaled, desktop: 19.spScaled)),
       ),
       subtitle: subtitle != null
-          ? Text(subtitle, style: TextStyle(fontSize: 12, color: sx))
+          ? Text(subtitle, style: TextStyle(fontSize: stv(context: context, mobile: 12.spScaled, tablet: 14.spScaled, desktop: 16.spScaled), color: sx))
           : null,
-      trailing: const Icon(
+      trailing: Icon(
         Icons.arrow_forward_ios,
-        size: 14,
+        size: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
         color: Colors.grey,
       ),
       onTap: onTap,

@@ -296,8 +296,8 @@ class _FlutterGoogleMapLocationPickerState
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    ColorManager.black.withOpacity(0.3),
-                    ColorManager.transparent,
+                    ColorsManager.black.withOpacity(0.3),
+                    ColorsManager.transparent,
                   ],
                 ),
               ),
@@ -311,12 +311,12 @@ class _FlutterGoogleMapLocationPickerState
                           Container(
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? ColorManager.darkGrey2D2D44
-                                  : ColorManager.white,
+                                  ? ColorsManager.darkGrey2D2D44
+                                  : ColorsManager.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: ColorManager.black.withOpacity(0.1),
+                                  color: ColorsManager.black.withOpacity(0.1),
                                   blurRadius: 8,
                                 ),
                               ],
@@ -325,8 +325,8 @@ class _FlutterGoogleMapLocationPickerState
                               onPressed: () => Navigator.pop(context),
                               icon: const Icon(Icons.arrow_back),
                               color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletGrey800,
+                                  ? ColorsManager.white
+                                  : ColorsManager.chaletGrey800,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -390,7 +390,7 @@ class _FlutterGoogleMapLocationPickerState
                                   ),
                                   filled: true,
                                   fillColor: isDark
-                                      ? ColorManager.darkGrey2D2D44
+                                      ? ColorsManager.darkGrey2D2D44
                                       : Colors.white,
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -409,7 +409,7 @@ class _FlutterGoogleMapLocationPickerState
                           constraints: const BoxConstraints(maxHeight: 250),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? ColorManager.darkGrey2D2D44
+                                ? ColorsManager.darkGrey2D2D44
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
@@ -468,7 +468,7 @@ class _FlutterGoogleMapLocationPickerState
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
+                    color: isDark ? ColorsManager.darkGrey2D2D44 : Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -535,7 +535,7 @@ class _FlutterGoogleMapLocationPickerState
         padding: const EdgeInsets.only(bottom: 100),
         child: FloatingActionButton(
           onPressed: _getCurrentLocation,
-          backgroundColor: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
+          backgroundColor: isDark ? ColorsManager.darkGrey2D2D44 : Colors.white,
           child: Icon(
             Icons.my_location,
             color: isDark ? Colors.white : Colors.blue,

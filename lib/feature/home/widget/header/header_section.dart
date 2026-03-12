@@ -10,7 +10,7 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
-import 'package:rebtal/feature/home/widget/advanced_search_sheet.dart';
+import 'package:rebtal/feature/home/widget/advanced_search/advanced_search_sheet.dart';
 
 class HeaderSection extends StatefulWidget {
   const HeaderSection({super.key});
@@ -427,5 +427,3 @@ class _HeaderSectionState extends State<HeaderSection> {
     );
   }
 }
-
-// Removed HeaderDescriptionSection as it's no longer needed in the new design

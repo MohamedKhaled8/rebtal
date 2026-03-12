@@ -47,11 +47,11 @@ class AdminButtons extends StatelessWidget {
                             newStatus: 'approved',
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorManager.chaletActionGreen,
-                            foregroundColor: ColorManager.white,
+                            backgroundColor: ColorsManager.chaletActionGreen,
+                            foregroundColor: ColorsManager.white,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             elevation: 0,
-                            shadowColor: ColorManager.transparent,
+                            shadowColor: ColorsManager.transparent,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -81,10 +81,10 @@ class AdminButtons extends StatelessWidget {
                             newStatus: 'rejected',
                           ),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: ColorManager.chaletActionRed,
+                            foregroundColor: ColorsManager.chaletActionRed,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             side: const BorderSide(
-                              color: ColorManager.chaletActionRed,
+                              color: ColorsManager.chaletActionRed,
                               width: 2,
                             ),
                             shape: RoundedRectangleBorder(
@@ -115,8 +115,8 @@ class AdminButtons extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
-                        ColorManager.chaletActionBlue,
-                        ColorManager.chaletActionDarkBlue,
+                        ColorsManager.chaletActionBlue,
+                        ColorsManager.chaletActionDarkBlue,
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -124,7 +124,7 @@ class AdminButtons extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorManager.chaletActionBlue.withOpacity(0.3),
+                        color: ColorsManager.chaletActionBlue.withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -132,11 +132,14 @@ class AdminButtons extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      SnackBarHelper.showWarning(context, 'Request already processed');
+                      SnackBarHelper.showWarning(
+                        context,
+                        'Request already processed',
+                      );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.transparent,
-                      shadowColor: ColorManager.transparent,
+                      backgroundColor: ColorsManager.transparent,
+                      shadowColor: ColorsManager.transparent,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -150,7 +153,7 @@ class AdminButtons extends StatelessWidget {
                               ? Icons.check_circle
                               : Icons.cancel,
                           size: 22,
-                          color: ColorManager.white,
+                          color: ColorsManager.white,
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -160,7 +163,7 @@ class AdminButtons extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: ColorManager.white,
+                            color: ColorsManager.white,
                           ),
                         ),
                       ],

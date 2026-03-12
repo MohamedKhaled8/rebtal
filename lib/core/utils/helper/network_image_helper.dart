@@ -32,7 +32,7 @@ class NetworkImageHelper extends StatelessWidget {
       errorWidget: (context, url, error) {
         debugPrint('❌ Image failed to load: $url');
         return errorWidget ??
-            const Center(child: Icon(Icons.error, color: ColorManager.red));
+            const Center(child: Icon(Icons.error, color: ColorsManager.red));
       },
     );
   }

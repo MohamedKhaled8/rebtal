@@ -32,8 +32,8 @@ class LoginScreen extends StatelessWidget {
 
           return Scaffold(
             backgroundColor: isDark
-                ? ColorManager.scaffolColor
-                : ColorManager.profileBackgroundLight,
+                ? ColorsManager.scaffolColor
+                : ColorsManager.profileBackgroundLight,
             body: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: SafeArea(
@@ -48,8 +48,8 @@ class LoginScreen extends StatelessWidget {
                           text: 'Rebtal',
                           fontSize: 64,
                           color: isDark
-                              ? ColorManager.white
-                              : ColorManager.chaletActionBlue,
+                              ? ColorsManager.white
+                              : ColorsManager.chaletActionBlue,
                           isDark: isDark,
                         ),
                       ),
@@ -93,7 +93,7 @@ class _LogoSection extends StatelessWidget {
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
-              color: isDark ? ColorManager.white : Colors.black,
+              color: isDark ? ColorsManager.white : Colors.black,
               letterSpacing: -0.5,
             ),
           ),
@@ -103,7 +103,7 @@ class _LogoSection extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: isDark ? ColorManager.white : Colors.black,
+              color: isDark ? ColorsManager.white : Colors.black,
             ),
           ),
         ],
@@ -155,8 +155,8 @@ class _LoginFormState extends State<_LoginForm> {
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
               color: widget.isDark
-                  ? ColorManager.white70.withOpacity(0.6)
-                  : ColorManager.chaletGrey500,
+                  ? ColorsManager.white70.withOpacity(0.6)
+                  : ColorsManager.chaletGrey500,
               size: 20,
             ),
             onPressed: widget.cubit.togglePasswordVisibility,
@@ -179,8 +179,8 @@ class _LoginFormState extends State<_LoginForm> {
               style: TextStyle(
                 fontSize: 14,
                 color: widget.isDark
-                    ? ColorManager.bookingsAccentPrimary
-                    : ColorManager.chaletActionBlue,
+                    ? ColorsManager.bookingsAccentPrimary
+                    : ColorsManager.chaletActionBlue,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -199,9 +199,9 @@ class _LoginFormState extends State<_LoginForm> {
                 });
               },
               activeColor: widget.isDark
-                  ? ColorManager.bookingsAccentPrimary
-                  : ColorManager.blue2563EB,
-              checkColor: ColorManager.white,
+                  ? ColorsManager.bookingsAccentPrimary
+                  : ColorsManager.blue2563EB,
+              checkColor: ColorsManager.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -220,8 +220,8 @@ class _LoginFormState extends State<_LoginForm> {
                       style: TextStyle(
                         fontSize: 13,
                         color: widget.isDark
-                            ? ColorManager.white70
-                            : ColorManager.chaletGrey800,
+                            ? ColorsManager.white70
+                            : ColorsManager.chaletGrey800,
                         height: 1.4,
                       ),
                       children: [
@@ -238,8 +238,8 @@ class _LoginFormState extends State<_LoginForm> {
                               style: TextStyle(
                                 fontSize: 13,
                                 color: widget.isDark
-                                    ? ColorManager.bookingsAccentPrimary
-                                    : ColorManager.blue2563EB,
+                                    ? ColorsManager.bookingsAccentPrimary
+                                    : ColorsManager.blue2563EB,
                                 fontWeight: FontWeight.w600,
                                 decoration: TextDecoration.underline,
                               ),
@@ -262,7 +262,7 @@ class _LoginFormState extends State<_LoginForm> {
               context.tr('auth_must_agree'),
               style: TextStyle(
                 fontSize: 11,
-                color: ColorManager.chaletUnavailableRed,
+                color: ColorsManager.chaletUnavailableRed,
               ),
             ),
           ),
@@ -277,8 +277,8 @@ class _LoginFormState extends State<_LoginForm> {
                       strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         widget.isDark
-                            ? ColorManager.bookingsAccentPrimary
-                            : ColorManager.blue2563EB,
+                            ? ColorsManager.bookingsAccentPrimary
+                            : ColorsManager.blue2563EB,
                       ),
                     ),
                   ),
@@ -314,15 +314,15 @@ class _PrimaryButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: isEnabled
             ? (isDark
-                  ? ColorManager.bookingsAccentPrimary
-                  : ColorManager.blue2563EB)
+                  ? ColorsManager.bookingsAccentPrimary
+                  : ColorsManager.blue2563EB)
             : (isDark
-                  ? ColorManager.chaletGrey800
-                  : ColorManager.chaletGrey400),
+                  ? ColorsManager.chaletGrey800
+                  : ColorsManager.chaletGrey400),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Material(
-        color: ColorManager.transparent,
+        color: ColorsManager.transparent,
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(14),
@@ -331,8 +331,8 @@ class _PrimaryButton extends StatelessWidget {
               label,
               style: TextStyle(
                 color: isEnabled
-                    ? ColorManager.white
-                    : ColorManager.white.withOpacity(0.6),
+                    ? ColorsManager.white
+                    : ColorsManager.white.withOpacity(0.6),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -358,7 +358,7 @@ class _SignUpLink extends StatelessWidget {
           context.tr('auth_no_account'),
           style: TextStyle(
             fontSize: 15,
-            color: isDark ? ColorManager.white70 : ColorManager.chaletGrey500,
+            color: isDark ? ColorsManager.white70 : ColorsManager.chaletGrey500,
           ),
         ),
         const SizedBox(width: 8),
@@ -375,8 +375,8 @@ class _SignUpLink extends StatelessWidget {
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: isDark
-                  ? ColorManager.bookingsAccentPrimary
-                  : ColorManager.blue2563EB,
+                  ? ColorsManager.bookingsAccentPrimary
+                  : ColorsManager.blue2563EB,
             ),
           ),
         ),

@@ -18,15 +18,15 @@ class NotificationBadge extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: ColorManager.chaletActionRed,
+            color: ColorsManager.chaletActionRed,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: ColorManager.white, width: 2),
+            border: Border.all(color: ColorsManager.white, width: 2),
           ),
           constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
           child: Text(
             state.unreadCount > 99 ? '99+' : '${state.unreadCount}',
             style: const TextStyle(
-              color: ColorManager.white,
+              color: ColorsManager.white,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),

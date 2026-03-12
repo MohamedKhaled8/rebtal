@@ -219,13 +219,13 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.chaletBackgroundDark
-          : ColorManager.chaletBackgroundLight,
+          ? ColorsManager.chaletBackgroundDark
+          : ColorsManager.chaletBackgroundLight,
       appBar: AppBar(
         title: const Text('اختيار الموقع'),
         backgroundColor: isDark
-            ? ColorManager.darkBlue161B30
-            : ColorManager.primaryColor,
+            ? ColorsManager.darkBlue161B30
+            : ColorsManager.primaryColor,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -280,7 +280,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
               style: TextStyle(color: isDark ? Colors.white : Colors.black),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
+                fillColor: isDark ? ColorsManager.darkGrey2D2D44 : Colors.white,
                 hintText: 'اكتب العنوان للبحث...',
                 hintStyle: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -346,7 +346,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
               constraints: const BoxConstraints(maxHeight: 180),
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: isDark ? ColorManager.darkGrey2D2D44 : Colors.white,
+                color: isDark ? ColorsManager.darkGrey2D2D44 : Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(

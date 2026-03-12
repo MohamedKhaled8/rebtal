@@ -65,7 +65,7 @@ class SwitchActionTile extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: ColorManager.white,
+            activeColor: ColorsManager.white,
             activeTrackColor: color,
             inactiveThumbColor: isDark ? Colors.white70 : Colors.grey,
             inactiveTrackColor: isDark ? Colors.white24 : Colors.grey.shade300,

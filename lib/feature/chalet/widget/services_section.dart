@@ -33,8 +33,8 @@ class ServicesSection extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: isDark
-                  ? ColorManager.chaletTextPrimaryDark
-                  : ColorManager.chaletTextPrimaryLight,
+                  ? ColorsManager.chaletTextPrimaryDark
+                  : ColorsManager.chaletTextPrimaryLight,
             ),
           ),
           const SizedBox(height: 20),
@@ -47,10 +47,10 @@ class ServicesSection extends StatelessWidget {
 
               // Define Palette of Distinct Colors
               final List<Color> palette = [
-                ColorManager.chaletActionBlue,
-                ColorManager.purple8B5CF6,
-                ColorManager.orangeF59E0B,
-                ColorManager.chaletGalleryPink,
+                ColorsManager.chaletActionBlue,
+                ColorsManager.purple8B5CF6,
+                ColorsManager.orangeF59E0B,
+                ColorsManager.chaletGalleryPink,
                 Colors.teal,
                 Colors.indigo,
                 Colors.blueGrey,

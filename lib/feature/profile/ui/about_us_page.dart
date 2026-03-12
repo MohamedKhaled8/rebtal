@@ -10,15 +10,21 @@ class AboutUsPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.profileBackgroundDark
+          : ColorsManager.white,
       appBar: AppBar(
         title: const Text('About Us'),
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
+        iconTheme: IconThemeData(
+          color: isDark ? ColorsManager.white : ColorsManager.black,
+        ),
         titleTextStyle: TextStyle(
-          color: isDark ? ColorManager.white : ColorManager.black,
+          color: isDark ? ColorsManager.white : ColorsManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -36,15 +42,15 @@ class AboutUsPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: [
-                      ColorManager.profileAccent.withValues(alpha: 0.2),
-                      ColorManager.profileAccent.withValues(alpha: 0.1),
+                      ColorsManager.profileAccent.withValues(alpha: 0.2),
+                      ColorsManager.profileAccent.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
                 child: Icon(
                   Icons.villa,
                   size: 64,
-                  color: ColorManager.profileAccent,
+                  color: ColorsManager.profileAccent,
                 ),
               ),
             ),
@@ -56,7 +62,9 @@ class AboutUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
               textAlign: TextAlign.center,
             ),
@@ -65,7 +73,7 @@ class AboutUsPage extends StatelessWidget {
               'Your trusted platform for chalet bookings',
               style: TextStyle(
                 fontSize: 16,
-                color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
               ),
               textAlign: TextAlign.center,
             ),
@@ -142,7 +150,7 @@ class AboutUsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: ColorManager.profileAccent,
+                  color: ColorsManager.profileAccent,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -164,18 +172,18 @@ class AboutUsPage extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.darkGreen0A2A1D.withValues(alpha: 0.5)
-            : ColorManager.white,
+            ? ColorsManager.darkGreen0A2A1D.withValues(alpha: 0.5)
+            : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? ColorManager.white.withValues(alpha: 0.1)
-              : ColorManager.black.withValues(alpha: 0.05),
+              ? ColorsManager.white.withValues(alpha: 0.1)
+              : ColorsManager.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: ColorManager.black.withValues(alpha: 0.05),
+              color: ColorsManager.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -189,10 +197,10 @@ class AboutUsPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ColorManager.profileAccent.withValues(alpha: 0.1),
+                  color: ColorsManager.profileAccent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: ColorManager.profileAccent, size: 20),
+                child: Icon(icon, color: ColorsManager.profileAccent, size: 20),
               ),
               const SizedBox(width: 12),
               Text(
@@ -200,7 +208,9 @@ class AboutUsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
             ],
@@ -212,7 +222,7 @@ class AboutUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.6,
-                color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
               ),
             ),
           ],
@@ -231,7 +241,7 @@ class AboutUsPage extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: ColorManager.profileAccent, size: 24),
+        Icon(icon, color: ColorsManager.profileAccent, size: 24),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -242,7 +252,9 @@ class AboutUsPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 4),
@@ -250,7 +262,7 @@ class AboutUsPage extends StatelessWidget {
                 description,
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                  color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                 ),
               ),
             ],

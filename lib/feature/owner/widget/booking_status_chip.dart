@@ -26,7 +26,7 @@ class BookingStatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.3),
+            color: ColorsManager.black.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -35,12 +35,16 @@ class BookingStatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config['icon'] as IconData, size: 16, color: ColorManager.white),
+          Icon(
+            config['icon'] as IconData,
+            size: 16,
+            color: ColorsManager.white,
+          ),
           const SizedBox(width: 6),
           Text(
             config['text'] as String,
             style: const TextStyle(
-              color: ColorManager.white,
+              color: ColorsManager.white,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
@@ -57,13 +61,13 @@ class BookingStatusChip extends StatelessWidget {
     switch (status) {
       case BookingStatus.pending:
         return {
-          'color': ColorManager.orange,
+          'color': ColorsManager.orange,
           'text': context.tr('booking_status_pending'),
           'icon': Icons.schedule,
         };
       case BookingStatus.approved:
         return {
-          'color': ColorManager.chaletActionGreen,
+          'color': ColorsManager.chaletActionGreen,
           'text': context.tr('booking_status_accepted'),
           'icon': Icons.check_circle,
         };
@@ -76,8 +80,8 @@ class BookingStatusChip extends StatelessWidget {
                     booking!.adminPaymentNotes!.isNotEmpty));
         return {
           'color': isPaymentRejected
-              ? ColorManager.red
-              : ColorManager.chaletActionBlue,
+              ? ColorsManager.red
+              : ColorsManager.chaletActionBlue,
           'text': isPaymentRejected
               ? '${context.tr('booking_status_awaiting_payment')} - ${context.tr('booking_status_rejected')}'
               : context.tr('booking_status_awaiting_payment'),
@@ -85,43 +89,43 @@ class BookingStatusChip extends StatelessWidget {
         };
       case BookingStatus.paymentUnderReview:
         return {
-          'color': ColorManager.purple,
+          'color': ColorsManager.purple,
           'text': context.tr('booking_status_payment_review'),
           'icon': Icons.hourglass_empty,
         };
       case BookingStatus.confirmed:
         return {
-          'color': ColorManager.teal,
+          'color': ColorsManager.teal,
           'text': context.tr('booking_status_confirmed'),
           'icon': Icons.verified,
         };
       case BookingStatus.completed:
         return {
-          'color': ColorManager.indigo6366F1,
+          'color': ColorsManager.indigo6366F1,
           'text': context.tr('booking_status_completed'),
           'icon': Icons.done_all,
         };
       case BookingStatus.rejected:
         return {
-          'color': ColorManager.red,
+          'color': ColorsManager.red,
           'text': context.tr('booking_status_rejected'),
           'icon': Icons.cancel,
         };
       case BookingStatus.cancelled:
         return {
-          'color': ColorManager.grey600,
+          'color': ColorsManager.grey600,
           'text': context.tr('booking_status_cancelled'),
           'icon': Icons.block,
         };
       case BookingStatus.reOffered:
         return {
-          'color': ColorManager.chaletActionBlue,
+          'color': ColorsManager.chaletActionBlue,
           'text': context.tr('booking_status_under_discussion'),
           'icon': Icons.swap_horiz,
         };
       case BookingStatus.pendingOwnerApproval:
         return {
-          'color': ColorManager.orange,
+          'color': ColorsManager.orange,
           'text': context.tr('booking_status_awaiting_approval'),
           'icon': Icons.pending_actions,
         };

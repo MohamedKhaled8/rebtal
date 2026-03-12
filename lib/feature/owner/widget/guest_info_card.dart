@@ -24,11 +24,11 @@ class GuestInfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.white.withOpacity(0.05)
-            : ColorManager.grey50,
+            ? ColorsManager.white.withOpacity(0.05)
+            : ColorsManager.grey50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? ColorManager.white10 : ColorManager.grey200,
+          color: isDark ? ColorsManager.white10 : ColorsManager.grey200,
         ),
       ),
       child: Column(
@@ -39,7 +39,7 @@ class GuestInfoCard extends StatelessWidget {
           const SizedBox(height: 16),
           Divider(
             height: 1,
-            color: isDark ? ColorManager.white10 : ColorManager.grey200,
+            color: isDark ? ColorsManager.white10 : ColorsManager.grey200,
           ),
           const SizedBox(height: 16),
 
@@ -51,14 +51,14 @@ class GuestInfoCard extends StatelessWidget {
                   label: context.tr('booking_arrival'),
                   date: booking.from,
                   icon: Icons.login_rounded,
-                  color: ColorManager.green,
+                  color: ColorsManager.green,
                   isDark: isDark,
                 ),
               ),
               Container(
                 height: 30,
                 width: 1,
-                color: isDark ? ColorManager.white10 : ColorManager.grey300,
+                color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
                 margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
               Expanded(
@@ -66,7 +66,7 @@ class GuestInfoCard extends StatelessWidget {
                   label: context.tr('booking_departure'),
                   date: booking.to,
                   icon: Icons.logout_rounded,
-                  color: ColorManager.red,
+                  color: ColorsManager.red,
                   isDark: isDark,
                 ),
               ),
@@ -76,26 +76,26 @@ class GuestInfoCard extends StatelessWidget {
           const SizedBox(height: 16),
           Divider(
             height: 1,
-            color: isDark ? ColorManager.white10 : ColorManager.grey200,
+            color: isDark ? ColorsManager.white10 : ColorsManager.grey200,
           ),
           const SizedBox(height: 16),
 
           // Contact Info - Always show
           ContactRow(
             icon: Icons.phone_rounded,
-          label: context.tr('common_phone'),
+            label: context.tr('common_phone'),
             value: phone,
-            color: ColorManager.green,
-            bgColor: ColorManager.green.withOpacity(0.1),
+            color: ColorsManager.green,
+            bgColor: ColorsManager.green.withOpacity(0.1),
             isDark: isDark,
           ),
           const SizedBox(height: 12),
           ContactRow(
             icon: Icons.email_rounded,
-          label: context.tr('common_email'),
+            label: context.tr('common_email'),
             value: email,
-            color: ColorManager.orange,
-            bgColor: ColorManager.orange.withOpacity(0.1),
+            color: ColorsManager.orange,
+            bgColor: ColorsManager.orange.withOpacity(0.1),
             isDark: isDark,
           ),
         ],
@@ -116,10 +116,10 @@ class _GuestHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: const BoxDecoration(
-            color: ColorManager.chaletActionBlue,
+            color: ColorsManager.chaletActionBlue,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.person, size: 18, color: ColorManager.white),
+          child: const Icon(Icons.person, size: 18, color: ColorsManager.white),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -130,7 +130,7 @@ class _GuestHeader extends StatelessWidget {
                 context.tr('admin_guest_info'),
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                  color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -141,8 +141,8 @@ class _GuestHeader extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: isDark
-                      ? ColorManager.white
-                      : ColorManager.chaletTextPrimaryLight,
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
             ],

@@ -36,10 +36,10 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground0A0E27
-          : ColorManager.lightBackgroundF5F7FA,
+          ? ColorsManager.darkBackground0A0E27
+          : ColorsManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: ColorManager.transparent,
+        backgroundColor: ColorsManager.transparent,
         elevation: 0,
         title: const Text(
           'تعليمات الدفع',
@@ -58,7 +58,10 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [ColorManager.chaletAccent, ColorManager.teal00A896],
+                    colors: [
+                      ColorsManager.chaletAccent,
+                      ColorsManager.teal00A896,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -67,12 +70,12 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: ColorManager.white.withOpacity(0.2),
+                        color: ColorsManager.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         _getPaymentIcon(),
-                        color: ColorManager.white,
+                        color: ColorsManager.white,
                         size: 32,
                       ),
                     ),
@@ -86,7 +89,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: ColorManager.white,
+                              color: ColorsManager.white,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -95,7 +98,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: ColorManager.white,
+                              color: ColorsManager.white,
                             ),
                           ),
                         ],
@@ -144,8 +147,8 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.chaletAccent,
-                      foregroundColor: ColorManager.white,
+                      backgroundColor: ColorsManager.chaletAccent,
+                      foregroundColor: ColorsManager.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -175,8 +178,8 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.chaletActionGreen,
-                      foregroundColor: ColorManager.white,
+                      backgroundColor: ColorsManager.chaletActionGreen,
+                      foregroundColor: ColorsManager.white,
                       padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -201,10 +204,12 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+            color: isDark
+                ? ColorsManager.darkSurface1E1E1E
+                : ColorsManager.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? ColorManager.white10 : ColorManager.grey300,
+              color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
             ),
           ),
           child: Column(
@@ -270,10 +275,12 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+            color: isDark
+                ? ColorsManager.darkSurface1E1E1E
+                : ColorsManager.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? ColorManager.white10 : ColorManager.grey300,
+              color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
             ),
           ),
           child: Column(
@@ -335,10 +342,12 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+            color: isDark
+                ? ColorsManager.darkSurface1E1E1E
+                : ColorsManager.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? ColorManager.white10 : ColorManager.grey300,
+              color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
             ),
           ),
           child: Column(
@@ -401,13 +410,20 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [ColorManager.chaletActionGreen, ColorManager.chaletActionDarkGreen],
+              colors: [
+                ColorsManager.chaletActionGreen,
+                ColorsManager.chaletActionDarkGreen,
+              ],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             children: [
-              const Icon(Icons.check_circle, color: ColorManager.white, size: 64),
+              const Icon(
+                Icons.check_circle,
+                color: ColorsManager.white,
+                size: 64,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'حجزك مؤكد مبدئياً!',
@@ -421,7 +437,10 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
               const SizedBox(height: 8),
               Text(
                 'المبلغ المطلوب: ${widget.amount.toStringAsFixed(0)} جنيه',
-                style: const TextStyle(fontSize: 18, color: ColorManager.white),
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: ColorsManager.white,
+                ),
               ),
             ],
           ),
@@ -430,9 +449,9 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: ColorManager.orange.withOpacity(0.1),
+            color: ColorsManager.orange.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: ColorManager.orange.withOpacity(0.3)),
+            border: Border.all(color: ColorsManager.orange.withOpacity(0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,10 +496,12 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+            color: isDark
+                ? ColorsManager.darkSurface1E1E1E
+                : ColorsManager.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? ColorManager.white10 : ColorManager.grey300,
+              color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
             ),
           ),
           child: Column(
@@ -490,7 +511,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                 children: [
                   Icon(
                     Icons.location_on,
-                    color: ColorManager.chaletAccent,
+                    color: ColorsManager.chaletAccent,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -539,7 +560,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: ColorManager.chaletAccent),
+        Icon(icon, size: 20, color: ColorsManager.chaletAccent),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -570,7 +591,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
               Clipboard.setData(ClipboardData(text: value));
               SnackBarHelper.showSuccess(context, 'تم النسخ', icon: Icons.copy);
             },
-            icon: Icon(Icons.copy, size: 20, color: ColorManager.chaletAccent),
+            icon: Icon(Icons.copy, size: 20, color: ColorsManager.chaletAccent),
           ),
       ],
     );
@@ -637,14 +658,14 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: ColorManager.chaletAccent,
+                      color: ColorsManager.chaletAccent,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
                         '${index + 1}',
                         style: const TextStyle(
-                          color: ColorManager.white,
+                          color: ColorsManager.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),

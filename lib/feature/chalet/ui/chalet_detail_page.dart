@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
@@ -12,11 +12,11 @@ import 'package:rebtal/feature/chalet/widget/location_map_card.dart';
 import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
 import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
-import 'package:rebtal/feature/chalet/widget/section_title.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/widget/booking_dates_display.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class ChaletDetailPage extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -143,11 +143,29 @@ class ChaletDetailPage extends StatelessWidget {
                         SliverToBoxAdapter(
                           child: Container(
                             color: backgroundColor,
-                            padding: const EdgeInsets.only(
-                              left: 24,
-                              right: 24,
-                              top: 24,
-                              bottom: 120, // Space for bottom bar
+                            padding: EdgeInsets.only(
+                              left: stv(
+                                context: context,
+                                mobile: 24.sw,
+                                tablet: 32.sw,
+                                desktop: 40.sw,
+                              ),
+                              right: stv(
+                                context: context,
+                                mobile: 24.sw,
+                                tablet: 32.sw,
+                                desktop: 40.sw,
+                              ),
+                              top: otv(
+                                context: context,
+                                portrait: 24.sh,
+                                landscape: 12.sh,
+                              ),
+                              bottom: otv(
+                                context: context,
+                                portrait: 120.sh,
+                                landscape: 250.sh,
+                              ), // Space for bottom bar
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +182,12 @@ class ChaletDetailPage extends StatelessWidget {
                                         Text(
                                           hotelName,
                                           style: TextStyle(
-                                            fontSize: 26,
+                                            fontSize: stv(
+                                              context: context,
+                                              mobile: 26.spScaled,
+                                              tablet: 30.spScaled,
+                                              desktop: 34.spScaled,
+                                            ),
                                             fontWeight: FontWeight.w600,
                                             color: textColor,
                                             letterSpacing:
@@ -172,22 +195,44 @@ class ChaletDetailPage extends StatelessWidget {
                                           ),
                                           maxLines: 2,
                                         ),
-                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 8.sh,
+                                            landscape: 4.sh,
+                                          ),
+                                        ),
                                         Text(
                                           location,
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: stv(
+                                              context: context,
+                                              mobile: 16.spScaled,
+                                              tablet: 18.spScaled,
+                                              desktop: 20.spScaled,
+                                            ),
                                             fontWeight: FontWeight.w500,
                                             color: textColor,
                                             decoration:
                                                 TextDecoration.underline,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 4.sh,
+                                            landscape: 2.sh,
+                                          ),
+                                        ),
                                         Text(
                                           "${area != null ? 'Area $area m² · ' : ''}${guests > 0 ? '$guests · ' : ''}$bedrooms bedroom · $beds beds",
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: stv(
+                                              context: context,
+                                              mobile: 14.spScaled,
+                                              tablet: 16.spScaled,
+                                              desktop: 18.spScaled,
+                                            ),
                                             color: isDark
                                                 ? Colors.white70
                                                 : const Color(0xFF717171),
@@ -197,7 +242,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
 
                                 // B. Stats Row
                                 FadeInUp(
@@ -206,6 +257,7 @@ class ChaletDetailPage extends StatelessWidget {
                                   curve: Curves.easeOutQuart,
                                   child: RepaintBoundary(
                                     child: _buildStatsRow(
+                                      context,
                                       isDark,
                                       textColor,
                                       formattedRating,
@@ -213,7 +265,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
                                 FadeIn(
                                   delay: const Duration(milliseconds: 400),
                                   child: Divider(
@@ -223,7 +281,13 @@ class ChaletDetailPage extends StatelessWidget {
                                         : const Color(0xFFDDDDDD),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
 
                                 // C. Host Section
                                 FadeInUp(
@@ -236,7 +300,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
                                 FadeIn(
                                   delay: const Duration(milliseconds: 600),
                                   child: Divider(
@@ -246,7 +316,13 @@ class ChaletDetailPage extends StatelessWidget {
                                         : const Color(0xFFDDDDDD),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
 
                                 // D. Highlights (Property Features)
                                 FadeInUp(
@@ -260,7 +336,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
                                 FadeIn(
                                   delay: const Duration(milliseconds: 800),
                                   child: Divider(
@@ -270,7 +352,13 @@ class ChaletDetailPage extends StatelessWidget {
                                         : const Color(0xFFDDDDDD),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
 
                                 // F. Description
                                 FadeInUp(
@@ -283,14 +371,26 @@ class ChaletDetailPage extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         _buildSectionTitle(
+                                          context,
                                           "About this place",
                                           textColor,
                                         ),
-                                        const SizedBox(height: 12),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 12.sh,
+                                            landscape: 6.sh,
+                                          ),
+                                        ),
                                         Text(
                                           description,
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: stv(
+                                              context: context,
+                                              mobile: 16.spScaled,
+                                              tablet: 18.spScaled,
+                                              desktop: 20.spScaled,
+                                            ),
                                             height: 1.5,
                                             fontWeight: FontWeight.w400,
                                             color: isDark
@@ -300,13 +400,29 @@ class ChaletDetailPage extends StatelessWidget {
                                           maxLines: 6,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 16),
-                                        _buildShowMoreButton(isDark, textColor),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 16.sh,
+                                            landscape: 8.sh,
+                                          ),
+                                        ),
+                                        _buildShowMoreButton(
+                                          context,
+                                          isDark,
+                                          textColor,
+                                        ),
                                       ],
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
                                 FadeIn(
                                   delay: const Duration(milliseconds: 1000),
                                   child: Divider(
@@ -316,7 +432,7 @@ class ChaletDetailPage extends StatelessWidget {
                                         : const Color(0xFFDDDDDD),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                verticalSpace(5),
 
                                 // G. Gallery Strip
                                 FadeInUp(
@@ -329,10 +445,17 @@ class ChaletDetailPage extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         _buildSectionTitle(
+                                          context,
                                           "Gallery",
                                           textColor,
                                         ),
-                                        const SizedBox(height: 16),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 16.sh,
+                                            landscape: 8.sh,
+                                          ),
+                                        ),
                                         _buildGalleryStrip(
                                           context,
                                           images,
@@ -342,7 +465,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
                                 FadeIn(
                                   delay: const Duration(milliseconds: 1200),
                                   child: Divider(
@@ -352,7 +481,13 @@ class ChaletDetailPage extends StatelessWidget {
                                         : const Color(0xFFDDDDDD),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                ),
 
                                 // H. Amenities (Map)
                                 FadeInUp(
@@ -383,17 +518,13 @@ class ChaletDetailPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 24),
-                                FadeIn(
-                                  delay: const Duration(milliseconds: 1400),
-                                  child: Divider(
-                                    height: 1,
-                                    color: isDark
-                                        ? Colors.white24
-                                        : const Color(0xFFDDDDDD),
+                                SizedBox(
+                                  height: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
                                   ),
                                 ),
-                                const SizedBox(height: 24),
 
                                 // Reviews
                                 FadeInUp(
@@ -412,7 +543,13 @@ class ChaletDetailPage extends StatelessWidget {
                                 // Booking Dates (Start/End)
                                 if (requestData['availableFrom'] != null &&
                                     requestData['availableTo'] != null) ...[
-                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    height: otv(
+                                      context: context,
+                                      portrait: 24.sh,
+                                      landscape: 12.sh,
+                                    ),
+                                  ),
                                   FadeIn(
                                     delay: const Duration(milliseconds: 1500),
                                     child: Divider(
@@ -422,7 +559,13 @@ class ChaletDetailPage extends StatelessWidget {
                                           : const Color(0xFFDDDDDD),
                                     ),
                                   ),
-                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    height: otv(
+                                      context: context,
+                                      portrait: 24.sh,
+                                      landscape: 12.sh,
+                                    ),
+                                  ),
                                   FadeInUp(
                                     duration: const Duration(
                                       milliseconds: 1000,
@@ -450,35 +593,73 @@ class ChaletDetailPage extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 24.sh,
+                                            landscape: 12.sh,
+                                          ),
+                                        ),
                                         Divider(
                                           height: 1,
                                           color: isDark
                                               ? Colors.white24
                                               : const Color(0xFFDDDDDD),
                                         ),
-                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 24.sh,
+                                            landscape: 12.sh,
+                                          ),
+                                        ),
                                         _buildSectionTitle(
+                                          context,
                                           'Availability',
                                           textColor,
                                         ),
-                                        const SizedBox(height: 16),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 16.sh,
+                                            landscape: 8.sh,
+                                          ),
+                                        ),
                                         AvailabilityCard(
                                           requestData: requestData,
                                         ),
                                         if (role == 'admin') ...[
-                                          const SizedBox(height: 24),
+                                          SizedBox(
+                                            height: otv(
+                                              context: context,
+                                              portrait: 24.sh,
+                                              landscape: 12.sh,
+                                            ),
+                                          ),
                                           _buildSectionTitle(
+                                            context,
                                             'Request Details',
                                             textColor,
                                           ),
-                                          const SizedBox(height: 16),
+                                          SizedBox(
+                                            height: otv(
+                                              context: context,
+                                              portrait: 16.sh,
+                                              landscape: 8.sh,
+                                            ),
+                                          ),
                                           RequestDetailsCard(
                                             docId: docId,
                                             requestData: requestData,
                                           ),
                                         ],
-                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 24.sh,
+                                            landscape: 12.sh,
+                                          ),
+                                        ),
                                         ActionButtons(
                                           status: status,
                                           docId: docId,
@@ -528,12 +709,33 @@ class ChaletDetailPage extends StatelessWidget {
     if (images.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 120,
+      height: otv(
+        context: context,
+        portrait: stv(
+          context: context,
+          mobile: 130.sh,
+          tablet: 100.sh,
+          desktop: 80.sh,
+        ),
+        landscape: stv(
+          context: context,
+          mobile: 300.sh,
+          tablet: 265.sh,
+          desktop: 270.sh,
+        ),
+      ),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: images.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => SizedBox(
+          width: stv(
+            context: context,
+            mobile: 10.sw,
+            tablet: 16.sw,
+            desktop: 20.sw,
+          ),
+        ),
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
@@ -544,7 +746,14 @@ class ChaletDetailPage extends StatelessWidget {
               );
             },
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                stv(
+                  context: context,
+                  mobile: 12.sp,
+                  tablet: 16.sp,
+                  desktop: 20.sp,
+                ),
+              ),
               child: AspectRatio(
                 aspectRatio: 1.5,
                 child: AppImageHelper(path: images[index], fit: BoxFit.cover),
@@ -557,6 +766,7 @@ class ChaletDetailPage extends StatelessWidget {
   }
 
   Widget _buildStatsRow(
+    BuildContext context,
     bool isDark,
     Color textColor,
     String rating,
@@ -571,9 +781,18 @@ class ChaletDetailPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatItem(rating, "Rating", Icons.star, true, isDark, textColor),
-          _buildVerticalDivider(isDark),
           _buildStatItem(
+            context,
+            rating,
+            "Rating",
+            Icons.star,
+            true,
+            isDark,
+            textColor,
+          ),
+          _buildVerticalDivider(context, isDark),
+          _buildStatItem(
+            context,
             "Guest\nfavorite",
             "",
             null,
@@ -582,8 +801,9 @@ class ChaletDetailPage extends StatelessWidget {
             textColor,
             isBadge: true,
           ),
-          _buildVerticalDivider(isDark),
+          _buildVerticalDivider(context, isDark),
           _buildStatItem(
+            context,
             reviewsCount,
             "Reviews",
             null,
@@ -597,6 +817,7 @@ class ChaletDetailPage extends StatelessWidget {
   }
 
   Widget _buildStatItem(
+    BuildContext context,
     String mainText,
     String subText,
     IconData? icon,
@@ -763,14 +984,35 @@ class ChaletDetailPage extends StatelessWidget {
               Text(
                 mainText,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: stv(
+                    context: context,
+                    mobile: 16.spScaled,
+                    tablet: 18.spScaled,
+                    desktop: 20.spScaled,
+                  ),
                   fontWeight: FontWeight.bold,
                   color: textColor,
                 ),
               ),
               if (showIcon) ...[
-                const SizedBox(width: 4),
-                Icon(icon, size: 14, color: textColor),
+                SizedBox(
+                  width: stv(
+                    context: context,
+                    mobile: 4.sw,
+                    tablet: 6.sw,
+                    desktop: 8.sw,
+                  ),
+                ),
+                Icon(
+                  icon,
+                  size: stv(
+                    context: context,
+                    mobile: 14.spScaled,
+                    tablet: 16.spScaled,
+                    desktop: 18.spScaled,
+                  ),
+                  color: textColor,
+                ),
               ],
             ],
           ),
@@ -778,7 +1020,12 @@ class ChaletDetailPage extends StatelessWidget {
             Text(
               subText,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: stv(
+                  context: context,
+                  mobile: 12.spScaled,
+                  tablet: 14.spScaled,
+                  desktop: 16.spScaled,
+                ),
                 color: isDark ? Colors.white70 : Colors.grey[600],
                 decoration: TextDecoration.underline,
               ),
@@ -817,39 +1064,73 @@ class ChaletDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalDivider(bool isDark) {
+  Widget _buildVerticalDivider(BuildContext context, bool isDark) {
     return Container(
-      height: 40,
+      height: otv(context: context, portrait: 40.sh, landscape: 20.sh),
       width: 1,
       color: isDark ? Colors.white24 : const Color(0xFFDDDDDD),
     );
   }
 
-  Widget _buildSectionTitle(String title, Color textColor) {
+  Widget _buildSectionTitle(
+    BuildContext context,
+    String title,
+    Color textColor,
+  ) {
     return Text(
       title,
       style: TextStyle(
-        fontSize: 22,
+        fontSize: stv(
+          context: context,
+          mobile: 22.spScaled,
+          tablet: 26.spScaled,
+          desktop: 30.spScaled,
+        ),
         fontWeight: FontWeight.w600,
         color: textColor,
       ),
     );
   }
 
-  Widget _buildShowMoreButton(bool isDark, Color textColor) {
+  Widget _buildShowMoreButton(
+    BuildContext context,
+    bool isDark,
+    Color textColor,
+  ) {
     return Row(
       children: [
         Text(
           "Show more",
           style: TextStyle(
-            fontSize: 16,
+            fontSize: stv(
+              context: context,
+              mobile: 16.spScaled,
+              tablet: 18.spScaled,
+              desktop: 20.spScaled,
+            ),
             fontWeight: FontWeight.w600,
             decoration: TextDecoration.underline,
             color: textColor,
           ),
         ),
-        const SizedBox(width: 4),
-        Icon(Icons.arrow_forward_ios, size: 12, color: textColor),
+        SizedBox(
+          width: stv(
+            context: context,
+            mobile: 4.sw,
+            tablet: 6.sw,
+            desktop: 8.sw,
+          ),
+        ),
+        Icon(
+          Icons.arrow_forward_ios,
+          size: stv(
+            context: context,
+            mobile: 12.spScaled,
+            tablet: 14.spScaled,
+            desktop: 16.spScaled,
+          ),
+          color: textColor,
+        ),
       ],
     );
   }

@@ -34,7 +34,7 @@ class GlassmorPhicCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: isDark ? ColorManager.white : Colors.black,
+            color: isDark ? ColorsManager.white : Colors.black,
           ),
         ),
         const SizedBox(height: 8),
@@ -45,7 +45,7 @@ class GlassmorPhicCard extends StatelessWidget {
             context.tr('auth_create_account_desc'),
             style: TextStyle(
               fontSize: 15,
-              color: isDark ? ColorManager.white : Colors.black,
+              color: isDark ? ColorsManager.white : Colors.black,
             ),
           ),
         ),
@@ -81,7 +81,7 @@ class GlassmorPhicCard extends StatelessWidget {
               obscurePassword
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
-              color: isDark ? ColorManager.white70 : ColorManager.grey700,
+              color: isDark ? ColorsManager.white70 : ColorsManager.grey700,
               size: 20,
             ),
             onPressed: togglePasswordVisibility,
@@ -101,7 +101,7 @@ class GlassmorPhicCard extends StatelessWidget {
             Icon(
               Icons.info_outline_rounded,
               size: 16,
-              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -109,7 +109,7 @@ class GlassmorPhicCard extends StatelessWidget {
                 'بإنشاء حساب، أنت توافق على شروط الخدمة وسياسة الخصوصية',
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                  color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                   height: 1.5,
                 ),
               ),
@@ -136,11 +136,11 @@ class GlassmorPhicCard extends StatelessWidget {
         width: double.infinity,
         height: 120,
         decoration: BoxDecoration(
-          color: isDark ? ColorManager.darkSurface1E1E1E : Colors.white,
+          color: isDark ? ColorsManager.darkSurface1E1E1E : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: cubit.idCardImage != null
-                ? ColorManager.bookingsAccentPrimary
+                ? ColorsManager.bookingsAccentPrimary
                 : (isDark ? Colors.white12 : Colors.black12),
             width: 1.5,
           ),
@@ -165,7 +165,7 @@ class GlassmorPhicCard extends StatelessWidget {
               size: 32,
               color: cubit.idCardImage != null
                   ? Colors.white
-                  : ColorManager.bookingsAccentPrimary,
+                  : ColorsManager.bookingsAccentPrimary,
             ),
             const SizedBox(height: 8),
             Text(

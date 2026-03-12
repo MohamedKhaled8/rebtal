@@ -22,8 +22,8 @@ class ForgotPasswordScreen extends StatelessWidget {
 
           return Scaffold(
             backgroundColor: isDark
-                ? ColorManager.darkBackground121212
-                : ColorManager.grey50,
+                ? ColorsManager.darkBackground121212
+                : ColorsManager.grey50,
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -39,15 +39,15 @@ class ForgotPasswordScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? ColorManager.darkSurface1E1E1E
-                                  : ColorManager.white,
+                                  ? ColorsManager.darkSurface1E1E1E
+                                  : ColorsManager.white,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               Icons.arrow_back_ios_new_rounded,
                               color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletTextPrimaryLight,
+                                  ? ColorsManager.white
+                                  : ColorsManager.chaletTextPrimaryLight,
                               size: 18,
                             ),
                           ),
@@ -65,7 +65,9 @@ class ForgotPasswordScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? ColorManager.white : Colors.black,
+                              color: isDark
+                                  ? ColorsManager.white
+                                  : Colors.black,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -76,7 +78,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               color: isDark
-                                  ? ColorManager.white70
+                                  ? ColorsManager.white70
                                   : Colors.black87,
                               height: 1.5,
                             ),
@@ -96,12 +98,12 @@ class ForgotPasswordScreen extends StatelessWidget {
                       height: 52,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? ColorManager.bookingsAccentPrimary
-                            : ColorManager.blue2563EB,
+                            ? ColorsManager.bookingsAccentPrimary
+                            : ColorsManager.blue2563EB,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Material(
-                        color: ColorManager.transparent,
+                        color: ColorsManager.transparent,
                         child: InkWell(
                           onTap: isLoading
                               ? null
@@ -118,14 +120,14 @@ class ForgotPasswordScreen extends StatelessWidget {
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        ColorManager.white,
+                                        ColorsManager.white,
                                       ),
                                     ),
                                   )
                                 : const Text(
                                     'إرسال رابط إعادة التعيين',
                                     style: TextStyle(
-                                      color: ColorManager.white,
+                                      color: ColorsManager.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),

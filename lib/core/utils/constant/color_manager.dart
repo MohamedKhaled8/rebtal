@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-abstract class ColorManager {
-  ColorManager._();
+abstract class ColorsManager {
+  ColorsManager._();
 
   static const primaryColor = Colors.blue;
   static const transparent = Colors.transparent;

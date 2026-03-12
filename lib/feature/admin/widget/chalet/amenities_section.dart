@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/widget/chalet/amenities_grid.dart';
+import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 // import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class AmenitiesSection extends StatelessWidget {
@@ -45,7 +45,7 @@ class AmenitiesSection extends StatelessWidget {
                   size: 20,
                 ),
               ),
-              horizintalSpace(2),
+                SizedBox(width: 2.w,),
               const Text(
                 'Amenities',
                 style: TextStyle(

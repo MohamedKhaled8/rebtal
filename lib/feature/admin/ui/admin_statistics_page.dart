@@ -288,7 +288,7 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
 
     if (_isLoading && _totalUsersCount == 0 && _totalChaletsCount == 0) {
       return Center(
-        child: CircularProgressIndicator(color: ColorManager.chaletAccent),
+        child: CircularProgressIndicator(color: ColorsManager.chaletAccent),
       );
     }
 
@@ -341,24 +341,24 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: ColorManager.chaletAccent.withOpacity(0.1),
+                      color: ColorsManager.chaletAccent.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: ColorManager.chaletAccent.withOpacity(0.5),
+                        color: ColorsManager.chaletAccent.withOpacity(0.5),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.refresh,
-                          color: ColorManager.chaletAccent,
+                          color: ColorsManager.chaletAccent,
                           size: 16,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'تحديث',
                           style: TextStyle(
-                            color: ColorManager.chaletAccent,
+                            color: ColorsManager.chaletAccent,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),

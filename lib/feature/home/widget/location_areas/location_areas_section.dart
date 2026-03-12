@@ -87,12 +87,12 @@ class LocationAreasSection extends StatelessWidget {
                       if (selectedCity != null && selectedCity.isNotEmpty)
                         GestureDetector(
                           onTap: () => HomeSearch.clear(),
-                          child: Text(
+                          child: const Text(
                             'عرض الكل',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2563EB),
+                              color: Color(0xFF2563EB),
                             ),
                           ),
                         ),

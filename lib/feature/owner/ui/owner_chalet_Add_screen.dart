@@ -70,8 +70,8 @@ class OwnerChaletAddScreen extends StatelessWidget {
         builder: (context, state) {
           return Scaffold(
             backgroundColor: isDark
-                ? ColorManager.darkBackground0A0E27
-                : ColorManager.lightBackgroundF8FAFF,
+                ? ColorsManager.darkBackground0A0E27
+                : ColorsManager.lightBackgroundF8FAFF,
             appBar: _buildModernAppBar(context, isDark),
             body: const _ChaletFormContent(),
             bottomNavigationBar: _SubmitButton(
@@ -99,20 +99,20 @@ class OwnerChaletAddScreen extends StatelessWidget {
     return AppBar(
       elevation: 0,
       backgroundColor: isDark
-          ? ColorManager.darkBackground0A0E27
-          : ColorManager.lightBackgroundF8FAFF,
+          ? ColorsManager.darkBackground0A0E27
+          : ColorsManager.lightBackgroundF8FAFF,
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: isDark
-                ? ColorManager.white.withOpacity(0.1)
-                : ColorManager.grey200,
+                ? ColorsManager.white.withOpacity(0.1)
+                : ColorsManager.grey200,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDark ? ColorManager.white : ColorManager.black,
+            color: isDark ? ColorsManager.white : ColorsManager.black,
             size: 18,
           ),
         ),
@@ -124,7 +124,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
           Text(
             context.tr('owner_add_new_chalet'),
             style: TextStyle(
-              color: isDark ? ColorManager.white : ColorManager.black,
+              color: isDark ? ColorsManager.white : ColorsManager.black,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -132,7 +132,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
           Text(
             context.tr('owner_fill_data'),
             style: TextStyle(
-              color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+              color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
               fontSize: 12,
               fontWeight: FontWeight.normal,
             ),
@@ -313,12 +313,12 @@ class _ChaletFormContent extends StatelessWidget {
         gradient: LinearGradient(
           colors: isDark
               ? [
-                  ColorManager.blue2563EB.withOpacity(0.2),
-                  ColorManager.purple764BA2.withOpacity(0.2),
+                  ColorsManager.blue2563EB.withOpacity(0.2),
+                  ColorsManager.purple764BA2.withOpacity(0.2),
                 ]
               : [
-                  ColorManager.blue2563EB.withOpacity(0.1),
-                  ColorManager.purple764BA2.withOpacity(0.1),
+                  ColorsManager.blue2563EB.withOpacity(0.1),
+                  ColorsManager.purple764BA2.withOpacity(0.1),
                 ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -326,8 +326,8 @@ class _ChaletFormContent extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? ColorManager.blue2563EB.withOpacity(0.3)
-              : ColorManager.blue2563EB.withOpacity(0.2),
+              ? ColorsManager.blue2563EB.withOpacity(0.3)
+              : ColorsManager.blue2563EB.withOpacity(0.2),
         ),
       ),
       child: Row(
@@ -335,12 +335,12 @@ class _ChaletFormContent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: ColorManager.blue2563EB,
+              color: ColorsManager.blue2563EB,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.edit_note_rounded,
-              color: ColorManager.white,
+              color: ColorsManager.white,
               size: 24,
             ),
           ),
@@ -352,7 +352,7 @@ class _ChaletFormContent extends StatelessWidget {
                 Text(
                   context.tr("owner_create_ad"),
                   style: TextStyle(
-                    color: isDark ? ColorManager.white : ColorManager.black,
+                    color: isDark ? ColorsManager.white : ColorsManager.black,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -361,7 +361,9 @@ class _ChaletFormContent extends StatelessWidget {
                 Text(
                   context.tr("owner_add_details_hint"),
                   style: TextStyle(
-                    color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.grey400
+                        : ColorsManager.grey600,
                     fontSize: 13,
                   ),
                 ),
@@ -390,10 +392,10 @@ class _SubmitButton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.1),
+            color: ColorsManager.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -407,21 +409,21 @@ class _SubmitButton extends StatelessWidget {
                 ? null
                 : const LinearGradient(
                     colors: [
-                      ColorManager.blue2563EB,
-                      ColorManager.purple764BA2,
+                      ColorsManager.blue2563EB,
+                      ColorsManager.purple764BA2,
                     ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
             color: isSubmitting
-                ? (isDark ? ColorManager.grey800 : ColorManager.grey300)
+                ? (isDark ? ColorsManager.grey800 : ColorsManager.grey300)
                 : null,
             borderRadius: BorderRadius.circular(16),
             boxShadow: isSubmitting
                 ? null
                 : [
                     BoxShadow(
-                      color: ColorManager.blue2563EB.withOpacity(0.4),
+                      color: ColorsManager.blue2563EB.withOpacity(0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -444,8 +446,8 @@ class _SubmitButton extends StatelessWidget {
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 isDark
-                                    ? ColorManager.grey400
-                                    : ColorManager.grey600,
+                                    ? ColorsManager.grey400
+                                    : ColorsManager.grey600,
                               ),
                             ),
                           ),
@@ -454,8 +456,8 @@ class _SubmitButton extends StatelessWidget {
                             context.tr("common_sending"),
                             style: TextStyle(
                               color: isDark
-                                  ? ColorManager.grey400
-                                  : ColorManager.grey600,
+                                  ? ColorsManager.grey400
+                                  : ColorsManager.grey600,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -467,14 +469,14 @@ class _SubmitButton extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.check_circle_outline_rounded,
-                            color: ColorManager.white,
+                            color: ColorsManager.white,
                             size: 22,
                           ),
                           const SizedBox(width: 10),
                           Text(
                             context.tr("owner_submit_chalet"),
                             style: const TextStyle(
-                              color: ColorManager.white,
+                              color: ColorsManager.white,
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,

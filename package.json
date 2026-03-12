@@ -1,0 +1,31 @@
+{
+  "name": "rebtal",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MohamedKhaled8/rebtal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MohamedKhaled8/rebtal/issues"
+  },
+  "homepage": "https://github.com/MohamedKhaled8/rebtal#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "googleapis": "^171.4.0",
+    "multer": "^2.1.1"
+  }
+}

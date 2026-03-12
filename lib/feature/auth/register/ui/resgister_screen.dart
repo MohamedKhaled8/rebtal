@@ -26,8 +26,8 @@ class RegisterScreen extends StatelessWidget {
         builder: (context, registerState) {
           return Scaffold(
             backgroundColor: isDark
-                ? ColorManager.darkBackground121212
-                : ColorManager.grey50,
+                ? ColorsManager.darkBackground121212
+                : ColorsManager.grey50,
             body: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: SafeArea(
@@ -42,8 +42,8 @@ class RegisterScreen extends StatelessWidget {
                           text: 'Rebtal',
                           fontSize: 64,
                           color: isDark
-                              ? ColorManager.white
-                              : ColorManager.chaletActionDarkBlue,
+                              ? ColorsManager.white
+                              : ColorsManager.chaletActionDarkBlue,
                           isDark: isDark,
                         ),
                       ),
@@ -101,9 +101,9 @@ class RegisterScreen extends StatelessWidget {
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: isDark
-                                              ? ColorManager
+                                              ? ColorsManager
                                                     .darkBackground121212
-                                              : ColorManager.grey50,
+                                              : ColorsManager.grey50,
                                           width: 3,
                                         ),
                                       ),
@@ -145,8 +145,8 @@ class RegisterScreen extends StatelessWidget {
                                     strokeWidth: 2.5,
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       isDark
-                                          ? ColorManager.bookingsAccentPrimary
-                                          : ColorManager.blue2563EB,
+                                          ? ColorsManager.bookingsAccentPrimary
+                                          : ColorsManager.blue2563EB,
                                     ),
                                   ),
                                 ),
@@ -199,12 +199,12 @@ class _PrimaryButton extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.bookingsAccentPrimary
-            : ColorManager.blue2563EB,
+            ? ColorsManager.bookingsAccentPrimary
+            : ColorsManager.blue2563EB,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Material(
-        color: ColorManager.transparent,
+        color: ColorsManager.transparent,
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(14),
@@ -212,7 +212,7 @@ class _PrimaryButton extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: ColorManager.white,
+                color: ColorsManager.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

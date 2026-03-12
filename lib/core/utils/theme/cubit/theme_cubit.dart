@@ -9,7 +9,7 @@ class ThemeState {
 
   const ThemeState(
     this.themeMode, {
-    this.primaryColor = ColorManager.profileAccent,
+    this.primaryColor = ColorsManager.profileAccent,
   });
 
   ThemeState copyWith({ThemeMode? themeMode, Color? primaryColor}) {
@@ -39,7 +39,7 @@ class ThemeCubit extends Cubit<ThemeState> {
       mode = ThemeMode.values[savedThemeIndex];
     }
 
-    Color color = ColorManager.profileAccent;
+    Color color = ColorsManager.profileAccent;
     if (savedColorValue != null) {
       color = Color(savedColorValue);
     }

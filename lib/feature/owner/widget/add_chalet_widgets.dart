@@ -27,7 +27,7 @@ class OwnerInfoSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.person_outline_rounded,
       title: context.tr('owner_info'),
-      color: ColorManager.blue2563EB,
+      color: ColorsManager.blue2563EB,
       child: Column(
         children: [
           _InfoRow(
@@ -81,7 +81,7 @@ class ChaletDetailsSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.villa_rounded,
       title: context.tr('owner_chalet_details'),
-      color: ColorManager.purple764BA2,
+      color: ColorsManager.purple764BA2,
       child: Column(
         children: [
           _ModernTextField(
@@ -132,7 +132,7 @@ class LocationSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.location_on_rounded,
       title: context.tr('owner_location'),
-      color: ColorManager.orangeF59E0B,
+      color: ColorsManager.orangeF59E0B,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -140,12 +140,12 @@ class LocationSection extends StatelessWidget {
             height: 50,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [ColorManager.orangeF59E0B, Color(0xFFF97316)],
+                colors: [ColorsManager.orangeF59E0B, Color(0xFFF97316)],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: ColorManager.orangeF59E0B.withOpacity(0.3),
+                  color: ColorsManager.orangeF59E0B.withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -161,14 +161,14 @@ class LocationSection extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.map_outlined,
-                      color: ColorManager.white,
+                      color: ColorsManager.white,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       context.tr('owner_select_on_map'),
                       style: const TextStyle(
-                        color: ColorManager.white,
+                        color: ColorsManager.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -226,7 +226,7 @@ class PropertyDetailsSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.attach_money_rounded,
       title: context.tr('owner_property_details'),
-      color: ColorManager.mainBlue,
+      color: ColorsManager.mainBlue,
       child: Column(
         children: [
           _ModernTextField(
@@ -312,7 +312,7 @@ class AvailabilitySection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.calendar_today_rounded,
       title: context.tr('owner_availability_period'),
-      color: ColorManager.cyan06B6D4,
+      color: ColorsManager.cyan06B6D4,
       child: Row(
         children: [
           Expanded(
@@ -365,37 +365,37 @@ class FeaturesSection extends StatelessWidget {
         'key': 'Pool',
         'label': context.tr('chalet_pool'),
         'icon': Icons.pool_rounded,
-        'color': ColorManager.cyan06B6D4,
+        'color': ColorsManager.cyan06B6D4,
       },
       {
         'key': 'Sea View',
         'label': context.tr('chalet_beach_view'),
         'icon': Icons.waves_rounded,
-        'color': ColorManager.blue2563EB,
+        'color': ColorsManager.blue2563EB,
       },
       {
         'key': 'Garden',
         'label': context.tr('chalet_garden'),
         'icon': Icons.local_florist_rounded,
-        'color': ColorManager.mainBlue,
+        'color': ColorsManager.mainBlue,
       },
       {
         'key': 'WiFi',
         'label': context.tr('chalet_wifi'),
         'icon': Icons.wifi_rounded,
-        'color': ColorManager.purple764BA2,
+        'color': ColorsManager.purple764BA2,
       },
       {
         'key': 'BBQ',
         'label': context.tr('chalet_bbq'),
         'icon': Icons.outdoor_grill_rounded,
-        'color': ColorManager.bookingsWarningOrange,
+        'color': ColorsManager.bookingsWarningOrange,
       },
       {
         'key': 'Parking',
         'label': context.tr('chalet_parking'),
         'icon': Icons.local_parking_rounded,
-        'color': ColorManager.grey600,
+        'color': ColorsManager.grey600,
       },
     ];
 
@@ -403,7 +403,7 @@ class FeaturesSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.star_rounded,
       title: context.tr('owner_extra_features'),
-      color: ColorManager.yellowEAB308,
+      color: ColorsManager.yellowEAB308,
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -477,14 +477,14 @@ class DiscountSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.local_offer_rounded,
       title: context.tr('owner_discounts_offers'),
-      color: ColorManager.redFF3B30,
+      color: ColorsManager.redFF3B30,
       child: Column(
         children: [
           SwitchListTile(
             title: Text(
               context.tr('owner_enable_discount'),
               style: TextStyle(
-                color: isDark ? ColorManager.white : ColorManager.black,
+                color: isDark ? ColorsManager.white : ColorsManager.black,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -492,12 +492,12 @@ class DiscountSection extends StatelessWidget {
             subtitle: Text(
               context.tr('owner_enable_discount_hint'),
               style: TextStyle(
-                color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+                color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
                 fontSize: 12,
               ),
             ),
             value: isEnabled,
-            activeColor: ColorManager.redFF3B30,
+            activeColor: ColorsManager.redFF3B30,
             onChanged: onDiscountEnabledChanged,
             contentPadding: EdgeInsets.zero,
           ),
@@ -509,7 +509,7 @@ class DiscountSection extends StatelessWidget {
               child: Text(
                 context.tr('owner_discount_type'),
                 style: TextStyle(
-                  color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+                  color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -527,23 +527,25 @@ class DiscountSection extends StatelessWidget {
                       height: 60,
                       decoration: BoxDecoration(
                         color: discountType == 'percentage'
-                            ? ColorManager.redFF3B30
+                            ? ColorsManager.redFF3B30
                             : (isDark
-                                  ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                                  : ColorManager.grey50),
+                                  ? ColorsManager.darkBlue2A2E4B.withOpacity(
+                                      0.5,
+                                    )
+                                  : ColorsManager.grey50),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: discountType == 'percentage'
-                              ? ColorManager.redFF3B30
+                              ? ColorsManager.redFF3B30
                               : (isDark
-                                    ? ColorManager.grey800.withOpacity(0.3)
-                                    : ColorManager.grey300),
+                                    ? ColorsManager.grey800.withOpacity(0.3)
+                                    : ColorsManager.grey300),
                           width: discountType == 'percentage' ? 2 : 1,
                         ),
                         boxShadow: discountType == 'percentage'
                             ? [
                                 BoxShadow(
-                                  color: ColorManager.redFF3B30.withOpacity(
+                                  color: ColorsManager.redFF3B30.withOpacity(
                                     0.3,
                                   ),
                                   blurRadius: 8,
@@ -561,10 +563,10 @@ class DiscountSection extends StatelessWidget {
                             Icon(
                               Icons.percent_rounded,
                               color: discountType == 'percentage'
-                                  ? ColorManager.white
+                                  ? ColorsManager.white
                                   : (isDark
-                                        ? ColorManager.grey400
-                                        : ColorManager.grey600),
+                                        ? ColorsManager.grey400
+                                        : ColorsManager.grey600),
                               size: 24,
                             ),
                             const SizedBox(width: 8),
@@ -572,10 +574,10 @@ class DiscountSection extends StatelessWidget {
                               context.tr('owner_discount_percentage'),
                               style: TextStyle(
                                 color: discountType == 'percentage'
-                                    ? ColorManager.white
+                                    ? ColorsManager.white
                                     : (isDark
-                                          ? ColorManager.white
-                                          : ColorManager.black),
+                                          ? ColorsManager.white
+                                          : ColorsManager.black),
                                 fontSize: 16,
                                 fontWeight: discountType == 'percentage'
                                     ? FontWeight.bold
@@ -597,23 +599,25 @@ class DiscountSection extends StatelessWidget {
                       height: 60,
                       decoration: BoxDecoration(
                         color: discountType == 'fixed'
-                            ? ColorManager.redFF3B30
+                            ? ColorsManager.redFF3B30
                             : (isDark
-                                  ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                                  : ColorManager.grey50),
+                                  ? ColorsManager.darkBlue2A2E4B.withOpacity(
+                                      0.5,
+                                    )
+                                  : ColorsManager.grey50),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: discountType == 'fixed'
-                              ? ColorManager.redFF3B30
+                              ? ColorsManager.redFF3B30
                               : (isDark
-                                    ? ColorManager.grey800.withOpacity(0.3)
-                                    : ColorManager.grey300),
+                                    ? ColorsManager.grey800.withOpacity(0.3)
+                                    : ColorsManager.grey300),
                           width: discountType == 'fixed' ? 2 : 1,
                         ),
                         boxShadow: discountType == 'fixed'
                             ? [
                                 BoxShadow(
-                                  color: ColorManager.redFF3B30.withOpacity(
+                                  color: ColorsManager.redFF3B30.withOpacity(
                                     0.3,
                                   ),
                                   blurRadius: 8,
@@ -631,10 +635,10 @@ class DiscountSection extends StatelessWidget {
                             Icon(
                               Icons.attach_money_rounded,
                               color: discountType == 'fixed'
-                                  ? ColorManager.white
+                                  ? ColorsManager.white
                                   : (isDark
-                                        ? ColorManager.grey400
-                                        : ColorManager.grey600),
+                                        ? ColorsManager.grey400
+                                        : ColorsManager.grey600),
                               size: 24,
                             ),
                             const SizedBox(width: 8),
@@ -642,10 +646,10 @@ class DiscountSection extends StatelessWidget {
                               context.tr('owner_discount_fixed'),
                               style: TextStyle(
                                 color: discountType == 'fixed'
-                                    ? ColorManager.white
+                                    ? ColorsManager.white
                                     : (isDark
-                                          ? ColorManager.white
-                                          : ColorManager.black),
+                                          ? ColorsManager.white
+                                          : ColorsManager.black),
                                 fontSize: 16,
                                 fontWeight: discountType == 'fixed'
                                     ? FontWeight.bold
@@ -683,12 +687,13 @@ class DiscountSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: (isDark ? ColorManager.green3DDC84 : ColorManager.green)
-                    .withOpacity(0.1),
+                color:
+                    (isDark ? ColorsManager.green3DDC84 : ColorsManager.green)
+                        .withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color:
-                      (isDark ? ColorManager.green3DDC84 : ColorManager.green)
+                      (isDark ? ColorsManager.green3DDC84 : ColorsManager.green)
                           .withOpacity(0.3),
                 ),
               ),
@@ -697,8 +702,8 @@ class DiscountSection extends StatelessWidget {
                   Icon(
                     Icons.check_circle_outline_rounded,
                     color: isDark
-                        ? ColorManager.green3DDC84
-                        : ColorManager.green,
+                        ? ColorsManager.green3DDC84
+                        : ColorsManager.green,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -706,15 +711,15 @@ class DiscountSection extends StatelessWidget {
                     context.tr('owner_price_after_discount'),
                     style: TextStyle(
                       color: isDark
-                          ? ColorManager.grey400
-                          : ColorManager.grey600,
+                          ? ColorsManager.grey400
+                          : ColorsManager.grey600,
                       fontSize: 13,
                     ),
                   ),
                   Text(
                     '${discountedPrice.toStringAsFixed(2)} ${context.tr('common_egp')}',
                     style: TextStyle(
-                      color: isDark ? ColorManager.white : ColorManager.black,
+                      color: isDark ? ColorsManager.white : ColorsManager.black,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
@@ -751,12 +756,12 @@ class DayUseSection extends StatelessWidget {
       isDark: isDark,
       icon: Icons.access_time_rounded,
       title: context.tr('owner_day_use_feature'),
-      color: ColorManager.green3DDC84,
+      color: ColorsManager.green3DDC84,
       child: SwitchListTile(
         title: Text(
           context.tr('owner_enable_day_use'),
           style: TextStyle(
-            color: isDark ? ColorManager.white : ColorManager.black,
+            color: isDark ? ColorsManager.white : ColorsManager.black,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -764,12 +769,12 @@ class DayUseSection extends StatelessWidget {
         subtitle: Text(
           context.tr('owner_day_use_hint'),
           style: TextStyle(
-            color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+            color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
             fontSize: 12,
           ),
         ),
         value: isEnabled,
-        activeColor: ColorManager.green3DDC84,
+        activeColor: ColorsManager.green3DDC84,
         onChanged: (val) => onDayUseChanged(val),
         contentPadding: EdgeInsets.zero,
       ),
@@ -801,18 +806,18 @@ class _ModernCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? ColorManager.grey800.withOpacity(0.3)
-              : ColorManager.grey200,
+              ? ColorsManager.grey800.withOpacity(0.3)
+              : ColorsManager.grey200,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? ColorManager.black.withOpacity(0.3)
-                : ColorManager.black.withOpacity(0.05),
+                ? ColorsManager.black.withOpacity(0.3)
+                : ColorsManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -839,7 +844,7 @@ class _ModernCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.black,
+                    color: isDark ? ColorsManager.white : ColorsManager.black,
                   ),
                 ),
               ),
@@ -872,20 +877,20 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-            : ColorManager.grey50,
+            ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+            : ColorsManager.grey50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark
-              ? ColorManager.grey800.withOpacity(0.3)
-              : ColorManager.grey300,
+              ? ColorsManager.grey800.withOpacity(0.3)
+              : ColorsManager.grey300,
         ),
       ),
       child: Row(
         children: [
           Icon(
             icon,
-            color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+            color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
             size: 18,
           ),
           const SizedBox(width: 12),
@@ -898,7 +903,9 @@ class _InfoRow extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.grey400
+                        : ColorsManager.grey600,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -907,7 +914,7 @@ class _InfoRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? ColorManager.white : ColorManager.black,
+                    color: isDark ? ColorsManager.white : ColorsManager.black,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -951,29 +958,29 @@ class _ModernTextField extends StatelessWidget {
       keyboardType: keyboardType,
       onChanged: onChanged,
       style: TextStyle(
-        color: isDark ? ColorManager.white : ColorManager.black,
+        color: isDark ? ColorsManager.white : ColorsManager.black,
         fontSize: 14,
       ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         labelStyle: TextStyle(
-          color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
           fontSize: 13,
         ),
         hintStyle: TextStyle(
-          color: isDark ? ColorManager.grey600 : ColorManager.grey400,
+          color: isDark ? ColorsManager.grey600 : ColorsManager.grey400,
           fontSize: 13,
         ),
         prefixIcon: Icon(
           icon,
-          color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
           size: 20,
         ),
         filled: true,
         fillColor: isDark
-            ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-            : ColorManager.grey50,
+            ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+            : ColorsManager.grey50,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -982,14 +989,14 @@ class _ModernTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: isDark
-                ? ColorManager.grey800.withOpacity(0.3)
-                : ColorManager.grey300,
+                ? ColorsManager.grey800.withOpacity(0.3)
+                : ColorsManager.grey300,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: ColorManager.blue2563EB,
+            color: ColorsManager.blue2563EB,
             width: 2,
           ),
         ),
@@ -1024,13 +1031,13 @@ class _DateButton extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isDark
-              ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-              : ColorManager.grey50,
+              ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+              : ColorsManager.grey50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDark
-                ? ColorManager.grey800.withOpacity(0.3)
-                : ColorManager.grey300,
+                ? ColorsManager.grey800.withOpacity(0.3)
+                : ColorsManager.grey300,
           ),
         ),
         child: Column(
@@ -1040,7 +1047,7 @@ class _DateButton extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isDark ? ColorManager.grey400 : ColorManager.grey600,
+                color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
                 fontSize: 11,
               ),
             ),
@@ -1053,10 +1060,10 @@ class _DateButton extends StatelessWidget {
                     value ?? context.tr('owner_select_date'),
                     style: TextStyle(
                       color: value != null
-                          ? (isDark ? ColorManager.white : ColorManager.black)
+                          ? (isDark ? ColorsManager.white : ColorsManager.black)
                           : (isDark
-                                ? ColorManager.grey600
-                                : ColorManager.grey400),
+                                ? ColorsManager.grey600
+                                : ColorsManager.grey400),
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
@@ -1068,7 +1075,7 @@ class _DateButton extends StatelessWidget {
                 const Icon(
                   Icons.calendar_month,
                   size: 18,
-                  color: ColorManager.cyan06B6D4,
+                  color: ColorsManager.cyan06B6D4,
                 ),
               ],
             ),
@@ -1099,7 +1106,7 @@ class _BouncyFeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Use passed color or default to yellow
-    final activeColor = color ?? ColorManager.yellowEAB308;
+    final activeColor = color ?? ColorsManager.yellowEAB308;
 
     return GestureDetector(
       onTap: onTap,
@@ -1120,15 +1127,15 @@ class _BouncyFeatureCard extends StatelessWidget {
           color: isSelected
               ? null
               : (isDark
-                    ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                    : ColorManager.grey50),
+                    ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+                    : ColorsManager.grey50),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? activeColor
                 : (isDark
-                      ? ColorManager.grey800.withOpacity(0.3)
-                      : ColorManager.grey300),
+                      ? ColorsManager.grey800.withOpacity(0.3)
+                      : ColorsManager.grey300),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -1152,16 +1159,16 @@ class _BouncyFeatureCard extends StatelessWidget {
                 color: isSelected
                     ? activeColor // Solid color when selected
                     : (isDark
-                          ? ColorManager.grey800.withOpacity(0.3)
-                          : ColorManager.grey200),
+                          ? ColorsManager.grey800.withOpacity(0.3)
+                          : ColorsManager.grey200),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? ColorManager.white
+                    ? ColorsManager.white
                     : (isDark
-                          ? ColorManager.grey400
+                          ? ColorsManager.grey400
                           : activeColor.withOpacity(0.7)),
                 size: 20,
               ),
@@ -1172,7 +1179,7 @@ class _BouncyFeatureCard extends StatelessWidget {
               style: TextStyle(
                 color: isSelected
                     ? activeColor
-                    : (isDark ? ColorManager.grey300 : ColorManager.grey700),
+                    : (isDark ? ColorsManager.grey300 : ColorsManager.grey700),
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),

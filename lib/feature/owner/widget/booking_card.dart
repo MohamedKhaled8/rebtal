@@ -27,18 +27,18 @@ class BookingCard extends StatelessWidget {
     );
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+        color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: ColorsManager.black.withOpacity(isDark ? 0.3 : 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
-        color: ColorManager.transparent,
+        color: ColorsManager.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -78,14 +78,14 @@ class BookingCard extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    ColorManager.chaletActionBlue,
-                                    ColorManager.chaletActionDarkBlue,
+                                    ColorsManager.chaletActionBlue,
+                                    ColorsManager.chaletActionDarkBlue,
                                   ],
                                 ),
                               ),
                               child: const Icon(
                                 Icons.villa,
-                                color: ColorManager.white,
+                                color: ColorsManager.white,
                                 size: 60,
                               ),
                             )
@@ -101,8 +101,8 @@ class BookingCard extends StatelessWidget {
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  ColorManager.transparent,
-                                  ColorManager.black.withOpacity(0.7),
+                                  ColorsManager.transparent,
+                                  ColorsManager.black.withOpacity(0.7),
                                 ],
                               ),
                             ),
@@ -120,10 +120,10 @@ class BookingCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: ColorManager.white,
+                                    color: ColorsManager.white,
                                     shadows: [
                                       Shadow(
-                                        color: ColorManager.black.withOpacity(
+                                        color: ColorsManager.black.withOpacity(
                                           0.45,
                                         ),
                                         offset: Offset(0, 1),
@@ -140,7 +140,7 @@ class BookingCard extends StatelessWidget {
                                     const Icon(
                                       Icons.location_on,
                                       size: 16,
-                                      color: ColorManager.white,
+                                      color: ColorsManager.white,
                                     ),
                                     const SizedBox(width: 4),
                                     Expanded(
@@ -149,7 +149,7 @@ class BookingCard extends StatelessWidget {
                                             context.tr('common_undetermined'),
                                         style: const TextStyle(
                                           fontSize: 14,
-                                          color: ColorManager.white,
+                                          color: ColorsManager.white,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -193,11 +193,13 @@ class BookingCard extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? ColorManager.white.withOpacity(0.05)
-                            : ColorManager.chaletIconBackgroundLight,
+                            ? ColorsManager.white.withOpacity(0.05)
+                            : ColorsManager.chaletIconBackgroundLight,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: ColorManager.chaletActionBlue.withOpacity(0.5),
+                          color: ColorsManager.chaletActionBlue.withOpacity(
+                            0.5,
+                          ),
                         ),
                       ),
                       child: Column(
@@ -213,7 +215,8 @@ class BookingCard extends StatelessWidget {
                                         Icon(
                                           Icons.flight_land,
                                           size: 16,
-                                          color: ColorManager.chaletActionGreen,
+                                          color:
+                                              ColorsManager.chaletActionGreen,
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
@@ -250,7 +253,7 @@ class BookingCard extends StatelessWidget {
                                 child: const Icon(
                                   Icons.arrow_forward,
                                   size: 16,
-                                  color: ColorManager.white,
+                                  color: ColorsManager.white,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -309,14 +312,14 @@ class BookingCard extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Icons.nights_stay,
-                                  color: ColorManager.white,
+                                  color: ColorsManager.white,
                                   size: 18,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   '$nights ${context.tr('booking_nights')}',
                                   style: const TextStyle(
-                                    color: ColorManager.white,
+                                    color: ColorsManager.white,
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -512,7 +515,7 @@ class BookingCard extends StatelessWidget {
                                   ),
                                   child: const Icon(
                                     Icons.cancel,
-                                    color: ColorManager.white,
+                                    color: ColorsManager.white,
                                     size: 20,
                                   ),
                                 ),
@@ -534,7 +537,7 @@ class BookingCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: ColorManager.white,
+                                  color: ColorsManager.white,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Colors.grey.shade200,
@@ -657,7 +660,7 @@ class BookingCard extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.info_outline_rounded,
-                    color: ColorManager.chaletAccent,
+                    color: ColorsManager.chaletAccent,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -714,10 +717,10 @@ class BookingCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: ColorManager.chaletAccent.withOpacity(0.1),
+                        color: ColorsManager.chaletAccent.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: ColorManager.chaletAccent.withOpacity(0.3),
+                          color: ColorsManager.chaletAccent.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
@@ -725,7 +728,7 @@ class BookingCard extends StatelessWidget {
                           Icon(
                             Icons.calendar_today,
                             size: 18,
-                            color: ColorManager.chaletAccent,
+                            color: ColorsManager.chaletAccent,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -774,7 +777,7 @@ class BookingCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorManager.chaletAccent,
+                    backgroundColor: ColorsManager.chaletAccent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

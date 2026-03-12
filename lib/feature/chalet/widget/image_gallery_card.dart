@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/image_gallery_cubit.dart';
+import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 
 class ImageGalleryCard extends StatelessWidget {
   final List<String> images;
@@ -25,13 +27,14 @@ class ImageGalleryCard extends StatelessWidget {
         builder: (context, state) {
           final cubit = context.read<ImageGalleryCubit>();
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding:  EdgeInsets.symmetric(horizontal: 5.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
-                const SizedBox(height: 32),
-
+  verticalSpace(
+                                  5
+                                ),
                 // Minimal Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -42,8 +45,8 @@ class ImageGalleryCard extends StatelessWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: isDark
-                            ? ColorManager.chaletTextPrimaryDark
-                            : ColorManager.chaletTextPrimaryLight,
+                            ? ColorsManager.chaletTextPrimaryDark
+                            : ColorsManager.chaletTextPrimaryLight,
                       ),
                     ),
                     Text(

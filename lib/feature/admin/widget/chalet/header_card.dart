@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 // import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class HeaderCard extends StatelessWidget {
@@ -21,16 +21,16 @@ class HeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.08),
+            color: ColorsManager.black.withOpacity(0.08),
             blurRadius: 24,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.02),
+            color: ColorsManager.black.withOpacity(0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -56,7 +56,7 @@ class HeaderCard extends StatelessWidget {
                         height: 0.1,
                       ),
                     ),
-                    verticalSpace(15),
+                     SizedBox(height: 15.h,),
                     Row(
                       children: [
                         Icon(
@@ -64,7 +64,7 @@ class HeaderCard extends StatelessWidget {
                           color: Colors.grey[600],
                           size: 18,
                         ),
-                        horizintalSpace(2),
+                        SizedBox(width: 2.w,),
                         Flexible(
                           child: Text(
                             location,
@@ -79,7 +79,7 @@ class HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              horizintalSpace(5),
+              SizedBox(width: 5.w,),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -128,7 +128,7 @@ class HeaderCard extends StatelessWidget {
             ],
           ),
 
-          verticalSpace(2),
+          SizedBox(height: 2.h,),
 
           // Rating and Quick Info
           Row(
@@ -144,7 +144,7 @@ class HeaderCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 16),
-                    horizintalSpace(2),
+                    SizedBox(width: 2.w,),
                     Text(
                       rating,
                       style: const TextStyle(
@@ -156,7 +156,7 @@ class HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              horizintalSpace(5),
+              SizedBox(width: 5.w,),
               if (requestData['hasWifi'] == true)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -172,7 +172,7 @@ class HeaderCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.wifi, color: Colors.blue, size: 16),
-                      horizintalSpace(2),
+                      SizedBox(width: 2.w,),
                       const Text(
                         'Free WiFi',
                         style: TextStyle(
@@ -184,7 +184,7 @@ class HeaderCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              horizintalSpace(5),
+              SizedBox(width: 5.w,),
               if (requestData['hasBreakfast'] == true)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -204,7 +204,7 @@ class HeaderCard extends StatelessWidget {
                         color: Colors.orange,
                         size: 16,
                       ),
-                      horizintalSpace(2),
+                      SizedBox(width: 2.w,),
                       const Text(
                         'Breakfast',
                         style: TextStyle(

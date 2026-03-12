@@ -33,20 +33,20 @@ class ChaletStatusPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: ColorManager.white,
+      backgroundColor: ColorsManager.white,
       appBar: AppBar(
         title: Text(
           title,
           style: const TextStyle(
-            color: ColorManager.white,
+            color: ColorsManager.white,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
         backgroundColor: status == 'approved'
-            ? ColorManager.green3DDC84
-            : ColorManager.chaletUnavailableRed,
-        foregroundColor: ColorManager.white,
+            ? ColorsManager.green3DDC84
+            : ColorsManager.chaletUnavailableRed,
+        foregroundColor: ColorsManager.white,
         elevation: 0,
       ),
       body: SafeArea(

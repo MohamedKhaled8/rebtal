@@ -67,11 +67,11 @@ class ChaletRequestCard extends StatelessWidget {
         margin: EdgeInsets.only(bottom: 20.sp),
         padding: EdgeInsets.only(left: 5.sp, right: 5.sp),
         decoration: BoxDecoration(
-          color: ColorManager.white,
+          color: ColorsManager.white,
           borderRadius: BorderRadius.circular(15.sp),
           boxShadow: [
             BoxShadow(
-              color: ColorManager.black.withOpacity(0.1),
+              color: ColorsManager.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -98,7 +98,7 @@ class ChaletRequestCard extends StatelessWidget {
                       vertical: 1.h,
                     ),
                     decoration: BoxDecoration(
-                      color: ColorManager.kPrimaryGradient.colors.first,
+                      color: ColorsManager.kPrimaryGradient.colors.first,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -139,7 +139,7 @@ class ChaletRequestCard extends StatelessWidget {
                         child: Text(
                           chaletName,
                           style: TextStyle(
-                            color: ColorManager.black,
+                            color: ColorsManager.black,
                             fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -155,10 +155,10 @@ class ChaletRequestCard extends StatelessWidget {
                             Text(
                               '\$$price',
                               style: TextStyle(
-                                color: ColorManager.gray,
+                                color: ColorsManager.gray,
                                 fontSize: 13.sp,
                                 decoration: TextDecoration.lineThrough,
-                                decorationColor: ColorManager.red,
+                                decorationColor: ColorsManager.red,
                               ),
                             ),
                             Text(
@@ -181,7 +181,7 @@ class ChaletRequestCard extends StatelessWidget {
                               })(),
                               style: TextStyle(
                                 color:
-                                    ColorManager.kPrimaryGradient.colors.first,
+                                    ColorsManager.kPrimaryGradient.colors.first,
                                 fontSize: 17.sp,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -192,7 +192,7 @@ class ChaletRequestCard extends StatelessWidget {
                         Text(
                           '\$$price / Night',
                           style: TextStyle(
-                            color: ColorManager.kPrimaryGradient.colors.first,
+                            color: ColorsManager.kPrimaryGradient.colors.first,
                             fontSize: 17.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -207,7 +207,7 @@ class ChaletRequestCard extends StatelessWidget {
                   Text(
                     location,
                     style: TextStyle(
-                      color: ColorManager.gray,
+                      color: ColorsManager.gray,
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w400,
                     ),

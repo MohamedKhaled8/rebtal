@@ -52,7 +52,7 @@ class LanguageSelectionPage extends StatelessWidget {
           right: -50,
           child: CircleAvatar(
             radius: 150,
-            backgroundColor: ColorManager.chaletAccent.withOpacity(0.05),
+            backgroundColor: ColorsManager.chaletAccent.withOpacity(0.05),
           ),
         ),
         Positioned(
@@ -73,9 +73,7 @@ class LanguageSelectionPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.white,
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
@@ -124,9 +122,7 @@ class LanguageSelectionPage extends StatelessWidget {
             context.tr('language_select_subtitle'),
             style: TextStyle(
               fontSize: 16,
-              color: isDark
-                  ? Colors.white60
-                  : Colors.grey.shade600,
+              color: isDark ? Colors.white60 : Colors.grey.shade600,
             ),
           ),
         ],
@@ -199,24 +195,24 @@ class LanguageSelectionPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark
                 ? (isSelected
-                    ? ColorManager.chaletAccent.withOpacity(0.15)
-                    : const Color(0xFF1B1E2B))
+                      ? ColorsManager.chaletAccent.withOpacity(0.15)
+                      : const Color(0xFF1B1E2B))
                 : (isSelected
-                    ? ColorManager.chaletAccent.withOpacity(0.08)
-                    : Colors.white),
+                      ? ColorsManager.chaletAccent.withOpacity(0.08)
+                      : Colors.white),
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
               color: isSelected
-                  ? ColorManager.chaletAccent
+                  ? ColorsManager.chaletAccent
                   : (isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.05)),
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.05)),
               width: isSelected ? 2.5 : 1.5,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: ColorManager.chaletAccent.withOpacity(0.2),
+                      color: ColorsManager.chaletAccent.withOpacity(0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -268,11 +264,11 @@ class LanguageSelectionPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isSelected
-                      ? ColorManager.chaletAccent
+                      ? ColorsManager.chaletAccent
                       : Colors.transparent,
                   border: Border.all(
                     color: isSelected
-                        ? ColorManager.chaletAccent
+                        ? ColorsManager.chaletAccent
                         : Colors.grey.withOpacity(0.3),
                     width: 2,
                   ),
@@ -303,7 +299,7 @@ class LanguageSelectionPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: ColorManager.chaletAccent.withOpacity(0.35),
+              color: ColorsManager.chaletAccent.withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -315,7 +311,7 @@ class LanguageSelectionPage extends StatelessWidget {
             if (context.mounted) Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: ColorManager.chaletAccent,
+            backgroundColor: ColorsManager.chaletAccent,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -324,10 +320,7 @@ class LanguageSelectionPage extends StatelessWidget {
           ),
           child: Text(
             context.tr('language_confirm'),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
       ),

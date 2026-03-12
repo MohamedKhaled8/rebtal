@@ -17,7 +17,9 @@ class BookingSuccessPage extends StatelessWidget {
     final GlobalKey repaintKey = GlobalKey();
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.darkBackground121212 : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.darkBackground121212
+          : ColorsManager.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -28,14 +30,14 @@ class BookingSuccessPage extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? ColorManager.mainBlue.withOpacity(0.2)
+                      ? ColorsManager.mainBlue.withOpacity(0.2)
                       : Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle_outline_rounded,
                   size: 80,
-                  color: ColorManager.chaletActionBlue,
+                  color: ColorsManager.chaletActionBlue,
                 ),
               ),
               const SizedBox(height: 32),
@@ -44,7 +46,9 @@ class BookingSuccessPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -53,7 +57,7 @@ class BookingSuccessPage extends StatelessWidget {
                 'طلبك قيد المراجعة الآن من قبل المالك.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                  color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -67,7 +71,9 @@ class BookingSuccessPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorsManager.white
+                        : ColorsManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -98,12 +104,12 @@ class BookingSuccessPage extends StatelessWidget {
                         label: const Text('طباعة'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: isDark
-                              ? ColorManager.white
-                              : ColorManager.chaletAccent,
+                              ? ColorsManager.white
+                              : ColorsManager.chaletAccent,
                           side: BorderSide(
                             color: isDark
-                                ? ColorManager.white.withOpacity(0.3)
-                                : ColorManager.chaletAccent,
+                                ? ColorsManager.white.withOpacity(0.3)
+                                : ColorsManager.chaletAccent,
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -126,12 +132,12 @@ class BookingSuccessPage extends StatelessWidget {
                         label: const Text('حفظ'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: isDark
-                              ? ColorManager.white
-                              : ColorManager.chaletAccent,
+                              ? ColorsManager.white
+                              : ColorsManager.chaletAccent,
                           side: BorderSide(
                             color: isDark
-                                ? ColorManager.white.withOpacity(0.3)
-                                : ColorManager.chaletAccent,
+                                ? ColorsManager.white.withOpacity(0.3)
+                                : ColorsManager.chaletAccent,
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -158,8 +164,8 @@ class BookingSuccessPage extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorManager.primaryColor,
-                    foregroundColor: ColorManager.white,
+                    backgroundColor: ColorsManager.primaryColor,
+                    foregroundColor: ColorsManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

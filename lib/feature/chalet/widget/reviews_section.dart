@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 import 'package:rebtal/feature/chalet/ui/chalet_reviews_page.dart';
 
@@ -32,36 +33,40 @@ class ReviewsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(
+              horizontal: stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+            ),
             child: Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
           ),
-          const SizedBox(height: 48), // Increased spacing
+          SizedBox(height: otv(context: context, portrait: 48.sh, landscape: 24.sh)),
           // Header: ★ 4.83 · 78 reviews
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(
+              horizontal: stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   Icons.star,
-                  size: 22,
+                  size: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: stv(context: context, mobile: 8.sw, tablet: 10.sw, desktop: 12.sw)),
                 Text(
                   '$rating · $reviewsCount reviews',
                   style: TextStyle(
-                    fontSize: 22, // Bigger font
+                    fontSize: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
                     fontWeight: FontWeight.w600,
                     color: isDark
-                        ? ColorManager.chaletTextPrimaryDark
-                        : ColorManager.chaletTextPrimaryLight,
+                        ? ColorsManager.chaletTextPrimaryDark
+                        : ColorsManager.chaletTextPrimaryLight,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 40), // Increased spacing
+          SizedBox(height: otv(context: context, portrait: 40.sh, landscape: 20.sh)),
           // Horizontal Review List
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance

@@ -1,24 +1,21 @@
-import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
-import 'package:rebtal/core/utils/widgets/shimmers.dart';
-import 'package:rebtal/core/utils/home_search_notifier.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
-import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class PublicChaletCard extends StatefulWidget {
   final Map<String, dynamic> chaletData;
   final String docId;
   final VoidCallback? onDetailsPressed;
   final Widget? badge;
+  final EdgeInsetsGeometry? margin;
 
   const PublicChaletCard({
     super.key,
@@ -26,6 +23,7 @@ class PublicChaletCard extends StatefulWidget {
     required this.docId,
     this.onDetailsPressed,
     this.badge,
+    this.margin,
   });
 
   @override
@@ -142,12 +140,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
         if (s.isNotEmpty && s != profile) {
           result.add(s);
         }
-        // Removed the limit - show all images
       }
     }
 
     if (result.isEmpty) {
-      // Fallback placeholder if absolutely no images
       result.add('https://via.placeholder.com/400x300?text=No+Image');
     }
 
@@ -166,10 +162,26 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
     return RepaintBoundary(
       child: Container(
-        margin: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        margin:
+            widget.margin ??
+            EdgeInsets.only(
+              bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
+              left: stv(
+                context: context,
+                mobile: 16.sw,
+                tablet: 24.sw,
+                desktop: 32.sw,
+              ),
+              right: stv(
+                context: context,
+                mobile: 16.sw,
+                tablet: 24.sw,
+                desktop: 32.sw,
+              ),
+            ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0B0F0D) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12.sp),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -191,7 +203,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12.sp),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -199,18 +211,29 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12.sp),
                     ),
                     child: SizedBox(
-                      height: 220,
+                      height: otv(
+                        context: context,
+                        portrait: stv(
+                          context: context,
+                          mobile: 230.sh,
+                          tablet: 235.sh,
+                          desktop: 245.sh,
+                        ),
+                        landscape: stv(
+                          context: context,
+                          mobile: 330.sh,
+                          tablet: 350.sh,
+                          desktop: 400.sh,
+                        ),
+                      ),
                       width: double.infinity,
                       child: PageView.builder(
                         controller: _pageController,
                         itemCount: images.length,
-                        onPageChanged: (index) {
-                          // Page index changed
-                        },
                         itemBuilder: (context, index) {
                           return AppImageHelper(
                             path: images[index],
@@ -223,7 +246,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
                   // Top Badges
                   Positioned(
-                    top: 12,
+                    top: 20,
                     left: 12,
                     right: 12,
                     child: Row(
@@ -234,7 +257,6 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           isDark: false,
                           isBadge: true,
                         ),
-
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -333,7 +355,14 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
               // 2. Info Content
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(
+                  stv(
+                    context: context,
+                    mobile: 10.sw,
+                    tablet: 12.sw,
+                    desktop: 15.sw,
+                  ),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -345,32 +374,67 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                             chaletName,
                             style: TextStyle(
                               color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 18,
+                              fontSize: stv(
+                                context: context,
+                                mobile: 18.spScaled,
+                                tablet: 22.spScaled,
+                                desktop: 26.spScaled,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        _buildPriceSection(isDark),
+                        SizedBox(
+                          width: stv(
+                            context: context,
+                            mobile: 8.sw,
+                            tablet: 12.sw,
+                            desktop: 16.sw,
+                          ),
+                        ),
+                        _buildPriceSection(context, isDark),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 4.sh,
+                        landscape: 2.sh,
+                      ),
+                    ),
                     Row(
                       children: [
                         Icon(
                           Icons.location_on_outlined,
-                          size: 14,
+                          size: stv(
+                            context: context,
+                            mobile: 14.spScaled,
+                            tablet: 16.spScaled,
+                            desktop: 18.spScaled,
+                          ),
                           color: isDark ? Colors.white54 : Colors.grey[600],
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: stv(
+                            context: context,
+                            mobile: 4.sw,
+                            tablet: 6.sw,
+                            desktop: 8.sw,
+                          ),
+                        ),
                         Expanded(
                           child: Text(
                             location,
                             style: TextStyle(
                               color: isDark ? Colors.white54 : Colors.grey[600],
-                              fontSize: 12,
+                              fontSize: stv(
+                                context: context,
+                                mobile: 12.spScaled,
+                                tablet: 14.spScaled,
+                                desktop: 16.spScaled,
+                              ),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -378,25 +442,48 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 12.sh,
+                        landscape: 6.sh,
+                      ),
+                    ),
 
                     // Stats
                     Row(
                       children: [
                         _buildStat(
+                          context,
                           Icons.bed_outlined,
                           '${widget.chaletData['bedrooms'] ?? 0} ${context.tr('common_beds_short')}',
                           isDark,
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: stv(
+                            context: context,
+                            mobile: 16.sw,
+                            tablet: 24.sw,
+                            desktop: 32.sw,
+                          ),
+                        ),
                         _buildStat(
+                          context,
                           Icons.bathtub_outlined,
                           '${widget.chaletData['bathrooms'] ?? 0} ${context.tr('common_baths_short')}',
                           isDark,
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(
+                          width: stv(
+                            context: context,
+                            mobile: 16.sw,
+                            tablet: 24.sw,
+                            desktop: 32.sw,
+                          ),
+                        ),
                         if (widget.chaletData['chaletArea'] != null)
                           _buildStat(
+                            context,
                             Icons.square_foot_outlined,
                             '${widget.chaletData['chaletArea']} ${context.tr('common_m2')}',
                             isDark,
@@ -413,15 +500,41 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     );
   }
 
-  Widget _buildStat(IconData icon, String label, bool isDark) {
+  Widget _buildStat(
+    BuildContext context,
+    IconData icon,
+    String label,
+    bool isDark,
+  ) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: isDark ? Colors.white38 : Colors.black45),
-        const SizedBox(width: 4),
+        Icon(
+          icon,
+          size: stv(
+            context: context,
+            mobile: 14.spScaled,
+            tablet: 16.spScaled,
+            desktop: 18.spScaled,
+          ),
+          color: isDark ? Colors.white38 : Colors.black45,
+        ),
+        SizedBox(
+          width: stv(
+            context: context,
+            mobile: 4.sw,
+            tablet: 6.sw,
+            desktop: 8.sw,
+          ),
+        ),
         Text(
           label,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: stv(
+              context: context,
+              mobile: 11.spScaled,
+              tablet: 13.spScaled,
+              desktop: 15.spScaled,
+            ),
             color: isDark ? Colors.white38 : Colors.black45,
             fontWeight: FontWeight.w500,
           ),
@@ -430,7 +543,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     );
   }
 
-  Widget _buildPriceSection(bool isDark) {
+  Widget _buildPriceSection(BuildContext context, bool isDark) {
     final price = widget.chaletData['price'];
     final discounted = _calculateDiscountedPrice();
     final hasDisc = _hasDiscount();
@@ -442,9 +555,17 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           Text(
             '$price',
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
+              fontSize: stv(
+                context: context,
+                mobile: 15.spScaled,
+                tablet: 17.spScaled,
+                desktop: 19.spScaled,
+              ),
+              color: isDark ? Colors.white54 : Colors.grey[700],
+              fontWeight: FontWeight.w900,
               decoration: TextDecoration.lineThrough,
+              decorationColor: Colors.red.withOpacity(0.5),
+              decorationThickness: 2,
             ),
           ),
         Row(
@@ -456,15 +577,32 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
               hasDisc ? discounted : '$price',
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
-                fontSize: 18,
+                fontSize: stv(
+                  context: context,
+                  mobile: 18.spScaled,
+                  tablet: 22.spScaled,
+                  desktop: 26.spScaled,
+                ),
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: 4),
+            SizedBox(
+              width: stv(
+                context: context,
+                mobile: 4.sw,
+                tablet: 6.sw,
+                desktop: 8.sw,
+              ),
+            ),
             Text(
               context.tr('booking_egp_currency'),
               style: TextStyle(
-                fontSize: 10,
+                fontSize: stv(
+                  context: context,
+                  mobile: 10.spScaled,
+                  tablet: 12.spScaled,
+                  desktop: 14.spScaled,
+                ),
                 color: isDark ? Colors.white54 : Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
@@ -488,7 +626,6 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
     if (date == null) return false;
 
-    // Consider "New" if added in the last 48 hours
     final difference = DateTime.now().difference(date);
     return difference.inHours <= 48;
   }
@@ -530,238 +667,5 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
 
     if (discountedPrice < 0) discountedPrice = 0;
     return discountedPrice.toStringAsFixed(0);
-  }
-}
-
-class PublicChaletsList extends StatefulWidget {
-  final IconData? emptyIcon;
-  final String? emptyTitle;
-  final String? emptySubtitle;
-  final String? selectedCategory;
-
-  const PublicChaletsList({
-    super.key,
-    this.emptyIcon,
-    this.emptyTitle,
-    this.emptySubtitle,
-    this.selectedCategory,
-  });
-
-  @override
-  State<PublicChaletsList> createState() => _PublicChaletsListState();
-}
-
-class _PublicChaletsListState extends State<PublicChaletsList> {
-  int _displayLimit = 10;
-  final int _increment = 10;
-
-  /// كاش آخر قائمة شاليهات لعدم إظهار شيمر عند الرجوع للهوم
-  static List<QueryDocumentSnapshot>? _cachedDocs;
-
-  void _loadMore() {
-    setState(() {
-      _displayLimit += _increment;
-    });
-  }
-
-  Widget _buildListFromDocs(
-    BuildContext context,
-    List<QueryDocumentSnapshot> docs,
-    bool isDark,
-  ) {
-    return ValueListenableBuilder<SearchFilters>(
-      valueListenable: HomeSearch.filters,
-      builder: (context, filters, _) {
-        final filtered = docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          if (widget.selectedCategory != null) {
-            final features = data['features'] as List<dynamic>?;
-            if (features == null ||
-                !features.contains(widget.selectedCategory)) {
-              return false;
-            }
-          }
-          final singleList = [data];
-          final result = ChaletFilterService.filterChalets(singleList, filters);
-          return result.isNotEmpty;
-        }).toList();
-        filtered.sort((a, b) {
-          final aData = a.data() as Map<String, dynamic>;
-          final bData = b.data() as Map<String, dynamic>;
-          final aTime = aData['createdAt'];
-          final bTime = bData['createdAt'];
-          if (aTime == null) return 1;
-          if (bTime == null) return -1;
-          if (aTime is Timestamp && bTime is Timestamp) {
-            return bTime.compareTo(aTime);
-          }
-          return 0;
-        });
-        if (filtered.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.grey.withOpacity(0.05),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      widget.emptyIcon ?? Icons.search_off_rounded,
-                      size: 60,
-                      color: isDark ? Colors.white24 : Colors.grey[400],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    widget.emptyTitle ?? context.tr('home_no_results'),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        final isFiltering = !filters.isEmpty;
-        final int countToShow = isFiltering
-            ? filtered.length
-            : (_displayLimit > filtered.length
-                  ? filtered.length
-                  : _displayLimit);
-        final bool hasMore = !isFiltering && filtered.length > _displayLimit;
-        return Column(
-          children: [
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 0, bottom: 20),
-              itemCount: countToShow,
-              itemBuilder: (context, i) {
-                final doc = filtered[i];
-                final data = doc.data() as Map<String, dynamic>;
-                return PublicChaletCard(chaletData: data, docId: doc.id);
-              },
-            ),
-            if (hasMore)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _loadMore,
-                    icon: const Icon(Icons.expand_more, color: Colors.white),
-                    label: Text(
-                      '${context.tr('home_show_more')} (${filtered.length - countToShow} ${context.tr('common_chalet')})',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: ColorManager.chaletAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 2,
-                    ),
-                  ),
-                ),
-              ),
-            const SizedBox(height: 60),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = DynamicThemeManager.isDarkMode(context);
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chalets')
-          .where('status', isEqualTo: 'approved')
-          .where('isVisible', isEqualTo: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          if (_cachedDocs != null && _cachedDocs!.isNotEmpty) {
-            return _buildListFromDocs(context, _cachedDocs!, isDark);
-          }
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: 3,
-            itemBuilder: (context, i) => const PublicChaletCardShimmer(),
-          );
-        }
-        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
-          _cachedDocs = snapshot.data!.docs;
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: ColorManager.chaletUnavailableRed,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.tr('home_load_error'),
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: ColorManager.chaletGrey500,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  widget.emptyIcon ?? Icons.home_outlined,
-                  size: 72,
-                  color: ColorManager.chaletGrey400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  widget.emptyTitle ?? context.tr('home_no_chalets'),
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: ColorManager.chaletGrey500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        }
-        final docs = snapshot.data!.docs;
-        return _buildListFromDocs(context, docs, isDark);
-      },
-    );
   }
 }

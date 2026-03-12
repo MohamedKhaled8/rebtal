@@ -272,7 +272,7 @@ class FixedBottomBar extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: isDark ? ColorManager.chaletCardDark : Colors.white,
+          color: isDark ? ColorsManager.chaletCardDark : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),

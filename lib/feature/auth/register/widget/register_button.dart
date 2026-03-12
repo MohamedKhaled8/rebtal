@@ -69,11 +69,11 @@ class LoadingButton extends StatelessWidget {
       width: double.infinity,
       height: 20.h,
       decoration: BoxDecoration(
-        color: ColorManager.skyBlue0EA5E9,
+        color: ColorsManager.skyBlue0EA5E9,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.skyBlue0EA5E9.withOpacity(0.3),
+            color: ColorsManager.skyBlue0EA5E9.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -84,7 +84,7 @@ class LoadingButton extends StatelessWidget {
           width: 20,
           height: 20,
           child: CircularProgressIndicator(
-            color: ColorManager.white,
+            color: ColorsManager.white,
             strokeWidth: 2.5,
           ),
         ),
@@ -112,21 +112,21 @@ class RegisterButton extends StatelessWidget {
       height: 20.h,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [ColorManager.skyBlue0EA5E9, ColorManager.chaletActionBlue],
+          colors: [ColorsManager.skyBlue0EA5E9, ColorsManager.chaletActionBlue],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.skyBlue0EA5E9.withOpacity(0.4),
+            color: ColorsManager.skyBlue0EA5E9.withOpacity(0.4),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Material(
-        color: ColorManager.transparent,
+        color: ColorsManager.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
@@ -140,14 +140,14 @@ class RegisterButton extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.rocket_launch_rounded,
-                  color: ColorManager.white,
+                  color: ColorsManager.white,
                   size: 20,
                 ),
                 const SizedBox(width: 10),
                 Text(
                   context.tr('auth_create_account_btn'),
                   style: TextStyle(
-                    color: ColorManager.white,
+                    color: ColorsManager.white,
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,

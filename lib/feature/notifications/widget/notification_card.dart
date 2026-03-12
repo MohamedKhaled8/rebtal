@@ -32,12 +32,12 @@ class NotificationCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: ColorManager.chaletActionRed,
+          color: ColorsManager.chaletActionRed,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(
           Icons.delete_rounded,
-          color: ColorManager.white,
+          color: ColorsManager.white,
           size: 28,
         ),
       ),
@@ -46,27 +46,27 @@ class NotificationCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: isDark
-              ? ColorManager.chaletCardDark
-              : ColorManager.chaletCardLight,
+              ? ColorsManager.chaletCardDark
+              : ColorsManager.chaletCardLight,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: notification.isRead
                 ? (isDark
-                      ? ColorManager.white.withOpacity(0.05)
-                      : ColorManager.black.withOpacity(0.05))
+                      ? ColorsManager.white.withOpacity(0.05)
+                      : ColorsManager.black.withOpacity(0.05))
                 : color.withOpacity(0.3),
             width: notification.isRead ? 1 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
+              color: ColorsManager.black.withOpacity(isDark ? 0.3 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Material(
-          color: ColorManager.transparent,
+          color: ColorsManager.transparent,
           child: InkWell(
             onTap: () {
               if (!notification.isRead) {
@@ -90,7 +90,7 @@ class NotificationCard extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(iconData, color: ColorManager.white, size: 24),
+                    child: Icon(iconData, color: ColorsManager.white, size: 24),
                   ),
                   const SizedBox(width: 12),
 
@@ -110,8 +110,8 @@ class NotificationCard extends StatelessWidget {
                                       ? FontWeight.w600
                                       : FontWeight.w800,
                                   color: isDark
-                                      ? ColorManager.chaletTextPrimaryDark
-                                      : ColorManager.chaletTextPrimaryLight,
+                                      ? ColorsManager.chaletTextPrimaryDark
+                                      : ColorsManager.chaletTextPrimaryLight,
                                 ),
                               ),
                             ),
@@ -132,8 +132,8 @@ class NotificationCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
-                                ? ColorManager.chaletTextSecondaryDark
-                                : ColorManager.chaletTextSecondaryLight,
+                                ? ColorsManager.chaletTextSecondaryDark
+                                : ColorsManager.chaletTextSecondaryLight,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -145,8 +145,8 @@ class NotificationCard extends StatelessWidget {
                               Icons.access_time_rounded,
                               size: 14,
                               color: isDark
-                                  ? ColorManager.chaletTextSecondaryDark
-                                  : ColorManager.chaletTextSecondaryLight,
+                                  ? ColorsManager.chaletTextSecondaryDark
+                                  : ColorsManager.chaletTextSecondaryLight,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -154,8 +154,8 @@ class NotificationCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
-                                    ? ColorManager.chaletTextSecondaryDark
-                                    : ColorManager.chaletTextSecondaryLight,
+                                    ? ColorsManager.chaletTextSecondaryDark
+                                    : ColorsManager.chaletTextSecondaryLight,
                               ),
                             ),
                           ],
@@ -198,23 +198,23 @@ class NotificationCard extends StatelessWidget {
   Color _getColorForType(NotificationType type) {
     switch (type) {
       case NotificationType.bookingRequest:
-        return ColorManager.chaletActionBlue;
+        return ColorsManager.chaletActionBlue;
       case NotificationType.bookingApproved:
-        return ColorManager.chaletActionGreen;
+        return ColorsManager.chaletActionGreen;
       case NotificationType.bookingRejected:
-        return ColorManager.chaletActionRed;
+        return ColorsManager.chaletActionRed;
       case NotificationType.paymentConfirmed:
-        return ColorManager.chaletActionGreen;
+        return ColorsManager.chaletActionGreen;
       case NotificationType.chaletApproved:
-        return ColorManager.chaletActionGreen;
+        return ColorsManager.chaletActionGreen;
       case NotificationType.chaletRejected:
-        return ColorManager.chaletActionRed;
+        return ColorsManager.chaletActionRed;
       case NotificationType.chaletSubmission:
-        return ColorManager.chaletActionBlue;
+        return ColorsManager.chaletActionBlue;
       case NotificationType.transferTicket:
-        return ColorManager.chaletActionBlue;
+        return ColorsManager.chaletActionBlue;
       case NotificationType.general:
-        return ColorManager.chaletGalleryBlue;
+        return ColorsManager.chaletGalleryBlue;
     }
   }
 

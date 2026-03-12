@@ -22,17 +22,17 @@ abstract class StylesManager {
   static TextStyle textStyle16None = TextStyle(fontSize: 16);
 
   static TextStyle textStyle17White = TextStyle(
-    color: ColorManager.white,
+    color: ColorsManager.white,
     fontSize: 17,
   );
   static TextStyle textStyle14White = TextStyle(
     fontSize: 14,
-    color: ColorManager.white,
+    color: ColorsManager.white,
   );
 
   static TextStyle textStyle20White = TextStyle(
     fontSize: 19,
-    color: ColorManager.white,
+    color: ColorsManager.white,
   );
 
   static TextStyle textStyle17FontFamile = TextStyle(
@@ -43,23 +43,23 @@ abstract class StylesManager {
   static TextStyle textStyle16FontFamile = TextStyle(
     fontFamily: StylesManager.fontFamile,
     fontSize: 16,
-    color: ColorManager.white,
+    color: ColorsManager.white,
   );
 
   static TextStyle textStyle16GrayNone = TextStyle(
     fontSize: 16,
-    color: ColorManager.gray,
+    color: ColorsManager.gray,
   );
 
   static TextStyle textStyle15BlackW700FontFamile = TextStyle(
-    color: ColorManager.black,
+    color: ColorsManager.black,
     fontWeight: FontWeight.w700,
     fontFamily: StylesManager.fontFamile,
     fontSize: 15,
     overflow: TextOverflow.ellipsis,
   );
   static TextStyle textStyle14V5BlackW500FontFamile = TextStyle(
-    color: ColorManager.black,
+    color: ColorsManager.black,
     fontWeight: FontWeight.w500,
     fontFamily: StylesManager.fontFamile,
     overflow: TextOverflow.ellipsis,

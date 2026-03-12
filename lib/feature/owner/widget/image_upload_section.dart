@@ -23,18 +23,18 @@ class ImageUploadSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? ColorManager.grey800.withOpacity(0.3)
-              : ColorManager.grey200,
+              ? ColorsManager.grey800.withOpacity(0.3)
+              : ColorsManager.grey200,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? ColorManager.black.withOpacity(0.3)
-                : ColorManager.black.withOpacity(0.05),
+                ? ColorsManager.black.withOpacity(0.3)
+                : ColorsManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -51,8 +51,8 @@ class ImageUploadSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
-                      ColorManager.purple764BA2,
-                      ColorManager.blue2563EB,
+                      ColorsManager.purple764BA2,
+                      ColorsManager.blue2563EB,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -61,7 +61,7 @@ class ImageUploadSection extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.photo_library_rounded,
-                  color: ColorManager.white,
+                  color: ColorsManager.white,
                   size: 22,
                 ),
               ),
@@ -75,7 +75,9 @@ class ImageUploadSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? ColorManager.white : ColorManager.black,
+                        color: isDark
+                            ? ColorsManager.white
+                            : ColorsManager.black,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -83,8 +85,8 @@ class ImageUploadSection extends StatelessWidget {
                       context.tr('owner_add_3_photos_hint'),
                       style: TextStyle(
                         color: isDark
-                            ? ColorManager.grey400
-                            : ColorManager.grey600,
+                            ? ColorsManager.grey400
+                            : ColorsManager.grey600,
                         fontSize: 12,
                       ),
                     ),
@@ -100,13 +102,13 @@ class ImageUploadSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        ColorManager.mainBlue.withOpacity(0.2),
-                        ColorManager.cyan06B6D4.withOpacity(0.2),
+                        ColorsManager.mainBlue.withOpacity(0.2),
+                        ColorsManager.cyan06B6D4.withOpacity(0.2),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: ColorManager.mainBlue.withOpacity(0.3),
+                      color: ColorsManager.mainBlue.withOpacity(0.3),
                     ),
                   ),
                   child: Row(
@@ -114,14 +116,14 @@ class ImageUploadSection extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.check_circle_rounded,
-                        color: ColorManager.mainBlue,
+                        color: ColorsManager.mainBlue,
                         size: 14,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${images.length} ${context.tr('owner_selected_count')}',
                         style: const TextStyle(
-                          color: ColorManager.mainBlue,
+                          color: ColorsManager.mainBlue,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -168,13 +170,13 @@ class ImageUploadSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
                 color: isDark
-                    ? ColorManager.darkBlue2A2E4B.withOpacity(0.5)
-                    : ColorManager.grey50,
+                    ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+                    : ColorsManager.grey50,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isDark
-                      ? ColorManager.blue2563EB.withOpacity(0.3)
-                      : ColorManager.blue2563EB.withOpacity(0.2),
+                      ? ColorsManager.blue2563EB.withOpacity(0.3)
+                      : ColorsManager.blue2563EB.withOpacity(0.2),
                   width: 2,
                   style: BorderStyle.solid,
                 ),
@@ -187,15 +189,15 @@ class ImageUploadSection extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          ColorManager.blue2563EB.withOpacity(0.2),
-                          ColorManager.purple764BA2.withOpacity(0.2),
+                          ColorsManager.blue2563EB.withOpacity(0.2),
+                          ColorsManager.purple764BA2.withOpacity(0.2),
                         ],
                       ),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.add_photo_alternate_rounded,
-                      color: ColorManager.blue2563EB,
+                      color: ColorsManager.blue2563EB,
                       size: 32,
                     ),
                   ),
@@ -205,7 +207,7 @@ class ImageUploadSection extends StatelessWidget {
                         ? context.tr('owner_add_first_photo')
                         : context.tr('owner_add_more_photos'),
                     style: TextStyle(
-                      color: isDark ? ColorManager.white : ColorManager.black,
+                      color: isDark ? ColorsManager.white : ColorsManager.black,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -215,8 +217,8 @@ class ImageUploadSection extends StatelessWidget {
                     context.tr('owner_tap_to_select'),
                     style: TextStyle(
                       color: isDark
-                          ? ColorManager.grey400
-                          : ColorManager.grey600,
+                          ? ColorsManager.grey400
+                          : ColorsManager.grey600,
                       fontSize: 12,
                     ),
                   ),
@@ -255,15 +257,15 @@ class _ImageCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isFirst
-                  ? ColorManager.blue2563EB
-                  : (isDark ? ColorManager.grey800 : ColorManager.grey300),
+                  ? ColorsManager.blue2563EB
+                  : (isDark ? ColorsManager.grey800 : ColorsManager.grey300),
               width: isFirst ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isFirst
-                    ? ColorManager.blue2563EB.withOpacity(0.3)
-                    : ColorManager.black.withOpacity(0.1),
+                    ? ColorsManager.blue2563EB.withOpacity(0.3)
+                    : ColorsManager.black.withOpacity(0.1),
                 blurRadius: isFirst ? 12 : 8,
                 offset: const Offset(0, 2),
               ),
@@ -289,12 +291,15 @@ class _ImageCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [ColorManager.blue2563EB, ColorManager.purple764BA2],
+                  colors: [
+                    ColorsManager.blue2563EB,
+                    ColorsManager.purple764BA2,
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorManager.black.withOpacity(0.3),
+                    color: ColorsManager.black.withOpacity(0.3),
                     blurRadius: 8,
                   ),
                 ],
@@ -304,14 +309,14 @@ class _ImageCard extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.star_rounded,
-                    color: ColorManager.white,
+                    color: ColorsManager.white,
                     size: 12,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     context.tr('owner_image_cover'),
                     style: TextStyle(
-                      color: ColorManager.white,
+                      color: ColorsManager.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -330,18 +335,18 @@ class _ImageCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: ColorManager.red,
+                color: ColorsManager.red,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: ColorManager.black.withOpacity(0.3),
+                    color: ColorsManager.black.withOpacity(0.3),
                     blurRadius: 8,
                   ),
                 ],
               ),
               child: const Icon(
                 Icons.close_rounded,
-                color: ColorManager.white,
+                color: ColorsManager.white,
                 size: 14,
               ),
             ),

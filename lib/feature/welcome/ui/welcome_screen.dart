@@ -81,7 +81,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       "Welcome to Rebtal",
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
-                            color: ColorManager.white,
+                            color: ColorsManager.white,
                             fontWeight: FontWeight.w700,
                           ),
                     ),
@@ -89,7 +89,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     Text(
                       "Rent and showcase beautiful chalets with a couple of taps.",
                       style: TextStyle(
-                        color: ColorManager.white.withOpacity(0.8),
+                        color: ColorsManager.white.withOpacity(0.8),
                       ),
                     ),
                     verticalSpace(5),
@@ -120,8 +120,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           height: 10,
                           decoration: BoxDecoration(
                             color: isActive
-                                ? ColorManager.white
-                                : ColorManager.white.withOpacity(0.4),
+                                ? ColorsManager.white
+                                : ColorsManager.white.withOpacity(0.4),
                             borderRadius: BorderRadius.circular(20),
                           ),
                         );
@@ -133,8 +133,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       height: 6.4.h,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorManager.white,
-                          foregroundColor: ColorManager.darkSlate0F172A,
+                          backgroundColor: ColorsManager.white,
+                          foregroundColor: ColorsManager.darkSlate0F172A,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(22),
                           ),
@@ -157,7 +157,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         child: const Text(
                           "Create a new account",
                           style: TextStyle(
-                            color: ColorManager.white,
+                            color: ColorsManager.white,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -183,7 +183,7 @@ class _WelcomeBackground extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [ColorManager.darkSlate0F172A, ColorManager.blue1E40AF],
+          colors: [ColorsManager.darkSlate0F172A, ColorsManager.blue1E40AF],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -193,12 +193,12 @@ class _WelcomeBackground extends StatelessWidget {
           Positioned(
             top: -20,
             right: -30,
-            child: _blurCircle(ColorManager.blue93C5FD.withOpacity(0.25)),
+            child: _blurCircle(ColorsManager.blue93C5FD.withOpacity(0.25)),
           ),
           Positioned(
             bottom: 0,
             left: -40,
-            child: _blurCircle(ColorManager.purple312E81.withOpacity(0.35)),
+            child: _blurCircle(ColorsManager.purple312E81.withOpacity(0.35)),
           ),
         ],
       ),
@@ -245,11 +245,11 @@ class _OnboardingCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.08),
+            color: ColorsManager.black.withOpacity(0.08),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
@@ -266,16 +266,16 @@ class _OnboardingCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   width: double.infinity,
-                  color: ColorManager.greyE2E8F0,
+                  color: ColorsManager.greyE2E8F0,
                   child: Image.asset(
                     slide.asset,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: ColorManager.blueEFF6FF,
+                      color: ColorsManager.blueEFF6FF,
                       alignment: Alignment.center,
                       child: Icon(
                         Icons.holiday_village,
-                        color: ColorManager.skyBlue38BDF8.withOpacity(0.8),
+                        color: ColorsManager.skyBlue38BDF8.withOpacity(0.8),
                         size: 64,
                       ),
                     ),
@@ -288,14 +288,14 @@ class _OnboardingCard extends StatelessWidget {
           Text(
             slide.title,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: ColorManager.darkSlate0F172A,
+              color: ColorsManager.darkSlate0F172A,
               fontWeight: FontWeight.w700,
             ),
           ),
           verticalSpace(0.5),
           Text(
             slide.description,
-            style: const TextStyle(color: ColorManager.slate475569),
+            style: const TextStyle(color: ColorsManager.slate475569),
           ),
         ],
       ),

@@ -37,8 +37,8 @@ class AboutUsSection extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.chaletTextPrimaryLight,
+                    ? ColorsManager.chaletTextPrimaryDark
+                    : ColorsManager.chaletTextPrimaryLight,
                 letterSpacing: 0.5,
               ),
             ),
@@ -53,9 +53,9 @@ class AboutUsSection extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            ColorManager.black,
-                            ColorManager.black,
-                            ColorManager.transparent,
+                            ColorsManager.black,
+                            ColorsManager.black,
+                            ColorsManager.transparent,
                           ],
                           stops: const [0.0, 0.5, 1.0],
                         ).createShader(bounds);
@@ -69,8 +69,8 @@ class AboutUsSection extends StatelessWidget {
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
                             color: isDark
-                                ? ColorManager.chaletTextSecondaryDark
-                                : ColorManager.chaletTextSecondaryLight,
+                                ? ColorsManager.chaletTextSecondaryDark
+                                : ColorsManager.chaletTextSecondaryLight,
                             height: 1.6,
                             letterSpacing: 0.3,
                           ),
@@ -84,8 +84,8 @@ class AboutUsSection extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                         color: isDark
-                            ? ColorManager.chaletTextSecondaryDark
-                            : ColorManager.chaletTextSecondaryLight,
+                            ? ColorsManager.chaletTextSecondaryDark
+                            : ColorsManager.chaletTextSecondaryLight,
                         height: 1.6,
                         letterSpacing: 0.3,
                       ),
@@ -105,7 +105,7 @@ class AboutUsSection extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: ColorManager.chaletAccent,
+                        color: ColorsManager.chaletAccent,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -113,7 +113,7 @@ class AboutUsSection extends StatelessWidget {
                       isExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
-                      color: ColorManager.chaletAccent,
+                      color: ColorsManager.chaletAccent,
                       size: 20,
                     ),
                   ],

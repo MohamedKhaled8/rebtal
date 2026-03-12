@@ -18,18 +18,18 @@ class AmenityCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark
-            ? ColorManager.chaletCardDark
-            : ColorManager.chaletCardLight,
+            ? ColorsManager.chaletCardDark
+            : ColorsManager.chaletCardLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? ColorManager.white.withOpacity(0.05)
-              : ColorManager.black.withOpacity(0.05),
+              ? ColorsManager.white.withOpacity(0.05)
+              : ColorsManager.black.withOpacity(0.05),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: ColorsManager.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -41,10 +41,10 @@ class AmenityCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: ColorManager.chaletAccent.withOpacity(0.1),
+              color: ColorsManager.chaletAccent.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 24, color: ColorManager.chaletAccent),
+            child: Icon(icon, size: 24, color: ColorsManager.chaletAccent),
           ),
           const SizedBox(height: 8),
           Padding(
@@ -55,8 +55,8 @@ class AmenityCard extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.chaletTextPrimaryLight,
+                    ? ColorsManager.chaletTextPrimaryDark
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

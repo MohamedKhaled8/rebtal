@@ -74,14 +74,16 @@ class _CustomInputFieldState extends State<CustomInputField> {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+        color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isFocused
-              ? (isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB)
+              ? (isDark
+                    ? ColorsManager.bookingsAccentPrimary
+                    : ColorsManager.blue2563EB)
               : (isDark
-                  ? ColorManager.white.withOpacity(0.1)
-                  : ColorManager.grey300),
+                    ? ColorsManager.white.withOpacity(0.1)
+                    : ColorsManager.grey300),
           width: isFocused ? 2 : 1,
         ),
       ),
@@ -92,8 +94,10 @@ class _CustomInputFieldState extends State<CustomInputField> {
             widget.icon,
             size: 20,
             color: isFocused
-                ? (isDark ? ColorManager.bookingsAccentPrimary : ColorManager.blue2563EB)
-                : (isDark ? ColorManager.white70 : ColorManager.grey700),
+                ? (isDark
+                      ? ColorsManager.bookingsAccentPrimary
+                      : ColorsManager.blue2563EB)
+                : (isDark ? ColorsManager.white70 : ColorsManager.grey700),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -102,8 +106,8 @@ class _CustomInputFieldState extends State<CustomInputField> {
               focusNode: _focusNode,
               obscureText: widget.obscureText,
               keyboardType: widget.keyboardType,
-              textInputAction: widget.keyboardType ==
-                          TextInputType.emailAddress ||
+              textInputAction:
+                  widget.keyboardType == TextInputType.emailAddress ||
                       widget.keyboardType == TextInputType.phone ||
                       widget.keyboardType == TextInputType.name
                   ? TextInputAction.next
@@ -118,13 +122,17 @@ class _CustomInputFieldState extends State<CustomInputField> {
               },
               style: TextStyle(
                 fontSize: 15,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
                 fontWeight: FontWeight.w400,
               ),
               decoration: InputDecoration(
                 hintText: widget.label,
                 hintStyle: TextStyle(
-                  color: isDark ? ColorManager.white.withOpacity(0.4) : ColorManager.grey400,
+                  color: isDark
+                      ? ColorsManager.white.withOpacity(0.4)
+                      : ColorsManager.grey400,
                   fontSize: 15,
                 ),
                 border: InputBorder.none,

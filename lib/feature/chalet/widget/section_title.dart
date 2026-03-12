@@ -15,8 +15,8 @@ class SectionTitle extends StatelessWidget {
         fontSize: 20,
         fontWeight: FontWeight.w800,
         color: isDark
-            ? ColorManager.chaletTextPrimaryDark
-            : ColorManager.chaletTextPrimaryLight,
+            ? ColorsManager.chaletTextPrimaryDark
+            : ColorsManager.chaletTextPrimaryLight,
         letterSpacing: 0.5,
       ),
     );

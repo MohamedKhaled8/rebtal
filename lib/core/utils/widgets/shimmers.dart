@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShimmerBox extends StatelessWidget {
@@ -31,27 +32,40 @@ class ShimmerBox extends StatelessWidget {
 }
 
 class PublicChaletCardShimmer extends StatelessWidget {
-  const PublicChaletCardShimmer({super.key});
+  final EdgeInsetsGeometry? margin;
+  const PublicChaletCardShimmer({super.key, this.margin});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      margin: margin ??
+          EdgeInsets.only(
+            bottom: 16.sh,
+            left: 16.sw,
+            right: 16.sw,
+          ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12.sp),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12.sp),
         child: Stack(
           children: [
-            ShimmerBox(height: 280, width: double.infinity),
+            ShimmerBox(
+              height: otv(
+                context: context,
+                portrait: 210.sh,
+                landscape: 150.sh,
+              ),
+              width: double.infinity,
+            ),
             Positioned.fill(
               child: Padding(
                 padding: const EdgeInsets.all(16),

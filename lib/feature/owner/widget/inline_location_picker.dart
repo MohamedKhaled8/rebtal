@@ -54,7 +54,7 @@ class InlineLocationPicker extends StatelessWidget {
                           point: selectedLatLng,
                           child: const Icon(
                             Icons.location_on,
-                            color: ColorManager.red,
+                            color: ColorsManager.red,
                             size: 36,
                           ),
                         ),
@@ -67,7 +67,7 @@ class InlineLocationPicker extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.place, size: 18, color: ColorManager.grey),
+                Icon(Icons.place, size: 18, color: ColorsManager.grey),
                 const SizedBox(width: 6),
                 Expanded(
                   child: state.isLocationLoading

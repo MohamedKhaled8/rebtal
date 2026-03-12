@@ -41,18 +41,20 @@ class OwnerChaletCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.chaletBackgroundDark : ColorManager.white,
+        color: isDark
+            ? ColorsManager.chaletBackgroundDark
+            : ColorsManager.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: isDark
-              ? ColorManager.white.withOpacity(0.05)
-              : ColorManager.chaletGrey200.withOpacity(0.1),
+              ? ColorsManager.white.withOpacity(0.05)
+              : ColorsManager.chaletGrey200.withOpacity(0.1),
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? ColorManager.black.withOpacity(0.2)
-                : ColorManager.black.withOpacity(0.05),
+                ? ColorsManager.black.withOpacity(0.2)
+                : ColorsManager.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -86,8 +88,8 @@ class OwnerChaletCard extends StatelessWidget {
                             ? context.tr('common_visible')
                             : context.tr('common_hidden'),
                         color: isVisible
-                            ? ColorManager.chaletActionBlue
-                            : ColorManager.grey,
+                            ? ColorsManager.chaletActionBlue
+                            : ColorsManager.grey,
                       ),
                       const SizedBox(width: 8),
                       _CompactBadge(
@@ -95,8 +97,8 @@ class OwnerChaletCard extends StatelessWidget {
                             ? context.tr('common_available')
                             : context.tr('common_closed'),
                         color: isBookingAvailable
-                            ? ColorManager.green
-                            : ColorManager.red,
+                            ? ColorsManager.green
+                            : ColorsManager.red,
                       ),
                     ],
                   ),
@@ -114,8 +116,8 @@ class OwnerChaletCard extends StatelessWidget {
                     chaletName,
                     style: TextStyle(
                       color: isDark
-                          ? ColorManager.white
-                          : ColorManager.chaletBackgroundDark,
+                          ? ColorsManager.white
+                          : ColorsManager.chaletBackgroundDark,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -222,8 +224,8 @@ class OwnerChaletCard extends StatelessWidget {
                               ? context.tr('common_hide')
                               : context.tr('common_show'),
                           color: isVisible
-                              ? ColorManager.orange
-                              : ColorManager.green,
+                              ? ColorsManager.orange
+                              : ColorsManager.green,
                           onTap: () => ownerCubit.toggleChaletVisibility(
                             docId,
                             isVisible,
@@ -240,8 +242,8 @@ class OwnerChaletCard extends StatelessWidget {
                               ? context.tr('owner_stop_booking')
                               : context.tr('owner_open_booking'),
                           color: isBookingAvailable
-                              ? ColorManager.red
-                              : ColorManager.green,
+                              ? ColorsManager.red
+                              : ColorsManager.green,
                           onTap: () => ownerCubit.toggleBookingAvailability(
                             docId,
                             bookingStatus,
@@ -270,7 +272,7 @@ class OwnerChaletCard extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        side: BorderSide(color: ColorManager.purple),
+                        side: BorderSide(color: ColorsManager.purple),
                       ),
                       child: Text(context.tr('owner_view_full_details')),
                     ),
@@ -292,10 +294,10 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = status == 'approved'
-        ? ColorManager.green
+        ? ColorsManager.green
         : status == 'rejected'
-        ? ColorManager.red
-        : ColorManager.orange;
+        ? ColorsManager.red
+        : ColorsManager.orange;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -358,8 +360,8 @@ class _LocationRow extends StatelessWidget {
           Icons.location_on_outlined,
           size: 14,
           color: isDark
-              ? ColorManager.white.withOpacity(0.6)
-              : ColorManager.chaletGrey500,
+              ? ColorsManager.white.withOpacity(0.6)
+              : ColorsManager.chaletGrey500,
         ),
         const SizedBox(width: 4),
         Expanded(
@@ -367,8 +369,8 @@ class _LocationRow extends StatelessWidget {
             location,
             style: TextStyle(
               color: isDark
-                  ? ColorManager.white.withOpacity(0.6)
-                  : ColorManager.chaletGrey500,
+                  ? ColorsManager.white.withOpacity(0.6)
+                  : ColorsManager.chaletGrey500,
               fontSize: 12,
             ),
             maxLines: 1,
@@ -405,7 +407,7 @@ class _PriceRow extends StatelessWidget {
         Text(
           CurrencyFormatter.egp(finalPrice, withSuffixPerNight: true),
           style: TextStyle(
-            color: ColorManager.blue2563EB,
+            color: ColorsManager.blue2563EB,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -415,7 +417,7 @@ class _PriceRow extends StatelessWidget {
           Text(
             CurrencyFormatter.egp(basePrice),
             style: TextStyle(
-              color: ColorManager.grey400,
+              color: ColorsManager.grey400,
               fontSize: 12,
               decoration: TextDecoration.lineThrough,
             ),
@@ -490,8 +492,8 @@ class _InfoBadge extends StatelessWidget {
           icon,
           size: 16,
           color: isDark
-              ? ColorManager.white.withOpacity(0.7)
-              : ColorManager.grey,
+              ? ColorsManager.white.withOpacity(0.7)
+              : ColorsManager.grey,
         ),
         const SizedBox(width: 4),
         Text(
@@ -499,7 +501,7 @@ class _InfoBadge extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             color: isDark
-                ? ColorManager.white.withOpacity(0.7)
+                ? ColorsManager.white.withOpacity(0.7)
                 : Colors.black87,
             fontWeight: FontWeight.w500,
           ),
@@ -523,7 +525,7 @@ class _RatingRow extends StatelessWidget {
       children: [
         ...List.generate(5, (index) {
           IconData icon = Icons.star_border;
-          Color color = ColorManager.chaletGrey400;
+          Color color = ColorsManager.chaletGrey400;
           if (index < rating.floor()) {
             icon = Icons.star;
             color = Colors.amber;

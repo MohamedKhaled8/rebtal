@@ -10,15 +10,21 @@ class DeliveryPolicyPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.profileBackgroundDark
+          : ColorsManager.white,
       appBar: AppBar(
         title: const Text('Booking & Confirmation'),
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
+        iconTheme: IconThemeData(
+          color: isDark ? ColorsManager.white : ColorsManager.black,
+        ),
         titleTextStyle: TextStyle(
-          color: isDark ? ColorManager.white : ColorManager.black,
+          color: isDark ? ColorsManager.white : ColorsManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -33,7 +39,9 @@ class DeliveryPolicyPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 32),
@@ -105,17 +113,17 @@ class DeliveryPolicyPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: ColorManager.profileAccent.withValues(alpha: 0.1),
+                color: ColorsManager.profileAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: ColorManager.profileAccent.withValues(alpha: 0.3),
+                  color: ColorsManager.profileAccent.withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
                 children: [
                   Icon(
                     Icons.phone_in_talk,
-                    color: ColorManager.profileAccent,
+                    color: ColorsManager.profileAccent,
                     size: 32,
                   ),
                   const SizedBox(height: 12),
@@ -124,7 +132,9 @@ class DeliveryPolicyPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                      color: isDark
+                          ? ColorsManager.white
+                          : ColorsManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -133,7 +143,9 @@ class DeliveryPolicyPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                      color: isDark
+                          ? ColorsManager.white70
+                          : ColorsManager.grey600,
                     ),
                   ),
                 ],
@@ -157,10 +169,10 @@ class DeliveryPolicyPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: ColorManager.profileAccent.withValues(alpha: 0.1),
+            color: ColorsManager.profileAccent.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: ColorManager.profileAccent, size: 20),
+          child: Icon(icon, color: ColorsManager.profileAccent, size: 20),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -172,7 +184,9 @@ class DeliveryPolicyPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 8),

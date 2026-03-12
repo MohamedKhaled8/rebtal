@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
@@ -12,11 +11,11 @@ class SubmitButtonWidget extends StatelessWidget {
       width: double.infinity,
       height: 55,
       decoration: BoxDecoration(
-        gradient: ColorManager.kPrimaryGradient,
+        gradient: ColorsManager.kPrimaryGradient,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.kPrimaryGradient.colors.first.withOpacity(0.3),
+            color: ColorsManager.kPrimaryGradient.colors.first.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -25,8 +24,8 @@ class SubmitButtonWidget extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onSubmit,
         style: ElevatedButton.styleFrom(
-          backgroundColor: ColorManager.transparent,
-          shadowColor: ColorManager.transparent,
+          backgroundColor: ColorsManager.transparent,
+          shadowColor: ColorsManager.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -34,7 +33,7 @@ class SubmitButtonWidget extends StatelessWidget {
         child: Text(
           'Submit Chalet Listing',
           style: TextStyle(
-            color: ColorManager.white,
+            color: ColorsManager.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),

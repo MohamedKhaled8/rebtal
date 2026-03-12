@@ -47,17 +47,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.chaletBackgroundDark
-          : ColorManager.chaletBackgroundLight,
+          ? ColorsManager.chaletBackgroundDark
+          : ColorsManager.chaletBackgroundLight,
       appBar: AppBar(
         title: Text(
           context.tr('notifications_title'),
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
         ),
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         foregroundColor: isDark
-            ? ColorManager.chaletTextPrimaryDark
-            : ColorManager.chaletTextPrimaryLight,
+            ? ColorsManager.chaletTextPrimaryDark
+            : ColorsManager.chaletTextPrimaryLight,
         elevation: 0,
         actions: [
           BlocBuilder<NotificationCubit, NotificationState>(
@@ -123,67 +125,73 @@ class _NotificationsPageState extends State<NotificationsPage> {
               return _buildEmptyState();
             }
 
-            return Column(
-              children: [
-                // Filter chips
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      _buildFilterChip(
-                        label: '${context.tr('notifications_all')} (${state.notifications.length})',
-                        isSelected: !_showUnreadOnly,
-                        onTap: () => setState(() => _showUnreadOnly = false),
+            return RefreshIndicator(
+              onRefresh: () async {
+                _loadNotifications();
+              },
+              color: ColorsManager.chaletAccent,
+              child: CustomScrollView(
+                slivers: [
+                  // Filter chips
+                  SliverToBoxAdapter(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          _buildFilterChip(
+                            label:
+                                '${context.tr('notifications_all')} (${state.notifications.length})',
+                            isSelected: !_showUnreadOnly,
+                            onTap: () => setState(() => _showUnreadOnly = false),
+                          ),
+                          const SizedBox(width: 12),
+                          _buildFilterChip(
+                            label:
+                                '${context.tr('notifications_unread')} (${state.unreadCount})',
+                            isSelected: _showUnreadOnly,
+                            onTap: () => setState(() => _showUnreadOnly = true),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      _buildFilterChip(
-                        label: '${context.tr('notifications_unread')} (${state.unreadCount})',
-                        isSelected: _showUnreadOnly,
-                        onTap: () => setState(() => _showUnreadOnly = true),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Notifications list
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      _loadNotifications();
-                    },
-                    color: ColorManager.chaletAccent,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: notifications.length,
-                      itemBuilder: (context, index) {
-                        final notification = notifications[index];
-                        return NotificationCard(
-                          notification: notification,
-                          onTap: () {
-                            // TODO: Navigate based on notification type
-                          },
-                          onDelete: () {
-                            context
-                                .read<AppCubit>()
-                                .notificationCubit
-                                .deleteNotification(notification.id);
-                            SnackBarHelper.showSuccess(
-                              context,
-                              'تم حذف الإشعار',
-                            );
-                          },
-                          onMarkAsRead: () {
-                            context
-                                .read<AppCubit>()
-                                .notificationCubit
-                                .markAsRead(notification.id);
-                          },
-                        );
-                      },
                     ),
                   ),
-                ),
-              ],
+
+                  // Notifications list
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final notification = notifications[index];
+                          return NotificationCard(
+                            notification: notification,
+                            onTap: () {
+                              // TODO: Navigate based on notification type
+                            },
+                            onDelete: () {
+                              context
+                                  .read<AppCubit>()
+                                  .notificationCubit
+                                  .deleteNotification(notification.id);
+                              SnackBarHelper.showSuccess(
+                                context,
+                                'تم حذف الإشعار',
+                              );
+                            },
+                            onMarkAsRead: () {
+                              context
+                                  .read<AppCubit>()
+                                  .notificationCubit
+                                  .markAsRead(notification.id);
+                            },
+                          );
+                        },
+                        childCount: notifications.length,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -207,21 +215,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
-                  colors: [ColorManager.chaletAccent, Color(0xFF17B85A)],
+                  colors: [ColorsManager.chaletAccent, Color(0xFF17B85A)],
                 )
               : null,
           color: isSelected
               ? null
               : (isDark
-                    ? ColorManager.chaletCardDark
-                    : ColorManager.chaletCardLight),
+                    ? ColorsManager.chaletCardDark
+                    : ColorsManager.chaletCardLight),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? ColorManager.chaletAccent
+                ? ColorsManager.chaletAccent
                 : (isDark
-                      ? ColorManager.white.withOpacity(0.1)
-                      : ColorManager.black.withOpacity(0.1)),
+                      ? ColorsManager.white.withOpacity(0.1)
+                      : ColorsManager.black.withOpacity(0.1)),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -231,10 +239,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
             fontSize: 14,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             color: isSelected
-                ? ColorManager.white
+                ? ColorsManager.white
                 : (isDark
-                      ? ColorManager.chaletTextPrimaryDark
-                      : ColorManager.chaletTextPrimaryLight),
+                      ? ColorsManager.chaletTextPrimaryDark
+                      : ColorsManager.chaletTextPrimaryLight),
           ),
         ),
       ),
@@ -243,7 +251,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Widget _buildLoadingState() {
     return const Center(
-      child: CircularProgressIndicator(color: ColorManager.chaletAccent),
+      child: CircularProgressIndicator(color: ColorsManager.chaletAccent),
     );
   }
 
@@ -259,7 +267,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             Icon(
               Icons.error_outline_rounded,
               size: 80,
-              color: ColorManager.chaletActionRed.withOpacity(0.5),
+              color: ColorsManager.chaletActionRed.withOpacity(0.5),
             ),
             const SizedBox(height: 24),
             Text(
@@ -268,8 +276,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.chaletTextPrimaryLight,
+                    ? ColorsManager.chaletTextPrimaryDark
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 12),
@@ -278,8 +286,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
               style: TextStyle(
                 fontSize: 16,
                 color: isDark
-                    ? ColorManager.chaletTextSecondaryDark
-                    : ColorManager.chaletTextSecondaryLight,
+                    ? ColorsManager.chaletTextSecondaryDark
+                    : ColorsManager.chaletTextSecondaryLight,
               ),
               textAlign: TextAlign.center,
             ),
@@ -289,8 +297,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
               icon: const Icon(Icons.refresh_rounded),
               label: Text(context.tr('common_retry')),
               style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.chaletAccent,
-                foregroundColor: ColorManager.white,
+                backgroundColor: ColorsManager.chaletAccent,
+                foregroundColor: ColorsManager.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 14,
@@ -324,8 +332,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.chaletTextPrimaryLight,
+                    ? ColorsManager.chaletTextPrimaryDark
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 12),
@@ -336,8 +344,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
               style: TextStyle(
                 fontSize: 16,
                 color: isDark
-                    ? ColorManager.chaletTextSecondaryDark
-                    : ColorManager.chaletTextSecondaryLight,
+                    ? ColorsManager.chaletTextSecondaryDark
+                    : ColorsManager.chaletTextSecondaryLight,
               ),
               textAlign: TextAlign.center,
             ),
@@ -354,24 +362,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: isDark
-            ? ColorManager.chaletCardDark
-            : ColorManager.chaletCardLight,
+            ? ColorsManager.chaletCardDark
+            : ColorsManager.chaletCardLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'حذف جميع الإشعارات',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: isDark
-                ? ColorManager.chaletTextPrimaryDark
-                : ColorManager.chaletTextPrimaryLight,
+                ? ColorsManager.chaletTextPrimaryDark
+                : ColorsManager.chaletTextPrimaryLight,
           ),
         ),
         content: Text(
           'هل أنت متأكد من حذف جميع الإشعارات؟ لا يمكن التراجع عن هذا الإجراء.',
           style: TextStyle(
             color: isDark
-                ? ColorManager.chaletTextSecondaryDark
-                : ColorManager.chaletTextSecondaryLight,
+                ? ColorsManager.chaletTextSecondaryDark
+                : ColorsManager.chaletTextSecondaryLight,
           ),
         ),
         actions: [
@@ -386,8 +394,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
               SnackBarHelper.showSuccess(context, 'تم حذف جميع الإشعارات');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: ColorManager.chaletActionRed,
-              foregroundColor: ColorManager.white,
+              backgroundColor: ColorsManager.chaletActionRed,
+              foregroundColor: ColorsManager.white,
             ),
             child: Text(context.tr('common_delete')),
           ),

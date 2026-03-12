@@ -10,10 +10,10 @@ class CancellationPolicyPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground0A0E27
-          : ColorManager.lightBackgroundF5F7FA,
+          ? ColorsManager.darkBackground0A0E27
+          : ColorsManager.lightBackgroundF5F7FA,
       appBar: AppBar(
-        backgroundColor: ColorManager.transparent,
+        backgroundColor: ColorsManager.transparent,
         elevation: 0,
         title: const Text(
           'سياسة الإلغاء والاسترداد',
@@ -32,27 +32,33 @@ class CancellationPolicyPage extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [ColorManager.chaletAccent, ColorManager.teal00A896],
+                    colors: [
+                      ColorsManager.chaletAccent,
+                      ColorsManager.teal00A896,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Column(
                   children: [
-                    Icon(Icons.policy, color: ColorManager.white, size: 48),
+                    Icon(Icons.policy, color: ColorsManager.white, size: 48),
                     SizedBox(height: 16),
                     Text(
                       'سياسة الإلغاء والاسترداد',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: ColorManager.white,
+                        color: ColorsManager.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 8),
                     Text(
                       'يرجى قراءة السياسة بعناية قبل إلغاء حجزك',
-                      style: TextStyle(fontSize: 14, color: ColorManager.white70),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ColorsManager.white70,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -71,19 +77,19 @@ class CancellationPolicyPage extends StatelessWidget {
                     title: 'الإلغاء قبل 7 أيام',
                     description: 'استرداد كامل المبلغ (100%)',
                     percentage: 100,
-                    color: ColorManager.green,
+                    color: ColorsManager.green,
                   ),
                   _PolicyItem(
                     title: 'الإلغاء قبل 3-7 أيام',
                     description: 'استرداد 50% من المبلغ',
                     percentage: 50,
-                    color: ColorManager.orange,
+                    color: ColorsManager.orange,
                   ),
                   _PolicyItem(
                     title: 'الإلغاء قبل أقل من 3 أيام',
                     description: 'لا يوجد استرداد',
                     percentage: 0,
-                    color: ColorManager.red,
+                    color: ColorsManager.red,
                   ),
                 ],
               ),
@@ -125,9 +131,11 @@ class CancellationPolicyPage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: ColorManager.orange.withOpacity(0.1),
+                  color: ColorsManager.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: ColorManager.orange.withOpacity(0.3)),
+                  border: Border.all(
+                    color: ColorsManager.orange.withOpacity(0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +144,7 @@ class CancellationPolicyPage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.warning_amber_rounded,
-                          color: ColorManager.orange,
+                          color: ColorsManager.orange,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
@@ -145,7 +153,7 @@ class CancellationPolicyPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: ColorManager.orange,
+                            color: ColorsManager.orange,
                           ),
                         ),
                       ],
@@ -153,22 +161,22 @@ class CancellationPolicyPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildBulletPoint(
                       'يتم حساب المدة من تاريخ بداية الحجز',
-                      ColorManager.orange,
+                      ColorsManager.orange,
                     ),
                     const SizedBox(height: 8),
                     _buildBulletPoint(
                       'الاسترداد يتم عبر نفس طريقة الدفع',
-                      ColorManager.orange,
+                      ColorsManager.orange,
                     ),
                     const SizedBox(height: 8),
                     _buildBulletPoint(
                       'في حالة الدفع عند الوصول، لا يوجد استرداد',
-                      ColorManager.orange,
+                      ColorsManager.orange,
                     ),
                     const SizedBox(height: 8),
                     _buildBulletPoint(
                       'قد تستغرق عملية الاسترداد 3-5 أيام عمل',
-                      ColorManager.orange,
+                      ColorsManager.orange,
                     ),
                   ],
                 ),
@@ -189,9 +197,9 @@ class CancellationPolicyPage extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: ColorManager.chaletAccent,
+                    foregroundColor: ColorsManager.chaletAccent,
                     side: BorderSide(
-                      color: ColorManager.chaletAccent,
+                      color: ColorsManager.chaletAccent,
                       width: 2,
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -217,10 +225,10 @@ class CancellationPolicyPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkSurface1E1E1E : ColorManager.white,
+        color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? ColorManager.white10 : ColorManager.grey300,
+          color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
         ),
       ),
       child: Column(
@@ -228,14 +236,16 @@ class CancellationPolicyPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: ColorManager.chaletAccent, size: 24),
+              Icon(icon, color: ColorsManager.chaletAccent, size: 24),
               const SizedBox(width: 12),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
             ],
@@ -321,7 +331,9 @@ class _PolicyItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorsManager.white
+                        : ColorsManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -329,7 +341,9 @@ class _PolicyItem extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey600,
                   ),
                 ),
               ],
@@ -366,7 +380,7 @@ class _ProcessStep extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [ColorManager.chaletAccent, ColorManager.teal00A896],
+                colors: [ColorsManager.chaletAccent, ColorsManager.teal00A896],
               ),
               shape: BoxShape.circle,
             ),
@@ -374,7 +388,7 @@ class _ProcessStep extends StatelessWidget {
               child: Text(
                 number,
                 style: const TextStyle(
-                  color: ColorManager.white,
+                  color: ColorsManager.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -391,7 +405,9 @@ class _ProcessStep extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                    color: isDark
+                        ? ColorsManager.white
+                        : ColorsManager.chaletTextPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -399,7 +415,9 @@ class _ProcessStep extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 14,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey600,
                   ),
                 ),
               ],

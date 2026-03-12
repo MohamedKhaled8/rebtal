@@ -49,8 +49,8 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
       appBar: AppBar(
         title: Text(context.tr('booking_my_requests')),
         centerTitle: true,
-        backgroundColor: ColorManager.white,
-        foregroundColor: ColorManager.chaletTextPrimaryLight,
+        backgroundColor: ColorsManager.white,
+        foregroundColor: ColorsManager.chaletTextPrimaryLight,
         elevation: 1,
       ),
       body: SafeArea(
@@ -78,15 +78,15 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground121212
-          : ColorManager.white,
+          ? ColorsManager.darkBackground121212
+          : ColorsManager.white,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle, color: ColorManager.green, size: 80),
+              Icon(Icons.check_circle, color: ColorsManager.green, size: 80),
               const SizedBox(height: 24),
               Text(
                 context.tr('booking_request_received'),
@@ -94,8 +94,8 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: isDark
-                      ? ColorManager.white
-                      : ColorManager.chaletTextPrimaryLight,
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -126,13 +126,13 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       label: Text(context.tr('booking_print')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: isDark
-                            ? ColorManager.white
-                            : ColorManager.chaletTextPrimaryLight,
+                            ? ColorsManager.white
+                            : ColorsManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
-                              ? ColorManager.white.withOpacity(0.3)
-                              : ColorManager.grey300,
+                              ? ColorsManager.white.withOpacity(0.3)
+                              : ColorsManager.grey300,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -154,13 +154,13 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                       label: Text(context.tr('booking_save')),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: isDark
-                            ? ColorManager.white
-                            : ColorManager.chaletTextPrimaryLight,
+                            ? ColorsManager.white
+                            : ColorsManager.chaletTextPrimaryLight,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(
                           color: isDark
-                              ? ColorManager.white.withOpacity(0.3)
-                              : ColorManager.grey300,
+                              ? ColorsManager.white.withOpacity(0.3)
+                              : ColorsManager.grey300,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -178,8 +178,8 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                 style: TextStyle(
                   fontSize: 16,
                   color: isDark
-                      ? ColorManager.white70
-                      : ColorManager.chaletTextPrimaryLight,
+                      ? ColorsManager.white70
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 48),
@@ -194,12 +194,12 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorManager.green,
+                    backgroundColor: ColorsManager.green,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(
                     context.tr('booking_back_home'),
-                    style: TextStyle(color: ColorManager.white, fontSize: 18),
+                    style: TextStyle(color: ColorsManager.white, fontSize: 18),
                   ),
                 ),
               ),
@@ -224,13 +224,13 @@ class _EmptyRequestsView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: ColorManager.grey100,
+              color: ColorsManager.grey100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.event_available,
               size: 64,
-              color: ColorManager.chaletActionDarkBlue,
+              color: ColorsManager.chaletActionDarkBlue,
             ),
           ),
           const SizedBox(height: 18),
@@ -242,7 +242,7 @@ class _EmptyRequestsView extends StatelessWidget {
           Text(
             context.tr('booking_no_requests_hint'),
             textAlign: TextAlign.center,
-            style: TextStyle(color: ColorManager.grey600),
+            style: TextStyle(color: ColorsManager.grey600),
           ),
           const SizedBox(height: 18),
           Row(
@@ -253,7 +253,7 @@ class _EmptyRequestsView extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: Text(context.tr('booking_refresh')),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorManager.chaletActionDarkBlue,
+                  backgroundColor: ColorsManager.chaletActionDarkBlue,
                 ),
               ),
               const SizedBox(width: 12),
@@ -293,13 +293,15 @@ class BookingRequestCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 26,
-                  backgroundColor: ColorManager.chaletIconBackgroundLight,
+                  backgroundColor: ColorsManager.chaletIconBackgroundLight,
                   child: Text(
-                    (chat.chaletName.isNotEmpty ? chat.chaletName[0] : context.tr('common_fallback_chalet')),
+                    (chat.chaletName.isNotEmpty
+                        ? chat.chaletName[0]
+                        : context.tr('common_fallback_chalet')),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: ColorManager.primaryColor,
+                      color: ColorsManager.primaryColor,
                     ),
                   ),
                 ),
@@ -332,7 +334,7 @@ class BookingRequestCard extends StatelessWidget {
                 const Icon(
                   Icons.calendar_today,
                   size: 14,
-                  color: ColorManager.grey,
+                  color: ColorsManager.grey,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -347,7 +349,7 @@ class BookingRequestCard extends StatelessWidget {
                 const Icon(
                   Icons.access_time,
                   size: 14,
-                  color: ColorManager.grey,
+                  color: ColorsManager.grey,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -377,7 +379,7 @@ class BookingRequestCard extends StatelessWidget {
                       icon: const Icon(Icons.cancel),
                       label: Text(context.tr('booking_cancel_request_btn')),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorManager.red,
+                        backgroundColor: ColorsManager.red,
                       ),
                     ),
                   ),
@@ -418,8 +420,10 @@ class BookingRequestCard extends StatelessWidget {
     final now = DateTime.now();
     final diff = now.difference(time);
     if (diff.inDays > 0) return '${diff.inDays} ${context.tr('booking_day')}';
-    if (diff.inHours > 0) return '${diff.inHours} ${context.tr('booking_hour')}';
-    if (diff.inMinutes > 0) return '${diff.inMinutes} ${context.tr('booking_minute')}';
+    if (diff.inHours > 0)
+      return '${diff.inHours} ${context.tr('booking_hour')}';
+    if (diff.inMinutes > 0)
+      return '${diff.inMinutes} ${context.tr('booking_minute')}';
     return context.tr('common_now');
   }
 }
@@ -427,7 +431,8 @@ class BookingRequestCard extends StatelessWidget {
 class _StatusChip extends StatelessWidget {
   final String status;
   final BuildContext parentContext;
-  const _StatusChip({required this.status, required BuildContext context}) : parentContext = context;
+  const _StatusChip({required this.status, required BuildContext context})
+    : parentContext = context;
 
   @override
   Widget build(BuildContext context) {
@@ -448,19 +453,19 @@ class _StatusChip extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'pending':
-        return ColorManager.orange;
+        return ColorsManager.orange;
       case 'approved':
-        return ColorManager.chaletActionGreen;
+        return ColorsManager.chaletActionGreen;
       case 'rejected':
-        return ColorManager.chaletActionDarkRed;
+        return ColorsManager.chaletActionDarkRed;
       case 'cancelled':
-        return ColorManager.red;
+        return ColorsManager.red;
       case 'completed':
-        return ColorManager.chaletActionDarkBlue;
+        return ColorsManager.chaletActionDarkBlue;
       case 'paymentUnderReview':
-        return ColorManager.purple;
+        return ColorsManager.purple;
       default:
-        return ColorManager.grey700;
+        return ColorsManager.grey700;
     }
   }
 

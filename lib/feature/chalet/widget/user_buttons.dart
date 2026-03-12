@@ -49,16 +49,16 @@ class _BookingButton extends StatelessWidget {
         gradient: isBookingAvailable
             ? const LinearGradient(
                 colors: [
-                  ColorManager.chaletActionBlue,
-                  ColorManager.chaletActionDarkBlue,
+                  ColorsManager.chaletActionBlue,
+                  ColorsManager.chaletActionDarkBlue,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
                 colors: [
-                  ColorManager.chaletActionGrey,
-                  ColorManager.chaletActionDarkGrey,
+                  ColorsManager.chaletActionGrey,
+                  ColorsManager.chaletActionDarkGrey,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -68,8 +68,8 @@ class _BookingButton extends StatelessWidget {
           BoxShadow(
             color:
                 (isBookingAvailable
-                        ? ColorManager.chaletActionGreen
-                        : ColorManager.chaletActionGrey)
+                        ? ColorsManager.chaletActionGreen
+                        : ColorsManager.chaletActionGrey)
                     .withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
@@ -90,8 +90,8 @@ class _BookingButton extends StatelessWidget {
                 );
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: ColorManager.transparent,
-          shadowColor: ColorManager.transparent,
+          backgroundColor: ColorsManager.transparent,
+          shadowColor: ColorsManager.transparent,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -103,7 +103,7 @@ class _BookingButton extends StatelessWidget {
             Icon(
               isBookingAvailable ? Icons.bookmark_outline : Icons.lock,
               size: 22,
-              color: ColorManager.white,
+              color: ColorsManager.white,
             ),
             const SizedBox(width: 12),
             Text(
@@ -113,7 +113,7 @@ class _BookingButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: ColorManager.white,
+                color: ColorsManager.white,
               ),
             ),
           ],

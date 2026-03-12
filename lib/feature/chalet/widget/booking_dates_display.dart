@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class BookingDatesDisplay extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -70,16 +71,16 @@ class BookingDatesDisplay extends StatelessWidget {
             Text(
               "Booking Period",
               style: TextStyle(
-                fontSize: 22,
+                fontSize: stv(context: context, mobile: 20.spScaled, tablet: 24.spScaled, desktop: 28.spScaled),
                 fontWeight: FontWeight.w600,
                 color: textColor,
               ),
             ),
             if (days > 0)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
+                padding: EdgeInsets.symmetric(
+                  horizontal: stv(context: context, mobile: 10.sw, tablet: 12.sw, desktop: 14.sw),
+                  vertical: stv(context: context, mobile: 4.sh, tablet: 5.sh, desktop: 6.sh),
                 ),
                 decoration: BoxDecoration(
                   color: isDark ? Colors.white12 : Colors.black12,
@@ -88,7 +89,7 @@ class BookingDatesDisplay extends StatelessWidget {
                 child: Text(
                   '$days Nights',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: stv(context: context, mobile: 11.spScaled, tablet: 13.spScaled, desktop: 15.spScaled),
                     fontWeight: FontWeight.w600,
                     color: subColor,
                   ),
@@ -96,7 +97,7 @@ class BookingDatesDisplay extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
         Row(
           children: [
             Expanded(
@@ -110,7 +111,7 @@ class BookingDatesDisplay extends StatelessWidget {
               ),
             ),
             Container(
-              height: 40,
+              height: otv(context: context, portrait: 40.sh, landscape: 24.sh),
               width: 1,
               color: isDark ? Colors.white24 : Colors.grey[300],
             ),
@@ -151,31 +152,41 @@ class _DateItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: stv(context: context, mobile: 12.sw, tablet: 16.sw, desktop: 20.sw),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: textColor),
+              Icon(
+                icon,
+                size: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled),
+                color: textColor,
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: stv(context: context, mobile: 13.spScaled, tablet: 15.spScaled, desktop: 17.spScaled),
                   fontWeight: FontWeight.w400,
                   color: subColor,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            date,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: textColor,
+          SizedBox(height: otv(context: context, portrait: 8.sh, landscape: 4.sh)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              date,
+              style: TextStyle(
+                fontSize: stv(context: context, mobile: 15.spScaled, tablet: 17.spScaled, desktop: 19.spScaled),
+                fontWeight: FontWeight.w600,
+                color: textColor,
+              ),
             ),
           ),
         ],

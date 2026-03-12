@@ -10,15 +10,21 @@ class RefundPolicyPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.profileBackgroundDark
+          : ColorsManager.white,
       appBar: AppBar(
         title: const Text('Refund & Cancellation'),
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
+        iconTheme: IconThemeData(
+          color: isDark ? ColorsManager.white : ColorsManager.black,
+        ),
         titleTextStyle: TextStyle(
-          color: isDark ? ColorManager.white : ColorManager.black,
+          color: isDark ? ColorsManager.white : ColorsManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -33,7 +39,9 @@ class RefundPolicyPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 32),
@@ -114,21 +122,25 @@ class RefundPolicyPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: ColorManager.orange.withValues(alpha: 0.1),
+                color: ColorsManager.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: ColorManager.orange.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: ColorsManager.orange.withValues(alpha: 0.3),
+                ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info, color: ColorManager.orange, size: 24),
+                  Icon(Icons.info, color: ColorsManager.orange, size: 24),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Always review the specific cancellation policy for your chosen property before booking. Policies may vary.',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                        color: isDark
+                            ? ColorsManager.white70
+                            : ColorsManager.grey600,
                       ),
                     ),
                   ),
@@ -141,17 +153,17 @@ class RefundPolicyPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: ColorManager.profileAccent.withValues(alpha: 0.1),
+                color: ColorsManager.profileAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: ColorManager.profileAccent.withValues(alpha: 0.3),
+                  color: ColorsManager.profileAccent.withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
                 children: [
                   Icon(
                     Icons.headset_mic,
-                    color: ColorManager.profileAccent,
+                    color: ColorsManager.profileAccent,
                     size: 32,
                   ),
                   const SizedBox(height: 12),
@@ -160,7 +172,9 @@ class RefundPolicyPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                      color: isDark
+                          ? ColorsManager.white
+                          : ColorsManager.chaletTextPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -193,10 +207,10 @@ class RefundPolicyPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: ColorManager.profileAccent.withValues(alpha: 0.1),
+            color: ColorsManager.profileAccent.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: ColorManager.profileAccent, size: 20),
+          child: Icon(icon, color: ColorsManager.profileAccent, size: 20),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -208,7 +222,9 @@ class RefundPolicyPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                  color: isDark
+                      ? ColorsManager.white
+                      : ColorsManager.chaletTextPrimaryLight,
                 ),
               ),
               const SizedBox(height: 8),

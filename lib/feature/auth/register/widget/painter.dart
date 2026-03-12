@@ -36,12 +36,13 @@ class CurvedTopClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
+
 // Custom painter for geometric pattern
 class GeometricPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = ColorManager.white.withOpacity(0.1)
+      ..color = ColorsManager.white.withOpacity(0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -64,7 +65,7 @@ class GeometricPatternPainter extends CustomPainter {
 
     // Draw connecting dots
     final dotPaint = Paint()
-      ..color = ColorManager.white.withOpacity(0.2)
+      ..color = ColorsManager.white.withOpacity(0.2)
       ..style = PaintingStyle.fill;
 
     for (int i = 0; i < 15; i++) {
@@ -95,4 +96,3 @@ class GeometricPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-    

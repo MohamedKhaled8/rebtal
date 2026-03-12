@@ -25,12 +25,15 @@ class ChaletDetailsFormSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: ColorManager.white,
+        color: ColorsManager.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorManager.gray.withOpacity(0.3), width: 1),
+        border: Border.all(
+          color: ColorsManager.gray.withOpacity(0.3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -43,7 +46,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.info_outline,
-                color: ColorManager.kPrimaryGradient.colors.first,
+                color: ColorsManager.kPrimaryGradient.colors.first,
                 size: 24,
               ),
               const SizedBox(width: 10),
@@ -52,7 +55,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: ColorManager.black,
+                  color: ColorsManager.black,
                 ),
               ),
             ],
@@ -62,14 +65,14 @@ class ChaletDetailsFormSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.tr('owner_chalet_name'),
               hintText: context.tr('owner_chalet_name_hint'),
-              prefixIcon: Icon(Icons.home, color: ColorManager.gray),
+              prefixIcon: Icon(Icons.home, color: ColorsManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: ColorManager.kPrimaryGradient.colors.first,
+                  color: ColorsManager.kPrimaryGradient.colors.first,
                   width: 2,
                 ),
               ),
@@ -86,14 +89,14 @@ class ChaletDetailsFormSection extends StatelessWidget {
             initialValue: selectedLocation,
             decoration: InputDecoration(
               labelText: context.tr('owner_location'),
-              prefixIcon: Icon(Icons.location_on, color: ColorManager.gray),
+              prefixIcon: Icon(Icons.location_on, color: ColorsManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: ColorManager.kPrimaryGradient.colors.first,
+                  color: ColorsManager.kPrimaryGradient.colors.first,
                   width: 2,
                 ),
               ),
@@ -124,7 +127,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                     labelText: context.tr('owner_num_rooms'),
                     prefixIcon: Icon(
                       Icons.bedroom_parent,
-                      color: ColorManager.gray,
+                      color: ColorsManager.gray,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -132,7 +135,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide(
-                        color: ColorManager.kPrimaryGradient.colors.first,
+                        color: ColorsManager.kPrimaryGradient.colors.first,
                         width: 2,
                       ),
                     ),
@@ -152,7 +155,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                     labelText: context.tr('owner_num_bathrooms'),
                     prefixIcon: Icon(
                       Icons.bathtub_outlined,
-                      color: ColorManager.gray,
+                      color: ColorsManager.gray,
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -160,7 +163,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide(
-                        color: ColorManager.kPrimaryGradient.colors.first,
+                        color: ColorsManager.kPrimaryGradient.colors.first,
                         width: 2,
                       ),
                     ),
@@ -182,14 +185,14 @@ class ChaletDetailsFormSection extends StatelessWidget {
             decoration: InputDecoration(
               labelText: context.tr('owner_price_per_night_usd'),
               hintText: context.tr('owner_price_hint_usd'),
-              prefixIcon: Icon(Icons.attach_money, color: ColorManager.gray),
+              prefixIcon: Icon(Icons.attach_money, color: ColorsManager.gray),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: ColorManager.kPrimaryGradient.colors.first,
+                  color: ColorsManager.kPrimaryGradient.colors.first,
                   width: 2,
                 ),
               ),
@@ -207,7 +210,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
           const SizedBox(height: 25),
           Text(
             context.tr('owner_extra_features'),
-            style: TextStyle(fontSize: 13, color: ColorManager.gray),
+            style: TextStyle(fontSize: 13, color: ColorsManager.gray),
           ),
           const SizedBox(height: 8),
           TextFormField(
@@ -216,7 +219,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
               hintText: context.tr('owner_extra_features_hint'),
               prefixIcon: Icon(
                 Icons.add_circle_outline,
-                color: ColorManager.gray,
+                color: ColorsManager.gray,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -224,7 +227,7 @@ class ChaletDetailsFormSection extends StatelessWidget {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide(
-                  color: ColorManager.kPrimaryGradient.colors.first,
+                  color: ColorsManager.kPrimaryGradient.colors.first,
                   width: 2,
                 ),
               ),

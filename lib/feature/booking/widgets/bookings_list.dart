@@ -79,7 +79,7 @@ class BookingCard extends StatelessWidget {
         : isApproved
         ? const Color(0xFF10B981) // Green for approved/accepted
         : isCancelled
-        ? ColorManager.grey600
+        ? ColorsManager.grey600
         : isRejected
         ? const Color(0xFFEF4444)
         : booking.status == BookingStatus.paymentUnderReview
@@ -754,7 +754,12 @@ class BookingCard extends StatelessWidget {
                       ? context.tr('booking_arrival_passed_short')
                       : (daysRemaining == 0
                             ? context.tr('booking_today')
-                            : context.tr('booking_remaining_days').replaceFirst('{}', daysRemaining.toString())),
+                            : context
+                                  .tr('booking_remaining_days')
+                                  .replaceFirst(
+                                    '{}',
+                                    daysRemaining.toString(),
+                                  )),
                   isDarkMode,
                   isBold: true,
                   valueColor: daysRemaining < 0 ? Colors.red : null,

@@ -20,11 +20,11 @@ class DateBox extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isDark
-              ? ColorManager.chaletIconBackgroundDark
-              : ColorManager.greyF9FAFB,
+              ? ColorsManager.chaletIconBackgroundDark
+              : ColorsManager.greyF9FAFB,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? ColorManager.white10 : ColorManager.greyE5E7EB,
+            color: isDark ? ColorsManager.white10 : ColorsManager.greyE5E7EB,
           ),
         ),
         child: Column(
@@ -36,8 +36,8 @@ class DateBox extends StatelessWidget {
                   Icons.calendar_today_rounded,
                   size: 16,
                   color: isDark
-                      ? ColorManager.chaletTextSecondaryDark
-                      : ColorManager.grey6B7280,
+                      ? ColorsManager.chaletTextSecondaryDark
+                      : ColorsManager.grey6B7280,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -46,8 +46,8 @@ class DateBox extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: isDark
-                        ? ColorManager.chaletTextSecondaryDark
-                        : ColorManager.grey6B7280,
+                        ? ColorsManager.chaletTextSecondaryDark
+                        : ColorsManager.grey6B7280,
                   ),
                 ),
               ],
@@ -59,8 +59,8 @@ class DateBox extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: isDark
-                    ? ColorManager.chaletTextPrimaryDark
-                    : ColorManager.grey1F2937,
+                    ? ColorsManager.chaletTextPrimaryDark
+                    : ColorsManager.grey1F2937,
               ),
             ),
           ],

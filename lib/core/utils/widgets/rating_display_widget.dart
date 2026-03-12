@@ -45,10 +45,10 @@ class RatingDisplayWidget extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: ColorManager.black.withOpacity(0.6),
+              color: ColorsManager.black.withOpacity(0.6),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: ColorManager.white.withOpacity(0.2),
+                color: ColorsManager.white.withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -57,14 +57,14 @@ class RatingDisplayWidget extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.star_rounded,
-                  color: ColorManager.yellowEAB308,
+                  color: ColorsManager.yellowEAB308,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   rating.toStringAsFixed(1),
                   style: const TextStyle(
-                    color: ColorManager.white,
+                    color: ColorsManager.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -80,15 +80,15 @@ class RatingDisplayWidget extends StatelessWidget {
             ...List.generate(5, (index) {
               IconData icon = Icons.star_border_rounded;
               Color color = isDark
-                  ? ColorManager.white.withOpacity(0.2)
-                  : ColorManager.chaletGrey400;
+                  ? ColorsManager.white.withOpacity(0.2)
+                  : ColorsManager.chaletGrey400;
 
               if (index < rating.floor()) {
                 icon = Icons.star_rounded;
-                color = ColorManager.yellowEAB308;
+                color = ColorsManager.yellowEAB308;
               } else if (index < rating && (rating - index) >= 0.5) {
                 icon = Icons.star_half_rounded;
-                color = ColorManager.yellowEAB308;
+                color = ColorsManager.yellowEAB308;
               }
               return Icon(icon, size: 18, color: color);
             }),
@@ -99,8 +99,8 @@ class RatingDisplayWidget extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: isDark
-                    ? ColorManager.white.withOpacity(0.7)
-                    : ColorManager.chaletGrey600,
+                    ? ColorsManager.white.withOpacity(0.7)
+                    : ColorsManager.chaletGrey600,
               ),
             ),
           ],

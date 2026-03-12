@@ -9,18 +9,18 @@ class HeaderSectionOwner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: ColorManager.kPrimaryGradient,
+        gradient: ColorsManager.kPrimaryGradient,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.add_home_work, color: ColorManager.white, size: 40),
+          Icon(Icons.add_home_work, color: ColorsManager.white, size: 40),
           const SizedBox(height: 15),
           Text(
             'List Your Chalet',
             style: TextStyle(
-              color: ColorManager.white,
+              color: ColorsManager.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -29,7 +29,7 @@ class HeaderSectionOwner extends StatelessWidget {
           Text(
             'Share your beautiful chalet with guests and start earning',
             style: TextStyle(
-              color: ColorManager.white.withOpacity(0.9),
+              color: ColorsManager.white.withOpacity(0.9),
               fontSize: 16,
             ),
           ),

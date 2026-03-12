@@ -35,8 +35,8 @@ class EmailVerificationScreen extends StatelessWidget {
 
           return Scaffold(
             backgroundColor: isDark
-                ? ColorManager.darkBackground121212
-                : ColorManager.grey50,
+                ? ColorsManager.darkBackground121212
+                : ColorsManager.grey50,
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -59,8 +59,8 @@ class EmailVerificationScreen extends StatelessWidget {
                             child: Icon(
                               Icons.logout_rounded,
                               color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletTextPrimaryLight,
+                                  ? ColorsManager.white
+                                  : ColorsManager.chaletTextPrimaryLight,
                               size: 20,
                             ),
                           ),
@@ -79,8 +79,8 @@ class EmailVerificationScreen extends StatelessWidget {
                               fontSize: 32,
                               fontWeight: FontWeight.w700,
                               color: isDark
-                                  ? ColorManager.white
-                                  : ColorManager.chaletTextPrimaryLight,
+                                  ? ColorsManager.white
+                                  : ColorsManager.chaletTextPrimaryLight,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -91,8 +91,8 @@ class EmailVerificationScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               color: isDark
-                                  ? ColorManager.white70
-                                  : ColorManager.grey600,
+                                  ? ColorsManager.white70
+                                  : ColorsManager.grey600,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -103,8 +103,8 @@ class EmailVerificationScreen extends StatelessWidget {
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: isDark
-                                  ? ColorManager.indigo6366F1
-                                  : ColorManager.blue2563EB,
+                                  ? ColorsManager.indigo6366F1
+                                  : ColorsManager.blue2563EB,
                             ),
                           ),
                         ],

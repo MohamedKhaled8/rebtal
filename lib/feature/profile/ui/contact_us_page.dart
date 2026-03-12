@@ -27,7 +27,11 @@ class ContactUsPage extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
-    SnackBarHelper.showSuccess(context, '$label copied to clipboard', icon: Icons.copy);
+    SnackBarHelper.showSuccess(
+      context,
+      '$label copied to clipboard',
+      icon: Icons.copy,
+    );
   }
 
   @override
@@ -35,15 +39,21 @@ class ContactUsPage extends StatelessWidget {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorManager.profileBackgroundDark : ColorManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.profileBackgroundDark
+          : ColorsManager.white,
       appBar: AppBar(
         title: const Text('Contact Us'),
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDark ? ColorManager.white : ColorManager.black),
+        iconTheme: IconThemeData(
+          color: isDark ? ColorsManager.white : ColorsManager.black,
+        ),
         titleTextStyle: TextStyle(
-          color: isDark ? ColorManager.white : ColorManager.black,
+          color: isDark ? ColorsManager.white : ColorsManager.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -61,15 +71,15 @@ class ContactUsPage extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: [
-                      ColorManager.profileAccent.withValues(alpha: 0.2),
-                      ColorManager.profileAccent.withValues(alpha: 0.1),
+                      ColorsManager.profileAccent.withValues(alpha: 0.2),
+                      ColorsManager.profileAccent.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
                 child: Icon(
                   Icons.contact_support_outlined,
                   size: 60,
-                  color: ColorManager.profileAccent,
+                  color: ColorsManager.profileAccent,
                 ),
               ),
             ),
@@ -81,7 +91,9 @@ class ContactUsPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
               ),
             ),
             const SizedBox(height: 8),
@@ -89,7 +101,7 @@ class ContactUsPage extends StatelessWidget {
               'We\'re here to help! Reach out to us through any of the following methods.',
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
               ),
             ),
             const SizedBox(height: 32),
@@ -143,13 +155,13 @@ class ContactUsPage extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: isDark
-                    ? ColorManager.darkGreen0A2A1D.withValues(alpha: 0.5)
-                    : ColorManager.profileAccent.withValues(alpha: 0.05),
+                    ? ColorsManager.darkGreen0A2A1D.withValues(alpha: 0.5)
+                    : ColorsManager.profileAccent.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isDark
-                      ? ColorManager.profileAccent.withValues(alpha: 0.2)
-                      : ColorManager.profileAccent.withValues(alpha: 0.1),
+                      ? ColorsManager.profileAccent.withValues(alpha: 0.2)
+                      : ColorsManager.profileAccent.withValues(alpha: 0.1),
                 ),
               ),
               child: Column(
@@ -159,7 +171,7 @@ class ContactUsPage extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.access_time,
-                        color: ColorManager.profileAccent,
+                        color: ColorsManager.profileAccent,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -168,7 +180,9 @@ class ContactUsPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                          color: isDark
+                              ? ColorsManager.white
+                              : ColorsManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -178,7 +192,9 @@ class ContactUsPage extends StatelessWidget {
                     'We\'re available to assist you 24/7',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                      color: isDark
+                          ? ColorsManager.white70
+                          : ColorsManager.grey600,
                     ),
                   ),
                 ],
@@ -203,24 +219,24 @@ class ContactUsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark
             ? const Color(0xFF0A2A1D).withValues(alpha: 0.5)
-            : ColorManager.white,
+            : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? ColorManager.white.withValues(alpha: 0.1)
-              : ColorManager.black.withValues(alpha: 0.05),
+              ? ColorsManager.white.withValues(alpha: 0.1)
+              : ColorsManager.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: ColorManager.black.withValues(alpha: 0.05),
+              color: ColorsManager.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
         ],
       ),
       child: Material(
-        color: ColorManager.transparent,
+        color: ColorsManager.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
@@ -231,12 +247,12 @@ class ContactUsPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: ColorManager.profileAccent.withValues(alpha: 0.1),
+                    color: ColorsManager.profileAccent.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
-                    color: ColorManager.profileAccent,
+                    color: ColorsManager.profileAccent,
                     size: 24,
                   ),
                 ),
@@ -249,7 +265,9 @@ class ContactUsPage extends StatelessWidget {
                         title,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                          color: isDark
+                              ? ColorsManager.white70
+                              : ColorsManager.grey600,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -259,7 +277,9 @@ class ContactUsPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                          color: isDark
+                              ? ColorsManager.white
+                              : ColorsManager.chaletTextPrimaryLight,
                         ),
                       ),
                     ],
@@ -270,7 +290,9 @@ class ContactUsPage extends StatelessWidget {
                   icon: Icon(
                     Icons.copy,
                     size: 20,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey600,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey600,
                   ),
                   tooltip: 'Copy',
                 ),
@@ -278,7 +300,9 @@ class ContactUsPage extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: isDark ? ColorManager.white70 : ColorManager.grey400,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey400,
                   ),
               ],
             ),

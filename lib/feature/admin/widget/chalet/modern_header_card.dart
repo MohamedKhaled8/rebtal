@@ -75,7 +75,7 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: ColorManager.kPrimaryGradient.colors.first
+                      color: ColorsManager.kPrimaryGradient.colors.first
                           .withOpacity(0.2),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
@@ -100,9 +100,9 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                             end: Alignment.bottomRight,
                             colors: [
                               Colors.white,
-                              ColorManager.kPrimaryGradient.colors.first
+                              ColorsManager.kPrimaryGradient.colors.first
                                   .withOpacity(0.03),
-                              ColorManager.kPrimaryGradient.colors.last
+                              ColorsManager.kPrimaryGradient.colors.last
                                   .withOpacity(0.05),
                             ],
                           ),
@@ -127,7 +127,10 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                   shape: BoxShape.circle,
                                   gradient: RadialGradient(
                                     colors: [
-                                      ColorManager.kPrimaryGradient.colors.first
+                                      ColorsManager
+                                          .kPrimaryGradient
+                                          .colors
+                                          .first
                                           .withOpacity(0.1),
                                       Colors.transparent,
                                     ],
@@ -167,7 +170,7 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                                     LinearGradient(
                                                       colors: [
                                                         const Color(0xFF1F2937),
-                                                        ColorManager
+                                                        ColorsManager
                                                             .kPrimaryGradient
                                                             .colors
                                                             .first,
@@ -197,7 +200,7 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                                   width: 60 * value,
                                                   height: 3,
                                                   decoration: BoxDecoration(
-                                                    gradient: ColorManager
+                                                    gradient: ColorsManager
                                                         .kPrimaryGradient,
                                                     borderRadius:
                                                         BorderRadius.circular(
@@ -229,7 +232,7 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                           children: [
                                             Icon(
                                               Icons.location_on_rounded,
-                                              color: ColorManager
+                                              color: ColorsManager
                                                   .kPrimaryGradient
                                                   .colors
                                                   .first,

@@ -65,7 +65,7 @@ class NotificationIconButton extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: ColorManager.chaletActionRed,
+                    color: ColorsManager.chaletActionRed,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isDark ? const Color(0xFF001409) : Colors.white,

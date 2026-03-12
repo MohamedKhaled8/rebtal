@@ -23,12 +23,14 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.profileSurfaceAltDark : ColorManager.white,
+        color: isDark
+            ? ColorsManager.profileSurfaceAltDark
+            : ColorsManager.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
-              ? ColorManager.white.withOpacity(0.06)
-              : ColorManager.black.withOpacity(0.1),
+              ? ColorsManager.white.withOpacity(0.06)
+              : ColorsManager.black.withOpacity(0.1),
         ),
       ),
       child: Column(
@@ -47,7 +49,7 @@ class StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: isDark ? ColorManager.white : ColorManager.black,
+              color: isDark ? ColorsManager.white : ColorsManager.black,
             ),
           ),
           const SizedBox(height: 4),
@@ -56,8 +58,8 @@ class StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               color: isDark
-                  ? ColorManager.white.withOpacity(0.6)
-                  : ColorManager.black.withOpacity(0.6),
+                  ? ColorsManager.white.withOpacity(0.6)
+                  : ColorsManager.black.withOpacity(0.6),
             ),
           ),
         ],

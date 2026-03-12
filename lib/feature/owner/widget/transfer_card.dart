@@ -19,21 +19,21 @@ class TransferCard extends StatelessWidget {
         : "";
 
     // Theme-based colors
-    final cardColor = isDark ? const Color(0xFF161B30) : ColorManager.white;
+    final cardColor = isDark ? const Color(0xFF161B30) : ColorsManager.white;
     final primaryTextColor = isDark
-        ? ColorManager.white
-        : ColorManager.navyBlue0F3460;
+        ? ColorsManager.white
+        : ColorsManager.navyBlue0F3460;
     final accentBlue = isDark
-        ? ColorManager.skyBlue0EA5E9
-        : ColorManager.chaletActionBlue;
-    final labelColor = isDark ? ColorManager.white24 : ColorManager.grey400;
+        ? ColorsManager.skyBlue0EA5E9
+        : ColorsManager.chaletActionBlue;
+    final labelColor = isDark ? ColorsManager.white24 : ColorsManager.grey400;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       child: CustomPaint(
         painter: TicketPainter(
           color: cardColor,
-          shadowColor: ColorManager.black.withOpacity(isDark ? 0.4 : 0.08),
+          shadowColor: ColorsManager.black.withOpacity(isDark ? 0.4 : 0.08),
           isDark: isDark,
         ),
         child: Column(
@@ -75,8 +75,8 @@ class TransferCard extends StatelessWidget {
                           phone: booking.originalTenantPhone ?? '---',
                           isDark: isDark,
                           primaryColor: isDark
-                              ? ColorManager.orange
-                              : ColorManager.orange,
+                              ? ColorsManager.orange
+                              : ColorsManager.orange,
                           textColor: primaryTextColor,
                         ),
                       ),
@@ -98,7 +98,7 @@ class TransferCard extends StatelessWidget {
                           name: booking.userName,
                           phone: booking.userPhone ?? '---',
                           isDark: isDark,
-                          primaryColor: ColorManager.chaletActionGreen,
+                          primaryColor: ColorsManager.chaletActionGreen,
                           textColor: primaryTextColor,
                         ),
                       ),
@@ -145,7 +145,7 @@ class TransferCard extends StatelessWidget {
                     label: context.tr('owner_booking_value'),
                     value: '${booking.amount?.toStringAsFixed(0)} EGP',
                     isDark: isDark,
-                    valueColor: ColorManager.chaletAccent,
+                    valueColor: ColorsManager.chaletAccent,
                     iconColor: accentBlue,
                   ),
                   const SizedBox(height: 16),
@@ -279,7 +279,7 @@ class _TenantTicketInfo extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: isDark ? ColorManager.white38 : ColorManager.grey,
+            color: isDark ? ColorsManager.white38 : ColorsManager.grey,
           ),
         ),
       ],
@@ -324,7 +324,7 @@ class _TicketDetailRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isDark ? ColorManager.white54 : ColorManager.grey600,
+              color: isDark ? ColorsManager.white54 : ColorsManager.grey600,
             ),
           ),
           const Spacer(),
@@ -428,7 +428,7 @@ class TicketPainter extends CustomPainter {
     // Additional decorative side indicators for premium feel
     if (!isDark) {
       final accentPaint = Paint()
-        ..color = ColorManager.chaletActionBlue.withOpacity(0.2)
+        ..color = ColorsManager.chaletActionBlue.withOpacity(0.2)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
 

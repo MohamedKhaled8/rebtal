@@ -53,14 +53,14 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [ColorManager.primaryColor, Color(0xFF00A896)],
+                  colors: [ColorsManager.primaryColor, Color(0xFF00A896)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorManager.primaryColor.withOpacity(0.3),
+                    color: ColorsManager.primaryColor.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -166,7 +166,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: ColorManager.primaryColor,
+                backgroundColor: ColorsManager.primaryColor,
                 minimumSize: const Size.fromHeight(56),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -223,10 +223,10 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: ColorManager.primaryColor.withOpacity(0.1),
+              color: ColorsManager.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: ColorManager.primaryColor),
+            child: Icon(icon, color: ColorsManager.primaryColor),
           ),
           const SizedBox(width: 16),
           Expanded(

@@ -24,8 +24,8 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
 
         return Scaffold(
           backgroundColor: isDark
-              ? ColorManager.darkBackground0F0F1E
-              : ColorManager.bookingsBackgroundLight,
+              ? ColorsManager.darkBackground0F0F1E
+              : ColorsManager.bookingsBackgroundLight,
           body: SafeArea(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -39,7 +39,9 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                     child: Text(
                       'حدث خطأ: ${snapshot.error}',
                       style: TextStyle(
-                        color: isDark ? ColorManager.white : ColorManager.black,
+                        color: isDark
+                            ? ColorsManager.white
+                            : ColorsManager.black,
                       ),
                     ),
                   );
@@ -48,7 +50,7 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
                     child: CircularProgressIndicator(
-                      color: ColorManager.chaletAccent,
+                      color: ColorsManager.chaletAccent,
                     ),
                   );
                 }
@@ -64,14 +66,14 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                           padding: const EdgeInsets.all(40),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? ColorManager.white.withOpacity(0.05)
-                                : ColorManager.grey100,
+                                ? ColorsManager.white.withOpacity(0.05)
+                                : ColorsManager.grey100,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             Icons.check_circle_outline,
                             size: 80,
-                            color: ColorManager.grey400,
+                            color: ColorsManager.grey400,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -80,7 +82,7 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: ColorManager.grey600,
+                            color: ColorsManager.grey600,
                           ),
                         ),
                       ],
@@ -99,12 +101,12 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: ColorManager.green.withOpacity(0.1),
+                              color: ColorsManager.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.check_circle,
-                              color: ColorManager.green,
+                              color: ColorsManager.green,
                               size: 28,
                             ),
                           ),
@@ -114,7 +116,9 @@ class _ApprovedRequestsPageState extends State<ApprovedRequestsPage> {
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+                              color: isDark
+                                  ? ColorsManager.white
+                                  : ColorsManager.chaletTextPrimaryLight,
                             ),
                           ),
                         ],
@@ -157,14 +161,14 @@ class ApprovedRequestCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? ColorManager.white10 : ColorManager.grey200,
+          color: isDark ? ColorsManager.white10 : ColorsManager.grey200,
         ),
         boxShadow: [
           BoxShadow(
-            color: ColorManager.black.withOpacity(isDark ? 0.2 : 0.05),
+            color: ColorsManager.black.withOpacity(isDark ? 0.2 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -182,27 +186,33 @@ class ApprovedRequestCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: ColorManager.green.withOpacity(0.15),
+                  color: ColorsManager.green.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: ColorManager.green.withOpacity(0.5)),
+                  border: Border.all(
+                    color: ColorsManager.green.withOpacity(0.5),
+                  ),
                 ),
                 child: const Text(
                   'موافق عليه',
                   style: TextStyle(
-                    color: ColorManager.green,
+                    color: ColorsManager.green,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
                 ),
               ),
               const Spacer(),
-              Icon(Icons.check_circle, color: ColorManager.chaletActionGreen, size: 24),
+              Icon(
+                Icons.check_circle,
+                color: ColorsManager.chaletActionGreen,
+                size: 24,
+              ),
             ],
           ),
 
           Divider(
             height: 32,
-            color: isDark ? ColorManager.white10 : ColorManager.grey300,
+            color: isDark ? ColorsManager.white10 : ColorsManager.grey300,
           ),
 
           // Chalet Information
@@ -211,7 +221,9 @@ class ApprovedRequestCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+              color: isDark
+                  ? ColorsManager.white
+                  : ColorsManager.chaletTextPrimaryLight,
             ),
           ),
           const SizedBox(height: 4),
@@ -219,7 +231,7 @@ class ApprovedRequestCard extends StatelessWidget {
             'معرف الشاليه: ${chatData['chaletId'] ?? 'غير محدد'}',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
             ),
           ),
 
@@ -231,7 +243,7 @@ class ApprovedRequestCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isDark ? ColorManager.white70 : ColorManager.grey600,
+              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
             ),
           ),
           const SizedBox(height: 12),
@@ -243,7 +255,7 @@ class ApprovedRequestCard extends StatelessWidget {
                   title: 'العميل',
                   name: chatData['userName'] ?? 'غير محدد',
                   icon: Icons.person,
-                  color: ColorManager.green,
+                  color: ColorsManager.green,
                 ),
               ),
               const SizedBox(width: 16),
@@ -252,7 +264,7 @@ class ApprovedRequestCard extends StatelessWidget {
                   title: 'المالك',
                   name: chatData['ownerName'] ?? 'غير محدد',
                   icon: Icons.business,
-                  color: ColorManager.primaryColor,
+                  color: ColorsManager.primaryColor,
                 ),
               ),
             ],
@@ -292,8 +304,8 @@ class ApprovedRequestCard extends StatelessWidget {
                   icon: const Icon(Icons.chat, size: 20),
                   label: const Text('عرض المحادثة'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: ColorManager.primaryColor,
-                    side: const BorderSide(color: ColorManager.primaryColor),
+                    foregroundColor: ColorsManager.primaryColor,
+                    side: const BorderSide(color: ColorsManager.primaryColor),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -310,8 +322,8 @@ class ApprovedRequestCard extends StatelessWidget {
                   icon: const Icon(Icons.done_all, size: 20),
                   label: const Text('إكمال الحجز'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorManager.green,
-                    foregroundColor: ColorManager.white,
+                    backgroundColor: ColorsManager.green,
+                    foregroundColor: ColorsManager.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -362,7 +374,9 @@ class ApprovedRequestCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+              color: isDark
+                  ? ColorsManager.white
+                  : ColorsManager.chaletTextPrimaryLight,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -389,22 +403,24 @@ class ApprovedRequestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? ColorManager.darkGrey252540 : ColorManager.grey100,
+        color: isDark ? ColorsManager.darkGrey252540 : ColorsManager.grey100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? ColorManager.white10 : ColorManager.transparent),
+        border: Border.all(
+          color: isDark ? ColorsManager.white10 : ColorsManager.transparent,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: ColorManager.grey600, size: 16),
+              Icon(icon, color: ColorsManager.grey600, size: 16),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: ColorManager.grey600,
+                  color: ColorsManager.grey600,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -416,7 +432,9 @@ class ApprovedRequestCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: isDark ? ColorManager.white : ColorManager.chaletTextPrimaryLight,
+              color: isDark
+                  ? ColorsManager.white
+                  : ColorsManager.chaletTextPrimaryLight,
             ),
           ),
         ],
@@ -428,14 +446,22 @@ class ApprovedRequestCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDark ? ColorManager.darkBlue1A1A2E : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.darkBlue1A1A2E
+            : ColorsManager.white,
         title: Text(
           'إكمال الحجز',
-          style: TextStyle(color: isDark ? ColorManager.white : ColorManager.black),
+          style: TextStyle(
+            color: isDark ? ColorsManager.white : ColorsManager.black,
+          ),
         ),
         content: Text(
           'هل أنت متأكد من أنك تريد إكمال هذا الحجز؟',
-          style: TextStyle(color: isDark ? ColorManager.white70 : ColorManager.chaletTextPrimaryLight),
+          style: TextStyle(
+            color: isDark
+                ? ColorsManager.white70
+                : ColorsManager.chaletTextPrimaryLight,
+          ),
         ),
         actions: [
           TextButton(
@@ -448,8 +474,8 @@ class ApprovedRequestCard extends StatelessWidget {
               SnackBarHelper.showSuccess(context, 'تم إكمال الحجز بنجاح');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: ColorManager.green,
-              foregroundColor: ColorManager.white,
+              backgroundColor: ColorsManager.green,
+              foregroundColor: ColorsManager.white,
             ),
             child: const Text('تأكيد'),
           ),

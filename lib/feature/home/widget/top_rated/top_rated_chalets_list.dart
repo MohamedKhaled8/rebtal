@@ -81,7 +81,7 @@ class _TopRatedChaletCard extends StatelessWidget {
           // Clean shadow
           boxShadow: [
             BoxShadow(
-              color: ColorManager.black.withOpacity(0.1),
+              color: ColorsManager.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -104,9 +104,9 @@ class _TopRatedChaletCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        ColorManager.transparent,
-                        ColorManager.black.withOpacity(0.2),
-                        ColorManager.black.withOpacity(0.8),
+                        ColorsManager.transparent,
+                        ColorsManager.black.withOpacity(0.2),
+                        ColorsManager.black.withOpacity(0.8),
                       ],
                       stops: const [0.5, 0.7, 1.0],
                     ),

@@ -15,15 +15,17 @@ class BookingTransfersPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground121212
-          : ColorManager.profileBackgroundLight,
+          ? ColorsManager.darkBackground121212
+          : ColorsManager.profileBackgroundLight,
       appBar: AppBar(
         title: Text(
           context.tr('owner_booking_transfers'),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: isDark ? ColorManager.transparent : ColorManager.white,
+        backgroundColor: isDark
+            ? ColorsManager.transparent
+            : ColorsManager.white,
         elevation: 0,
       ),
       body: RefreshIndicator(

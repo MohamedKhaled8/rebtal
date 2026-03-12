@@ -11,12 +11,16 @@ class PropertyDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: ColorManager.kPrimaryGradient.colors.first, size: 18),
+        Icon(
+          icon,
+          color: ColorsManager.kPrimaryGradient.colors.first,
+          size: 18,
+        ),
         const SizedBox(width: 6),
         Text(
           text,
           style: TextStyle(
-            color: ColorManager.black,
+            color: ColorsManager.black,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),

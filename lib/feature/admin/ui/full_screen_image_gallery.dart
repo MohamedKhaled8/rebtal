@@ -68,7 +68,7 @@ class FullScreenImageGallery extends StatelessWidget {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: cubit.currentImageIndex == e.key
-                                    ? ColorManager.white
+                                    ? ColorsManager.white
                                     : Colors.white54,
                               ),
                             ),

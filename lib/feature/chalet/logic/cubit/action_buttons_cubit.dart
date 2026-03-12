@@ -137,7 +137,7 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: ColorManager.transparent,
+        backgroundColor: ColorsManager.transparent,
         builder: (ctx) => BookingBridgeWidget(
           parentContext: context,
           userId: currentUser.uid,

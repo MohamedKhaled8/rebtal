@@ -20,8 +20,8 @@ class OwnerBookingsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark
-          ? ColorManager.darkBackground121212
-          : ColorManager.profileBackgroundLight,
+          ? ColorsManager.darkBackground121212
+          : ColorsManager.profileBackgroundLight,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -31,8 +31,8 @@ class OwnerBookingsPage extends StatelessWidget {
             pinned: false,
             elevation: 0,
             backgroundColor: isDark
-                ? ColorManager.transparent
-                : ColorManager.white,
+                ? ColorsManager.transparent
+                : ColorsManager.white,
             title: Text(
               context.tr('owner_my_bookings'),
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -42,7 +42,7 @@ class OwnerBookingsPage extends StatelessWidget {
               IconButton(
                 icon: Icon(
                   Icons.refresh_rounded,
-                  color: isDark ? ColorManager.white : ColorManager.black,
+                  color: isDark ? ColorsManager.white : ColorsManager.black,
                 ),
                 onPressed: () {
                   HapticFeedback.lightImpact();
@@ -105,8 +105,8 @@ class OwnerBookingsPage extends StatelessWidget {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: isDark
-                                ? ColorManager.white70
-                                : ColorManager.grey700,
+                                ? ColorsManager.white70
+                                : ColorsManager.grey700,
                           ),
                         ),
                       ],

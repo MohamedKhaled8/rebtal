@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/image_assets_manger.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
-import 'package:rebtal/feature/home/widget/public_chalets_list.dart';
+import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_card.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_cubit.dart';
 import 'package:rebtal/feature/favorites/logic/cubit/favorites_state.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
@@ -26,23 +27,28 @@ class FavoritesPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: DynamicThemeManager.isDarkMode(context)
             ? Colors.black
-            : ColorManager.chaletBackgroundLight,
+            : ColorsManager.chaletBackgroundLight,
         appBar: AppBar(
           title: Text(
             context.tr('home_favorites'),
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+              fontSize: stv(
+                context: context,
+                mobile: 20.spScaled,
+                tablet: 24.spScaled,
+                desktop: 28.spScaled,
+              ),
               letterSpacing: -0.5,
             ),
           ),
           centerTitle: true,
           backgroundColor: DynamicThemeManager.isDarkMode(context)
               ? Colors.black
-              : ColorManager.chaletBackgroundLight,
+              : ColorsManager.chaletBackgroundLight,
           foregroundColor: DynamicThemeManager.isDarkMode(context)
-              ? ColorManager.white
-              : ColorManager.black,
+              ? ColorsManager.white
+              : ColorsManager.black,
           elevation: 0,
           scrolledUnderElevation: 0,
         ),
@@ -59,30 +65,57 @@ class FavoritesPage extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.error_outline,
-                      size: 80,
+                      size: stv(
+                        context: context,
+                        mobile: 80.spScaled,
+                        tablet: 100.spScaled,
+                        desktop: 120.spScaled,
+                      ),
                       color: DynamicThemeManager.isDarkMode(context)
-                          ? ColorManager.white24
-                          : ColorManager.chaletGrey400,
+                          ? ColorsManager.white24
+                          : ColorsManager.chaletGrey400,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 16.sh,
+                        landscape: 8.sh,
+                      ),
+                    ),
                     Text(
                       context.tr('common_error'),
                       style: TextStyle(
                         color: DynamicThemeManager.isDarkMode(context)
-                            ? ColorManager.white70
-                            : ColorManager.chaletGrey500,
-                        fontSize: 18,
+                            ? ColorsManager.white70
+                            : ColorsManager.chaletGrey500,
+                        fontSize: stv(
+                          context: context,
+                          mobile: 18.spScaled,
+                          tablet: 22.spScaled,
+                          desktop: 26.spScaled,
+                        ),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 8.sh,
+                        landscape: 4.sh,
+                      ),
+                    ),
                     Text(
                       state.message,
                       style: TextStyle(
                         color: DynamicThemeManager.isDarkMode(context)
-                            ? ColorManager.white70.withOpacity(0.7)
-                            : ColorManager.chaletGrey500,
-                        fontSize: 14,
+                            ? ColorsManager.white70.withOpacity(0.7)
+                            : ColorsManager.chaletGrey500,
+                        fontSize: stv(
+                          context: context,
+                          mobile: 14.spScaled,
+                          tablet: 16.spScaled,
+                          desktop: 18.spScaled,
+                        ),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -97,16 +130,40 @@ class FavoritesPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AppImageHelper(path: ImageAssetsManger.favoriteRibbon),
+                      AppImageHelper(
+                        path: ImageAssetsManger.favoriteRibbon,
+                        height: otv(
+                          context: context,
+                          portrait: 200.sh,
+                          landscape: 150.sh,
+                        ),
+                        width: otv(
+                          context: context,
+                          portrait: 200.sw,
+                          landscape: 150.sw,
+                        ),
+                        fit: BoxFit.contain,
+                      ),
 
-                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: otv(
+                          context: context,
+                          portrait: 16.sh,
+                          landscape: 8.sh,
+                        ),
+                      ),
                       Text(
                         context.tr('favorites_no_favorites'),
                         style: TextStyle(
                           color: DynamicThemeManager.isDarkMode(context)
-                              ? ColorManager.white70
-                              : ColorManager.chaletGrey500,
-                          fontSize: 18,
+                              ? ColorsManager.white70
+                              : ColorsManager.chaletGrey500,
+                          fontSize: stv(
+                            context: context,
+                            mobile: 18.spScaled,
+                            tablet: 22.spScaled,
+                            desktop: 26.spScaled,
+                          ),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -115,20 +172,60 @@ class FavoritesPage extends StatelessWidget {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: state.favorites.length,
-                itemBuilder: (context, i) {
-                  final favorite = state.favorites[i];
-                  final chaletData = Map<String, dynamic>.from(
-                    favorite['chaletData'] ?? {},
-                  );
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: PublicChaletCard(
-                      chaletData: chaletData,
-                      docId: favorite['chaletId'] ?? favorite['id'],
+              return Builder(
+                builder: (context) {
+                  final bool showTwoColumns = otv(
+                    context: context,
+                    portrait: stv(
+                      context: context,
+                      mobile: false,
+                      tablet: true,
+                      desktop: true,
                     ),
+                    landscape: true,
+                  );
+
+                  if (showTwoColumns) {
+                    final int rowCount = (state.favorites.length / 2).ceil();
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(vertical: 16.sh),
+                      itemCount: rowCount,
+                      itemBuilder: (context, index) {
+                        final firstIndex = index * 2;
+                        final secondIndex = firstIndex + 1;
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildFavoriteCard(
+                                context,
+                                state.favorites[firstIndex],
+                                isLeft: true,
+                              ),
+                            ),
+                            if (secondIndex < state.favorites.length)
+                              Expanded(
+                                child: _buildFavoriteCard(
+                                  context,
+                                  state.favorites[secondIndex],
+                                  isLeft: false,
+                                ),
+                              )
+                            else
+                              const Expanded(child: SizedBox.shrink()),
+                          ],
+                        );
+                      },
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: EdgeInsets.symmetric(vertical: 16.sh),
+                    itemCount: state.favorites.length,
+                    itemBuilder: (context, i) {
+                      return _buildFavoriteCard(context, state.favorites[i]);
+                    },
                   );
                 },
               );
@@ -137,6 +234,63 @@ class FavoritesPage extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteCard(
+    BuildContext context,
+    Map<String, dynamic> favorite, {
+    bool? isLeft,
+  }) {
+    final chaletData = Map<String, dynamic>.from(favorite['chaletData'] ?? {});
+    return PublicChaletCard(
+      chaletData: chaletData,
+      docId: favorite['chaletId'] ?? favorite['id'],
+      margin: EdgeInsets.only(
+        bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
+        left:
+            isLeft == null
+                ? stv(
+                  context: context,
+                  mobile: 16.sw,
+                  tablet: 24.sw,
+                  desktop: 32.sw,
+                )
+                : (isLeft
+                    ? stv(
+                      context: context,
+                      mobile: 16.sw,
+                      tablet: 24.sw,
+                      desktop: 32.sw,
+                    )
+                    : stv(
+                      context: context,
+                      mobile: 12.sw,
+                      tablet: 16.sw,
+                      desktop: 20.sw,
+                    )),
+        right:
+            isLeft == null
+                ? stv(
+                  context: context,
+                  mobile: 16.sw,
+                  tablet: 24.sw,
+                  desktop: 32.sw,
+                )
+                : (isLeft
+                    ? stv(
+                      context: context,
+                      mobile: 12.sw,
+                      tablet: 16.sw,
+                      desktop: 20.sw,
+                    )
+                    : stv(
+                      context: context,
+                      mobile: 16.sw,
+                      tablet: 24.sw,
+                      desktop: 32.sw,
+                    )),
       ),
     );
   }
