@@ -22,6 +22,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
+  String? _selectedPopularDestination;
+
   @override
   bool get wantKeepAlive => true; // Keep state alive to avoid rebuilds
 
@@ -50,12 +52,27 @@ class _HomeScreenState extends State<HomeScreen>
             // 2. Clean Search Bar Trigger
             SliverToBoxAdapter(child: CleanSearchBarTrigger(isDark: isDark)),
 
-            // 3. Destinations & Areas
-            const SliverToBoxAdapter(child: PopularDestinationsSection()),
-
+            // 3. Promo Banners
             SliverToBoxAdapter(child: HomePromoBanners()),
 
-            // 4. Automated Exclusive Offers
+            // 4. Destinations & Areas (under banner)
+            SliverToBoxAdapter(
+              child: PopularDestinationsSection(
+                selectedDestination: _selectedPopularDestination,
+                onDestinationSelected: (name) {
+                  setState(() {
+                    // Tap again to clear selection
+                    if (_selectedPopularDestination == name) {
+                      _selectedPopularDestination = null;
+                    } else {
+                      _selectedPopularDestination = name;
+                    }
+                  });
+                },
+              ),
+            ),
+
+            // 5. Automated Exclusive Offers
             const SliverToBoxAdapter(child: AutomatedOffersSection()),
 
             // // 5. Top Rated
@@ -67,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen>
             SliverToBoxAdapter(
               child: PublicChaletsList(
                 key: const ValueKey('public-chalets-list'),
+                selectedCategory: _selectedPopularDestination,
                 emptyIcon: Icons.search_off_rounded,
                 emptyTitle: context.tr('home_no_results'),
                 emptySubtitle: context.tr('home_try_other_search'),

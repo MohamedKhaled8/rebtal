@@ -663,9 +663,11 @@ class BookingCard extends StatelessWidget {
                     color: ColorsManager.chaletAccent,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    context.tr('owner_cancellation_summary'),
-                    style: const TextStyle(fontSize: 18),
+                  Expanded(
+                    child: Text(
+                      context.tr('owner_cancellation_summary'),
+                      style: const TextStyle(fontSize: 18),
+                    ),
                   ),
                 ],
               ),

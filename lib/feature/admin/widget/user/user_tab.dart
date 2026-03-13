@@ -1,6 +1,7 @@
 // ===== UsersTab: segmented control replacing TabBar =====
 import 'package:flutter/material.dart';
 import 'package:rebtal/feature/admin/widget/user/user_list.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class UsersTab extends StatelessWidget {
   const UsersTab({super.key});
@@ -32,13 +33,13 @@ class UsersTab extends StatelessWidget {
                   final TabController tabController = DefaultTabController.of(
                     context,
                   );
-                  // defensive fallback
+                  // defensive fallback - labels are translation keys
                   final items = <Map<String, dynamic>>[
-                    {'icon': Icons.person_outline, 'label': 'Users'},
-                    {'icon': Icons.storefront_outlined, 'label': 'Owners'},
+                    {'icon': Icons.person_outline, 'label': 'admin_tab_users'},
+                    {'icon': Icons.storefront_outlined, 'label': 'admin_tab_owners'},
                     {
                       'icon': Icons.admin_panel_settings_outlined,
-                      'label': 'Admins',
+                      'label': 'admin_tab_admins',
                     },
                   ];
 
@@ -98,7 +99,9 @@ class UsersTab extends StatelessWidget {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            items[i]['label'] as String,
+                                            context.tr(
+                                              items[i]['label'] as String,
+                                            ),
                                             style: TextStyle(
                                               color: selected
                                                   ? Colors.white

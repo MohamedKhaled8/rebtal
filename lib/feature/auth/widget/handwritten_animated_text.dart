@@ -7,6 +7,7 @@ class HandwrittenAnimatedText extends StatefulWidget {
   final Color color;
   final Duration animationDuration;
   final bool isDark;
+  final String? fontFamily;
 
   const HandwrittenAnimatedText({
     super.key,
@@ -15,6 +16,7 @@ class HandwrittenAnimatedText extends StatefulWidget {
     required this.color,
     this.animationDuration = const Duration(milliseconds: 2000),
     this.isDark = false,
+    this.fontFamily,
   });
 
   @override
@@ -64,6 +66,7 @@ class _HandwrittenAnimatedTextState extends State<HandwrittenAnimatedText>
           fontSize: widget.fontSize,
           color: widget.color,
           progress: _animation.value,
+          fontFamily: widget.fontFamily,
         );
       },
     );
@@ -75,59 +78,91 @@ class _AnimatedTextWidget extends StatelessWidget {
   final double fontSize;
   final Color color;
   final double progress;
+  final String? fontFamily;
 
   const _AnimatedTextWidget({
     required this.text,
     required this.fontSize,
     required this.color,
     required this.progress,
+    this.fontFamily,
   });
 
   @override
   Widget build(BuildContext context) {
-    final totalChars = text.length;
-    // Calculate visible characters based on progress
-    // We want a fluid reveal, so we use the fractional part for opacity of the current char
-    final floatIndex = totalChars * progress;
-    final int visibleIndex = floatIndex.floor();
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: List.generate(totalChars, (index) {
-        double opacity = 0.0;
-        double slideY = 10.0;
-
-        if (index < visibleIndex) {
-          // Fully visible
-          opacity = 1.0;
-          slideY = 0.0;
-        } else if (index == visibleIndex) {
-          // Fading in
-          final charProgress = floatIndex - visibleIndex;
-          opacity = charProgress;
-          slideY = 10.0 * (1 - charProgress);
-        }
-
-        return Transform.translate(
-          offset: Offset(0, slideY),
-          child: Opacity(
-            opacity: opacity,
+    if (fontFamily != null) {
+      return Transform.translate(
+        offset: Offset(0, 15.0 * (1 - progress)),
+        child: Opacity(
+          opacity: progress > 0.1 ? 1.0 : progress * 10,
+          child: ShaderMask(
+            blendMode: BlendMode.srcIn,
+            shaderCallback: (rect) {
+              return LinearGradient(
+                begin: Alignment.centerRight,
+                end: Alignment.centerLeft,
+                colors: const [Colors.white, Colors.white, Colors.transparent],
+                stops: [0.0, progress, (progress + 0.1).clamp(0.0, 1.0)],
+              ).createShader(rect);
+            },
             child: Text(
-              text[index],
-              style: GoogleFonts.grandHotel(
+              text,
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+              style: TextStyle(
+                fontFamily: fontFamily,
                 fontSize: fontSize,
-                color: color,
-                // Zero or negative spacing to connect letters
-                letterSpacing: 0,
-                height: 1.0,
+                color: Colors.white,
+                height: 1.2,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        );
-      }),
+        ),
+      );
+    }
+
+    final totalChars = text.length;
+    final floatIndex = totalChars * progress;
+    final int visibleIndex = floatIndex.floor();
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: List.generate(totalChars, (index) {
+          double opacity = 0.0;
+          double slideY = 10.0;
+
+          if (index < visibleIndex) {
+            opacity = 1.0;
+            slideY = 0.0;
+          } else if (index == visibleIndex) {
+            final charProgress = floatIndex - visibleIndex;
+            opacity = charProgress;
+            slideY = 10.0 * (1 - charProgress);
+          }
+
+          return Transform.translate(
+            offset: Offset(0, slideY),
+            child: Opacity(
+              opacity: opacity,
+              child: Text(
+                text[index],
+                style: GoogleFonts.grandHotel(
+                  fontSize: fontSize,
+                  color: color,
+                  letterSpacing: 0,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
 }

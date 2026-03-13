@@ -2,8 +2,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/feature/home/domain/usecases/watch_discounted_chalets_usecase.dart';
 import 'package:rebtal/feature/home/widget/automated_offers/automated_offer_card.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -14,13 +16,8 @@ class AutomatedOffersSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chalets')
-          .where('status', isEqualTo: 'approved')
-          .where('discountEnabled', isEqualTo: true)
-          .limit(10)
-          .snapshots(),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: getIt<WatchDiscountedChaletsUseCase>()(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const SizedBox.shrink();
@@ -100,7 +97,7 @@ class AutomatedOffersSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 5.w),
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
-                  final data = docs[index].data() as Map<String, dynamic>;
+                  final data = docs[index].data();
                   final docId = docs[index].id;
                   return AutomatedOfferCard(
                     data: data,

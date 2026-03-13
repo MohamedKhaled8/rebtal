@@ -126,6 +126,7 @@ class ChaletDraft extends Equatable {
   final String? discountValue;
   final List<String> features;
   final bool dayUseEnabled;
+  final String? popularDestination;
 
   const ChaletDraft({
     this.uploadedImages = const [],
@@ -164,6 +165,7 @@ class ChaletDraft extends Equatable {
     this.discountValue,
     this.features = const [],
     this.dayUseEnabled = false,
+    this.popularDestination,
   });
 
   factory ChaletDraft.initial() => const ChaletDraft();
@@ -206,6 +208,7 @@ class ChaletDraft extends Equatable {
     List<String>? features,
     bool? dayUseEnabled,
     bool clearProfileImage = false,
+    String? popularDestination,
   }) {
     return ChaletDraft(
       uploadedImages: uploadedImages ?? this.uploadedImages,
@@ -246,6 +249,7 @@ class ChaletDraft extends Equatable {
       discountValue: discountValue ?? this.discountValue,
       features: features ?? this.features,
       dayUseEnabled: dayUseEnabled ?? this.dayUseEnabled,
+      popularDestination: popularDestination ?? this.popularDestination,
     );
   }
 
@@ -287,5 +291,6 @@ class ChaletDraft extends Equatable {
     discountValue,
     features,
     dayUseEnabled,
+    popularDestination,
   ];
 }

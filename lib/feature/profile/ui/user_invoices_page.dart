@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/services/invoice_service.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/booking/widgets/booking_ticket_widget.dart';
@@ -23,7 +24,7 @@ class UserInvoicesPage extends StatelessWidget {
         backgroundColor: isDark
             ? ColorsManager.darkBackground121212
             : ColorsManager.white,
-        body: const Center(child: Text('Please login first')),
+        body: Center(child: Text(context.tr('profile_please_login_first'))),
       );
     }
 
@@ -37,7 +38,7 @@ class UserInvoicesPage extends StatelessWidget {
             ? ColorsManager.darkBackground121212
             : ColorsManager.lightBackgroundF5F7FA,
         appBar: AppBar(
-          title: const Text('فواتير الحجز'),
+          title: Text(context.tr('invoice_title')),
           centerTitle: true,
           backgroundColor: isDark
               ? ColorsManager.transparent
@@ -106,7 +107,7 @@ class UserInvoicesPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'لا توجد فواتير حجز حالياً',
+                      context.tr('invoice_no_invoices'),
                       style: TextStyle(
                         fontSize: 18,
                         color: isDark
@@ -117,7 +118,7 @@ class UserInvoicesPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'ستظهر فواتيرك هنا بعد إتمام الحجوزات',
+                      context.tr('invoice_empty_hint'),
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark
@@ -181,7 +182,7 @@ class _InvoiceCard extends StatelessWidget {
     }
   }
 
-  String _getStatusText() {
+  String _getStatusText(BuildContext context) {
     // Check if payment was rejected
     final isPaymentRejected =
         booking.status == BookingStatus.awaitingPayment &&
@@ -190,26 +191,26 @@ class _InvoiceCard extends StatelessWidget {
                 booking.adminPaymentNotes!.isNotEmpty));
 
     if (isPaymentRejected) {
-      return 'مرفوض';
+      return context.tr('invoice_status_rejected');
     }
 
     switch (booking.status) {
       case BookingStatus.confirmed:
-        return 'مؤكد';
+        return context.tr('invoice_status_confirmed');
       case BookingStatus.completed:
-        return 'مكتمل';
+        return context.tr('invoice_status_completed');
       case BookingStatus.paymentUnderReview:
-        return 'قيد المراجعة';
+        return context.tr('invoice_status_under_review');
       case BookingStatus.pending:
-        return 'قيد الانتظار';
+        return context.tr('invoice_status_pending');
       case BookingStatus.awaitingPayment:
-        return 'في انتظار الدفع';
+        return context.tr('invoice_status_awaiting_payment');
       case BookingStatus.rejected:
-        return 'مرفوض';
+        return context.tr('invoice_status_rejected');
       case BookingStatus.cancelled:
-        return 'ملغي';
+        return context.tr('invoice_status_cancelled');
       default:
-        return 'غير معروف';
+        return context.tr('common_unknown');
     }
   }
 
@@ -334,7 +335,7 @@ class _InvoiceCard extends StatelessWidget {
                                 );
                               },
                               icon: const Icon(Icons.print_rounded),
-                              label: const Text('طباعة'),
+                              label: Text(context.tr('invoice_print')),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: isDark
                                     ? ColorsManager.white
@@ -364,7 +365,7 @@ class _InvoiceCard extends StatelessWidget {
                                 );
                               },
                               icon: const Icon(Icons.save_alt_rounded),
-                              label: const Text('حفظ'),
+                              label: Text(context.tr('invoice_save')),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: ColorsManager.chaletAccent,
                                 foregroundColor: ColorsManager.white,
@@ -477,7 +478,7 @@ class _InvoiceCard extends StatelessWidget {
                         ],
                       ),
                       child: Text(
-                        _getStatusText(),
+                        _getStatusText(context),
                         style: const TextStyle(
                           color: ColorsManager.white,
                           fontSize: 11,
@@ -559,8 +560,8 @@ class _InvoiceCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'جنيه',
+                          Text(
+                            context.tr('common_egp_plain'),
                             style: TextStyle(
                               fontSize: 12,
                               color: ColorsManager.chaletAccent,

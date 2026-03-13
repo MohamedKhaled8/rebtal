@@ -57,11 +57,6 @@ class LoginCubit extends Cubit<LoginState> {
       }
 
       // ✅ Regular users (Users & Owners)
-      await getIt<CacheHelper>().saveData(
-        key: 'is_login_complete',
-        value: false,
-      );
-
       final result = await _loginUseCase
           .call(email: email.trim(), password: password)
           .timeout(const Duration(seconds: 20));
@@ -94,10 +89,7 @@ class LoginCubit extends Cubit<LoginState> {
           );
           await NotificationService().saveFCMToken(user.uid);
 
-          await getIt<CacheHelper>().saveData(
-            key: 'is_login_complete',
-            value: true,
-          );
+          debugPrint('🔥 LoginCubit: Login success for ${user.uid}');
 
           // Note: AuthCubit reload should be handled by the UI listener
           // context.read<AuthCubit>().reloadUserData() when state is Success
@@ -112,11 +104,6 @@ class LoginCubit extends Cubit<LoginState> {
 
   Future<void> _loginAdmin(String email, String password) async {
     try {
-      await getIt<CacheHelper>().saveData(
-        key: 'is_login_complete',
-        value: false,
-      );
-
       // Sign in with FirebaseAuth
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password)
@@ -145,11 +132,6 @@ class LoginCubit extends Cubit<LoginState> {
         final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
         await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
 
-        await getIt<CacheHelper>().saveData(
-          key: 'is_login_complete',
-          value: true,
-        );
-
         emit(LoginSuccess(user));
       } else {
         // Create admin user if not exists
@@ -170,11 +152,6 @@ class LoginCubit extends Cubit<LoginState> {
         await getIt<CacheHelper>().saveData(
           key: 'userRole',
           value: adminUser.role,
-        );
-
-        await getIt<CacheHelper>().saveData(
-          key: 'is_login_complete',
-          value: true,
         );
 
         emit(LoginSuccess(adminUser));

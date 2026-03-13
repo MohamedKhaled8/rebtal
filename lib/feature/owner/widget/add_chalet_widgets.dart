@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/constant/popular_destinations.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 // ==========================================
@@ -116,11 +117,15 @@ class ChaletDetailsSection extends StatelessWidget {
 class LocationSection extends StatelessWidget {
   final String address;
   final VoidCallback onPickLocation;
+  final String? selectedPopularDestination;
+  final ValueChanged<String?>? onPopularDestinationChanged;
 
   const LocationSection({
     super.key,
     required this.address,
     required this.onPickLocation,
+    this.selectedPopularDestination,
+    this.onPopularDestinationChanged,
   });
 
   @override
@@ -136,6 +141,54 @@ class LocationSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (onPopularDestinationChanged != null) ...[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: DropdownButtonFormField<String>(
+                value: selectedPopularDestination,
+                decoration: InputDecoration(
+                  labelText: context.tr('owner_is_from_popular_destination'),
+                  prefixIcon: const Icon(Icons.place_rounded),
+                  filled: true,
+                  fillColor: isDark
+                      ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+                      : ColorsManager.grey50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? ColorsManager.grey800.withOpacity(0.3)
+                          : ColorsManager.grey300,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: ColorsManager.blue2563EB,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                items: PopularDestinations.all
+                    .map(
+                      (destination) => DropdownMenuItem<String>(
+                        value: destination.nameAr,
+                        child: Text(destination.nameAr),
+                      ),
+                    )
+                    .toList(),
+                onChanged: onPopularDestinationChanged,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           Container(
             height: 50,
             decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter/services.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -29,7 +30,7 @@ class ContactUsPage extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: text));
     SnackBarHelper.showSuccess(
       context,
-      '$label copied to clipboard',
+      context.tr('profile_copied_clipboard').replaceFirst('{}', label),
       icon: Icons.copy,
     );
   }
@@ -43,7 +44,7 @@ class ContactUsPage extends StatelessWidget {
           ? ColorsManager.profileBackgroundDark
           : ColorsManager.white,
       appBar: AppBar(
-        title: const Text('Contact Us'),
+        title: Text(context.tr('profile_contact')),
         backgroundColor: isDark
             ? ColorsManager.transparent
             : ColorsManager.white,
@@ -87,7 +88,7 @@ class ContactUsPage extends StatelessWidget {
 
             // Title
             Text(
-              'Get In Touch',
+              context.tr('profile_get_in_touch'),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -98,7 +99,7 @@ class ContactUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'We\'re here to help! Reach out to us through any of the following methods.',
+              context.tr('profile_contact_hint'),
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
@@ -111,11 +112,11 @@ class ContactUsPage extends StatelessWidget {
               context,
               isDark: isDark,
               icon: Icons.phone,
-              title: 'Phone',
+              title: context.tr('profile_phone'),
               subtitle: '01507277511',
               onTap: _launchPhone,
               onCopy: () =>
-                  _copyToClipboard(context, '01507277511', 'Phone number'),
+                  _copyToClipboard(context, '01507277511', context.tr('profile_phone')),
             ),
             const SizedBox(height: 16),
 
@@ -123,13 +124,13 @@ class ContactUsPage extends StatelessWidget {
               context,
               isDark: isDark,
               icon: Icons.person,
-              title: 'Contact Person',
+              title: context.tr('profile_contact_person'),
               subtitle: 'Mohamed Khaled Elsayed Khalil',
               onTap: null,
               onCopy: () => _copyToClipboard(
                 context,
                 'Mohamed Khaled Elsayed Khalil',
-                'Name',
+                context.tr('profile_contact_person'),
               ),
             ),
             const SizedBox(height: 16),
@@ -138,13 +139,13 @@ class ContactUsPage extends StatelessWidget {
               context,
               isDark: isDark,
               icon: Icons.email,
-              title: 'Email',
+              title: context.tr('profile_email'),
               subtitle: 'reservationsystem07@gmail.com',
               onTap: _launchEmail,
               onCopy: () => _copyToClipboard(
                 context,
                 'reservationsystem07@gmail.com',
-                'Email',
+                context.tr('profile_email'),
               ),
             ),
 
@@ -176,7 +177,7 @@ class ContactUsPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Support Hours',
+                        context.tr('profile_support_hours_title'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -189,7 +190,7 @@ class ContactUsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'We\'re available to assist you 24/7',
+                    context.tr('profile_support_hours_content'),
                     style: TextStyle(
                       fontSize: 14,
                       color: isDark

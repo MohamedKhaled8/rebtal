@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -55,7 +56,7 @@ class HeaderAdmin extends StatelessWidget {
               else
                 horizintalSpace(1),
               Text(
-                UserManager.tabTitles[context.read<AdminCubit>().selectedIndex],
+                context.tr(UserManager.tabTitles[context.read<AdminCubit>().selectedIndex]),
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -92,7 +93,7 @@ class HeaderAdmin extends StatelessWidget {
                               onChanged: cubit.updateSearch,
                               textInputAction: TextInputAction.search,
                               decoration: InputDecoration.collapsed(
-                                hintText: 'Search users, chalets, phone...',
+                                hintText: context.tr('admin_search_placeholder'),
                                 hintStyle: TextStyle(
                                   color: isDark
                                       ? Colors.white38

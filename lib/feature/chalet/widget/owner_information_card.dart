@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -77,7 +78,7 @@ class OwnerInformationCard extends StatelessWidget {
         if (phoneNumber.isEmpty) phoneNumber = 'No phone';
 
         // Calculate hosting duration
-        String hostingDuration = 'New host';
+        String hostingDuration = context.tr('chalet_detail_new_host');
         Timestamp? createdTimestamp;
 
         // Helper to safely parse timestamp
@@ -105,13 +106,13 @@ class OwnerInformationCard extends StatelessWidget {
 
           if (days > 365) {
             final years = (days / 365).floor();
-            hostingDuration = '$years ${years == 1 ? "year" : "years"} hosting';
+            hostingDuration = '$years ${context.tr(years == 1 ? 'chalet_detail_year_hosting' : 'chalet_detail_years_hosting')}';
           } else if (days > 30) {
             final months = (days / 30).floor();
             hostingDuration =
-                '$months ${months == 1 ? "month" : "months"} hosting';
+                '$months ${context.tr(months == 1 ? 'chalet_detail_month_hosting' : 'chalet_detail_months_hosting')}';
           } else {
-            hostingDuration = '$days ${days == 1 ? "day" : "days"} hosting';
+            hostingDuration = '$days ${context.tr(days == 1 ? 'chalet_detail_day_hosting' : 'chalet_detail_days_hosting')}';
           }
         }
 
@@ -150,7 +151,7 @@ class OwnerInformationCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Hosted by $merchantName',
+                      '${context.tr('chalet_detail_hosted_by')} $merchantName',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -159,7 +160,7 @@ class OwnerInformationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Superhost · $hostingDuration',
+                      '${context.tr('chalet_detail_superhost')} · $hostingDuration',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark
@@ -175,17 +176,6 @@ class OwnerInformationCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildPlaceholderIcon(bool isDark) {
-    return Container(
-      color: isDark ? Colors.white10 : Colors.grey[100],
-      child: Icon(
-        Icons.person_rounded,
-        size: 24,
-        color: isDark ? Colors.white30 : Colors.grey[400],
-      ),
     );
   }
 

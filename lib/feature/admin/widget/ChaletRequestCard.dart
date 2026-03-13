@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -177,7 +178,7 @@ class ChaletRequestCard extends StatelessWidget {
                                 } else {
                                   finalPrice = p - val;
                                 }
-                                return '\$${finalPrice.toStringAsFixed(0)} / Night';
+                                return '\$${finalPrice.toStringAsFixed(0)} / ${context.tr('chalet_night')}';
                               })(),
                               style: TextStyle(
                                 color:
@@ -190,7 +191,7 @@ class ChaletRequestCard extends StatelessWidget {
                         ),
                       ] else ...[
                         Text(
-                          '\$$price / Night',
+                          '\$$price / ${context.tr('chalet_night')}',
                           style: TextStyle(
                             color: ColorsManager.kPrimaryGradient.colors.first,
                             fontSize: 17.sp,
@@ -232,7 +233,9 @@ class ChaletRequestCard extends StatelessWidget {
                           children: [
                             Icon(Icons.bed, size: 18.sp, color: Colors.grey),
                             horizintalSpace(1),
-                            Text('$bedrooms Beds'),
+                            Text(
+                              '$bedrooms ${context.tr('common_beds_short')}',
+                            ),
                           ],
                         ),
                         horizintalSpace(3),
@@ -244,7 +247,9 @@ class ChaletRequestCard extends StatelessWidget {
                               color: Colors.grey,
                             ),
                             horizintalSpace(1),
-                            Text('$bathrooms Baths'),
+                            Text(
+                              '$bathrooms ${context.tr('common_baths_short')}',
+                            ),
                           ],
                         ),
                         if (childrenCount.isNotEmpty) ...[
@@ -257,7 +262,9 @@ class ChaletRequestCard extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                               horizintalSpace(1),
-                              Text('$childrenCount Child'),
+                              Text(
+                                '$childrenCount ${context.tr('booking_children')}',
+                              ),
                             ],
                           ),
                         ],
@@ -271,7 +278,9 @@ class ChaletRequestCard extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                               horizintalSpace(1),
-                              Text('$chaletArea m²'),
+                              Text(
+                                '$chaletArea ${context.tr('common_m2')}',
+                              ),
                             ],
                           ),
                         ],

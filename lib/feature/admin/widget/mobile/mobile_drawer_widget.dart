@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class MobileDrawerWidget extends StatelessWidget {
   final int selectedIndex;
@@ -145,7 +146,7 @@ class MobileDrawerWidget extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    tabTitles[index],
+                                    context.tr(tabTitles[index]),
                                     style: TextStyle(
                                       color: selected
                                           ? (isDark
@@ -174,7 +175,7 @@ class MobileDrawerWidget extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.redAccent),
                     title: Text(
-                      'تسجيل الخروج',
+                      context.tr('profile_logout'),
                       style: TextStyle(color: textColor),
                     ),
                     onTap: () async {

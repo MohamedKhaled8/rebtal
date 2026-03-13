@@ -17,6 +17,18 @@ import 'package:rebtal/feature/owner/domain/repository/base_owner_repository.dar
 import 'package:rebtal/feature/owner/data/repository/owner_repository_impl.dart';
 import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
+import 'package:rebtal/feature/chalet/domain/repository/base_chalet_repository.dart';
+import 'package:rebtal/feature/chalet/data/datasources/chalet_remote_data_source.dart';
+import 'package:rebtal/feature/chalet/data/repository/chalet_repository_impl.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/get_chalet_booked_dates_usecase.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/toggle_booking_availability_usecase.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/update_chalet_status_usecase.dart';
+import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
+import 'package:rebtal/feature/home/domain/repositories/base_home_repository.dart';
+import 'package:rebtal/feature/home/data/datasources/home_remote_data_source.dart';
+import 'package:rebtal/feature/home/data/repositories/home_repository_impl.dart';
+import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
+import 'package:rebtal/feature/home/domain/usecases/watch_discounted_chalets_usecase.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -54,6 +66,22 @@ Future<void> setupGetIt() async {
   // Register OwnerRepository
   getIt.registerLazySingleton<BaseOwnerRepository>(() => OwnerRepositoryImpl());
 
+  // Register ChaletRepository
+  getIt.registerLazySingleton<ChaletRemoteDataSource>(
+    () => ChaletRemoteDataSourceImpl(),
+  );
+  getIt.registerLazySingleton<BaseChaletRepository>(
+    () => ChaletRepositoryImpl(remoteDataSource: getIt<ChaletRemoteDataSource>()),
+  );
+
+  // Register HomeRepository (Home Data Layer)
+  getIt.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(),
+  );
+  getIt.registerLazySingleton<BaseHomeRepository>(
+    () => HomeRepositoryImpl(remoteDataSource: getIt<HomeRemoteDataSource>()),
+  );
+
   // ============================================================
   // DOMAIN LAYER (Use Cases)
   // ============================================================
@@ -80,6 +108,25 @@ Future<void> setupGetIt() async {
     () => GetOwnerChaletsUseCase(getIt<BaseOwnerRepository>()),
   );
 
+  // Register Chalet UseCases
+  getIt.registerLazySingleton<GetChaletBookedDatesUseCase>(
+    () => GetChaletBookedDatesUseCase(getIt<BaseChaletRepository>()),
+  );
+  getIt.registerLazySingleton<UpdateChaletStatusUseCase>(
+    () => UpdateChaletStatusUseCase(getIt<BaseChaletRepository>()),
+  );
+  getIt.registerLazySingleton<ToggleBookingAvailabilityUseCase>(
+    () => ToggleBookingAvailabilityUseCase(getIt<BaseChaletRepository>()),
+  );
+
+  // Register Home UseCases (Home feature uses chalet repository)
+  getIt.registerLazySingleton<WatchPublicChaletsUseCase>(
+    () => WatchPublicChaletsUseCase(getIt<BaseHomeRepository>()),
+  );
+  getIt.registerLazySingleton<WatchDiscountedChaletsUseCase>(
+    () => WatchDiscountedChaletsUseCase(getIt<BaseHomeRepository>()),
+  );
+
   // ============================================================
   // PRESENTATION LAYER (Feature Cubits)
   // ============================================================
@@ -98,6 +145,15 @@ Future<void> setupGetIt() async {
     () => OwnerCubit(
       addChaletUseCase: getIt<AddChaletUseCase>(),
       getOwnerChaletsUseCase: getIt<GetOwnerChaletsUseCase>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ChaletDetailCubit>(
+    () => ChaletDetailCubit(
+      getChaletBookedDatesUseCase: getIt<GetChaletBookedDatesUseCase>(),
+      updateChaletStatusUseCase: getIt<UpdateChaletStatusUseCase>(),
+      toggleBookingAvailabilityUseCase:
+          getIt<ToggleBookingAvailabilityUseCase>(),
     ),
   );
 

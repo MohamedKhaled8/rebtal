@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -14,7 +15,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           ? ColorsManager.profileBackgroundDark
           : ColorsManager.white,
       appBar: AppBar(
-        title: const Text('Privacy Policy'),
+        title: Text(context.tr('profile_privacy_policy_title')),
         backgroundColor: isDark
             ? ColorsManager.transparent
             : ColorsManager.white,
@@ -35,7 +36,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Privacy Policy',
+              context.tr('profile_privacy_policy_title'),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -46,7 +47,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Last updated: ${DateTime.now().year}',
+              context.tr('profile_last_updated').replaceFirst('{}', DateTime.now().year.toString()),
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
@@ -56,71 +57,63 @@ class PrivacyPolicyPage extends StatelessWidget {
 
             _buildSection(
               isDark: isDark,
-              title: 'Information We Collect',
-              content:
-                  'We collect information that you provide directly to us when you create an account, make a booking, or contact us. This may include your name, email address, phone number, and booking preferences.',
+              title: context.tr('profile_info_collect_title'),
+              content: context.tr('profile_info_collect_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'How We Use Your Information',
-              content:
-                  'We use your information to:\n• Process and manage your bookings\n• Communicate with you about your reservations\n• Improve our services and user experience\n• Send important updates and notifications\n• Ensure security and prevent fraud',
+              title: context.tr('profile_how_use_info_title'),
+              content: context.tr('profile_how_use_info_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Data Protection',
-              content:
-                  'We implement robust security measures to protect your personal information. Your data is encrypted and stored securely. We never sell or share your personal information with third parties for marketing purposes.',
+              title: context.tr('profile_data_protection_title'),
+              content: context.tr('profile_data_protection_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Your Rights',
-              content:
-                  'You have the right to:\n• Access your personal data\n• Request corrections to your information\n• Delete your account and associated data\n• Opt-out of promotional communications\n• Request a copy of your data',
+              title: context.tr('profile_your_rights_title'),
+              content: context.tr('profile_your_rights_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Cookies and Tracking',
-              content:
-                  'We use cookies and similar technologies to enhance your experience, analyze usage patterns, and remember your preferences. You can control cookie settings through your browser.',
+              title: context.tr('profile_cookies_tracking_title'),
+              content: context.tr('profile_cookies_tracking_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Third-Party Services',
-              content:
-                  'We may use third-party services for payment processing, analytics, and communication. These services have their own privacy policies and we encourage you to review them.',
+              title: context.tr('profile_third_party_title'),
+              content: context.tr('profile_third_party_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Children\'s Privacy',
-              content:
-                  'Our services are not intended for users under the age of 18. We do not knowingly collect personal information from children.',
+              title: context.tr('profile_children_privacy_title'),
+              content: context.tr('profile_children_privacy_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Changes to This Policy',
-              content:
-                  'We may update this privacy policy from time to time. We will notify you of any significant changes by posting the new policy on this page and updating the "Last updated" date.',
+              title: context.tr('profile_policy_changes_title'),
+              content: context.tr('profile_policy_changes_content'),
             ),
             const SizedBox(height: 24),
 
             _buildSection(
               isDark: isDark,
-              title: 'Contact Us',
+              title: context.tr('profile_contact'),
               content:
                   'If you have any questions about this Privacy Policy, please contact us at reservationsystem07@gmail.com or call 01507277511.',
             ),
@@ -143,7 +136,7 @@ class PrivacyPolicyPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'By using our services, you agree to this Privacy Policy.',
+                      context.tr('profile_privacy_agree_info'),
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark

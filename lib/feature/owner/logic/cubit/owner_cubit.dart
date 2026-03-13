@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:rebtal/core/utils/constant/popular_destinations.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
@@ -156,6 +157,31 @@ class OwnerCubit extends Cubit<OwnerState> {
     }
     emit(
       state.copyWith(draft: state.draft.copyWith(features: currentFeatures)),
+    );
+  }
+
+  /// Select / clear a popular destination.
+  /// This also keeps the `features` list in sync so home filters can work.
+  void selectPopularDestination(String? destinationName) {
+    final currentDraft = state.draft;
+    final popularNames = PopularDestinations.namesAr;
+
+    // Remove any previous popular destination labels from features
+    final cleanedFeatures = currentDraft.features
+        .where((f) => !popularNames.contains(f))
+        .toList();
+
+    if (destinationName != null && destinationName.isNotEmpty) {
+      cleanedFeatures.add(destinationName);
+    }
+
+    emit(
+      state.copyWith(
+        draft: currentDraft.copyWith(
+          popularDestination: destinationName,
+          features: cleanedFeatures,
+        ),
+      ),
     );
   }
 

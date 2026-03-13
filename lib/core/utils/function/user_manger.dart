@@ -589,14 +589,15 @@ class UserManager {
     RejectedRequestsTab(),
   ];
 
+  /// Translation keys for admin tabs (use context.tr(key) when displaying)
   static final List<String> tabTitles = const [
-    'Statistics',
-    'Users',
-    'Pending',
-    'Payments',
-    'Cancellations',
-    'Approved',
-    'Rejected',
+    'admin_tab_statistics',
+    'admin_tab_users',
+    'admin_tab_pending',
+    'admin_tab_payments',
+    'admin_tab_cancellations',
+    'admin_tab_approved',
+    'admin_tab_rejected',
   ];
 
   static final List<IconData> tabIcons = const [

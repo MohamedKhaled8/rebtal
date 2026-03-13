@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class DesktopSidebarWidget extends StatelessWidget {
   final int selectedIndex;
@@ -160,7 +161,7 @@ class DesktopSidebarWidget extends StatelessWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  tabTitles[index],
+                                  context.tr(tabTitles[index]),
                                   style: TextStyle(
                                     color: selected ? textColor : subTextColor,
                                     fontWeight: selected
@@ -239,7 +240,7 @@ class DesktopSidebarWidget extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Administrator',
+                          context.tr('admin_administrator'),
                           style: TextStyle(color: subTextColor),
                         ),
                       ),

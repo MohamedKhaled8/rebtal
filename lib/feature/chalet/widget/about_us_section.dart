@@ -31,15 +31,16 @@ class AboutUsSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'About Us',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: isDark
-                    ? ColorsManager.chaletTextPrimaryDark
-                    : ColorsManager.chaletTextPrimaryLight,
-                letterSpacing: 0.5,
+            const Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                'About Us',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: ColorsManager.chaletTextPrimaryLight,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -100,12 +101,15 @@ class AboutUsSection extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      isExpanded ? 'Show Less' : 'Read More',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: ColorsManager.chaletAccent,
+                    Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Text(
+                        isExpanded ? 'Show Less' : 'Read More',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: ColorsManager.chaletAccent,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 4),

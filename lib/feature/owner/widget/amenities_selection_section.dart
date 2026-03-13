@@ -64,7 +64,7 @@ class AmenitiesSelectionSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.tr('home_facilities_services'),
+                      context.tr('chalet_what_offers'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

@@ -198,7 +198,7 @@ class _BookingWizardViewState extends State<BookingWizardView> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw),
-        vertical: otv(context: context, portrait: 16.sh, landscape: 8.sh),
+        vertical: otv(context: context, portrait: 12.sh, landscape: 6.sh),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,7 +265,7 @@ class _WizardProgressBar extends StatelessWidget {
           padding: EdgeInsets.symmetric(
             horizontal: stv(context: context, mobile: 32.sw, tablet: 40.sw, desktop: 48.sw),
           ),
-          margin: EdgeInsets.only(bottom: otv(context: context, portrait: 10.sh, landscape: 5.sh)),
+          margin: EdgeInsets.only(bottom: otv(context: context, portrait: 6.sh, landscape: 4.sh)),
           child: Row(
             children: [
               _buildDot(0, step, "التاريخ", isDark),
@@ -915,7 +915,7 @@ class _WizardBottomBar extends StatelessWidget {
         final isValid = isLast ? state.termsAccepted : state.isDatesSelected;
 
         return Container(
-          padding: EdgeInsets.all(otv(context: context, portrait: 24.sh, landscape: 12.sh)),
+          padding: EdgeInsets.all(otv(context: context, portrait: 16.sh, landscape: 10.sh)),
           decoration: BoxDecoration(
             color: isDark ? kDarkCard : kLightCard,
             boxShadow: [
@@ -962,7 +962,7 @@ class _WizardBottomBar extends StatelessWidget {
                         ? Colors.white10
                         : Colors.grey[300],
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 20.sh, landscape: 12.sh)),
+                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 16.sh, landscape: 10.sh)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

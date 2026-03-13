@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +15,12 @@ import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit(this.authRepository) : super(AuthInitial()) {
-    _loadSavedViewMode(); // ✅ Load saved view mode first
-    _checkCurrentUser(); // ✅ Then check current user
+  AuthCubit(this.authRepository) : super(AuthLoading()) {
+    _initializeAuth();
   }
+
   final BaseAuthRepository authRepository;
+  StreamSubscription<User?>? _authStateSubscription;
 
   String? currentViewRole;
 
@@ -39,6 +42,148 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     return 'guest';
+  }
+
+  static const Duration _authGracePeriod = Duration(seconds: 3);
+  Timer? _authGraceTimer;
+
+  /// Initialize authentication by listening to auth state changes
+  void _initializeAuth() {
+    debugPrint('🔥 AuthCubit: Starting auth initialization');
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) async {
+        debugPrint('🔥 AuthCubit: authStateChanges emitted user: ${user?.uid}');
+        if (user != null) {
+          // Cancel any pending grace timer - user is authenticated
+          _authGraceTimer?.cancel();
+          await _loadSavedViewMode();
+          await _restoreUserFromFirestore(user);
+        } else {
+          // User is null - could be truly logged out or Firebase still restoring
+          // Wait a grace period before concluding unauthenticated
+          _authGraceTimer?.cancel();
+          _authGraceTimer = Timer(_authGracePeriod, () {
+            debugPrint(
+              '🔥 AuthCubit: Grace period ended, emitting AuthUnauthenticated',
+            );
+            emit(AuthUnauthenticated());
+          });
+        }
+      },
+      onError: (error) {
+        debugPrint('❌ Auth state stream error: $error');
+        _authGraceTimer?.cancel();
+        emit(AuthUnauthenticated());
+      },
+    );
+  }
+
+  /// Restore user data from Firestore after auth state is confirmed
+  Future<void> _restoreUserFromFirestore(User firebaseUser) async {
+    debugPrint(
+      '🔥 AuthCubit: Restoring user from Firestore: ${firebaseUser.uid}',
+    );
+    try {
+      DocumentSnapshot? doc;
+
+      // 2. Parallelize Firestore lookups
+      final futures = ["Users", "Owners", "Admin"].map((col) async {
+        try {
+          final d = await FirebaseFirestore.instance
+              .collection(col)
+              .doc(firebaseUser.uid)
+              .get()
+              .timeout(const Duration(seconds: 5));
+          return d.exists ? d : null;
+        } catch (e) {
+          return null;
+        }
+      });
+
+      final results = await Future.wait(futures);
+      doc = results.firstWhere((d) => d != null, orElse: () => null);
+
+      if (doc != null && doc.exists) {
+        debugPrint('🔥 AuthCubit: Found user doc in Firestore');
+        final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
+        debugPrint('🔥 AuthCubit: User role: ${user.role}');
+
+        // ✅ Skip email verification for admin
+        final isAdmin = user.role.toLowerCase().trim() == 'admin';
+
+        // ✅ Check if email is verified (skip for admin)
+        if (!isAdmin) {
+          try {
+            await firebaseUser.reload().timeout(const Duration(seconds: 5));
+          } catch (e) {
+            debugPrint('⚠️ Network timeout during user reload: $e');
+            // Proceed with existing data if reload fails
+          }
+
+          // Only redirect to verification if user just registered
+          // Don't force verification on every app restart
+          final isJustRegistered = getIt<CacheHelper>().getDataString(
+            key: 'justRegistered',
+          );
+
+          if (!firebaseUser.emailVerified && isJustRegistered == 'true') {
+            // ⚠️ User just registered but not verified -> Redirect to verification
+            debugPrint('⚠️ User not verified, redirecting to verification');
+            emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
+            return;
+          }
+
+          // Clear the flag after first check
+          await getIt<CacheHelper>().removeData(key: 'justRegistered');
+        }
+
+        // ✅ Save role locally
+        await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
+
+        // ✅ Restore saved view mode for owners
+        if (user.role.toLowerCase().trim() == 'owner') {
+          final savedViewMode = getIt<CacheHelper>().getDataString(
+            key: 'currentViewRole',
+          );
+          if (savedViewMode != null && savedViewMode.isNotEmpty) {
+            currentViewRole = savedViewMode;
+            debugPrint('🔄 Restored view mode: $currentViewRole');
+          } else {
+            // Default to owner mode if no saved preference
+            currentViewRole = 'owner';
+          }
+        }
+
+        debugPrint('🔥 AuthCubit: Emitting AuthSuccess');
+        emit(AuthSuccess(user));
+      } else {
+        debugPrint('🔥 AuthCubit: No user doc found in Firestore');
+        emit(AuthUnauthenticated());
+      }
+    } catch (e) {
+      debugPrint('❌ AuthCubit: Error restoring user: $e');
+      final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
+      final isOffline = FirebaseErrorHandler.isOfflineError(e);
+
+      if (isOffline) {
+        emit(
+          AuthOfflineWarning(
+            'Working in offline mode. Some features may be limited.',
+          ),
+        );
+      } else {
+        emit(
+          AuthFailure(
+            errorMessage,
+            errorCode: e is FirebaseException ? e.code : null,
+            isRetryable: FirebaseErrorHandler.isRetryableError(e),
+            isOffline: isOffline,
+          ),
+        );
+      }
+
+      FirebaseErrorHandler.logError(e, context: 'RestoreUserFromFirestore');
+    }
   }
 
   /// Load saved view mode from local storage
@@ -79,123 +224,11 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> _checkCurrentUser() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    if (currentUser != null) {
-      try {
-        // 1. Check if the last login process completed successfully
-        final isLoginComplete =
-            getIt<CacheHelper>().getData(key: 'is_login_complete') ?? true;
-
-        // If login wasn't completed (e.g. app killed during loading), force logout
-        if (isLoginComplete == false) {
-          debugPrint('⚠️ Login process was incomplete. Forcing logout.');
-          await logout();
-          return;
-        }
-
-        DocumentSnapshot? doc;
-
-        // 2. Parallelize Firestore lookups
-        final futures = ["Users", "Owners", "Admin"].map((col) async {
-          try {
-            final d = await FirebaseFirestore.instance
-                .collection(col)
-                .doc(currentUser.uid)
-                .get()
-                .timeout(const Duration(seconds: 5));
-            return d.exists ? d : null;
-          } catch (e) {
-            return null;
-          }
-        });
-
-        final results = await Future.wait(futures);
-        doc = results.firstWhere((d) => d != null, orElse: () => null);
-
-        if (doc != null && doc.exists) {
-          final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
-
-          // ✅ Skip email verification for admin
-          final isAdmin = user.role.toLowerCase().trim() == 'admin';
-
-          // ✅ Check if email is verified (skip for admin)
-          if (!isAdmin) {
-            try {
-              await currentUser.reload().timeout(const Duration(seconds: 5));
-            } catch (e) {
-              debugPrint('⚠️ Network timeout during user reload: $e');
-              // Proceed with existing data if reload fails
-            }
-
-            // Only redirect to verification if user just registered
-            // Don't force verification on every app restart
-            final isJustRegistered = getIt<CacheHelper>().getDataString(
-              key: 'justRegistered',
-            );
-
-            if (!currentUser.emailVerified && isJustRegistered == 'true') {
-              // ⚠️ User just registered but not verified -> Redirect to verification
-              debugPrint('⚠️ User not verified, redirecting to verification');
-              emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
-              return;
-            }
-
-            // Clear the flag after first check
-            await getIt<CacheHelper>().removeData(key: 'justRegistered');
-          }
-
-          // ✅ Save role locally
-          await getIt<CacheHelper>().saveData(
-            key: 'userRole',
-            value: user.role,
-          );
-
-          // ✅ Restore saved view mode for owners
-          if (user.role.toLowerCase().trim() == 'owner') {
-            final savedViewMode = getIt<CacheHelper>().getDataString(
-              key: 'currentViewRole',
-            );
-            if (savedViewMode != null && savedViewMode.isNotEmpty) {
-              currentViewRole = savedViewMode;
-              debugPrint('🔄 Restored view mode: $currentViewRole');
-            } else {
-              // Default to owner mode if no saved preference
-              currentViewRole = 'owner';
-            }
-          }
-
-          emit(AuthSuccess(user));
-        } else {
-          emit(AuthUnauthenticated());
-        }
-      } catch (e) {
-        final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
-        final isOffline = FirebaseErrorHandler.isOfflineError(e);
-
-        if (isOffline) {
-          emit(
-            AuthOfflineWarning(
-              'Working in offline mode. Some features may be limited.',
-            ),
-          );
-        } else {
-          emit(
-            AuthFailure(
-              errorMessage,
-              errorCode: e is FirebaseException ? e.code : null,
-              isRetryable: FirebaseErrorHandler.isRetryableError(e),
-              isOffline: isOffline,
-            ),
-          );
-        }
-
-        FirebaseErrorHandler.logError(e, context: 'CheckCurrentUser');
-      }
-    } else {
-      emit(AuthUnauthenticated());
-    }
+  @override
+  Future<void> close() {
+    _authGraceTimer?.cancel();
+    _authStateSubscription?.cancel();
+    return super.close();
   }
 
   // يمكنك إضافة method للحصول على UserModel كامل إذا needed

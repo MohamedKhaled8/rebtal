@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -69,7 +70,7 @@ class BookingDatesDisplay extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Booking Period",
+              context.tr('chalet_detail_booking_period'),
               style: TextStyle(
                 fontSize: stv(context: context, mobile: 20.spScaled, tablet: 24.spScaled, desktop: 28.spScaled),
                 fontWeight: FontWeight.w600,
@@ -87,7 +88,7 @@ class BookingDatesDisplay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '$days Nights',
+                  '$days ${context.tr('chalet_detail_nights')}',
                   style: TextStyle(
                     fontSize: stv(context: context, mobile: 11.spScaled, tablet: 13.spScaled, desktop: 15.spScaled),
                     fontWeight: FontWeight.w600,
@@ -102,7 +103,7 @@ class BookingDatesDisplay extends StatelessWidget {
           children: [
             Expanded(
               child: _DateItem(
-                label: "Check-in",
+                label: context.tr('chalet_detail_check_in'),
                 date: fromDate,
                 icon: Icons.calendar_today_outlined,
                 isDark: isDark,
@@ -117,7 +118,7 @@ class BookingDatesDisplay extends StatelessWidget {
             ),
             Expanded(
               child: _DateItem(
-                label: "Check-out",
+                label: context.tr('chalet_detail_check_out'),
                 date: toDate,
                 icon: Icons.calendar_month_outlined,
                 isDark: isDark,

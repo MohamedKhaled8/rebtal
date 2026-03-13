@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -14,7 +15,7 @@ class DeliveryPolicyPage extends StatelessWidget {
           ? ColorsManager.profileBackgroundDark
           : ColorsManager.white,
       appBar: AppBar(
-        title: const Text('Booking & Confirmation'),
+        title: Text(context.tr('profile_booking_confirm_title')),
         backgroundColor: isDark
             ? ColorsManager.transparent
             : ColorsManager.white,
@@ -35,7 +36,7 @@ class DeliveryPolicyPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Booking & Confirmation Policy',
+              context.tr('profile_booking_confirm_title'),
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -49,63 +50,56 @@ class DeliveryPolicyPage extends StatelessWidget {
             _buildSection(
               isDark: isDark,
               icon: Icons.check_circle_outline,
-              title: 'Instant Confirmation',
-              content:
-                  'Once your booking is submitted and payment is processed, you will receive an instant confirmation via email and in-app notification. Your booking details will be immediately available in your account.',
+              title: context.tr('profile_instant_confirm_title'),
+              content: context.tr('profile_instant_confirm_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.schedule,
-              title: 'Booking Timeline',
-              content:
-                  'You can book a chalet up to 6 months in advance. Last-minute bookings are accepted subject to availability. We recommend booking at least 48 hours before your desired check-in date for the best availability.',
+              title: context.tr('profile_booking_timeline_title'),
+              content: context.tr('profile_booking_timeline_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.key,
-              title: 'Check-In Process',
-              content:
-                  '• Check-in time: As specified in the chalet listing (typically 2:00 PM)\n• You will receive check-in instructions 24 hours before arrival\n• Present your booking confirmation to the property owner\n• All guest information must be accurate and verified',
+              title: context.tr('profile_checkin_proc_title'),
+              content: context.tr('profile_checkin_proc_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.exit_to_app,
-              title: 'Check-Out Process',
-              content:
-                  '• Check-out time: As specified in the chalet listing (typically 12:00 PM)\n• Please leave the chalet in good condition\n• Return all keys and access cards\n• Late check-out may be available upon request (additional fees may apply)',
+              title: context.tr('profile_checkout_proc_title'),
+              content: context.tr('profile_checkout_proc_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.verified_user,
-              title: 'Booking Verification',
-              content:
-                  'All bookings are subject to verification by the property owner. In rare cases, a booking may be declined. If this occurs, you will receive a full refund within 3-5 business days.',
+              title: context.tr('profile_booking_verify_title'),
+              content: context.tr('profile_booking_verify_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.info_outline,
-              title: 'Important Information',
-              content:
-                  '• Bring a valid ID for check-in\n• Review house rules before your stay\n• Maximum occupancy must be respected\n• Smoking and pet policies vary by property\n• Contact the owner for any special requests',
+              title: context.tr('profile_important_info_title'),
+              content: context.tr('profile_important_info_content'),
             ),
             const SizedBox(height: 20),
 
             _buildSection(
               isDark: isDark,
               icon: Icons.support_agent,
-              title: 'Support During Your Stay',
-              content:
-                  'Our support team is available 24/7 to assist you during your stay. Contact us immediately if you encounter any issues with the property or have questions about your booking.',
+              title: context.tr('profile_stay_support_title'),
+              content: context.tr('profile_stay_support_content'),
             ),
             const SizedBox(height: 32),
 
@@ -128,18 +122,9 @@ class DeliveryPolicyPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Need help with your booking?',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? ColorsManager.white
-                          : ColorsManager.chaletTextPrimaryLight,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Call us at 01507277511\nEmail: reservationsystem07@gmail.com',
+                    context.tr('profile_support_contact_hint')
+                        .replaceFirst('{}', '01507277511')
+                        .replaceFirst('{}', 'reservationsystem07@gmail.com'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,

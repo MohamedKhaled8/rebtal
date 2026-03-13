@@ -1,17 +1,30 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/get_chalet_booked_dates_usecase.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/toggle_booking_availability_usecase.dart';
+import 'package:rebtal/feature/chalet/domain/usecases/update_chalet_status_usecase.dart';
 
 part 'chalet_detail_state.dart';
 
 class ChaletDetailCubit extends Cubit<ChaletDetailState> {
+  final GetChaletBookedDatesUseCase getChaletBookedDatesUseCase;
+  final UpdateChaletStatusUseCase updateChaletStatusUseCase;
+  final ToggleBookingAvailabilityUseCase toggleBookingAvailabilityUseCase;
+
   PageController? _pageController;
   Timer? _autoPlayTimer;
 
-  ChaletDetailCubit() : super(ChaletDetailInitial());
+  ChaletDetailCubit({
+    required this.getChaletBookedDatesUseCase,
+    required this.updateChaletStatusUseCase,
+    required this.toggleBookingAvailabilityUseCase,
+  }) : super(ChaletDetailInitial());
 
   PageController get pageController {
     _pageController ??= PageController();
@@ -31,6 +44,8 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
       }).toList();
     }
 
+    if (isClosed) return;
+
     emit(ChaletDetailLoaded(images: images, bookedDates: initialDates));
     _startAutoPlay();
 
@@ -42,48 +57,18 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   Future<void> _fetchBookedDates(String chaletId) async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('chaletId', isEqualTo: chaletId)
-          .where(
-            'status',
-            whereIn: [
-              'approved',
-              'confirmed',
-              'completed',
-              'awaitingPayment',
-              'paymentUnderReview',
-            ],
-          )
-          .get();
+    final Either<Failure, List<DateTime>> result =
+        await getChaletBookedDatesUseCase(chaletId);
 
-      final List<DateTime> bookedDates = [];
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final from = (data['from'] as Timestamp?)?.toDate();
-        final to = (data['to'] as Timestamp?)?.toDate();
-
-        if (from != null && to != null) {
-          // Add all dates in range
-          DateTime current = from;
-          while (current.isBefore(to) || current.isAtSameMomentAs(to)) {
-            bookedDates.add(current);
-            current = current.add(const Duration(days: 1));
-          }
+    result.fold(
+      (failure) => debugPrint('Error fetching booked dates: $failure'),
+      (bookedDates) {
+        final currentState = state;
+        if (currentState is ChaletDetailLoaded) {
+          emit(currentState.copyWith(bookedDates: bookedDates));
         }
-      }
-
-      bookedDates.sort();
-
-      final currentState = state;
-      if (currentState is ChaletDetailLoaded) {
-        emit(currentState.copyWith(bookedDates: bookedDates));
-      }
-    } catch (e) {
-      debugPrint('Error fetching booked dates: $e');
-    }
+      },
+    );
   }
 
   List<String> _extractImagesFromRequestData(Map<String, dynamic> data) {
@@ -155,30 +140,32 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     required String newStatus,
   }) async {
     emit(ChaletDetailLoading());
-    try {
-      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
-        'status': newStatus,
-        'updatedAt': Timestamp.now(),
-      });
 
-      if (context.mounted) {
-        if (newStatus == 'approved') {
-          SnackBarHelper.showSuccess(context, 'Request $newStatus');
-        } else {
-          SnackBarHelper.showError(context, 'Request $newStatus');
+    final result = await updateChaletStatusUseCase(
+      UpdateChaletStatusParams(docId: docId, newStatus: newStatus),
+    );
+
+    result.fold(
+      (failure) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${failure.message}')));
         }
-        Navigator.pop(context);
-      }
-
-      emit(ChaletDetailStatusUpdated(newStatus));
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-      emit(ChaletDetailError(e.toString()));
-    }
+        emit(ChaletDetailError(failure.message));
+      },
+      (_) {
+        if (context.mounted) {
+          if (newStatus == 'approved') {
+            SnackBarHelper.showSuccess(context, 'Request $newStatus');
+          } else {
+            SnackBarHelper.showError(context, 'Request $newStatus');
+          }
+          Navigator.pop(context);
+        }
+        emit(ChaletDetailStatusUpdated(newStatus));
+      },
+    );
   }
 
   List<String> extractImages(Map<String, dynamic> requestData) {
@@ -250,30 +237,35 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     required String docId,
     required Map<String, dynamic> requestData,
   }) async {
-    try {
-      final currentAvailability =
-          requestData['bookingAvailability'] ?? 'available';
-      final newAvailability = currentAvailability == 'available'
-          ? 'unavailable'
-          : 'available';
+    final currentAvailability =
+        (requestData['bookingAvailability'] ?? 'available').toString();
 
-      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
-        'bookingAvailability': newAvailability,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+    final result = await toggleBookingAvailabilityUseCase(
+      ToggleBookingAvailabilityParams(
+        docId: docId,
+        currentAvailability: currentAvailability,
+      ),
+    );
 
-      if (context.mounted) {
-        if (newAvailability == 'available') {
-          SnackBarHelper.showSuccess(context, 'تم تشغيل الحجز بنجاح');
-        } else {
-          SnackBarHelper.showError(context, 'تم إيقاف الحجز بنجاح');
+    result.fold(
+      (failure) {
+        if (context.mounted) {
+          SnackBarHelper.showError(
+            context,
+            'خطأ في تحديث حالة الحجز: ${failure.message}',
+          );
         }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الحجز: $e');
-      }
-    }
+      },
+      (newAvailability) {
+        if (context.mounted) {
+          if (newAvailability == 'available') {
+            SnackBarHelper.showSuccess(context, 'تم تشغيل الحجز بنجاح');
+          } else {
+            SnackBarHelper.showError(context, 'تم إيقاف الحجز بنجاح');
+          }
+        }
+      },
+    );
   }
 
   @override

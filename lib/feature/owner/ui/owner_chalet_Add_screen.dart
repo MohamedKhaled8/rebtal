@@ -192,6 +192,9 @@ class _ChaletFormContent extends StatelessWidget {
               // Location Section
               LocationSection(
                 address: draft.selectedLocation,
+                selectedPopularDestination: draft.popularDestination,
+                onPopularDestinationChanged:
+                    ownerCubit.selectPopularDestination,
                 onPickLocation: () async {
                   final selected = await Navigator.push(
                     context,

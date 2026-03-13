@@ -31,6 +31,11 @@ class CacheHelper {
     return sharedPreferences.get(key);
   }
 
+  //! Method to get boolean data
+  bool? getBool({required String key}) {
+    return sharedPreferences.getBool(key);
+  }
+
   //! Remove data using specific key
   Future<bool> removeData({required String key}) async {
     return await sharedPreferences.remove(key);

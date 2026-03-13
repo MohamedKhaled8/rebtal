@@ -322,7 +322,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                                     ),
                                   ),
                                   child: Text(
-                                    'إلغاء',
+                                    context.tr('common_cancel'),
                                     style: TextStyle(color: secondaryText),
                                   ),
                                 ),
@@ -459,7 +459,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                                     ),
                                   ),
                                   child: Text(
-                                    'إلغاء',
+                                    context.tr('common_cancel'),
                                     style: TextStyle(color: secondaryText),
                                   ),
                                 ),

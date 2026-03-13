@@ -54,14 +54,54 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     _fillController.forward();
+
+    // Check current AuthCubit state after first frame (BlocListener misses existing state)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkCurrentAuthState();
+    });
   }
 
-  /// إذا لم يصدر AuthCubit أي حالة خلال وقت إضافي، ننتقل لشاشة تسجيل الدخول
+  /// Check if AuthCubit already has a terminal state that BlocListener missed
+  void _checkCurrentAuthState() {
+    debugPrint('🔥 SplashScreen: Checking current auth state');
+    if (!mounted || _hasNavigated) {
+      debugPrint('🔥 SplashScreen: Not mounted or already navigated');
+      return;
+    }
+
+    final authCubit = context.read<AppCubit>().authCubit;
+    final currentState = authCubit.state;
+    debugPrint(
+      '🔥 SplashScreen: AuthCubit current state: ${currentState.runtimeType}',
+    );
+
+    // If AuthCubit already emitted a terminal state, capture it
+    if (currentState is AuthSuccess ||
+        currentState is AuthRegistrationSuccess ||
+        currentState is AuthFailure ||
+        currentState is AuthUnauthenticated ||
+        currentState is AuthOfflineWarning) {
+      debugPrint(
+        '🔥 SplashScreen: Captured existing auth state: ${currentState.runtimeType}',
+      );
+      _pendingAuthState = currentState;
+      _handlePendingNavigation();
+    } else {
+      debugPrint('🔥 SplashScreen: AuthCubit not in terminal state yet');
+    }
+  }
+
+  /// إذا لم يصدر AuthCubit أي حالة خلال وقت إضافي ننتقل لشاشة تسجيل الدخول
   void _startMaxWaitTimer() {
+    debugPrint('🔥 SplashScreen: Starting max wait timer (4 seconds)');
     _maxWaitTimer?.cancel();
-    _maxWaitTimer = Timer(const Duration(seconds: 3), () {
+    _maxWaitTimer = Timer(const Duration(seconds: 4), () {
+      debugPrint('🔥 SplashScreen: Max wait timer fired');
       if (!mounted || _hasNavigated) return;
       if (_pendingAuthState == null) {
+        debugPrint(
+          '🔥 SplashScreen: No auth state after timeout, going to login',
+        );
         _hasNavigated = true;
         Navigator.pushReplacementNamed(context, Routes.loginScreen);
       }
@@ -76,14 +116,21 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _handlePendingNavigation() {
-    if (!_animationComplete || _pendingAuthState == null || _hasNavigated)
+    debugPrint('🔥 SplashScreen: _handlePendingNavigation called');
+    debugPrint(
+      '🔥 SplashScreen: _animationComplete=$_animationComplete, _pendingAuthState=${_pendingAuthState?.runtimeType}, _hasNavigated=$_hasNavigated',
+    );
+    if (!_animationComplete || _pendingAuthState == null || _hasNavigated) {
+      debugPrint('🔥 SplashScreen: Cannot navigate yet');
       return;
+    }
     if (!mounted) return;
 
     _maxWaitTimer?.cancel();
     _hasNavigated = true;
 
     if (_pendingAuthState is AuthSuccess) {
+      debugPrint('🔥 SplashScreen: Navigating based on role');
       _navigateBasedOnRole();
     } else if (_pendingAuthState is AuthRegistrationSuccess) {
       final state = _pendingAuthState as AuthRegistrationSuccess;
@@ -95,18 +142,22 @@ class _SplashScreenState extends State<SplashScreen>
     } else if (_pendingAuthState is AuthFailure ||
         _pendingAuthState is AuthUnauthenticated ||
         _pendingAuthState is AuthOfflineWarning) {
+      debugPrint('🔥 SplashScreen: Navigating to login');
       Navigator.pushReplacementNamed(context, Routes.loginScreen);
     }
   }
 
   void _navigateBasedOnRole() {
     final String? role = getIt<CacheHelper>().getDataString(key: 'userRole');
-    if (role == 'admin') {
+    final normalizedRole = role?.toLowerCase().trim();
+    debugPrint('🔥 SplashScreen: Navigating with role: $normalizedRole');
+    if (normalizedRole == 'admin') {
       Navigator.pushReplacementNamed(context, Routes.dashboardScreen);
-    } else if (role == 'owner') {
+    } else if (normalizedRole == 'owner' || normalizedRole == 'user') {
       Navigator.pushReplacementNamed(context, Routes.bottomNavigationBarScreen);
     } else {
-      Navigator.pushReplacementNamed(context, Routes.bottomNavigationBarScreen);
+      debugPrint('🔥 SplashScreen: Unknown role, going to login');
+      Navigator.pushReplacementNamed(context, Routes.loginScreen);
     }
   }
 
@@ -114,44 +165,50 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final authCubit = context.read<AppCubit>().authCubit;
 
-    return BlocListener(
-      bloc: authCubit,
-      listener: (context, state) {
-        if (state is AuthSuccess ||
-            state is AuthRegistrationSuccess ||
-            state is AuthFailure ||
-            state is AuthUnauthenticated ||
-            state is AuthOfflineWarning) {
-          _pendingAuthState = state as AuthState;
-          _handlePendingNavigation();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.villa_rounded,
-                  size: 80,
-                  color: const Color(0xFFFF5A5F),
-                ),
-                const SizedBox(height: 16),
-                _LiquidText(
-                  fillAnimation: _fillAnimation,
-                  text: 'REBTAL',
-                  style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFE0E0E0),
-                    letterSpacing: 4,
+    return BlocProvider.value(
+      value: authCubit,
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthSuccess ||
+              state is AuthRegistrationSuccess ||
+              state is AuthFailure ||
+              state is AuthUnauthenticated ||
+              state is AuthOfflineWarning) {
+            debugPrint(' SplashScreen: Received auth state change: ');
+            _pendingAuthState = state;
+            _handlePendingNavigation();
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.villa_rounded,
+                    size: 80,
+                    color: const Color(0xFFFF5A5F),
                   ),
-                  liquidColor: const Color(0xFFFF5A5F),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: _LiquidText(
+                      fillAnimation: _fillAnimation,
+                      text: 'REBTAL',
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE0E0E0),
+                        letterSpacing: 4,
+                      ),
+                      liquidColor: const Color(0xFFFF5A5F),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

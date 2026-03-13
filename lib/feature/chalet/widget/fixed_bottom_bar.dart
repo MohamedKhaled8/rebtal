@@ -5,6 +5,7 @@ import 'package:rebtal/feature/chalet/logic/cubit/fixed_bottom_bar_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class FixedBottomBar extends StatelessWidget {
   final dynamic price;
@@ -102,7 +103,7 @@ class FixedBottomBar extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 2),
                                 child: Text(
-                                  'night',
+                                  context.tr('chalet_night'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
@@ -219,7 +220,7 @@ class FixedBottomBar extends StatelessWidget {
                                 disabledBackgroundColor: Colors.grey[300],
                               ),
                               child: Text(
-                                isAvailable ? 'Reserve' : 'Unavailable',
+                                isAvailable ? context.tr('chalet_reserve') : context.tr('chalet_unavailable'),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

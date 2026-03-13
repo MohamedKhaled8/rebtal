@@ -4,7 +4,6 @@ import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/theme/app_theme.dart';
-import 'package:flutter/foundation.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:rebtal/core/utils/localization/app_localization.dart';
@@ -59,8 +58,8 @@ class RebtalApp extends StatelessWidget {
                   primaryColor: appState.primaryColor,
                 ),
                 themeMode: appState.themeMode,
-                // On web, go directly to login to avoid splash auth timing issues
-                initialRoute: kIsWeb ? Routes.loginScreen : Routes.splashScreen,
+                // Use splash for all platforms - it checks auth and navigates to home/login accordingly
+                initialRoute: Routes.splashScreen,
                 onGenerateRoute: appRouter.generateRoute,
               );
             },

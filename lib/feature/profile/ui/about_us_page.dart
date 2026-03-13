@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
@@ -14,7 +15,7 @@ class AboutUsPage extends StatelessWidget {
           ? ColorsManager.profileBackgroundDark
           : ColorsManager.white,
       appBar: AppBar(
-        title: const Text('About Us'),
+        title: Text(context.tr('profile_about_us_title')),
         backgroundColor: isDark
             ? ColorsManager.transparent
             : ColorsManager.white,
@@ -58,7 +59,7 @@ class AboutUsPage extends StatelessWidget {
 
             // Welcome Text
             Text(
-              'Welcome to Rebtal',
+              context.tr('profile_welcome_rebtal'),
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -70,7 +71,7 @@ class AboutUsPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Your trusted platform for chalet bookings',
+              context.tr('profile_trusted_platform'),
               style: TextStyle(
                 fontSize: 16,
                 color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
@@ -83,9 +84,8 @@ class AboutUsPage extends StatelessWidget {
             _buildSection(
               isDark: isDark,
               icon: Icons.track_changes,
-              title: 'Our Mission',
-              content:
-                  'نسعى لتسهيل عملية الوصول إلى الشاليهات المناسبة لعملائنا بأفضل الأسعار مع ضمان الأمان التام للحجز. نهدف إلى توفير تجربة استثنائية تجمع بين الراحة والموثوقية.',
+              title: context.tr('profile_our_mission_title'),
+              content: context.tr('profile_our_mission_content'),
             ),
             const SizedBox(height: 24),
 
@@ -93,40 +93,36 @@ class AboutUsPage extends StatelessWidget {
             _buildSection(
               isDark: isDark,
               icon: Icons.star_outline,
-              title: 'What We Offer',
+              title: context.tr('profile_what_we_offer_title'),
               content: '',
               child: Column(
                 children: [
                   _buildFeatureItem(
                     isDark: isDark,
                     icon: Icons.search,
-                    title: 'Easy Search',
-                    description:
-                        'Find your perfect chalet with our advanced search filters',
+                    title: context.tr('profile_easy_search'),
+                    description: context.tr('profile_easy_search_desc'),
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureItem(
                     isDark: isDark,
                     icon: Icons.price_check_outlined,
-                    title: 'Best Prices',
-                    description:
-                        'Competitive pricing and exclusive deals for our users',
+                    title: context.tr('profile_best_prices'),
+                    description: context.tr('profile_best_prices_desc'),
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureItem(
                     isDark: isDark,
                     icon: Icons.verified_user_outlined,
-                    title: 'Secure Booking',
-                    description:
-                        'Safe and reliable booking process with instant confirmation',
+                    title: context.tr('profile_secure_booking'),
+                    description: context.tr('profile_secure_booking_desc'),
                   ),
                   const SizedBox(height: 16),
                   _buildFeatureItem(
                     isDark: isDark,
                     icon: Icons.support_agent,
-                    title: '24/7 Support',
-                    description:
-                        'Always here to help with any questions or concerns',
+                    title: context.tr('profile_support_24'),
+                    description: context.tr('profile_support_24_desc'),
                   ),
                 ],
               ),
@@ -137,16 +133,15 @@ class AboutUsPage extends StatelessWidget {
             _buildSection(
               isDark: isDark,
               icon: Icons.favorite_border,
-              title: 'Why Choose Us',
-              content:
-                  'We connect chalet owners with guests looking for the perfect getaway. Our platform ensures transparency, security, and convenience for both parties. With verified listings and secure payment methods, you can book with confidence.',
+              title: context.tr('profile_why_choose_us_title'),
+              content: context.tr('profile_why_choose_us_content'),
             ),
             const SizedBox(height: 32),
 
             // CTA
             Center(
               child: Text(
-                'Start exploring amazing chalets today!',
+                context.tr('profile_start_exploring'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

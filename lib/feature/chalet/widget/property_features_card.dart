@@ -3,6 +3,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/services_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class PropertyFeaturesCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -80,7 +81,7 @@ class _AmenitiesListState extends State<_AmenitiesList>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "What this place offers",
+          context.tr('chalet_what_offers'),
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -117,7 +118,7 @@ class _AmenitiesListState extends State<_AmenitiesList>
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    item['label'] as String,
+                    context.tr(item['l10nKey'] as String? ?? 'chalet_pool'),
                     style: TextStyle(
                       fontSize: 16,
                       color: widget.isDark
@@ -154,8 +155,8 @@ class _AmenitiesListState extends State<_AmenitiesList>
               ),
               child: Text(
                 _isExpanded
-                    ? "Show less"
-                    : "Show all ${widget.amenities.length} amenities",
+                    ? context.tr('chalet_show_less')
+                    : context.tr('chalet_show_all_amenities').replaceFirst('{}', widget.amenities.length.toString()),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

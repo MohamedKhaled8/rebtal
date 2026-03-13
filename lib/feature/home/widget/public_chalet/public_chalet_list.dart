@@ -6,6 +6,8 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/shimmers.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
 import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_card.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -263,11 +265,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chalets')
-          .where('status', isEqualTo: 'approved')
-          .where('isVisible', isEqualTo: true)
-          .snapshots(),
+      stream: getIt<WatchPublicChaletsUseCase>()(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           if (_cachedDocs != null && _cachedDocs!.isNotEmpty) {

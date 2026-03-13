@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/admin/widget/ChaletRequestCard.dart';
 
 class RequestsList extends StatelessWidget {
@@ -52,7 +53,7 @@ class RequestsList extends StatelessWidget {
                 Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading requests',
+                  context.tr('admin_requests_error'),
                   style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                 ),
               ],
@@ -60,6 +61,21 @@ class RequestsList extends StatelessWidget {
           );
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          // Choose localized empty state message based on status
+          final String emptyKey;
+          switch (status.toLowerCase()) {
+            case 'approved':
+              emptyKey = 'admin_no_approved_requests';
+              break;
+            case 'pending':
+              emptyKey = 'admin_no_pending_requests';
+              break;
+            case 'rejected':
+              emptyKey = 'admin_no_rejected_requests';
+              break;
+            default:
+              emptyKey = 'admin_no_requests';
+          }
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -71,7 +87,7 @@ class RequestsList extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  emptyTitle ?? 'No $status requests',
+                  emptyTitle ?? context.tr(emptyKey),
                   style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),

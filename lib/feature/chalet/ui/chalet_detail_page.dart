@@ -3,19 +3,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/feature/chalet/function/chalet_detail_functions.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
-import 'package:rebtal/feature/chalet/widget/fixed_bottom_bar.dart';
-import 'package:rebtal/feature/chalet/widget/image_header_section.dart';
 import 'package:rebtal/feature/chalet/widget/action_buttons.dart';
 import 'package:rebtal/feature/chalet/widget/availability_card.dart';
+import 'package:rebtal/feature/chalet/widget/booking_dates_display.dart';
+import 'package:rebtal/feature/chalet/widget/chalet_gallery_strip.dart';
+import 'package:rebtal/feature/chalet/widget/chalet_section_title.dart';
+import 'package:rebtal/feature/chalet/widget/chalet_stats_row.dart';
+import 'package:rebtal/feature/chalet/widget/fixed_bottom_bar.dart';
+import 'package:rebtal/feature/chalet/widget/image_header_section.dart';
 import 'package:rebtal/feature/chalet/widget/location_map_card.dart';
 import 'package:rebtal/feature/chalet/widget/owner_information_card.dart';
 import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
+import 'package:rebtal/feature/chalet/widget/show_more_button.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/feature/chalet/widget/booking_dates_display.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class ChaletDetailPage extends StatelessWidget {
@@ -38,7 +44,8 @@ class ChaletDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChaletDetailCubit()..initialize(requestData),
+      create: (context) =>
+          getIt<ChaletDetailCubit>()..initialize(requestData),
       child: BlocSelector<ChaletDetailCubit, ChaletDetailState, List<String>>(
         selector: (state) {
           if (state is ChaletDetailLoaded) {
@@ -66,61 +73,7 @@ class ChaletDetailPage extends StatelessWidget {
               final price = requestData['price'];
               final description = requestData['description']?.toString() ?? '';
 
-              // Helper to safely get int from multiple keys
-              int getInt(List<String> keys) {
-                for (final key in keys) {
-                  final val = requestData[key];
-                  if (val is num) return val.toInt();
-                  if (val is String) return int.tryParse(val) ?? 0;
-                }
-                return 0;
-              }
-
-              final guests = getInt([
-                'guests',
-                'capacity',
-                'guestCount',
-                'maxGuests',
-                'max_guests',
-                'childrenCount',
-              ]);
-              final bedrooms = getInt([
-                'bedrooms',
-                'bedroomCount',
-                'rooms',
-                'roomCount',
-              ]);
-
-              // Use bedrooms count as fallback for beds if beds is 0
-              int beds = getInt(['beds', 'bedCount', 'numBeds', 'num_beds']);
-              if (beds == 0 && bedrooms > 0) beds = bedrooms;
-
-              final bathrooms = getInt(['bathrooms', 'bathroomCount', 'baths']);
-
-              // Area should check 'chaletArea' first (from ChaletModel)
-              final areaVal =
-                  requestData['chaletArea'] ??
-                  requestData['area'] ??
-                  requestData['size'] ??
-                  requestData['totalArea'];
-
-              final area =
-                  (areaVal == null ||
-                      areaVal.toString() == '0' ||
-                      areaVal.toString() == '0.0')
-                  ? null
-                  : areaVal.toString();
-
-              // Safe rating/reviews extraction
-              final ratingVal =
-                  (requestData['rating'] as num?)?.toDouble() ?? 0.0;
-              final reviewsVal =
-                  (requestData['reviews_count'] as num?)?.toInt() ??
-                  (requestData['ratingCount'] as num?)?.toInt() ??
-                  0;
-              final formattedRating = ratingVal == 0
-                  ? 'New'
-                  : ratingVal.toString();
+              final metrics = buildChaletDetailMetrics(requestData);
 
               return Scaffold(
                 backgroundColor: backgroundColor,
@@ -225,7 +178,7 @@ class ChaletDetailPage extends StatelessWidget {
                                           ),
                                         ),
                                         Text(
-                                          "${area != null ? 'Area $area m² · ' : ''}${guests > 0 ? '$guests · ' : ''}$bedrooms bedroom · $beds beds",
+                                          "${metrics.area != null ? '${context.tr('chalet_detail_area')} ${metrics.area} ${context.tr('common_m2')} · ' : ''}${metrics.guests > 0 ? '${metrics.guests} · ' : ''}${metrics.bedrooms} ${context.tr(metrics.bedrooms == 1 ? 'chalet_detail_bedroom' : 'chalet_detail_bedrooms')} · ${metrics.beds} ${context.tr('chalet_detail_beds')}",
                                           style: TextStyle(
                                             fontSize: stv(
                                               context: context,
@@ -256,12 +209,12 @@ class ChaletDetailPage extends StatelessWidget {
                                   delay: const Duration(milliseconds: 200),
                                   curve: Curves.easeOutQuart,
                                   child: RepaintBoundary(
-                                    child: _buildStatsRow(
-                                      context,
-                                      isDark,
-                                      textColor,
-                                      formattedRating,
-                                      reviewsVal.toString(),
+                                    child: ChaletStatsRow(
+                                      isDark: isDark,
+                                      textColor: textColor,
+                                      rating: metrics.formattedRating,
+                                      reviewsCount:
+                                          metrics.reviewsCount.toString(),
                                     ),
                                   ),
                                 ),
@@ -370,10 +323,9 @@ class ChaletDetailPage extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildSectionTitle(
-                                          context,
-                                          "About this place",
-                                          textColor,
+                                        ChaletSectionTitle(
+                                          title: context.tr('chalet_about_place'),
+                                          textColor: textColor,
                                         ),
                                         SizedBox(
                                           height: otv(
@@ -407,10 +359,9 @@ class ChaletDetailPage extends StatelessWidget {
                                             landscape: 8.sh,
                                           ),
                                         ),
-                                        _buildShowMoreButton(
-                                          context,
-                                          isDark,
-                                          textColor,
+                                        ShowMoreButton(
+                                          isDark: isDark,
+                                          textColor: textColor,
                                         ),
                                       ],
                                     ),
@@ -444,10 +395,9 @@ class ChaletDetailPage extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        _buildSectionTitle(
-                                          context,
-                                          "Gallery",
-                                          textColor,
+                                        ChaletSectionTitle(
+                                          title: context.tr('chalet_gallery_title'),
+                                          textColor: textColor,
                                         ),
                                         SizedBox(
                                           height: otv(
@@ -456,10 +406,9 @@ class ChaletDetailPage extends StatelessWidget {
                                             landscape: 8.sh,
                                           ),
                                         ),
-                                        _buildGalleryStrip(
-                                          context,
-                                          images,
-                                          isDark,
+                                        ChaletGalleryStrip(
+                                          images: images,
+                                          isDark: isDark,
                                         ),
                                       ],
                                     ),
@@ -613,10 +562,9 @@ class ChaletDetailPage extends StatelessWidget {
                                             landscape: 12.sh,
                                           ),
                                         ),
-                                        _buildSectionTitle(
-                                          context,
-                                          'Availability',
-                                          textColor,
+                                        ChaletSectionTitle(
+                                          title: 'Availability',
+                                          textColor: textColor,
                                         ),
                                         SizedBox(
                                           height: otv(
@@ -636,10 +584,9 @@ class ChaletDetailPage extends StatelessWidget {
                                               landscape: 12.sh,
                                             ),
                                           ),
-                                          _buildSectionTitle(
-                                            context,
-                                            'Request Details',
-                                            textColor,
+                                          ChaletSectionTitle(
+                                            title: 'Request Details',
+                                            textColor: textColor,
                                           ),
                                           SizedBox(
                                             height: otv(
@@ -698,440 +645,6 @@ class ChaletDetailPage extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildGalleryStrip(
-    BuildContext context,
-    List<String> images,
-    bool isDark,
-  ) {
-    if (images.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      height: otv(
-        context: context,
-        portrait: stv(
-          context: context,
-          mobile: 130.sh,
-          tablet: 100.sh,
-          desktop: 80.sh,
-        ),
-        landscape: stv(
-          context: context,
-          mobile: 300.sh,
-          tablet: 265.sh,
-          desktop: 270.sh,
-        ),
-      ),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: images.length,
-        separatorBuilder: (_, __) => SizedBox(
-          width: stv(
-            context: context,
-            mobile: 10.sw,
-            tablet: 16.sw,
-            desktop: 20.sw,
-          ),
-        ),
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              context.read<ChaletDetailCubit>().openFullScreen(
-                context,
-                images: images,
-                start: index,
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                stv(
-                  context: context,
-                  mobile: 12.sp,
-                  tablet: 16.sp,
-                  desktop: 20.sp,
-                ),
-              ),
-              child: AspectRatio(
-                aspectRatio: 1.5,
-                child: AppImageHelper(path: images[index], fit: BoxFit.cover),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildStatsRow(
-    BuildContext context,
-    bool isDark,
-    Color textColor,
-    String rating,
-    String reviewsCount,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.symmetric(
-          horizontal: BorderSide.none, // Handled by external dividers
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildStatItem(
-            context,
-            rating,
-            "Rating",
-            Icons.star,
-            true,
-            isDark,
-            textColor,
-          ),
-          _buildVerticalDivider(context, isDark),
-          _buildStatItem(
-            context,
-            "Guest\nfavorite",
-            "",
-            null,
-            false,
-            isDark,
-            textColor,
-            isBadge: true,
-          ),
-          _buildVerticalDivider(context, isDark),
-          _buildStatItem(
-            context,
-            reviewsCount,
-            "Reviews",
-            null,
-            false,
-            isDark,
-            textColor,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-    BuildContext context,
-    String mainText,
-    String subText,
-    IconData? icon,
-    bool showIcon,
-    bool isDark,
-    Color textColor, {
-    bool isBadge = false,
-  }) {
-    if (isBadge) {
-      return Expanded(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1500),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Left Laurel Branch
-                      SizedBox(
-                        width: 20,
-                        height: 40,
-                        child: Stack(
-                          children: [
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 2,
-                              left: 8,
-                              rotate: -0.8,
-                              size: 8,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 8,
-                              left: 4,
-                              rotate: -0.6,
-                              size: 10,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 16,
-                              left: 2,
-                              rotate: -0.4,
-                              size: 11,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 24,
-                              left: 6,
-                              rotate: -0.2,
-                              size: 10,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 32,
-                              left: 10,
-                              rotate: 0,
-                              size: 8,
-                              textColor: textColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Guest",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              height: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            "favourite",
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                              height: 1.0,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 4),
-                      // Right Laurel Branch
-                      SizedBox(
-                        width: 20,
-                        height: 40,
-                        child: Stack(
-                          children: [
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 2,
-                              right: 8,
-                              rotate: 0.8,
-                              size: 8,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 8,
-                              right: 4,
-                              rotate: 0.6,
-                              size: 10,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 16,
-                              right: 2,
-                              rotate: 0.4,
-                              size: 11,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 24,
-                              right: 6,
-                              rotate: 0.2,
-                              size: 10,
-                              textColor: textColor,
-                            ),
-                            _buildLaurelLeaf(
-                              value,
-                              bottom: 32,
-                              right: 10,
-                              rotate: 0,
-                              size: 8,
-                              textColor: textColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    }
-    return Expanded(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                mainText,
-                style: TextStyle(
-                  fontSize: stv(
-                    context: context,
-                    mobile: 16.spScaled,
-                    tablet: 18.spScaled,
-                    desktop: 20.spScaled,
-                  ),
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              if (showIcon) ...[
-                SizedBox(
-                  width: stv(
-                    context: context,
-                    mobile: 4.sw,
-                    tablet: 6.sw,
-                    desktop: 8.sw,
-                  ),
-                ),
-                Icon(
-                  icon,
-                  size: stv(
-                    context: context,
-                    mobile: 14.spScaled,
-                    tablet: 16.spScaled,
-                    desktop: 18.spScaled,
-                  ),
-                  color: textColor,
-                ),
-              ],
-            ],
-          ),
-          if (subText.isNotEmpty)
-            Text(
-              subText,
-              style: TextStyle(
-                fontSize: stv(
-                  context: context,
-                  mobile: 12.spScaled,
-                  tablet: 14.spScaled,
-                  desktop: 16.spScaled,
-                ),
-                color: isDark ? Colors.white70 : Colors.grey[600],
-                decoration: TextDecoration.underline,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLaurelLeaf(
-    double value, {
-    double? left,
-    double? right,
-    double? top,
-    double? bottom,
-    required double rotate,
-    required double size,
-    required Color textColor,
-  }) {
-    return Positioned(
-      left: left,
-      right: right,
-      top: top,
-      bottom: bottom != null ? bottom * value : null,
-      child: Transform.rotate(
-        angle: rotate,
-        child: Opacity(
-          opacity: value,
-          child: Icon(
-            Icons.spa_rounded,
-            size: size,
-            color: textColor.withOpacity(0.9),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVerticalDivider(BuildContext context, bool isDark) {
-    return Container(
-      height: otv(context: context, portrait: 40.sh, landscape: 20.sh),
-      width: 1,
-      color: isDark ? Colors.white24 : const Color(0xFFDDDDDD),
-    );
-  }
-
-  Widget _buildSectionTitle(
-    BuildContext context,
-    String title,
-    Color textColor,
-  ) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: stv(
-          context: context,
-          mobile: 22.spScaled,
-          tablet: 26.spScaled,
-          desktop: 30.spScaled,
-        ),
-        fontWeight: FontWeight.w600,
-        color: textColor,
-      ),
-    );
-  }
-
-  Widget _buildShowMoreButton(
-    BuildContext context,
-    bool isDark,
-    Color textColor,
-  ) {
-    return Row(
-      children: [
-        Text(
-          "Show more",
-          style: TextStyle(
-            fontSize: stv(
-              context: context,
-              mobile: 16.spScaled,
-              tablet: 18.spScaled,
-              desktop: 20.spScaled,
-            ),
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
-            color: textColor,
-          ),
-        ),
-        SizedBox(
-          width: stv(
-            context: context,
-            mobile: 4.sw,
-            tablet: 6.sw,
-            desktop: 8.sw,
-          ),
-        ),
-        Icon(
-          Icons.arrow_forward_ios,
-          size: stv(
-            context: context,
-            mobile: 12.spScaled,
-            tablet: 14.spScaled,
-            desktop: 16.spScaled,
-          ),
-          color: textColor,
-        ),
-      ],
     );
   }
 }

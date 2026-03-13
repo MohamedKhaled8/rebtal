@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class UserCard extends StatelessWidget {
@@ -21,7 +23,11 @@ class UserCard extends StatelessWidget {
     final phone = userData['phone'] ?? 'No Phone';
     final uid = userData['uid'] ?? docId;
     final role = userData['role'] ?? 'user';
+    final profileImageUrl = userData['profileImageUrl']?.toString();
+    final idCardUrl = userData['idCardUrl']?.toString();
     final isDark = DynamicThemeManager.isDarkMode(context);
+    final hasPhotos = (profileImageUrl != null && profileImageUrl.isNotEmpty) ||
+        (idCardUrl != null && idCardUrl.isNotEmpty);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -47,29 +53,65 @@ class UserCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF667EEA),
-                        const Color(0xFF764BA2),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                GestureDetector(
+                  onTap: hasPhotos
+                      ? () => _showPhotosDialog(context, name, profileImageUrl, idCardUrl, isDark)
+                      : null,
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: (profileImageUrl == null || profileImageUrl.isEmpty)
+                          ? LinearGradient(
+                              colors: [
+                                const Color(0xFF667EEA),
+                                const Color(0xFF764BA2),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                          ? isDark ? Colors.white10 : Colors.grey[200]
+                          : null,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Text(
-                      name.isNotEmpty ? name[0].toUpperCase() : '?',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                      ),
-                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: profileImageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 24,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -142,7 +184,7 @@ class UserCard extends StatelessWidget {
                   child: _buildActionButton(
                     context: context,
                     icon: Icons.edit_rounded,
-                    label: 'تعديل',
+                    label: context.tr('admin_user_edit'),
                     color: const Color(0xFF667EEA),
                     onPressed: () {
                       UserManager.editUser(
@@ -160,7 +202,7 @@ class UserCard extends StatelessWidget {
                   child: _buildActionButton(
                     context: context,
                     icon: Icons.delete_outline_rounded,
-                    label: 'حذف',
+                    label: context.tr('admin_user_delete'),
                     color: Colors.red,
                     onPressed: () {
                       UserManager.deleteUser(
@@ -174,19 +216,19 @@ class UserCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (userData['idCardUrl'] != null &&
-                userData['idCardUrl'].toString().isNotEmpty) ...[
+            if (hasPhotos) ...[
               const SizedBox(height: 12),
               _buildActionButton(
                 context: context,
-                icon: Icons.badge_outlined,
-                label: 'عرض البطاقة الشخصية',
-                color: const Color(0xFF10B981), // Green color
+                icon: Icons.photo_library_rounded,
+                label: context.tr('admin_user_view_photos'),
+                color: const Color(0xFF10B981),
                 onPressed: () {
-                  _showIdCardDialog(
+                  _showPhotosDialog(
                     context,
-                    userData['idCardUrl'],
                     name,
+                    profileImageUrl,
+                    idCardUrl,
                     isDark,
                   );
                 },
@@ -199,79 +241,77 @@ class UserCard extends StatelessWidget {
     );
   }
 
-  void _showIdCardDialog(
+  void _showPhotosDialog(
     BuildContext context,
-    String imageUrl,
     String userName,
+    String? profileImageUrl,
+    String? idCardUrl,
     bool isDark,
   ) {
-    showDialog(
+    final photos = <String>[];
+    if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+      photos.add(profileImageUrl);
+    }
+    if (idCardUrl != null && idCardUrl.isNotEmpty) {
+      photos.add(idCardUrl);
+    }
+    if (photos.isEmpty) return;
+
+    showGeneralDialog(
       context: context,
-      builder: (context) {
-        return Dialog(
+      barrierColor: Colors.black.withOpacity(0.9),
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (dialogContext, __, ___) {
+        return Scaffold(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          body: SafeArea(
+            child: Stack(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'البطاقة الشخصية: $userName',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
+                PageView.builder(
+                  itemCount: photos.length,
+                  itemBuilder: (_, index) {
+                    final url = photos[index];
+                    return Center(
+                      child: InteractiveViewer(
+                        minScale: 0.8,
+                        maxScale: 4,
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.contain,
+                          placeholder: (c, _) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          errorWidget: (c, _, __) => const Icon(
+                            Icons.broken_image_rounded,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.close,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ],
+                    );
+                  },
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: IconButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white, size: 28),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return const SizedBox(
-                          height: 200,
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: Icon(
-                              Icons.broken_image_rounded,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        );
-                      },
+                Positioned(
+                  top: 12,
+                  right: 16,
+                  child: Text(
+                    dialogContext
+                        .tr('admin_user_photos_title')
+                        .replaceAll('{}', userName),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

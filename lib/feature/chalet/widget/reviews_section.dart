@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -54,7 +55,7 @@ class ReviewsSection extends StatelessWidget {
                 ),
                 SizedBox(width: stv(context: context, mobile: 8.sw, tablet: 10.sw, desktop: 12.sw)),
                 Text(
-                  '$rating · $reviewsCount reviews',
+                  '$rating · $reviewsCount ${context.tr('chalet_detail_reviews')}',
                   style: TextStyle(
                     fontSize: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
                     fontWeight: FontWeight.w600,
@@ -83,7 +84,7 @@ class ReviewsSection extends StatelessWidget {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: _buildEmptyState(),
+                  child: _buildEmptyState(context),
                 );
               }
 
@@ -144,7 +145,7 @@ class ReviewsSection extends StatelessWidget {
                       } else if (diff.inDays > 0) {
                         dateStr = "${diff.inDays} days ago";
                       } else {
-                        dateStr = "Today";
+                        dateStr = context.tr('chalet_detail_today');
                       }
                     }
 
@@ -259,7 +260,7 @@ class ReviewsSection extends StatelessWidget {
                   foregroundColor: isDark ? Colors.white : Colors.black,
                 ),
                 child: Text(
-                  "Show all $reviewsCount reviews",
+                  context.tr('chalet_detail_show_all_reviews').replaceAll('{}', '$reviewsCount'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -274,9 +275,9 @@ class ReviewsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Text(
-      "No reviews yet",
+      context.tr('chalet_detail_no_reviews'),
       style: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
     );
   }
@@ -437,13 +438,15 @@ class _ExpandableTextState extends State<ExpandableText> {
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    isExpanded ? "Show less" : "Show more",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                      color: widget.isDark ? Colors.white : Colors.black,
+                  child: Builder(
+                    builder: (ctx) => Text(
+                      isExpanded ? ctx.tr('chalet_detail_show_less') : ctx.tr('chalet_detail_show_more'),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                        color: widget.isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
                 ),
