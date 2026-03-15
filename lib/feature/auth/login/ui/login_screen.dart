@@ -32,42 +32,87 @@ class LoginScreen extends StatelessWidget {
 
           return Scaffold(
             backgroundColor: isDark
-                ? ColorsManager.scaffolColor
+                ? Colors.black
                 : ColorsManager.profileBackgroundLight,
-            body: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 60),
-                      Center(
-                        child: HandwrittenAnimatedText(
-                          text: 'Rebtal',
-                          fontSize: 64,
-                          color: isDark
-                              ? ColorsManager.white
-                              : ColorsManager.chaletActionBlue,
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _LogoSection(isDark: isDark),
-                      const SizedBox(height: 48),
-                      _LoginForm(
-                        isDark: isDark,
-                        cubit: cubit,
-                        isLoading: isLoading,
-                      ),
-                      const SizedBox(height: 24),
-                      _SignUpLink(isDark: isDark),
-                      const SizedBox(height: 32),
-                    ],
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.network(
+                    'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                    fit: BoxFit.cover,
                   ),
                 ),
-              ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.2),
+                          isDark ? Colors.black.withOpacity(0.95) : Colors.black.withOpacity(0.8),
+                        ],
+                        stops: const [0.0, 0.55],
+                      ),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  child: GestureDetector(
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 60),
+                          const Icon(
+                            Icons.holiday_village_outlined,
+                            size: 64,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 16),
+                          const Center(
+                            child: HandwrittenAnimatedText(
+                              text: 'Rebtal',
+                              fontSize: 72,
+                              color: Colors.white,
+                              isDark: true,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Center(
+                            child: Container(
+                              height: 1.5,
+                              width: 60,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.0),
+                                    Colors.white.withOpacity(0.5),
+                                    Colors.white.withOpacity(0.0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _LogoSection(isDark: isDark),
+                          const SizedBox(height: 40),
+                          _LoginForm(
+                            isDark: isDark,
+                            cubit: cubit,
+                            isLoading: isLoading,
+                          ),
+                          const SizedBox(height: 32),
+                          _SignUpLink(isDark: isDark),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -90,20 +135,22 @@ class _LogoSection extends StatelessWidget {
         children: [
           Text(
             context.tr('auth_login_title'),
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: isDark ? ColorsManager.white : Colors.black,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
               letterSpacing: -0.5,
+              height: 1.2,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             context.tr('auth_login_subtitle'),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
-              color: isDark ? ColorsManager.white : Colors.black,
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.8),
+              letterSpacing: 0.2,
             ),
           ),
         ],
@@ -137,157 +184,198 @@ class _LoginFormState extends State<_LoginForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        CustomInputField(
-          controller: widget.cubit.emailController,
-          label: context.tr('auth_email'),
-          icon: Icons.email_outlined,
-          keyboardType: TextInputType.emailAddress,
-        ),
-        const SizedBox(height: 20),
-        CustomInputField(
-          controller: widget.cubit.passwordController,
-          label: context.tr('auth_password'),
-          icon: Icons.lock_outline_rounded,
-          obscureText: widget.cubit.obscurePassword,
-          suffixIcon: IconButton(
-            icon: Icon(
-              widget.cubit.obscurePassword
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: widget.isDark
+                ? const Color(0xFF1E1E24).withOpacity(0.6)
+                : Colors.white.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
               color: widget.isDark
-                  ? ColorsManager.white70.withOpacity(0.6)
-                  : ColorsManager.chaletGrey500,
-              size: 20,
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.grey.withOpacity(0.1),
             ),
-            onPressed: widget.cubit.togglePasswordVisibility,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-              );
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            ),
-            child: Text(
-              context.tr('auth_forgot_password'),
-              style: TextStyle(
-                fontSize: 14,
+            boxShadow: [
+              BoxShadow(
                 color: widget.isDark
-                    ? ColorsManager.bookingsAccentPrimary
-                    : ColorsManager.chaletActionBlue,
-                fontWeight: FontWeight.w500,
+                    ? Colors.black.withOpacity(0.2)
+                    : Colors.black.withOpacity(0.03),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-            ),
+            ],
           ),
-        ),
-        const SizedBox(height: 20),
-        // Terms and Conditions Checkbox
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Checkbox(
-              value: _termsAccepted,
-              onChanged: (value) {
-                setState(() {
-                  _termsAccepted = value ?? false;
-                });
-              },
-              activeColor: widget.isDark
-                  ? ColorsManager.bookingsAccentPrimary
-                  : ColorsManager.blue2563EB,
-              checkColor: ColorsManager.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomInputField(
+                controller: widget.cubit.emailController,
+                label: context.tr('auth_email'),
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
               ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _termsAccepted = !_termsAccepted;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: RichText(
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: widget.isDark
-                            ? ColorsManager.white70
-                            : ColorsManager.chaletGrey800,
-                        height: 1.4,
+              const SizedBox(height: 16),
+              CustomInputField(
+                controller: widget.cubit.passwordController,
+                label: context.tr('auth_password'),
+                icon: Icons.lock_outline_rounded,
+                obscureText: widget.cubit.obscurePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    widget.cubit.obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: widget.isDark
+                        ? ColorsManager.white70.withOpacity(0.6)
+                        : ColorsManager.chaletGrey500,
+                    size: 20,
+                  ),
+                  onPressed: widget.cubit.togglePasswordVisibility,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight, // Changed to Right for Arabic / usually better
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    context.tr('auth_forgot_password'),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: widget.isDark
+                          ? const Color(0xFF60A5FA)
+                          : ColorsManager.chaletActionBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Terms and Conditions Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      value: _termsAccepted,
+                      onChanged: (value) {
+                        setState(() {
+                          _termsAccepted = value ?? false;
+                        });
+                      },
+                      activeColor: widget.isDark
+                          ? const Color(0xFF3B82F6)
+                          : ColorsManager.blue2563EB,
+                      checkColor: ColorsManager.white,
+                      side: BorderSide(
+                        color: widget.isDark ? Colors.white30 : Colors.grey.shade400,
+                        width: 1.5,
                       ),
-                      children: [
-                        TextSpan(text: context.tr('auth_agree_terms')),
-                        WidgetSpan(
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.of(
-                                context,
-                              ).pushNamed(Routes.termsScreen);
-                            },
-                            child: Text(
-                              context.tr('auth_terms'),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: widget.isDark
-                                    ? ColorsManager.bookingsAccentPrimary
-                                    : ColorsManager.blue2563EB,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _termsAccepted = !_termsAccepted;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: widget.isDark
+                                  ? ColorsManager.white70
+                                  : ColorsManager.chaletGrey800,
+                              height: 1.5,
+                            ),
+                            children: [
+                              TextSpan(text: context.tr('auth_agree_terms')),
+                              const TextSpan(text: ' '),
+                              WidgetSpan(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(
+                                      context,
+                                    ).pushNamed(Routes.termsScreen);
+                                  },
+                                  child: Text(
+                                    context.tr('auth_terms'),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: widget.isDark
+                                          ? const Color(0xFF60A5FA)
+                                          : ColorsManager.blue2563EB,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
+                              const TextSpan(text: ' '),
+                              TextSpan(text: context.tr('auth_and_privacy')),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (!_termsAccepted)
+                Padding(
+                  padding: const EdgeInsets.only(left: 36, top: 8),
+                  child: Text(
+                    context.tr('auth_must_agree'),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFFEF4444),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 32),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: widget.isLoading
+                    ? SizedBox(
+                        height: 56,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              widget.isDark
+                                  ? const Color(0xFF3B82F6)
+                                  : ColorsManager.blue2563EB,
                             ),
                           ),
                         ),
-                        TextSpan(text: context.tr('auth_and_privacy')),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (!_termsAccepted)
-          Padding(
-            padding: const EdgeInsets.only(left: 48, top: 4),
-            child: Text(
-              context.tr('auth_must_agree'),
-              style: TextStyle(
-                fontSize: 11,
-                color: ColorsManager.chaletUnavailableRed,
-              ),
-            ),
-          ),
-        const SizedBox(height: 24),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: widget.isLoading
-              ? SizedBox(
-                  height: 52,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        widget.isDark
-                            ? ColorsManager.bookingsAccentPrimary
-                            : ColorsManager.blue2563EB,
+                      )
+                    : _PrimaryButton(
+                        isDark: widget.isDark,
+                        label: context.tr('auth_login'),
+                        onPressed: _termsAccepted ? () => loginCubit.login() : null,
                       ),
-                    ),
-                  ),
-                )
-              : _PrimaryButton(
-                  isDark: widget.isDark,
-                  label: context.tr('auth_login'),
-                  onPressed: _termsAccepted ? () => loginCubit.login() : null,
-                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -310,16 +398,28 @@ class _PrimaryButton extends StatelessWidget {
     final isEnabled = onPressed != null;
 
     return Container(
-      height: 52,
+      height: 56,
       decoration: BoxDecoration(
         color: isEnabled
             ? (isDark
-                  ? ColorsManager.bookingsAccentPrimary
-                  : ColorsManager.blue2563EB)
+                  ? const Color(0xFF3B82F6) // Brighter premium blue
+                  : const Color(0xFF2563EB))
             : (isDark
-                  ? ColorsManager.chaletGrey800
-                  : ColorsManager.chaletGrey400),
-        borderRadius: BorderRadius.circular(14),
+                  ? Colors.white.withOpacity(0.1)
+                  : ColorsManager.grey300),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: (isDark
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFF2563EB))
+                      .withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: ColorsManager.transparent,
@@ -351,36 +451,41 @@ class _SignUpLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          context.tr('auth_no_account'),
-          style: TextStyle(
-            fontSize: 15,
-            color: isDark ? ColorsManager.white70 : ColorsManager.chaletGrey500,
-          ),
-        ),
-        const SizedBox(width: 8),
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pushNamed(Routes.registerScreen);
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          ),
-          child: Text(
-            context.tr('auth_create_account'),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            context.tr('auth_no_account'),
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? ColorsManager.bookingsAccentPrimary
-                  : ColorsManager.blue2563EB,
+              color: Colors.white.withOpacity(0.9),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 4),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).pushNamed(Routes.registerScreen);
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                context.tr('auth_create_account'),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark
+                      ? const Color(0xFF60A5FA)
+                      : const Color(0xFF2563EB),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+

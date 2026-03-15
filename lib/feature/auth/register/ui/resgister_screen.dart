@@ -3,7 +3,6 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
-import 'dart:io';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/feature/auth/register/widget/glassmor_phic_card.dart';
 import 'package:rebtal/feature/auth/register/widget/login_link_widget.dart';
@@ -26,153 +25,225 @@ class RegisterScreen extends StatelessWidget {
         builder: (context, registerState) {
           return Scaffold(
             backgroundColor: isDark
-                ? ColorsManager.darkBackground121212
-                : ColorsManager.grey50,
-            body: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 60),
-                      Center(
-                        child: HandwrittenAnimatedText(
-                          text: 'Rebtal',
-                          fontSize: 64,
-                          color: isDark
-                              ? ColorsManager.white
-                              : ColorsManager.chaletActionDarkBlue,
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      BlocBuilder<RegisterCubit, RegisterState>(
-                        builder: (context, state) {
-                          final cubit = context.read<RegisterCubit>();
-                          return Center(
-                            child: GestureDetector(
-                              onTap: () => _showImageSourceDialog(context),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: isDark
-                                          ? const Color(0xFF333333)
-                                          : const Color(0xFFF5F5F5),
-                                      image: cubit.profileImage != null
-                                          ? DecorationImage(
-                                              image: FileImage(
-                                                cubit.profileImage!,
-                                              ),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : null,
-                                      border: Border.all(
-                                        color: (state is RegisterValidationError &&
-                                                cubit.profileImage == null)
-                                            ? ColorsManager.red
-                                            : (isDark
-                                                ? Colors.white10
-                                                : Colors.black12),
-                                        width: (state is RegisterValidationError &&
-                                                cubit.profileImage == null)
-                                            ? 2
-                                            : 1,
-                                      ),
-                                    ),
-                                    child: cubit.profileImage == null
-                                        ? Icon(
-                                            Icons.person_outline_rounded,
-                                            size: 40,
-                                            color: isDark
-                                                ? Colors.white
-                                                : const Color(0xFF222222),
-                                          )
-                                        : null,
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? Colors.white
-                                            : Colors.black,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isDark
-                                              ? ColorsManager
-                                                    .darkBackground121212
-                                              : ColorsManager.grey50,
-                                          width: 3,
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        Icons.camera_alt,
-                                        size: 14,
-                                        color: isDark
-                                            ? Colors.black
-                                            : Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      //const SizedBox(height: 32), // Remove duplicated sizedbox
-                      BlocBuilder<RegisterCubit, RegisterState>(
-                        builder: (context, registerState) {
-                          final cubit = context.read<RegisterCubit>();
-                          return GlassmorPhicCard(
-                            obscurePassword: cubit.obscurePassword,
-                            selectedRole: cubit.selectedRole,
-                            togglePasswordVisibility:
-                                cubit.togglePasswordVisibility,
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: registerState is RegisterLoading
-                            ? SizedBox(
-                                height: 52,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      isDark
-                                          ? ColorsManager.bookingsAccentPrimary
-                                          : ColorsManager.blue2563EB,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : _PrimaryButton(
-                                label: context.tr('auth_create_account'),
-                                isDark: isDark,
-                                onPressed: () {
-                                  FocusScope.of(context).unfocus();
-                                  context.read<RegisterCubit>().register();
-                                },
-                              ),
-                      ),
-                      const SizedBox(height: 24),
-                      LoginLinkWidget(isDark: isDark),
-                      const SizedBox(height: 40),
-                    ],
+                ? Colors.black
+                : ColorsManager.profileBackgroundLight,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.network(
+                    'https://images.unsplash.com/photo-1542718610-a1d656d1884c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                    fit: BoxFit.cover,
                   ),
                 ),
-              ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.2),
+                          isDark ? Colors.black.withOpacity(0.95) : Colors.black.withOpacity(0.8),
+                        ],
+                        stops: const [0.0, 0.55],
+                      ),
+                    ),
+                  ),
+                ),
+                SafeArea(
+                  child: GestureDetector(
+                    onTap: () => FocusScope.of(context).unfocus(),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 50),
+                          const Icon(
+                            Icons.villa_outlined,
+                            size: 64,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 16),
+                          const Center(
+                            child: HandwrittenAnimatedText(
+                              text: 'Rebtal',
+                              fontSize: 64,
+                              color: Colors.white,
+                              isDark: true,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Center(
+                            child: Container(
+                              height: 1.5,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.0),
+                                    Colors.white.withOpacity(0.5),
+                                    Colors.white.withOpacity(0.0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          BlocBuilder<RegisterCubit, RegisterState>(
+                            builder: (context, state) {
+                              final cubit = context.read<RegisterCubit>();
+                              return Center(
+                                child: GestureDetector(
+                                  onTap: () => _showImageSourceDialog(context),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isDark
+                                              ? const Color(0xFF333333)
+                                              : const Color(0xFFF5F5F5),
+                                          image: cubit.profileImage != null
+                                              ? DecorationImage(
+                                                  image: FileImage(
+                                                    cubit.profileImage!,
+                                                  ),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : null,
+                                          border: Border.all(
+                                            color: (state is RegisterValidationError &&
+                                                    cubit.profileImage == null)
+                                                ? ColorsManager.red
+                                                : (isDark
+                                                    ? Colors.white10
+                                                    : Colors.black12),
+                                            width: (state is RegisterValidationError &&
+                                                    cubit.profileImage == null)
+                                                ? 2
+                                                : 1,
+                                          ),
+                                        ),
+                                        child: cubit.profileImage == null
+                                            ? Icon(
+                                                Icons.person_outline_rounded,
+                                                size: 40,
+                                                color: isDark
+                                                    ? Colors.white
+                                                    : const Color(0xFF222222),
+                                              )
+                                            : null,
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isDark
+                                                  ? ColorsManager
+                                                        .darkBackground121212
+                                                  : ColorsManager.grey50,
+                                              width: 3,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            Icons.camera_alt,
+                                            size: 14,
+                                            color: isDark
+                                                ? Colors.black
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 32),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1E1E24).withOpacity(0.6)
+                                  : Colors.white.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.grey.withOpacity(0.1),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark
+                                      ? Colors.black.withOpacity(0.2)
+                                      : Colors.black.withOpacity(0.03),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                BlocBuilder<RegisterCubit, RegisterState>(
+                                  builder: (context, registerState) {
+                                    final cubit = context.read<RegisterCubit>();
+                                    return GlassmorPhicCard(
+                                      obscurePassword: cubit.obscurePassword,
+                                      selectedRole: cubit.selectedRole,
+                                      togglePasswordVisibility:
+                                          cubit.togglePasswordVisibility,
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 32),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  child: registerState is RegisterLoading
+                                      ? SizedBox(
+                                          height: 56,
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                isDark
+                                                    ? const Color(0xFF3B82F6)
+                                                    : ColorsManager.blue2563EB,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : _PrimaryButton(
+                                          label: context.tr('auth_create_account'),
+                                          isDark: isDark,
+                                          onPressed: () {
+                                            FocusScope.of(context).unfocus();
+                                            context.read<RegisterCubit>().register();
+                                          },
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          LoginLinkWidget(isDark: isDark),
+                          const SizedBox(height: 48),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -202,12 +273,22 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
+      height: 56,
       decoration: BoxDecoration(
         color: isDark
-            ? ColorsManager.bookingsAccentPrimary
-            : ColorsManager.blue2563EB,
-        borderRadius: BorderRadius.circular(14),
+            ? const Color(0xFF3B82F6) // Brighter premium blue
+            : const Color(0xFF2563EB),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF2563EB))
+                .withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: ColorsManager.transparent,
