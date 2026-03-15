@@ -12,11 +12,13 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;
   final String docId;
+  final EdgeInsets? margin;
 
   const OwnerChaletCard({
     super.key,
     required this.chaletData,
     required this.docId,
+    this.margin,
   });
 
   @override
@@ -38,249 +40,266 @@ class OwnerChaletCard extends StatelessWidget {
 
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? ColorsManager.chaletBackgroundDark
-            : ColorsManager.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? ColorsManager.white.withOpacity(0.05)
-              : ColorsManager.chaletGrey200.withOpacity(0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? ColorsManager.black.withOpacity(0.2)
-                : ColorsManager.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChaletDetailPage(
+            requestData: chaletData,
+            docId: docId,
+            status: status,
           ),
-        ],
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Stack
-            Stack(
-              children: [
-                SizedBox(
-                  height: 200,
-                  width: double.infinity,
-                  child: AppImageHelper(path: images.first, fit: BoxFit.cover),
-                ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: _StatusBadge(status: status),
-                ),
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Row(
-                    children: [
-                      _CompactBadge(
-                        label: isVisible
-                            ? context.tr('common_visible')
-                            : context.tr('common_hidden'),
-                        color: isVisible
-                            ? ColorsManager.chaletActionBlue
-                            : ColorsManager.grey,
-                      ),
-                      const SizedBox(width: 8),
-                      _CompactBadge(
-                        label: isBookingAvailable
-                            ? context.tr('common_available')
-                            : context.tr('common_closed'),
-                        color: isBookingAvailable
-                            ? ColorsManager.green
-                            : ColorsManager.red,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        margin:
+            margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark
+              ? ColorsManager.chaletBackgroundDark
+              : ColorsManager.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark
+                ? ColorsManager.white.withOpacity(0.05)
+                : ColorsManager.chaletGrey200.withOpacity(0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? ColorsManager.black.withOpacity(0.2)
+                  : ColorsManager.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image Stack
+              Stack(
                 children: [
-                  Text(
-                    chaletName,
-                    style: TextStyle(
-                      color: isDark
-                          ? ColorsManager.white
-                          : ColorsManager.chaletBackgroundDark,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  _LocationRow(location: location),
-                  const SizedBox(height: 12),
-
-                  // Info Row: Bed, Bath, Children
-                  Row(
-                    children: [
-                      _InfoBadge(
-                        icon: Icons.bed_outlined,
-                        text:
-                            '${chaletData['bedrooms'] ?? 0} ${context.tr('common_rooms')}',
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 12),
-                      _InfoBadge(
-                        icon: Icons.bathtub_outlined,
-                        text:
-                            '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths')}',
-                        isDark: isDark,
-                      ),
-                      if (chaletData['childrenCount'] != null &&
-                          (chaletData['childrenCount'] as int) > 0) ...[
-                        const SizedBox(width: 12),
-                        _InfoBadge(
-                          icon: Icons.child_care_outlined,
-                          text:
-                              '${chaletData['childrenCount']} ${context.tr('common_children')}',
-                          isDark: isDark,
-                        ),
-                      ],
-                      if (chaletData['chaletArea'] != null &&
-                          chaletData['chaletArea'].toString().isNotEmpty) ...[
-                        const SizedBox(width: 12),
-                        _InfoBadge(
-                          icon: Icons.square_foot_rounded,
-                          text:
-                              '${chaletData['chaletArea']} ${context.tr('common_m2')}',
-                          isDark: isDark,
-                        ),
-                      ],
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Rating Row
-                  const _RatingRow(
-                    rating: 4.5,
-                    count: 24,
-                  ), // Mock data as requested layout
-
-                  const SizedBox(height: 12),
-
-                  // Calculate discount
-                  (() {
-                    final hasDiscount = chaletData['discountEnabled'] == true;
-                    if (hasDiscount) {
-                      final discountValue =
-                          double.tryParse(
-                            chaletData['discountValue']?.toString() ?? '0',
-                          ) ??
-                          0;
-                      final isPercentage =
-                          chaletData['discountType'] == 'percentage';
-                      final discountAmount = isPercentage
-                          ? (price * discountValue / 100)
-                          : discountValue;
-                      final discountedPrice = (price - discountAmount).clamp(
-                        0.0,
-                        double.infinity,
-                      );
-
-                      return _PriceRow(
-                        originalPrice: price,
-                        finalPrice: discountedPrice,
-                        hasDiscount: true,
-                      );
-                    } else {
-                      return _PriceRow(
-                        originalPrice: price,
-                        finalPrice: price,
-                        hasDiscount: false,
-                      );
-                    }
-                  })(),
-
-                  const SizedBox(height: 16),
-
-                  // Management Actions
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ActionToggle(
-                          icon: isVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          label: isVisible
-                              ? context.tr('common_hide')
-                              : context.tr('common_show'),
-                          color: isVisible
-                              ? ColorsManager.orange
-                              : ColorsManager.green,
-                          onTap: () => ownerCubit.toggleChaletVisibility(
-                            docId,
-                            isVisible,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _ActionToggle(
-                          icon: isBookingAvailable
-                              ? Icons.lock
-                              : Icons.lock_open,
-                          label: isBookingAvailable
-                              ? context.tr('owner_stop_booking')
-                              : context.tr('owner_open_booking'),
-                          color: isBookingAvailable
-                              ? ColorsManager.red
-                              : ColorsManager.green,
-                          onTap: () => ownerCubit.toggleBookingAvailability(
-                            docId,
-                            bookingStatus,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
                   SizedBox(
+                    height: 200,
                     width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChaletDetailPage(
-                            requestData: chaletData,
-                            docId: docId,
-                            status: status,
-                          ),
+                    child: AppImageHelper(
+                      path: images.first,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: _StatusBadge(status: status),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Row(
+                      children: [
+                        _CompactBadge(
+                          label: isVisible
+                              ? context.tr('common_visible')
+                              : context.tr('common_hidden'),
+                          color: isVisible
+                              ? ColorsManager.chaletActionBlue
+                              : ColorsManager.grey,
                         ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        const SizedBox(width: 8),
+                        _CompactBadge(
+                          label: isBookingAvailable
+                              ? context.tr('common_available')
+                              : context.tr('common_closed'),
+                          color: isBookingAvailable
+                              ? ColorsManager.green
+                              : ColorsManager.red,
                         ),
-                        side: BorderSide(color: ColorsManager.purple),
-                      ),
-                      child: Text(context.tr('owner_view_full_details')),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      chaletName,
+                      style: TextStyle(
+                        color: isDark
+                            ? ColorsManager.white
+                            : ColorsManager.chaletBackgroundDark,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    _LocationRow(location: location),
+                    const SizedBox(height: 12),
+
+                    // Info Row: Bed, Bath, Children
+                    Row(
+                      children: [
+                        _InfoBadge(
+                          icon: Icons.bed_outlined,
+                          text:
+                              '${chaletData['bedrooms'] ?? 0} ${context.tr('common_rooms')}',
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 12),
+                        _InfoBadge(
+                          icon: Icons.bathtub_outlined,
+                          text:
+                              '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths')}',
+                          isDark: isDark,
+                        ),
+                        if (chaletData['childrenCount'] != null &&
+                            (chaletData['childrenCount'] as int) > 0) ...[
+                          const SizedBox(width: 12),
+                          _InfoBadge(
+                            icon: Icons.child_care_outlined,
+                            text:
+                                '${chaletData['childrenCount']} ${context.tr('common_children')}',
+                            isDark: isDark,
+                          ),
+                        ],
+                        if (chaletData['chaletArea'] != null &&
+                            chaletData['chaletArea'].toString().isNotEmpty) ...[
+                          const SizedBox(width: 12),
+                          _InfoBadge(
+                            icon: Icons.square_foot_rounded,
+                            text:
+                                '${chaletData['chaletArea']} ${context.tr('common_m2')}',
+                            isDark: isDark,
+                          ),
+                        ],
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Rating Row
+                    const _RatingRow(
+                      rating: 4.5,
+                      count: 24,
+                    ), // Mock data as requested layout
+
+                    const SizedBox(height: 12),
+
+                    // Calculate discount
+                    (() {
+                      final hasDiscount = chaletData['discountEnabled'] == true;
+                      if (hasDiscount) {
+                        final discountValue =
+                            double.tryParse(
+                              chaletData['discountValue']?.toString() ?? '0',
+                            ) ??
+                            0;
+                        final isPercentage =
+                            chaletData['discountType'] == 'percentage';
+                        final discountAmount = isPercentage
+                            ? (price * discountValue / 100)
+                            : discountValue;
+                        final discountedPrice = (price - discountAmount).clamp(
+                          0.0,
+                          double.infinity,
+                        );
+
+                        return _PriceRow(
+                          originalPrice: price,
+                          finalPrice: discountedPrice,
+                          hasDiscount: true,
+                        );
+                      } else {
+                        return _PriceRow(
+                          originalPrice: price,
+                          finalPrice: price,
+                          hasDiscount: false,
+                        );
+                      }
+                    })(),
+
+                    const SizedBox(height: 16),
+
+                    // Management Actions
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ActionToggle(
+                            icon: isVisible
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            label: isVisible
+                                ? context.tr('common_hide')
+                                : context.tr('common_show'),
+                            color: isVisible
+                                ? ColorsManager.orange
+                                : ColorsManager.green,
+                            onTap: () => ownerCubit.toggleChaletVisibility(
+                              docId,
+                              isVisible,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _ActionToggle(
+                            icon: isBookingAvailable
+                                ? Icons.lock
+                                : Icons.lock_open,
+                            label: isBookingAvailable
+                                ? context.tr('owner_stop_booking')
+                                : context.tr('owner_open_booking'),
+                            color: isBookingAvailable
+                                ? ColorsManager.red
+                                : ColorsManager.green,
+                            onTap: () => ownerCubit.toggleBookingAvailability(
+                              docId,
+                              bookingStatus,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChaletDetailPage(
+                              requestData: chaletData,
+                              docId: docId,
+                              status: status,
+                            ),
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(color: ColorsManager.purple),
+                        ),
+                        child: Text(context.tr('owner_view_full_details')),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -405,7 +424,7 @@ class _PriceRow extends StatelessWidget {
     return Row(
       children: [
         Text(
-          CurrencyFormatter.egp(finalPrice, withSuffixPerNight: true),
+          CurrencyFormatter.egp(context, finalPrice, withSuffixPerNight: true),
           style: TextStyle(
             color: ColorsManager.blue2563EB,
             fontSize: 16,
@@ -415,7 +434,7 @@ class _PriceRow extends StatelessWidget {
         if (hasDiscount) ...[
           const SizedBox(width: 8),
           Text(
-            CurrencyFormatter.egp(basePrice),
+            CurrencyFormatter.egp(context, basePrice),
             style: TextStyle(
               color: ColorsManager.grey400,
               fontSize: 12,

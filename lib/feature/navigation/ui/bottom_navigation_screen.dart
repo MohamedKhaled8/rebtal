@@ -93,7 +93,10 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           NavItem(icon: Icons.villa, label: t('nav_chalets')),
           NavItem(icon: Icons.book_online, label: t('nav_bookings')),
           NavItem(icon: Icons.swap_horiz_rounded, label: t('nav_transfers')),
-          NavItem(icon: Icons.cancel_presentation, label: t('nav_cancellations')),
+          NavItem(
+            icon: Icons.cancel_presentation,
+            label: t('nav_cancellations'),
+          ),
           NavItem(icon: Icons.person, label: t('nav_profile')),
         ];
       default:

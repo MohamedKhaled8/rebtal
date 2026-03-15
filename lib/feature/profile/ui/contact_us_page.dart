@@ -19,7 +19,7 @@ class ContactUsPage extends StatelessWidget {
   Future<void> _launchEmail() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'reservationsystem07@gmail.com',
+      path: 'rebtal.service@gmail.com',
     );
     if (await canLaunchUrl(emailLaunchUri)) {
       await launchUrl(emailLaunchUri);
@@ -140,11 +140,11 @@ class ContactUsPage extends StatelessWidget {
               isDark: isDark,
               icon: Icons.email,
               title: context.tr('profile_email'),
-              subtitle: 'reservationsystem07@gmail.com',
+              subtitle: 'rebtal.service@gmail.com',
               onTap: _launchEmail,
               onCopy: () => _copyToClipboard(
                 context,
-                'reservationsystem07@gmail.com',
+                'rebtal.service@gmail.com',
                 context.tr('profile_email'),
               ),
             ),

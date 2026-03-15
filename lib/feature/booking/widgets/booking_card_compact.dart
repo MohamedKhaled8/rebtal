@@ -112,7 +112,21 @@ class BookingCardCompact extends StatelessWidget {
             Stack(
               children: [
                 SizedBox(
-                  height: otv(context: context, portrait: 180.sh, landscape: 130.sh),
+                  height: otv(
+                    context: context,
+                    portrait: stv(
+                      context: context,
+                      mobile: 230.sh,
+                      tablet: 235.sh,
+                      desktop: 245.sh,
+                    ),
+                    landscape: stv(
+                      context: context,
+                      mobile: 350.sh,
+                      tablet: 360.sh,
+                      desktop: 370.sh,
+                    ),
+                  ),
                   width: double.infinity,
                   child:
                       booking.chaletImage != null &&
@@ -188,7 +202,12 @@ class BookingCardCompact extends StatelessWidget {
                         child: Text(
                           locationName,
                           style: TextStyle(
-                            fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
+                            fontSize: stv(
+                              context: context,
+                              mobile: 16.spScaled,
+                              tablet: 18.spScaled,
+                              desktop: 20.spScaled,
+                            ),
                             fontWeight: FontWeight.bold,
                             color: isDark ? Colors.white : Colors.black87,
                           ),
@@ -197,7 +216,12 @@ class BookingCardCompact extends StatelessWidget {
                       Text(
                         '${(booking.amount ?? 0).toStringAsFixed(0)} ${context.tr('booking_egp')}',
                         style: TextStyle(
-                          fontSize: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
+                          fontSize: stv(
+                            context: context,
+                            mobile: 14.spScaled,
+                            tablet: 16.spScaled,
+                            desktop: 18.spScaled,
+                          ),
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF2563EB),
                         ),
@@ -286,7 +310,21 @@ class BookingCardCompact extends StatelessWidget {
 
   Widget _placeholderImage(BuildContext context, bool isDark) {
     return Container(
-      height: otv(context: context, portrait: 180.sh, landscape: 130.sh),
+      height: otv(
+        context: context,
+        portrait: stv(
+          context: context,
+          mobile: 230.sh,
+          tablet: 235.sh,
+          desktop: 245.sh,
+        ),
+        landscape: stv(
+          context: context,
+          mobile: 200.sh,
+          tablet: 220.sh,
+          desktop: 240.sh,
+        ),
+      ),
       color: isDark ? Colors.grey.shade900 : Colors.grey.shade300,
       child: Icon(
         Icons.holiday_village,
@@ -296,20 +334,36 @@ class BookingCardCompact extends StatelessWidget {
     );
   }
 
-  Widget _dateChip(IconData icon, String label, String value, BuildContext context, bool isDark) {
+  Widget _dateChip(
+    IconData icon,
+    String label,
+    String value,
+    BuildContext context,
+    bool isDark,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
-          size: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
+          size: stv(
+            context: context,
+            mobile: 14.spScaled,
+            tablet: 16.spScaled,
+            desktop: 18.spScaled,
+          ),
           color: isDark ? Colors.white54 : Colors.grey.shade600,
         ),
         const SizedBox(width: 4),
         Text(
           '$label $value',
           style: TextStyle(
-            fontSize: stv(context: context, mobile: 11.spScaled, tablet: 13.spScaled, desktop: 15.spScaled),
+            fontSize: stv(
+              context: context,
+              mobile: 11.spScaled,
+              tablet: 13.spScaled,
+              desktop: 15.spScaled,
+            ),
             color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),

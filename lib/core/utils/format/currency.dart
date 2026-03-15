@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class CurrencyFormatter {
   CurrencyFormatter._();
@@ -6,12 +8,16 @@ class CurrencyFormatter {
   // Format number only using English locale, no decimals
   static final NumberFormat _number = NumberFormat('#,##0', 'en_EG');
 
-  // Returns: "{number} EG" or "{number} EG / night"
-  static String egp(num? amount, {bool withSuffixPerNight = false}) {
+  // Returns localized currency string
+  static String egp(
+    BuildContext context,
+    num? amount, {
+    bool withSuffixPerNight = false,
+  }) {
     final value = (amount ?? 0).toDouble();
     final numStr = _number.format(value);
-    final base = '$numStr EG';
-    if (withSuffixPerNight) return '$base / night';
+    final base = '$numStr ${context.tr('booking_egp_currency')}';
+    if (withSuffixPerNight) return '$base / ${context.tr('common_night')}';
     return base;
   }
 }

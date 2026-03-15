@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class OwnerButtons extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -36,77 +38,96 @@ class _BookingToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookingAvailability =
+    final initialAvailability =
         requestData['bookingAvailability'] ?? 'available';
-    final isBookingAvailable = bookingAvailability == 'available';
     final cubit = context.read<ActionButtonsCubit>();
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: isBookingAvailable
-            ? const LinearGradient(
-                colors: [
-                  ColorsManager.chaletActionRed,
-                  ColorsManager.chaletActionDarkRed,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : const LinearGradient(
-                colors: [
-                  ColorsManager.chaletActionBlue,
-                  ColorsManager.chaletActionDarkBlue,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color:
-                (isBookingAvailable
-                        ? ColorsManager.chaletActionRed
-                        : ColorsManager.chaletActionGreen)
-                    .withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: () => cubit.toggleBookingAvailability(
-          docId: docId,
-          requestData: requestData,
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: ColorsManager.transparent,
-          shadowColor: ColorsManager.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
+    return BlocConsumer<ActionButtonsCubit, ActionButtonsState>(
+      listener: (context, state) {
+        if (state is ActionButtonsSuccess) {
+          SnackBarHelper.showSuccess(
+            context,
+            state.message == 'Booking Enabled'
+                ? context.tr('owner_start_booking')
+                : context.tr('owner_stop_booking'),
+          );
+        } else if (state is ActionButtonsError) {
+          SnackBarHelper.showError(context, state.message);
+        }
+      },
+      builder: (context, state) {
+        final bookingAvailability =
+            state.bookingAvailability ?? initialAvailability;
+        final isBookingAvailable = bookingAvailability == 'available';
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: isBookingAvailable
+                ? const LinearGradient(
+                    colors: [
+                      ColorsManager.chaletActionRed,
+                      ColorsManager.chaletActionDarkRed,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : const LinearGradient(
+                    colors: [
+                      ColorsManager.chaletActionBlue,
+                      ColorsManager.chaletActionDarkBlue,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isBookingAvailable
+                            ? ColorsManager.chaletActionRed
+                            : ColorsManager.chaletActionGreen)
+                        .withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isBookingAvailable ? Icons.pause : Icons.play_arrow,
-              size: 22,
-              color: ColorsManager.white,
+          child: ElevatedButton(
+            onPressed: () => cubit.toggleBookingAvailability(
+              docId: docId,
+              requestData: requestData,
             ),
-            const SizedBox(width: 12),
-            Text(
-              isBookingAvailable ? 'إيقاف الحجز' : 'تشغيل الحجز',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: ColorsManager.white,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorsManager.transparent,
+              shadowColor: ColorsManager.transparent,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isBookingAvailable ? Icons.pause : Icons.play_arrow,
+                  size: 22,
+                  color: ColorsManager.white,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  isBookingAvailable ? context.tr('owner_stop_booking') : context.tr('owner_start_booking'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ColorsManager.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -130,7 +151,7 @@ class _OwnerStatusButton extends StatelessWidget {
             Icon(Icons.info_outline, size: 22, color: ColorsManager.grey[600]),
             const SizedBox(width: 12),
             Text(
-              'Your Chalet',
+              context.tr('owner_your_chalet'),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

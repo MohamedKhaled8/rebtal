@@ -135,6 +135,9 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String get home_special_offer => 'Special Offer';
 
   @override
+  String get home_popular_destinations => 'Most Requested Destinations';
+
+  @override
   String get booking_select_dates => 'Select Booking Period';
 
   @override
@@ -423,6 +426,12 @@ class ArbLocalizationsEn extends ArbLocalizations {
 
   @override
   String get profile_switch_to_owner => 'Switch to Owner Mode';
+
+  @override
+  String get profile_switch_to_user => 'Switch to User Mode';
+
+  @override
+  String get profile_switch_user_subtitle => 'View app as regular user';
 
   @override
   String get profile_please_login => 'Please login';
@@ -2240,7 +2249,7 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String get owner_chalet_photos => 'Chalet Photos';
 
   @override
-  String get owner_add_3_photos_hint => 'Add at least 3 high-quality photos';
+  String get owner_add_3_photos_hint => 'Add high-quality photos';
 
   @override
   String get owner_add_first_photo => 'Add your first photo';
@@ -2833,4 +2842,19 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String admin_user_photos_title(Object name) {
     return '$name Photos';
   }
+
+  @override
+  String get time_months_ago => 'months ago';
+
+  @override
+  String get time_days_ago => 'days ago';
+
+  @override
+  String get time_yesterday => 'yesterday';
+
+  @override
+  String get time_weeks_ago => 'weeks ago';
+
+  @override
+  String get owner_your_chalet => 'Your Chalet';
 }

@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/widget/owner_chalet_card.dart';
 import 'package:rebtal/feature/owner/data/model/chalet_model.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class OwnerChaletsList extends StatelessWidget {
   final String status;
@@ -111,23 +112,148 @@ class OwnerChaletsList extends StatelessWidget {
               return result.isNotEmpty;
             }).toList();
 
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: filtered.length,
-              itemBuilder: (context, i) {
-                final chalet = filtered[i];
-                final Map<String, dynamic> data = _chaletToMap(chalet);
+            return Builder(
+              builder: (context) {
+                final bool showTwoColumns = otv(
+                  context: context,
+                  portrait: stv(
+                    context: context,
+                    mobile: false,
+                    tablet: true,
+                    desktop: true,
+                  ),
+                  landscape: true,
+                );
 
-                final String id = data['id'] ?? '';
+                if (showTwoColumns) {
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(vertical: 16.sh),
+                    itemCount: (filtered.length / 2).ceil(),
+                    itemBuilder: (context, i) {
+                      final firstIndex = i * 2;
+                      final secondIndex = firstIndex + 1;
 
-                return FadeInUp(
-                  duration: const Duration(milliseconds: 500),
-                  delay: Duration(
-                    milliseconds: 100 * (i % 5),
-                  ), // Staggered delay
-                  child: OwnerChaletCard(chaletData: data, docId: id),
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: FadeInUp(
+                              duration: const Duration(milliseconds: 500),
+                              delay: Duration(
+                                milliseconds: 100 * (firstIndex % 5),
+                              ),
+                              child: OwnerChaletCard(
+                                chaletData: _chaletToMap(filtered[firstIndex]),
+                                docId:
+                                    _chaletToMap(filtered[firstIndex])['id'] ??
+                                    '',
+                                margin: EdgeInsets.only(
+                                  bottom: otv(
+                                    context: context,
+                                    portrait: 24.sh,
+                                    landscape: 12.sh,
+                                  ),
+                                  left: stv(
+                                    context: context,
+                                    mobile: 16.sw,
+                                    tablet: 24.sw,
+                                    desktop: 32.sw,
+                                  ),
+                                  right: stv(
+                                    context: context,
+                                    mobile: 16.sw,
+                                    tablet: 20.sw,
+                                    desktop: 24.sw,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (secondIndex < filtered.length)
+                            Expanded(
+                              child: FadeInUp(
+                                duration: const Duration(milliseconds: 500),
+                                delay: Duration(
+                                  milliseconds: 100 * (secondIndex % 5),
+                                ),
+                                child: OwnerChaletCard(
+                                  chaletData: _chaletToMap(
+                                    filtered[secondIndex],
+                                  ),
+                                  docId:
+                                      _chaletToMap(
+                                        filtered[secondIndex],
+                                      )['id'] ??
+                                      '',
+                                  margin: EdgeInsets.only(
+                                    bottom: otv(
+                                      context: context,
+                                      portrait: 24.sh,
+                                      landscape: 12.sh,
+                                    ),
+                                    left: stv(
+                                      context: context,
+                                      mobile: 16.sw,
+                                      tablet: 20.sw,
+                                      desktop: 24.sw,
+                                    ),
+                                    right: stv(
+                                      context: context,
+                                      mobile: 16.sw,
+                                      tablet: 24.sw,
+                                      desktop: 32.sw,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            const Expanded(child: SizedBox()),
+                        ],
+                      );
+                    },
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(vertical: 16.sh),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, i) {
+                    final chalet = filtered[i];
+                    final Map<String, dynamic> data = _chaletToMap(chalet);
+
+                    final String id = data['id'] ?? '';
+
+                    return FadeInUp(
+                      duration: const Duration(milliseconds: 500),
+                      delay: Duration(
+                        milliseconds: 100 * (i % 5),
+                      ), // Staggered delay
+                      child: OwnerChaletCard(
+                        chaletData: data,
+                        docId: id,
+                        margin: EdgeInsets.only(
+                          bottom: 16.sh,
+                          left: stv(
+                            context: context,
+                            mobile: 0.sw,
+                            tablet: 8.sw,
+                            desktop: 16.sw,
+                          ),
+                          right: stv(
+                            context: context,
+                            mobile: 0.sw,
+                            tablet: 8.sw,
+                            desktop: 16.sw,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );

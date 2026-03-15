@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/popular_destinations.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rebtal/feature/auth/widget/handwritten_animated_text.dart';
@@ -94,7 +95,10 @@ class PopularDestinationsSection extends StatelessWidget {
               padding: titlePadding,
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Text('أكثر الوجهات طلباً', style: titleStyle),
+                child: Text(
+                  context.tr('home_popular_destinations'),
+                  style: titleStyle,
+                ),
               ),
             ),
             SizedBox(
@@ -113,6 +117,7 @@ class PopularDestinationsSection extends StatelessWidget {
                       width: cardWidth,
                       height: cardHeight,
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           if (onDestinationSelected == null) return;
                           onDestinationSelected!.call(destination.nameAr);
@@ -177,13 +182,16 @@ class PopularDestinationsSection extends StatelessWidget {
                                       SizedBox(
                                         height: stv(
                                           context: context,
-                                          mobile: 55.spScaled, // Increased height
-                                          tablet: 60.spScaled, // Increased height
-                                          desktop: 65.spScaled, // Increased height
+                                          mobile:
+                                              55.spScaled, // Increased height
+                                          tablet:
+                                              60.spScaled, // Increased height
+                                          desktop:
+                                              65.spScaled, // Increased height
                                         ),
                                         child: Center(
                                           child: HandwrittenAnimatedText(
-                                            text: destination.nameAr,
+                                            text: destination.getLocalizedName(context),
                                             fontSize: stv(
                                               context: context,
                                               mobile: 28.spScaled,
@@ -191,8 +199,8 @@ class PopularDestinationsSection extends StatelessWidget {
                                               desktop: 38.spScaled,
                                             ),
                                             color: Colors.white,
-                                            fontFamily:
-                                                GoogleFonts.reemKufi().fontFamily,
+                                            fontFamily: GoogleFonts.reemKufi()
+                                                .fontFamily,
                                             animationDuration: const Duration(
                                               milliseconds: 2500,
                                             ),

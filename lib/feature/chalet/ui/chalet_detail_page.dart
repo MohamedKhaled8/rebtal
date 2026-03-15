@@ -44,8 +44,7 @@ class ChaletDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          getIt<ChaletDetailCubit>()..initialize(requestData),
+      create: (context) => getIt<ChaletDetailCubit>()..initialize(requestData),
       child: BlocSelector<ChaletDetailCubit, ChaletDetailState, List<String>>(
         selector: (state) {
           if (state is ChaletDetailLoaded) {
@@ -213,8 +212,8 @@ class ChaletDetailPage extends StatelessWidget {
                                       isDark: isDark,
                                       textColor: textColor,
                                       rating: metrics.formattedRating,
-                                      reviewsCount:
-                                          metrics.reviewsCount.toString(),
+                                      reviewsCount: metrics.reviewsCount
+                                          .toString(),
                                     ),
                                   ),
                                 ),
@@ -324,7 +323,9 @@ class ChaletDetailPage extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         ChaletSectionTitle(
-                                          title: context.tr('chalet_about_place'),
+                                          title: context.tr(
+                                            'chalet_about_place',
+                                          ),
                                           textColor: textColor,
                                         ),
                                         SizedBox(
@@ -396,7 +397,9 @@ class ChaletDetailPage extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         ChaletSectionTitle(
-                                          title: context.tr('chalet_gallery_title'),
+                                          title: context.tr(
+                                            'chalet_gallery_title',
+                                          ),
                                           textColor: textColor,
                                         ),
                                         SizedBox(
@@ -531,7 +534,7 @@ class ChaletDetailPage extends StatelessWidget {
                                 ],
 
                                 // Admin Sections
-                                if (role == 'admin' || role == 'owner') ...[
+                                if (role == 'admin') ...[
                                   FadeInUp(
                                     duration: const Duration(
                                       milliseconds: 1000,
@@ -600,6 +603,48 @@ class ChaletDetailPage extends StatelessWidget {
                                             requestData: requestData,
                                           ),
                                         ],
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 24.sh,
+                                            landscape: 12.sh,
+                                          ),
+                                        ),
+                                        ActionButtons(
+                                          status: status,
+                                          docId: docId,
+                                          requestData: requestData,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+
+                                // Owner Sections
+                                if (role == 'owner') ...[
+                                  FadeInUp(
+                                    duration: const Duration(
+                                      milliseconds: 1000,
+                                    ),
+                                    delay: const Duration(milliseconds: 1600),
+                                    curve: Curves.easeOutQuart,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: otv(
+                                            context: context,
+                                            portrait: 24.sh,
+                                            landscape: 12.sh,
+                                          ),
+                                        ),
+                                        Divider(
+                                          height: 1,
+                                          color: isDark
+                                              ? Colors.white24
+                                              : const Color(0xFFDDDDDD),
+                                        ),
                                         SizedBox(
                                           height: otv(
                                             context: context,

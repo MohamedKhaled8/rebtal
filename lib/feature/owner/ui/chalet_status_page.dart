@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/owner/widget/owner_chalets_list.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class ChaletStatusPage extends StatelessWidget {
   final String status;
@@ -53,7 +54,15 @@ class ChaletStatusPage extends StatelessWidget {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: stv(
+                context: context,
+                mobile: 12.sw,
+                tablet: 16.sw,
+                desktop: 20.sw,
+              ),
+              vertical: 8.sh,
+            ),
             child: OwnerChaletsList(
               status: status,
               ownerId: ownerId,

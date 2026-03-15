@@ -41,6 +41,7 @@
   "home_chalet_no_name": "Unnamed Chalet",
   "home_location_unknown": "Location not specified",
   "home_special_offer": "Special Offer",
+  "home_popular_destinations": "Most Requested Destinations",
   "booking_select_dates": "Select Booking Period",
   "booking_select_start_end": "Select start and end dates",
   "booking_from_date": "From date",
@@ -137,6 +138,8 @@
   "profile_settings": "Account Settings",
   "profile_personal_info": "Personal Information",
   "profile_switch_to_owner": "Switch to Owner Mode",
+  "profile_switch_to_user": "Switch to User Mode",
+  "profile_switch_user_subtitle": "View app as regular user",
   "profile_please_login": "Please login",
   "profile_about": "About Us",
   "profile_contact": "Contact Us",
@@ -736,7 +739,7 @@
   "owner_stop_booking": "Stop Booking",
   "owner_start_booking": "Start Booking",
   "owner_chalet_photos": "Chalet Photos",
-  "owner_add_3_photos_hint": "Add at least 3 high-quality photos",
+  "owner_add_3_photos_hint": "Add high-quality photos",
   "owner_add_first_photo": "Add your first photo",
   "owner_add_more_photos": "Add more photos",
   "owner_tap_to_select": "Tap to select from gallery",
@@ -925,5 +928,10 @@
   "admin_user_view_photos": "View Profile & ID Photos",
   "admin_user_profile_photo": "Profile Photo",
   "admin_user_id_card": "ID Card",
-  "admin_user_photos_title": "{name} Photos"
+  "admin_user_photos_title": "{name} Photos",
+  "time_months_ago": "months ago",
+  "time_days_ago": "days ago",
+  "time_yesterday": "yesterday",
+  "time_weeks_ago": "weeks ago",
+  "owner_your_chalet": "Your Chalet"
 }

@@ -24,18 +24,21 @@ class LanguageSelectionPage extends StatelessWidget {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  _buildBackButton(context, isDark),
-                  const SizedBox(height: 40),
-                  _buildTitleSection(context, isDark),
-                  const SizedBox(height: 60),
-                  _buildLanguageCards(context, isDark),
-                  const Spacer(),
-                  _buildConfirmButton(context, isDark),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    _buildBackButton(context, isDark),
+                    const SizedBox(height: 40),
+                    _buildTitleSection(context, isDark),
+                    const SizedBox(height: 60),
+                    _buildLanguageCards(context, isDark),
+                    const SizedBox(height: 40),
+                    _buildConfirmButton(context, isDark),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
@@ -292,7 +295,6 @@ class LanguageSelectionPage extends StatelessWidget {
         return Opacity(opacity: value, child: child);
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 30),
         width: double.infinity,
         height: 65,
         decoration: BoxDecoration(

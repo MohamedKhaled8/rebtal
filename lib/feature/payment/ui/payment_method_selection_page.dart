@@ -519,7 +519,7 @@ class _PaymentMethodSelectionPageState
                         curve: Curves.easeOutExpo,
                         builder: (context, value, child) {
                           return Text(
-                            CurrencyFormatter.egp(value),
+                            CurrencyFormatter.egp(context, value),
                             style: TextStyle(
                               color: isDark
                                   ? ColorsManager.white
@@ -869,7 +869,7 @@ class _PaymentMethodSelectionPageState
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        CurrencyFormatter.egp(_calculatedAmount),
+                        CurrencyFormatter.egp(context, _calculatedAmount),
                         style: const TextStyle(
                           color: ColorsManager.white,
                           fontSize: 24,
@@ -1271,7 +1271,7 @@ class _PaymentMethodSelectionPageState
                   context: context,
                   phone: _adminPhone,
                   message:
-                      'مرحباً، لقد قمت بتحويل مبلغ ${CurrencyFormatter.egp(_calculatedAmount)} لحجز شاليه ${widget.booking.chaletName} رقم الحجز: ${widget.booking.id.substring(0, 8)}',
+                      'مرحباً، لقد قمت بتحويل مبلغ ${CurrencyFormatter.egp(context, _calculatedAmount)} لحجز شاليه ${widget.booking.chaletName} رقم الحجز: ${widget.booking.id.substring(0, 8)}',
                 );
               },
               icon: const Icon(Icons.send_to_mobile_rounded, size: 22),

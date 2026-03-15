@@ -48,26 +48,31 @@ class ThemeCubit extends Cubit<ThemeState> {
   }
 
   /// Changes the theme and saves the selection
-  void changeTheme(ThemeMode themeMode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_themeKey, themeMode.index);
+  void changeTheme(ThemeMode themeMode) {
+    // Emit immediately for fast UI response
     emit(state.copyWith(themeMode: themeMode));
+    // Save to SharedPreferences in the background
+    Future.microtask(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_themeKey, themeMode.index);
+    });
   }
 
   /// Changes the primary color and saves the selection
-  void changeColor(Color color) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_colorKey, color.value);
+  void changeColor(Color color) {
     emit(state.copyWith(primaryColor: color));
+    Future.microtask(() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_colorKey, color.value);
+    });
   }
 
-  /// Toggles between light and dark mode
+  /// Toggles between light and dark mode with fast response
   void toggleTheme() {
     final ThemeMode newMode;
     if (state.themeMode == ThemeMode.dark) {
       newMode = ThemeMode.light;
     } else {
-      // If light or system, switch to dark
       newMode = ThemeMode.dark;
     }
     changeTheme(newMode);

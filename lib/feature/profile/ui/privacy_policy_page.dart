@@ -114,8 +114,10 @@ class PrivacyPolicyPage extends StatelessWidget {
             _buildSection(
               isDark: isDark,
               title: context.tr('profile_contact'),
-              content:
-                  'If you have any questions about this Privacy Policy, please contact us at reservationsystem07@gmail.com or call 01507277511.',
+              content: context
+                  .tr('profile_privacy_policy_contact')
+                  .replaceFirst('{}', 'rebtal.service@gmail.com')
+                  .replaceFirst('{}', '01507277511'),
             ),
             const SizedBox(height: 32),
 

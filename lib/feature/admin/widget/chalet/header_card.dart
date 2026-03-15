@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/extensions/responsive_nums.dart';
 // import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -56,7 +57,7 @@ class HeaderCard extends StatelessWidget {
                         height: 0.1,
                       ),
                     ),
-                     SizedBox(height: 15.h,),
+                    SizedBox(height: 15.h),
                     Row(
                       children: [
                         Icon(
@@ -64,7 +65,7 @@ class HeaderCard extends StatelessWidget {
                           color: Colors.grey[600],
                           size: 18,
                         ),
-                        SizedBox(width: 2.w,),
+                        SizedBox(width: 2.w),
                         Flexible(
                           child: Text(
                             location,
@@ -79,7 +80,7 @@ class HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 5.w,),
+              SizedBox(width: 5.w),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -87,6 +88,7 @@ class HeaderCard extends StatelessWidget {
                       requestData['discountValue'] != null) ...[
                     Text(
                       CurrencyFormatter.egp(
+                        context,
                         (price is num)
                             ? price
                             : double.tryParse((price ?? '').toString()) ?? 0,
@@ -100,7 +102,7 @@ class HeaderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _calculateDiscountedPrice(requestData),
+                      _calculateDiscountedPrice(context, requestData),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -110,6 +112,7 @@ class HeaderCard extends StatelessWidget {
                   ] else
                     Text(
                       CurrencyFormatter.egp(
+                        context,
                         (price is num)
                             ? price
                             : double.tryParse((price ?? '').toString()) ?? 0,
@@ -128,7 +131,7 @@ class HeaderCard extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: 2.h,),
+          SizedBox(height: 2.h),
 
           // Rating and Quick Info
           Row(
@@ -144,7 +147,7 @@ class HeaderCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 16),
-                    SizedBox(width: 2.w,),
+                    SizedBox(width: 2.w),
                     Text(
                       rating,
                       style: const TextStyle(
@@ -156,7 +159,7 @@ class HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 5.w,),
+              SizedBox(width: 5.w),
               if (requestData['hasWifi'] == true)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -172,7 +175,7 @@ class HeaderCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.wifi, color: Colors.blue, size: 16),
-                      SizedBox(width: 2.w,),
+                      SizedBox(width: 2.w),
                       const Text(
                         'Free WiFi',
                         style: TextStyle(
@@ -184,7 +187,7 @@ class HeaderCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              SizedBox(width: 5.w,),
+              SizedBox(width: 5.w),
               if (requestData['hasBreakfast'] == true)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -204,7 +207,7 @@ class HeaderCard extends StatelessWidget {
                         color: Colors.orange,
                         size: 16,
                       ),
-                      SizedBox(width: 2.w,),
+                      SizedBox(width: 2.w),
                       const Text(
                         'Breakfast',
                         style: TextStyle(
@@ -223,7 +226,10 @@ class HeaderCard extends StatelessWidget {
     );
   }
 
-  String _calculateDiscountedPrice(Map<String, dynamic> data) {
+  String _calculateDiscountedPrice(
+    BuildContext context,
+    Map<String, dynamic> data,
+  ) {
     final basePrice = (data['price'] is num)
         ? data['price'].toDouble()
         : double.tryParse((data['price'] ?? '').toString()) ?? 0.0;
@@ -238,6 +244,6 @@ class HeaderCard extends StatelessWidget {
       if (finalPrice < 0) finalPrice = 0;
     }
 
-    return CurrencyFormatter.egp(finalPrice, withSuffixPerNight: true);
+    return CurrencyFormatter.egp(context, finalPrice, withSuffixPerNight: true);
   }
 }

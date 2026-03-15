@@ -50,9 +50,19 @@ class ProfileContent extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                  stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+                  stv(
+                    context: context,
+                    mobile: 20.sw,
+                    tablet: 24.sw,
+                    desktop: 32.sw,
+                  ),
                   otv(context: context, portrait: 24.sh, landscape: 12.sh),
-                  stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw),
+                  stv(
+                    context: context,
+                    mobile: 20.sw,
+                    tablet: 24.sw,
+                    desktop: 32.sw,
+                  ),
                   otv(context: context, portrait: 20.sh, landscape: 10.sh),
                 ),
                 child: Column(
@@ -63,7 +73,12 @@ class ProfileContent extends StatelessWidget {
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
-                            radius: stv(context: context, mobile: 44.sw, tablet: 54.sw, desktop: 64.sw),
+                            radius: stv(
+                              context: context,
+                              mobile: 44.sw,
+                              tablet: 54.sw,
+                              desktop: 64.sw,
+                            ),
                             backgroundColor: Colors.grey.shade800,
                             child:
                                 user.profileImageUrl != null &&
@@ -105,7 +120,14 @@ class ProfileContent extends StatelessWidget {
                             right: 0,
                             bottom: 0,
                             child: Container(
-                              padding: EdgeInsets.all(stv(context: context, mobile: 6.sw, tablet: 8.sw, desktop: 10.sw)),
+                              padding: EdgeInsets.all(
+                                stv(
+                                  context: context,
+                                  mobile: 6.sw,
+                                  tablet: 8.sw,
+                                  desktop: 10.sw,
+                                ),
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade700,
                                 shape: BoxShape.circle,
@@ -126,21 +148,52 @@ class ProfileContent extends StatelessWidget {
                         ],
                       ),
                     ),
-                    SizedBox(height: otv(context: context, portrait: 12.sh, landscape: 6.sh)),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 12.sh,
+                        landscape: 6.sh,
+                      ),
+                    ),
                     Text(
                       user.name,
                       style: TextStyle(
-                        fontSize: stv(context: context, mobile: 22.spScaled, tablet: 26.spScaled, desktop: 30.spScaled),
+                        fontSize: stv(
+                          context: context,
+                          mobile: 22.spScaled,
+                          tablet: 26.spScaled,
+                          desktop: 30.spScaled,
+                        ),
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),
                     ),
-                    SizedBox(height: otv(context: context, portrait: 4.sh, landscape: 2.sh)),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 4.sh,
+                        landscape: 2.sh,
+                      ),
+                    ),
                     Text(
                       user.email,
-                      style: TextStyle(fontSize: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled), color: subColor),
+                      style: TextStyle(
+                        fontSize: stv(
+                          context: context,
+                          mobile: 14.spScaled,
+                          tablet: 16.spScaled,
+                          desktop: 18.spScaled,
+                        ),
+                        color: subColor,
+                      ),
                     ),
-                    SizedBox(height: otv(context: context, portrait: 14.sh, landscape: 8.sh)),
+                    SizedBox(
+                      height: otv(
+                        context: context,
+                        portrait: 14.sh,
+                        landscape: 8.sh,
+                      ),
+                    ),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
@@ -169,7 +222,11 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— إعدادات الحساب ——
-            _sectionTitle(context, context.tr('profile_account_settings'), textColor),
+            _sectionTitle(
+              context,
+              context.tr('profile_account_settings'),
+              textColor,
+            ),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 _settingsTile(
@@ -184,18 +241,35 @@ class ProfileContent extends StatelessWidget {
                   ),
                   textColor: textColor,
                 ),
-                if (user.role.toLowerCase().trim() == 'owner')
-                  _settingsTile(
-                    context,
-                    icon: Icons.home_work_outlined,
-                    title: context.tr('profile_switch_to_owner'),
-                    subtitle: context.tr('profile_switch_owner_subtitle'),
-                    onTap: () {
-                      bottomNavIndex.value = 0;
-                      context.read<AppCubit>().toggleViewMode();
+                // Debug: Show role info
+                if (user.role.toLowerCase().trim() == 'owner' ||
+                    context.read<AppCubit>().getCurrentRole() == 'owner')
+                  Builder(
+                    builder: (context) {
+                      final currentRole = context
+                          .read<AppCubit>()
+                          .getCurrentRole();
+                      final userRole = user.role;
+                      debugPrint(
+                        '🔍 Profile: user.role=$userRole, currentRole=$currentRole',
+                      );
+                      return _settingsTile(
+                        context,
+                        icon: Icons.home_work_outlined,
+                        title: currentRole == 'owner'
+                            ? context.tr('profile_switch_to_user')
+                            : context.tr('profile_switch_to_owner'),
+                        subtitle: currentRole == 'owner'
+                            ? context.tr('profile_switch_user_subtitle')
+                            : context.tr('profile_switch_owner_subtitle'),
+                        onTap: () {
+                          bottomNavIndex.value = 0;
+                          context.read<AppCubit>().toggleViewMode();
+                        },
+                        textColor: textColor,
+                        subColor: subColor,
+                      );
                     },
-                    textColor: textColor,
-                    subColor: subColor,
                   ),
                 _settingsTile(
                   context,
@@ -283,7 +357,11 @@ class ProfileContent extends StatelessWidget {
             ),
 
             // —— تفضيلات التطبيق ——
-            _sectionTitle(context, context.tr('profile_app_preferences'), textColor),
+            _sectionTitle(
+              context,
+              context.tr('profile_app_preferences'),
+              textColor,
+            ),
             SliverToBoxAdapter(
               child: _buildCard(context, cardColor, dividerColor, [
                 BlocBuilder<AppCubit, AppState>(
@@ -303,12 +381,9 @@ class ProfileContent extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      trailing: Switch(
-                        value: isDarkMode,
-                        onChanged: (_) =>
-                            context.read<AppCubit>().toggleTheme(),
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.blue,
+                      trailing: _ThemeAnimatedSwitch(
+                        isDarkMode: isDarkMode,
+                        onToggle: (_) => context.read<AppCubit>().toggleTheme(),
                       ),
                     );
                   },
@@ -386,7 +461,12 @@ class ProfileContent extends StatelessWidget {
         child: Text(
           title,
           style: TextStyle(
-            fontSize: stv(context: context, mobile: 16.spScaled, tablet: 18.spScaled, desktop: 20.spScaled),
+            fontSize: stv(
+              context: context,
+              mobile: 16.spScaled,
+              tablet: 18.spScaled,
+              desktop: 20.spScaled,
+            ),
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
@@ -402,7 +482,14 @@ class ProfileContent extends StatelessWidget {
     List<Widget> children,
   ) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 32.sw)),
+      margin: EdgeInsets.symmetric(
+        horizontal: stv(
+          context: context,
+          mobile: 20.sw,
+          tablet: 24.sw,
+          desktop: 32.sw,
+        ),
+      ),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16.sw),
@@ -435,23 +522,191 @@ class ProfileContent extends StatelessWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.symmetric(
-        horizontal: stv(context: context, mobile: 16.sw, tablet: 20.sw, desktop: 24.sw),
-        vertical: otv(context: context, portrait: 4.sh, landscape: 2.sh)
+        horizontal: stv(
+          context: context,
+          mobile: 16.sw,
+          tablet: 20.sw,
+          desktop: 24.sw,
+        ),
+        vertical: otv(context: context, portrait: 4.sh, landscape: 2.sh),
       ),
-      leading: Icon(icon, color: tx, size: stv(context: context, mobile: 24.spScaled, tablet: 28.spScaled, desktop: 32.spScaled)),
+      leading: Icon(
+        icon,
+        color: tx,
+        size: stv(
+          context: context,
+          mobile: 24.spScaled,
+          tablet: 28.spScaled,
+          desktop: 32.spScaled,
+        ),
+      ),
       title: Text(
         title,
-        style: TextStyle(fontWeight: FontWeight.w600, color: tx, fontSize: stv(context: context, mobile: 15.spScaled, tablet: 17.spScaled, desktop: 19.spScaled)),
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: tx,
+          fontSize: stv(
+            context: context,
+            mobile: 15.spScaled,
+            tablet: 17.spScaled,
+            desktop: 19.spScaled,
+          ),
+        ),
       ),
       subtitle: subtitle != null
-          ? Text(subtitle, style: TextStyle(fontSize: stv(context: context, mobile: 12.spScaled, tablet: 14.spScaled, desktop: 16.spScaled), color: sx))
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: stv(
+                  context: context,
+                  mobile: 12.spScaled,
+                  tablet: 14.spScaled,
+                  desktop: 16.spScaled,
+                ),
+                color: sx,
+              ),
+            )
           : null,
       trailing: Icon(
         Icons.arrow_forward_ios,
-        size: stv(context: context, mobile: 14.spScaled, tablet: 16.spScaled, desktop: 18.spScaled),
+        size: stv(
+          context: context,
+          mobile: 14.spScaled,
+          tablet: 16.spScaled,
+          desktop: 18.spScaled,
+        ),
         color: Colors.grey,
       ),
       onTap: onTap,
     );
+  }
+}
+
+class _ThemeAnimatedSwitch extends StatefulWidget {
+  final bool isDarkMode;
+  final Function(bool) onToggle;
+
+  const _ThemeAnimatedSwitch({
+    Key? key,
+    required this.isDarkMode,
+    required this.onToggle,
+  }) : super(key: key);
+
+  @override
+  State<_ThemeAnimatedSwitch> createState() => _ThemeAnimatedSwitchState();
+}
+
+class _ThemeAnimatedSwitchState extends State<_ThemeAnimatedSwitch>
+    with TickerProviderStateMixin {
+  final GlobalKey _switchKey = GlobalKey();
+  bool _isAnimating = false;
+
+  void _handleThemeSwitch(bool value) async {
+    if (_isAnimating) return;
+    
+    final RenderBox? renderBox =
+        _switchKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      if (mounted) {
+        setState(() {
+          _isAnimating = true;
+        });
+      }
+      final size = renderBox.size;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final offset = Offset(position.dx + size.width / 2, position.dy + size.height / 2);
+
+      _showThemeTransitionOverlay(context, offset, value);
+    } else {
+      widget.onToggle(value);
+    }
+  }
+
+  void _showThemeTransitionOverlay(BuildContext context, Offset center, bool isDark) {
+    OverlayState? overlayState = Overlay.of(context);
+    OverlayEntry? entry;
+    
+    final size = MediaQuery.of(context).size;
+    final maxRadius = size.longestSide * 1.5;
+
+    final animationController = AnimationController(
+      vsync: this, 
+      duration: const Duration(milliseconds: 600)
+    );
+
+    final animation = Tween<double>(begin: 0, end: maxRadius).animate(
+      CurvedAnimation(parent: animationController, curve: Curves.easeInOut),
+    );
+
+    // Call the original toggle slightly after the animation starts so it happens behind the growing circle
+    Future.delayed(const Duration(milliseconds: 300), () {
+      widget.onToggle(isDark);
+    });
+
+    entry = OverlayEntry(
+      builder: (context) {
+        return Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedBuilder(
+              animation: animationController,
+              builder: (context, child) {
+                // Fade out near the end
+                final opacity = (1.0 - (animationController.value - 0.7) / 0.3).clamp(0.0, 1.0);
+                return Opacity(
+                  opacity: opacity,
+                  child: ClipPath(
+                    clipper: _CircularClipper(center, animation.value),
+                    child: Container(
+                      color: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    overlayState.insert(entry);
+    animationController.forward().then((_) {
+      entry?.remove();
+      animationController.dispose();
+      if (mounted) {
+        setState(() {
+          _isAnimating = false;
+        });
+      } else {
+        _isAnimating = false;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch(
+      key: _switchKey,
+      value: widget.isDarkMode,
+      onChanged: _handleThemeSwitch,
+      activeColor: Colors.blue,
+      activeTrackColor: Colors.blue.withOpacity(0.5),
+    );
+  }
+}
+
+class _CircularClipper extends CustomClipper<Path> {
+  final Offset center;
+  final double radius;
+
+  _CircularClipper(this.center, this.radius);
+
+  @override
+  Path getClip(Size size) {
+    return Path()..addOval(Rect.fromCircle(center: center, radius: radius));
+  }
+
+  @override
+  bool shouldReclip(covariant _CircularClipper oldClipper) {
+    return center != oldClipper.center || radius != oldClipper.radius;
   }
 }

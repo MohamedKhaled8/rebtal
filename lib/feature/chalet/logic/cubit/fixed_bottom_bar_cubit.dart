@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/ui/booking_wizard_page.dart'; // Import Wizard Page
 import 'package:rebtal/feature/booking/models/booking.dart';
@@ -24,28 +23,23 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     String? bookingId,
     String? currentUserId,
   }) async {
-    final formattedPrice = CurrencyFormatter.egp(
-      (price is num) ? price : double.tryParse((price ?? '').toString()) ?? 0,
-      withSuffixPerNight: true,
-    );
+    // Store raw price values - formatting will happen in UI layer
+    final rawPrice = (price is num)
+        ? price.toDouble()
+        : double.tryParse((price ?? '').toString()) ?? 0.0;
 
     final discountEnabled = requestData['discountEnabled'] == true;
     final discountValue =
         double.tryParse(requestData['discountValue']?.toString() ?? '0') ?? 0;
 
-    String displayPrice;
-    String? originalPriceStr;
+    double? finalPrice;
+    double? originalPrice;
 
     if (discountEnabled && discountValue > 0) {
-      final basePrice = (price is num)
-          ? price.toDouble()
-          : double.tryParse(
-                  (price ?? '').toString().replaceAll(RegExp(r'[^0-9.]'), ''),
-                ) ??
-                0.0;
+      final basePrice = rawPrice;
 
       final discountType = requestData['discountType'];
-      double finalPrice = basePrice;
+      finalPrice = basePrice;
 
       if (discountType == 'percentage') {
         finalPrice = basePrice * (1 - discountValue / 100);
@@ -54,17 +48,10 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
       }
       if (finalPrice < 0) finalPrice = 0;
 
-      displayPrice = CurrencyFormatter.egp(
-        finalPrice,
-        withSuffixPerNight: true,
-      );
-      originalPriceStr = CurrencyFormatter.egp(
-        basePrice,
-        withSuffixPerNight: false,
-      );
+      originalPrice = basePrice;
     } else {
-      displayPrice = formattedPrice;
-      originalPriceStr = null;
+      finalPrice = rawPrice;
+      originalPrice = null;
     }
 
     final bookingAvailability =
@@ -88,8 +75,8 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
 
     emit(
       FixedBottomBarLoaded(
-        displayPrice: displayPrice,
-        originalPrice: originalPriceStr,
+        displayPriceValue: finalPrice,
+        originalPriceValue: originalPrice,
         isBookingAvailable: isBookingAvailable,
         booking: booking,
         hasContactedOriginalTenant: false,
@@ -103,8 +90,8 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
       final curr = state as FixedBottomBarLoaded;
       emit(
         FixedBottomBarLoaded(
-          displayPrice: curr.displayPrice,
-          originalPrice: curr.originalPrice,
+          displayPriceValue: curr.displayPriceValue,
+          originalPriceValue: curr.originalPriceValue,
           isBookingAvailable: curr.isBookingAvailable,
           booking: curr.booking,
           hasContactedOriginalTenant: true,

@@ -124,7 +124,7 @@ class DeliveryPolicyPage extends StatelessWidget {
                   Text(
                     context.tr('profile_support_contact_hint')
                         .replaceFirst('{}', '01507277511')
-                        .replaceFirst('{}', 'reservationsystem07@gmail.com'),
+                        .replaceFirst('{}', 'rebtal.service@gmail.com'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,

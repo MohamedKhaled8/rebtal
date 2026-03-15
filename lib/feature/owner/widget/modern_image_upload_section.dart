@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class ModernImageUploadSection extends StatelessWidget {
@@ -70,7 +71,7 @@ class ModernImageUploadSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Chalet Photos',
+                      context.tr('owner_chalet_photos'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -81,7 +82,7 @@ class ModernImageUploadSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Add at least 3 high-quality photos',
+                      context.tr('owner_add_3_photos_hint'),
                       style: TextStyle(
                         color: isDark
                             ? ColorsManager.grey400
@@ -202,7 +203,7 @@ class ModernImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    images.isEmpty ? 'Add Your First Photo' : 'Add More Photos',
+                    images.isEmpty ? context.tr('owner_add_first_photo') : context.tr('owner_add_more_photos'),
                     style: TextStyle(
                       color: isDark ? ColorsManager.white : ColorsManager.black,
                       fontSize: 15,
@@ -211,7 +212,7 @@ class ModernImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Tap to select from gallery',
+                    context.tr('owner_tap_to_select'),
                     style: TextStyle(
                       color: isDark
                           ? ColorsManager.grey400
@@ -301,18 +302,18 @@ class _ImageCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star_rounded,
                     color: ColorsManager.white,
                     size: 12,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    'Cover',
-                    style: TextStyle(
+                    context.tr('owner_image_cover'),
+                    style: const TextStyle(
                       color: ColorsManager.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,

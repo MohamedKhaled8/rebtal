@@ -79,6 +79,7 @@ class _PaymentInstructionsPageState extends State<PaymentInstructionsPage> {
                   const SizedBox(height: 8),
                   Text(
                     CurrencyFormatter.egp(
+                      context,
                       widget.amount ?? widget.booking.amount ?? 0,
                     ),
                     style: const TextStyle(

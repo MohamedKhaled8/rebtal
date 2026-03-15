@@ -5,13 +5,13 @@ abstract class FixedBottomBarState {}
 class FixedBottomBarInitial extends FixedBottomBarState {}
 
 class FixedBottomBarLoaded extends FixedBottomBarState {
-  final String displayPrice;
-  final String? originalPrice;
+  final double displayPriceValue;
+  final double? originalPriceValue;
   final bool isBookingAvailable;
 
   FixedBottomBarLoaded({
-    required this.displayPrice,
-    this.originalPrice,
+    required this.displayPriceValue,
+    this.originalPriceValue,
     required this.isBookingAvailable,
     this.hasContactedOriginalTenant = false,
     this.booking,

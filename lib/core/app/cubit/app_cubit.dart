@@ -42,7 +42,13 @@ class AppCubit extends Cubit<AppState> {
        _themeCubit = themeCubit,
        _notificationCubit = notificationCubit,
        _ownerCubit = ownerCubit,
-       super(AppInitial()) {
+       super(
+         AppUnauthenticated(
+           themeMode: ThemeMode.system,
+           primaryColor: const Color(0xFF6200EE),
+           locale: const Locale('ar'), // Start with Arabic as default
+         ),
+       ) {
     _setupListeners();
     _loadLocale();
   }
@@ -54,7 +60,11 @@ class AppCubit extends Cubit<AppState> {
     final savedCode = prefs.getString(_localeKey);
     final locale = savedCode != null ? Locale(savedCode) : const Locale('ar');
     _savedLocale = locale;
-    _emitWithLocale(locale);
+
+    // Only emit if different from current locale
+    if (state.locale != locale) {
+      _emitWithLocale(locale);
+    }
   }
 
   void _emitWithLocale(Locale locale) {
@@ -253,10 +263,11 @@ class AppCubit extends Cubit<AppState> {
 
   // --- Locale ---
   Future<void> changeLocale(Locale locale) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localeKey, locale.languageCode);
     _savedLocale = locale;
     _emitWithLocale(locale);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(_localeKey, locale.languageCode);
+    });
   }
 
   // --- Owner (Chalets) ---

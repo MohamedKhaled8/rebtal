@@ -191,10 +191,19 @@ class OwnerCubit extends Cubit<OwnerState> {
 
   void selectAvailableFromDate(DateTime date) {
     emit(state.copyWith(draft: state.draft.copyWith(availableFrom: date)));
+    // Auto-scroll to bedrooms/bathrooms section after date selection
+    _scrollToBedroomsSection();
   }
 
   void selectAvailableToDate(DateTime date) {
     emit(state.copyWith(draft: state.draft.copyWith(availableTo: date)));
+    // Auto-scroll to bedrooms/bathrooms section after date selection
+    _scrollToBedroomsSection();
+  }
+
+  void _scrollToBedroomsSection() {
+    // This will be used to scroll to the bedrooms section
+    // Implementation will be in the UI layer
   }
 
   // ==========================================

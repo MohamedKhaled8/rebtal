@@ -35,29 +35,58 @@ class ReviewsSection extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+              horizontal: stv(
+                context: context,
+                mobile: 24.sw,
+                tablet: 32.sw,
+                desktop: 40.sw,
+              ),
             ),
             child: Divider(color: isDark ? Colors.white12 : Colors.grey[200]),
           ),
-          SizedBox(height: otv(context: context, portrait: 48.sh, landscape: 24.sh)),
+          SizedBox(
+            height: otv(context: context, portrait: 48.sh, landscape: 24.sh),
+          ),
           // Header: ★ 4.83 · 78 reviews
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: stv(context: context, mobile: 24.sw, tablet: 32.sw, desktop: 40.sw),
+              horizontal: stv(
+                context: context,
+                mobile: 24.sw,
+                tablet: 32.sw,
+                desktop: 40.sw,
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   Icons.star,
-                  size: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
+                  size: stv(
+                    context: context,
+                    mobile: 20.spScaled,
+                    tablet: 22.spScaled,
+                    desktop: 24.spScaled,
+                  ),
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                SizedBox(width: stv(context: context, mobile: 8.sw, tablet: 10.sw, desktop: 12.sw)),
+                SizedBox(
+                  width: stv(
+                    context: context,
+                    mobile: 8.sw,
+                    tablet: 10.sw,
+                    desktop: 12.sw,
+                  ),
+                ),
                 Text(
                   '$rating · $reviewsCount ${context.tr('chalet_detail_reviews')}',
                   style: TextStyle(
-                    fontSize: stv(context: context, mobile: 20.spScaled, tablet: 22.spScaled, desktop: 24.spScaled),
+                    fontSize: stv(
+                      context: context,
+                      mobile: 20.spScaled,
+                      tablet: 22.spScaled,
+                      desktop: 24.spScaled,
+                    ),
                     fontWeight: FontWeight.w600,
                     color: isDark
                         ? ColorsManager.chaletTextPrimaryDark
@@ -67,7 +96,9 @@ class ReviewsSection extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: otv(context: context, portrait: 40.sh, landscape: 20.sh)),
+          SizedBox(
+            height: otv(context: context, portrait: 40.sh, landscape: 20.sh),
+          ),
           // Horizontal Review List
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
@@ -135,17 +166,21 @@ class ReviewsSection extends StatelessWidget {
                     final userId = data['userId'] ?? data['user_id'] ?? '';
 
                     // Date formatting
-                    String dateStr = "3 weeks ago";
+                    String dateStr = context.tr('booking_today');
                     final createdAt = data['createdAt'];
                     if (createdAt is Timestamp) {
                       final date = createdAt.toDate();
                       final diff = DateTime.now().difference(date);
                       if (diff.inDays > 30) {
-                        dateStr = "${(diff.inDays / 30).floor()} months ago";
-                      } else if (diff.inDays > 0) {
-                        dateStr = "${diff.inDays} days ago";
+                        dateStr = "${(diff.inDays / 30).floor()} ${context.tr('time_months_ago')}";
+                      } else if (diff.inDays == 1) {
+                        dateStr = context.tr('time_yesterday');
+                      } else if (diff.inDays > 1 && diff.inDays <= 7) {
+                        dateStr = "${diff.inDays} ${context.tr('time_days_ago')}";
+                      } else if (diff.inDays > 7) {
+                        dateStr = "${(diff.inDays / 7).floor()} ${context.tr('time_weeks_ago')}";
                       } else {
-                        dateStr = context.tr('chalet_detail_today');
+                        dateStr = context.tr('booking_today');
                       }
                     }
 
@@ -260,7 +295,9 @@ class ReviewsSection extends StatelessWidget {
                   foregroundColor: isDark ? Colors.white : Colors.black,
                 ),
                 child: Text(
-                  context.tr('chalet_detail_show_all_reviews').replaceAll('{}', '$reviewsCount'),
+                  context
+                      .tr('chalet_detail_show_all_reviews')
+                      .replaceAll('{}', '$reviewsCount'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -440,7 +477,9 @@ class _ExpandableTextState extends State<ExpandableText> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Builder(
                     builder: (ctx) => Text(
-                      isExpanded ? ctx.tr('chalet_detail_show_less') : ctx.tr('chalet_detail_show_more'),
+                      isExpanded
+                          ? ctx.tr('chalet_detail_show_less')
+                          : ctx.tr('chalet_detail_show_more'),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,

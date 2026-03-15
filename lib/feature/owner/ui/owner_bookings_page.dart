@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/owner/widget/booking_card.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class OwnerBookingsPage extends StatelessWidget {
   const OwnerBookingsPage({super.key});
@@ -35,7 +36,7 @@ class OwnerBookingsPage extends StatelessWidget {
                 : ColorsManager.white,
             title: Text(
               context.tr('owner_my_bookings'),
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
             actions: [
@@ -95,14 +96,14 @@ class OwnerBookingsPage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.event_busy_rounded,
-                          size: 80,
+                          size: 80.sp,
                           color: isDark ? Colors.white38 : Colors.grey.shade400,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.sh),
                         Text(
                           context.tr('owner_no_bookings'),
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
                             color: isDark
                                 ? ColorsManager.white70
@@ -116,13 +117,91 @@ class OwnerBookingsPage extends StatelessWidget {
               }
 
               return SliverPadding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.symmetric(
+                  horizontal: stv(
+                    context: context,
+                    mobile: 16.sw,
+                    tablet: 24.sw,
+                    desktop: 32.sw,
+                  ),
+                  vertical: 16.sh,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final b = bookings[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: BookingCard(booking: b, isDark: isDark),
+                    return Builder(
+                      builder: (context) {
+                        final bool showTwoColumns = otv(
+                          context: context,
+                          portrait: stv(
+                            context: context,
+                            mobile: false,
+                            tablet: true,
+                            desktop: true,
+                          ),
+                          landscape: true,
+                        );
+
+                        if (showTwoColumns && index % 2 == 0) {
+                          final secondIndex = index + 1;
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right: 8.sw,
+                                    bottom: 16.sh,
+                                  ),
+                                  child: BookingCard(
+                                    booking: b,
+                                    isDark: isDark,
+                                  ),
+                                ),
+                              ),
+                              if (secondIndex < bookings.length)
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      left: 8.sw,
+                                      bottom: 16.sh,
+                                    ),
+                                    child: BookingCard(
+                                      booking: bookings[secondIndex],
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                )
+                              else
+                                const Expanded(child: SizedBox()),
+                            ],
+                          );
+                        }
+
+                        // Skip the second card when in two-column mode
+                        if (showTwoColumns && index % 2 == 1) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: 16.sh,
+                            left: stv(
+                              context: context,
+                              mobile: 0.sw,
+                              tablet: 8.sw,
+                              desktop: 16.sw,
+                            ),
+                            right: stv(
+                              context: context,
+                              mobile: 0.sw,
+                              tablet: 8.sw,
+                              desktop: 16.sw,
+                            ),
+                          ),
+                          child: BookingCard(booking: b, isDark: isDark),
+                        );
+                      },
                     );
                   }, childCount: bookings.length),
                 ),

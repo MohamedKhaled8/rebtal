@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/fixed_bottom_bar_cubit.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
@@ -71,9 +72,12 @@ class FixedBottomBar extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (state.originalPrice != null)
+                          if (state.originalPriceValue != null)
                             Text(
-                              '${state.originalPrice}',
+                              CurrencyFormatter.egp(
+                                context,
+                                state.originalPriceValue!,
+                              ),
                               style: TextStyle(
                                 fontSize: 16,
                                 decoration: TextDecoration.lineThrough,
@@ -90,7 +94,11 @@ class FixedBottomBar extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                state.displayPrice.split(' /')[0],
+                                CurrencyFormatter.egp(
+                                  context,
+                                  state.displayPriceValue,
+                                  withSuffixPerNight: false,
+                                ),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700, // Bold
@@ -220,7 +228,9 @@ class FixedBottomBar extends StatelessWidget {
                                 disabledBackgroundColor: Colors.grey[300],
                               ),
                               child: Text(
-                                isAvailable ? context.tr('chalet_reserve') : context.tr('chalet_unavailable'),
+                                isAvailable
+                                    ? context.tr('chalet_reserve')
+                                    : context.tr('chalet_unavailable'),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,

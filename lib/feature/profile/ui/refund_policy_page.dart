@@ -171,7 +171,10 @@ class RefundPolicyPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Contact us: 01507277511\nreservationsystem07@gmail.com',
+                    context
+                        .tr('profile_questions_cancel_contact')
+                        .replaceFirst('{}', '01507277511')
+                        .replaceFirst('{}', 'rebtal.service@gmail.com'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,

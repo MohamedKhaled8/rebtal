@@ -135,6 +135,9 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get home_special_offer => 'عرض خاص';
 
   @override
+  String get home_popular_destinations => 'أكثر الوجهات طلباً';
+
+  @override
   String get booking_select_dates => 'اختر فترة الحجز';
 
   @override
@@ -422,6 +425,12 @@ class ArbLocalizationsAr extends ArbLocalizations {
 
   @override
   String get profile_switch_to_owner => 'التبديل إلى وضع المالك';
+
+  @override
+  String get profile_switch_to_user => 'التبديل إلى وضع المستخدم';
+
+  @override
+  String get profile_switch_user_subtitle => 'عرض التطبيق كمستخدم عادي';
 
   @override
   String get profile_please_login => 'يرجى تسجيل الدخول';
@@ -2218,7 +2227,7 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get owner_chalet_photos => 'صور الشاليه';
 
   @override
-  String get owner_add_3_photos_hint => 'أضف 3 صور عالية الجودة على الأقل';
+  String get owner_add_3_photos_hint => 'أضف صور عالية الجودة على الأقل';
 
   @override
   String get owner_add_first_photo => 'أضف صورتك الأولى';
@@ -2808,4 +2817,19 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String admin_user_photos_title(Object name) {
     return 'صور $name';
   }
+
+  @override
+  String get time_months_ago => 'أشهر مضت';
+
+  @override
+  String get time_days_ago => 'أيام مضت';
+
+  @override
+  String get time_yesterday => 'أمس';
+
+  @override
+  String get time_weeks_ago => 'أسابيع مضت';
+
+  @override
+  String get owner_your_chalet => 'شاليهك';
 }

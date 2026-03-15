@@ -73,10 +73,16 @@ class RegisterScreen extends StatelessWidget {
                                             )
                                           : null,
                                       border: Border.all(
-                                        color: isDark
-                                            ? Colors.white10
-                                            : Colors.black12,
-                                        width: 1,
+                                        color: (state is RegisterValidationError &&
+                                                cubit.profileImage == null)
+                                            ? ColorsManager.red
+                                            : (isDark
+                                                ? Colors.white10
+                                                : Colors.black12),
+                                        width: (state is RegisterValidationError &&
+                                                cubit.profileImage == null)
+                                            ? 2
+                                            : 1,
                                       ),
                                     ),
                                     child: cubit.profileImage == null

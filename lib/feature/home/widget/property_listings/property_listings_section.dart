@@ -128,6 +128,7 @@ class PropertyCard extends StatelessWidget {
                   ),
                   Text(
                     CurrencyFormatter.egp(
+                      context,
                       double.tryParse(
                             property['price'].toString().replaceAll(
                               RegExp(r'[^0-9.]'),

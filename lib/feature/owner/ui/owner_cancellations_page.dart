@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class OwnerCancellationsPage extends StatelessWidget {
   const OwnerCancellationsPage({super.key});
@@ -62,11 +63,11 @@ class OwnerCancellationsPage extends StatelessWidget {
                         ? ColorsManager.white24
                         : ColorsManager.grey300,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.sh),
                   Text(
                     context.tr('owner_no_cancellations'),
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       color: isDark
                           ? ColorsManager.white70
                           : ColorsManager.grey,
@@ -77,13 +78,105 @@ class OwnerCancellationsPage extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: cancelledBookings.length,
-            itemBuilder: (context, index) {
-              return _CancelledBookingCard(
-                booking: cancelledBookings[index],
-                isDark: isDark,
+          return Builder(
+            builder: (context) {
+              final bool showTwoColumns = otv(
+                context: context,
+                portrait: stv(
+                  context: context,
+                  mobile: false,
+                  tablet: true,
+                  desktop: true,
+                ),
+                landscape: true,
+              );
+
+              if (showTwoColumns) {
+                return ListView.builder(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: stv(
+                      context: context,
+                      mobile: 16.sw,
+                      tablet: 24.sw,
+                      desktop: 32.sw,
+                    ),
+                    vertical: 16.sh,
+                  ),
+                  itemCount: (cancelledBookings.length / 2).ceil(),
+                  itemBuilder: (context, i) {
+                    final firstIndex = i * 2;
+                    final secondIndex = firstIndex + 1;
+
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: 8.sw,
+                              bottom: 20.sh,
+                            ),
+                            child: _CancelledBookingCard(
+                              booking: cancelledBookings[firstIndex],
+                              isDark: isDark,
+                            ),
+                          ),
+                        ),
+                        if (secondIndex < cancelledBookings.length)
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                left: 8.sw,
+                                bottom: 20.sh,
+                              ),
+                              child: _CancelledBookingCard(
+                                booking: cancelledBookings[secondIndex],
+                                isDark: isDark,
+                              ),
+                            ),
+                          )
+                        else
+                          const Expanded(child: SizedBox()),
+                      ],
+                    );
+                  },
+                );
+              }
+
+              return ListView.builder(
+                padding: EdgeInsets.symmetric(
+                  horizontal: stv(
+                    context: context,
+                    mobile: 16.sw,
+                    tablet: 24.sw,
+                    desktop: 32.sw,
+                  ),
+                  vertical: 16.sh,
+                ),
+                itemCount: cancelledBookings.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: 20.sh,
+                      left: stv(
+                        context: context,
+                        mobile: 0.sw,
+                        tablet: 8.sw,
+                        desktop: 16.sw,
+                      ),
+                      right: stv(
+                        context: context,
+                        mobile: 0.sw,
+                        tablet: 8.sw,
+                        desktop: 16.sw,
+                      ),
+                    ),
+                    child: _CancelledBookingCard(
+                      booking: cancelledBookings[index],
+                      isDark: isDark,
+                    ),
+                  );
+                },
               );
             },
           );
@@ -114,10 +207,10 @@ class _CancelledBookingCard extends StatelessWidget {
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: EdgeInsets.only(bottom: 20.sh),
       decoration: BoxDecoration(
         color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.sp),
         boxShadow: [
           BoxShadow(
             color: ColorsManager.black.withOpacity(0.05),
@@ -130,34 +223,32 @@ class _CancelledBookingCard extends StatelessWidget {
         children: [
           // Header: Status and Date
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.sp),
             decoration: BoxDecoration(
               color: ColorsManager.red.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp)),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.sp),
                   decoration: const BoxDecoration(
                     color: ColorsManager.red,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close_rounded,
                     color: ColorsManager.white,
-                    size: 16,
+                    size: 16.sp,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.sw),
                 Text(
                   context.tr('booking_status_cancelled'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: ColorsManager.red,
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
                 const Spacer(),
@@ -167,7 +258,7 @@ class _CancelledBookingCard extends StatelessWidget {
                     color: isDark
                         ? ColorsManager.white70
                         : ColorsManager.grey600,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ],
@@ -175,7 +266,7 @@ class _CancelledBookingCard extends StatelessWidget {
           ),
 
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.sp),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -190,18 +281,18 @@ class _CancelledBookingCard extends StatelessWidget {
                         : ColorsManager.chaletTextPrimaryLight,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.sh),
                 Text(
                   '#${booking.id.substring(0, 8)}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: isDark ? ColorsManager.white70 : ColorsManager.grey,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20.sh),
                 const Divider(),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.sh),
 
                 // Financials Grid
                 Row(
@@ -233,16 +324,16 @@ class _CancelledBookingCard extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.sh),
 
                 // User Details Section
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.sp),
                   decoration: BoxDecoration(
                     color: isDark
                         ? ColorsManager.white.withOpacity(0.05)
                         : ColorsManager.grey50,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.sp),
                     border: Border.all(
                       color: isDark
                           ? ColorsManager.white10
@@ -257,7 +348,7 @@ class _CancelledBookingCard extends StatelessWidget {
                         booking.userName,
                         isDark,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.sh),
                       _buildDetailRow(
                         Icons.calendar_today_outlined,
                         context.tr('owner_booking_date'),
@@ -265,7 +356,7 @@ class _CancelledBookingCard extends StatelessWidget {
                         isDark,
                       ),
                       if (booking.refundReason != null) ...[
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.sh),
                         _buildDetailRow(
                           Icons.info_outline,
                           context.tr('owner_reason_policy'),
@@ -278,7 +369,7 @@ class _CancelledBookingCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20.sh),
 
                 // Actions
                 SizedBox(
@@ -290,9 +381,9 @@ class _CancelledBookingCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorsManager.mainBlue,
                       foregroundColor: ColorsManager.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 16.sh),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.sp),
                       ),
                       elevation: 0,
                     ),
@@ -315,8 +406,11 @@ class _CancelledBookingCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: labelColor)),
-        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12.sp, color: labelColor),
+        ),
+        SizedBox(height: 4.sh),
         Text(
           value,
           style: TextStyle(
@@ -340,10 +434,10 @@ class _CancelledBookingCard extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 18,
+          size: 18.sp,
           color: isDark ? ColorsManager.white70 : ColorsManager.grey400,
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.sw),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,14 +445,14 @@ class _CancelledBookingCard extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   color: isDark ? ColorsManager.white70 : ColorsManager.grey700,
                 ),
               ),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   color:
                       textColor ??
                       (isDark

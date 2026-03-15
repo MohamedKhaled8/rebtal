@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class ModernHeaderCard extends StatefulWidget {
   const ModernHeaderCard({super.key, required this.requestData});
@@ -285,6 +286,7 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                     children: [
                                       Text(
                                         CurrencyFormatter.egp(
+                                          context,
                                           (price is num)
                                               ? price
                                               : double.tryParse(
@@ -300,9 +302,9 @@ class _ModernHeaderCardState extends State<ModernHeaderCard>
                                           letterSpacing: -0.5,
                                         ),
                                       ),
-                                      const Text(
-                                        'per night',
-                                        style: TextStyle(
+                                      Text(
+                                        context.tr('common_night'),
+                                        style: const TextStyle(
                                           fontSize: 11,
                                           color: Colors.white70,
                                           fontWeight: FontWeight.w500,

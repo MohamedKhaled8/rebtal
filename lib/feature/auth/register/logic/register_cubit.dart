@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
-import 'package:rebtal/core/utils/validators/auth_validator.dart';
 import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 
@@ -72,6 +71,8 @@ class RegisterCubit extends Cubit<RegisterState> {
     }
   }
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   Future<void> register() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -79,7 +80,26 @@ class RegisterCubit extends Cubit<RegisterState> {
     final phone = phoneController.text.trim();
     final role = selectedRole;
 
-    // Input validation
+    // Trigger form validation to show red borders
+    final bool isFormValid = formKey.currentState?.validate() ?? false;
+
+    // Check if everything is empty
+    if (name.isEmpty &&
+        email.isEmpty &&
+        password.isEmpty &&
+        phone.isEmpty &&
+        profileImage == null &&
+        idCardImage == null) {
+      emit(RegisterValidationError("يرجى ملئ جميع الحقول للمتابعة"));
+      return;
+    }
+
+    if (!isFormValid) {
+      emit(RegisterValidationError("يرجى ملئ جميع الحقول بشكل صحيح"));
+      return;
+    }
+
+    // Input validation for images
     if (profileImage == null) {
       emit(RegisterValidationError("يرجى إرفاق الصورة الشخصية للمتابعة"));
       return;
@@ -87,30 +107,6 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     if (idCardImage == null) {
       emit(RegisterValidationError("يرجى إرفاق صورة البطاقة الشخصية للمتابعة"));
-      return;
-    }
-
-    final nameError = AuthValidator.validateName(name);
-    if (nameError != null) {
-      emit(RegisterValidationError(nameError));
-      return;
-    }
-
-    final emailError = AuthValidator.validateEmail(email);
-    if (emailError != null) {
-      emit(RegisterValidationError(emailError));
-      return;
-    }
-
-    final passwordError = AuthValidator.validatePassword(password);
-    if (passwordError != null) {
-      emit(RegisterValidationError(passwordError));
-      return;
-    }
-
-    final phoneError = AuthValidator.validatePhone(phone);
-    if (phoneError != null) {
-      emit(RegisterValidationError(phoneError));
       return;
     }
 

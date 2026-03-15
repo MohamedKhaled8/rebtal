@@ -10,13 +10,13 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 part 'action_buttons_state.dart';
 
 class ActionButtonsCubit extends Cubit<ActionButtonsState> {
-  ActionButtonsCubit() : super(ActionButtonsInitial());
+  ActionButtonsCubit() : super(const ActionButtonsInitial());
 
   Future<void> updateStatus({
     required String docId,
     required String newStatus,
   }) async {
-    emit(ActionButtonsLoading());
+    emit(const ActionButtonsLoading());
     try {
       final docRef = FirebaseFirestore.instance
           .collection('chalets')
@@ -87,9 +87,9 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
     required String docId,
     required Map<String, dynamic> requestData,
   }) async {
-    emit(ActionButtonsLoading());
+    final currentStatus = requestData['bookingAvailability'] ?? 'available';
+    emit(ActionButtonsLoading(bookingAvailability: currentStatus));
     try {
-      final currentStatus = requestData['bookingAvailability'] ?? 'available';
       final newStatus = currentStatus == 'available'
           ? 'unavailable'
           : 'available';
@@ -101,10 +101,16 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
       emit(
         ActionButtonsSuccess(
           newStatus == 'available' ? 'Booking Enabled' : 'Booking Disabled',
+          bookingAvailability: newStatus,
         ),
       );
     } catch (e) {
-      emit(ActionButtonsError('Failed to toggle availability: $e'));
+      emit(
+        ActionButtonsError(
+          'Failed to toggle availability: $e',
+          bookingAvailability: currentStatus,
+        ),
+      );
     }
   }
 

@@ -350,6 +350,12 @@ abstract class ArbLocalizations {
   /// **'Special Offer'**
   String get home_special_offer;
 
+  /// No description provided for @home_popular_destinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Requested Destinations'**
+  String get home_popular_destinations;
+
   /// No description provided for @booking_select_dates.
   ///
   /// In en, this message translates to:
@@ -925,6 +931,18 @@ abstract class ArbLocalizations {
   /// In en, this message translates to:
   /// **'Switch to Owner Mode'**
   String get profile_switch_to_owner;
+
+  /// No description provided for @profile_switch_to_user.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to User Mode'**
+  String get profile_switch_to_user;
+
+  /// No description provided for @profile_switch_user_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View app as regular user'**
+  String get profile_switch_user_subtitle;
 
   /// No description provided for @profile_please_login.
   ///
@@ -4427,7 +4445,7 @@ abstract class ArbLocalizations {
   /// No description provided for @owner_add_3_photos_hint.
   ///
   /// In en, this message translates to:
-  /// **'Add at least 3 high-quality photos'**
+  /// **'Add high-quality photos'**
   String get owner_add_3_photos_hint;
 
   /// No description provided for @owner_add_first_photo.
@@ -5515,6 +5533,36 @@ abstract class ArbLocalizations {
   /// In en, this message translates to:
   /// **'{name} Photos'**
   String admin_user_photos_title(Object name);
+
+  /// No description provided for @time_months_ago.
+  ///
+  /// In en, this message translates to:
+  /// **'months ago'**
+  String get time_months_ago;
+
+  /// No description provided for @time_days_ago.
+  ///
+  /// In en, this message translates to:
+  /// **'days ago'**
+  String get time_days_ago;
+
+  /// No description provided for @time_yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get time_yesterday;
+
+  /// No description provided for @time_weeks_ago.
+  ///
+  /// In en, this message translates to:
+  /// **'weeks ago'**
+  String get time_weeks_ago;
+
+  /// No description provided for @owner_your_chalet.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Chalet'**
+  String get owner_your_chalet;
 }
 
 class _ArbLocalizationsDelegate

@@ -13,6 +13,7 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class OwnerChaletAddScreen extends StatelessWidget {
   const OwnerChaletAddScreen({super.key});
@@ -103,12 +104,12 @@ class OwnerChaletAddScreen extends StatelessWidget {
           : ColorsManager.lightBackgroundF8FAFF,
       leading: IconButton(
         icon: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.sp),
           decoration: BoxDecoration(
             color: isDark
                 ? ColorsManager.white.withOpacity(0.1)
                 : ColorsManager.grey200,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.sp),
           ),
           child: Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -125,7 +126,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
             context.tr('owner_add_new_chalet'),
             style: TextStyle(
               color: isDark ? ColorsManager.white : ColorsManager.black,
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -133,7 +134,7 @@ class OwnerChaletAddScreen extends StatelessWidget {
             context.tr('owner_fill_data'),
             style: TextStyle(
               color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.normal,
             ),
           ),
@@ -157,12 +158,20 @@ class _ChaletFormContent extends StatelessWidget {
         final draft = state.draft;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.symmetric(
+            horizontal: stv(
+              context: context,
+              mobile: 20.sw,
+              tablet: 32.sw,
+              desktop: 48.sw,
+            ),
+            vertical: 20.sh,
+          ),
           child: Column(
             children: [
               // Progress Indicator
               _buildProgressCard(context, isDark),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.sh),
 
               // Owner Info Section
               OwnerInfoSection(
@@ -170,7 +179,7 @@ class _ChaletFormContent extends StatelessWidget {
                 email: draft.email ?? '',
                 phone: draft.phoneNumber ?? '',
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Images Section
               ImageUploadSection(
@@ -178,7 +187,7 @@ class _ChaletFormContent extends StatelessWidget {
                 onAdd: () => HelperImage().addSampleImages(context),
                 onRemove: (index) => ownerCubit.removeChaletImage(index),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Chalet Details Section
               ChaletDetailsSection(
@@ -187,7 +196,7 @@ class _ChaletFormContent extends StatelessWidget {
                 onNameChanged: ownerCubit.updateChaletName,
                 onDescriptionChanged: ownerCubit.updateDescription,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Location Section
               LocationSection(
@@ -218,7 +227,7 @@ class _ChaletFormContent extends StatelessWidget {
                   }
                 },
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Property Details Section
               PropertyDetailsSection(
@@ -233,7 +242,7 @@ class _ChaletFormContent extends StatelessWidget {
                 onBathroomsChanged: (v) =>
                     ownerCubit.updateBathrooms(int.tryParse(v) ?? 0),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Discount Section
               DiscountSection(
@@ -245,13 +254,13 @@ class _ChaletFormContent extends StatelessWidget {
                 onDiscountTypeChanged: ownerCubit.updateDiscountType,
                 onDiscountValueChanged: ownerCubit.updateDiscountValue,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               DayUseSection(
                 dayUseEnabled: draft.dayUseEnabled,
                 onDayUseChanged: ownerCubit.updateDayUseEnabled,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // Availability Section
               AvailabilitySection(
@@ -280,7 +289,7 @@ class _ChaletFormContent extends StatelessWidget {
                   if (picked != null) ownerCubit.selectAvailableToDate(picked);
                 },
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.sh),
 
               // المرافق والخدمات (يشمل المميزات الإضافية — بدون قسم منفصل)
               AmenitiesSelectionSection(
@@ -301,7 +310,7 @@ class _ChaletFormContent extends StatelessWidget {
                 onAmenityChanged: ownerCubit.updateAmenity,
               ),
 
-              const SizedBox(height: 100), // Space for bottom button
+              SizedBox(height: 80.sh), // Space for bottom button
             ],
           ),
         );
@@ -311,7 +320,7 @@ class _ChaletFormContent extends StatelessWidget {
 
   Widget _buildProgressCard(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -336,18 +345,18 @@ class _ChaletFormContent extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.sp),
             decoration: BoxDecoration(
               color: ColorsManager.blue2563EB,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.sp),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.edit_note_rounded,
               color: ColorsManager.white,
-              size: 24,
+              size: 24.sp,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.sw),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,18 +365,18 @@ class _ChaletFormContent extends StatelessWidget {
                   context.tr("owner_create_ad"),
                   style: TextStyle(
                     color: isDark ? ColorsManager.white : ColorsManager.black,
-                    fontSize: 16,
+                    fontSize: 16.spScaled,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.sh),
                 Text(
                   context.tr("owner_add_details_hint"),
                   style: TextStyle(
                     color: isDark
                         ? ColorsManager.grey400
                         : ColorsManager.grey600,
-                    fontSize: 13,
+                    fontSize: 13.spScaled,
                   ),
                 ),
               ],
@@ -393,7 +402,7 @@ class _SubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.sp),
       decoration: BoxDecoration(
         color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
         boxShadow: [
@@ -421,7 +430,7 @@ class _SubmitButton extends StatelessWidget {
             color: isSubmitting
                 ? (isDark ? ColorsManager.grey800 : ColorsManager.grey300)
                 : null,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.sp),
             boxShadow: isSubmitting
                 ? null
                 : [
@@ -436,7 +445,7 @@ class _SubmitButton extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: isSubmitting ? null : onSubmit,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.sp),
               child: Center(
                 child: isSubmitting
                     ? Row(
@@ -454,14 +463,14 @@ class _SubmitButton extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.sw),
                           Text(
                             context.tr("common_sending"),
                             style: TextStyle(
                               color: isDark
                                   ? ColorsManager.grey400
                                   : ColorsManager.grey600,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -470,17 +479,17 @@ class _SubmitButton extends StatelessWidget {
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.check_circle_outline_rounded,
                             color: ColorsManager.white,
-                            size: 22,
+                            size: 22.sp,
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.sw),
                           Text(
                             context.tr("owner_submit_chalet"),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: ColorsManager.white,
-                              fontSize: 17,
+                              fontSize: 17.sp,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
                             ),
