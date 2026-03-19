@@ -553,6 +553,9 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get map_select_now => 'حدد موقعي الآن';
 
   @override
+  String get notifications_since => 'منذ';
+
+  @override
   String get notifications_title => 'الإشعارات';
 
   @override

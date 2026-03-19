@@ -177,6 +177,7 @@
   "map_search_placeholder": "ابحث عن موقع...",
   "map_confirm_location": "تأكيد الموقع",
   "map_select_now": "حدد موقعي الآن",
+  "notifications_since": "منذ",
   "notifications_title": "الإشعارات",
   "notifications_delete_all": "حذف الكل",
   "notifications_start_date": "تاريخ البداية",

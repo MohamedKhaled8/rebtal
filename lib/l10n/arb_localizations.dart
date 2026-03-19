@@ -1184,6 +1184,12 @@ abstract class ArbLocalizations {
   /// **'Select My Location Now'**
   String get map_select_now;
 
+  /// No description provided for @notifications_since.
+  ///
+  /// In en, this message translates to:
+  /// **'since'**
+  String get notifications_since;
+
   /// No description provided for @notifications_title.
   ///
   /// In en, this message translates to:

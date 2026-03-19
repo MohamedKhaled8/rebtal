@@ -32,104 +32,129 @@ class CleanSearchBarTrigger extends StatelessWidget {
           );
         },
         child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: stv(
-              context: context,
-              mobile: 16.sw,
-              tablet: 24.sw,
-              desktop: 32.sw,
-            ),
-            vertical: otv(context: context, portrait: 16.sh, landscape: 30.sh),
-          ),
+          height: otv(context: context, portrait: 65.sh, landscape: 70.sh),
           decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : const Color(0xFFF3F4F6),
-            borderRadius: BorderRadius.circular(
-              stv(
-                context: context,
-                mobile: 10.sp,
-                tablet: 12.sp,
-                desktop: 14.sp,
+            color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? Colors.black.withOpacity(0.4)
+                    : Colors.black.withOpacity(0.06),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-            ),
+            ],
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.grey.withOpacity(0.1),
+              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.03),
             ),
           ),
           child: Row(
             children: [
-              Icon(
-                Icons.search,
-                color: const Color(0xFF2563EB),
-                size: otv(
+              SizedBox(width: 8.sw),
+              Container(
+                padding: EdgeInsets.all(stv(
                   context: context,
-                  portrait: stv(
+                  mobile: 10.sp,
+                  tablet: 12.sp,
+                  desktop: 14.sp,
+                )),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF10B981), // primary green
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.search_rounded,
+                  color: Colors.white,
+                  size: stv(
                     context: context,
                     mobile: 22.spScaled,
                     tablet: 24.spScaled,
                     desktop: 28.spScaled,
                   ),
-                  landscape: stv(
-                    context: context,
-                    mobile: 24.spScaled,
-                    tablet: 28.spScaled,
-                    desktop: 32.spScaled,
-                  ),
                 ),
               ),
-              SizedBox(
-                width: stv(
-                  context: context,
-                  mobile: 12.sw,
-                  tablet: 16.sw,
-                  desktop: 20.sw,
-                ),
-              ),
+              SizedBox(width: 16.sw),
               Expanded(
-                child: Text(
-                  context.tr('home_search_placeholder'),
-                  style: TextStyle(
-                    color: isDark ? Colors.white60 : Colors.black54,
-                    fontSize: otv(
-                      context: context,
-                      portrait: stv(
-                        context: context,
-                        mobile: 14.spScaled,
-                        tablet: 16.spScaled,
-                        desktop: 18.spScaled,
-                      ),
-                      landscape: stv(
-                        context: context,
-                        mobile: 16.spScaled,
-                        tablet: 18.spScaled,
-                        desktop: 20.spScaled,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('home_search'),
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: otv(
+                          context: context,
+                          portrait: stv(
+                            context: context,
+                            mobile: 15.spScaled,
+                            tablet: 16.spScaled,
+                            desktop: 18.spScaled,
+                          ),
+                          landscape: stv(
+                            context: context,
+                            mobile: 16.spScaled,
+                            tablet: 18.spScaled,
+                            desktop: 20.spScaled,
+                          ),
+                        ),
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
                       ),
                     ),
-                    fontWeight: FontWeight.w500,
-                  ),
+                    const SizedBox(height: 2),
+                    Text(
+                      context.tr('home_search_placeholder'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[500],
+                        fontSize: otv(
+                          context: context,
+                          portrait: stv(
+                            context: context,
+                            mobile: 12.spScaled,
+                            tablet: 13.spScaled,
+                            desktop: 14.spScaled,
+                          ),
+                          landscape: stv(
+                            context: context,
+                            mobile: 13.spScaled,
+                            tablet: 14.spScaled,
+                            desktop: 15.spScaled,
+                          ),
+                        ),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Icon(
-                Icons.tune,
-                size: otv(
+              Container(
+                margin: EdgeInsets.only(right: 12.sw, left: 12.sw),
+                padding: EdgeInsets.all(stv(
                   context: context,
-                  portrait: stv(
+                  mobile: 8.sp,
+                  tablet: 10.sp,
+                  desktop: 12.sp,
+                )),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                  ),
+                ),
+                child: Icon(
+                  Icons.tune_rounded,
+                  size: stv(
                     context: context,
                     mobile: 18.spScaled,
                     tablet: 20.spScaled,
                     desktop: 24.spScaled,
                   ),
-                  landscape: stv(
-                    context: context,
-                    mobile: 20.spScaled,
-                    tablet: 24.spScaled,
-                    desktop: 28.spScaled,
-                  ),
+                  color: isDark ? Colors.white70 : Colors.black54,
                 ),
-                color: isDark ? Colors.white38 : Colors.black38,
               ),
             ],
           ),

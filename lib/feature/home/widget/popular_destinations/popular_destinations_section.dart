@@ -8,16 +8,12 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rebtal/feature/auth/widget/handwritten_animated_text.dart';
 import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
+import 'package:rebtal/feature/home/ui/destination_chalets_screen.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class PopularDestinationsSection extends StatelessWidget {
-  final String? selectedDestination;
-  final ValueChanged<String>? onDestinationSelected;
-
   const PopularDestinationsSection({
     super.key,
-    this.selectedDestination,
-    this.onDestinationSelected,
   });
 
   @override
@@ -109,7 +105,6 @@ class PopularDestinationsSection extends StatelessWidget {
                 itemCount: usedDestinationModels.length,
                 itemBuilder: (context, index) {
                   final destination = usedDestinationModels[index];
-                  final isSelected = selectedDestination == destination.nameAr;
 
                   return Padding(
                     padding: EdgeInsets.only(left: 3.w),
@@ -119,8 +114,16 @@ class PopularDestinationsSection extends StatelessWidget {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
-                          if (onDestinationSelected == null) return;
-                          onDestinationSelected!.call(destination.nameAr);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DestinationChaletsScreen(
+                                destinationName:
+                                    destination.getLocalizedName(context),
+                                destinationArabicName: destination.nameAr,
+                              ),
+                            ),
+                          );
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -155,23 +158,6 @@ class PopularDestinationsSection extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                if (isSelected)
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF2563EB),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                        size: 12,
-                                      ),
-                                    ),
-                                  ),
                                 Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Column(

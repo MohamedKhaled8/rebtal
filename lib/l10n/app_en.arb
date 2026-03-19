@@ -180,6 +180,7 @@
   "map_search_placeholder": "Search for location...",
   "map_confirm_location": "Confirm Location",
   "map_select_now": "Select My Location Now",
+  "notifications_since": "since",
   "notifications_title": "Notifications",
   "notifications_delete_all": "Delete All",
   "notifications_start_date": "Start Date",

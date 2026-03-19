@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/models/notification_model.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:intl/intl.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class NotificationCard extends StatelessWidget {
   final NotificationModel notification;
@@ -103,7 +104,7 @@ class NotificationCard extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                notification.title,
+                                context.tr(notification.title),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: notification.isRead
@@ -128,7 +129,7 @@ class NotificationCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          notification.body,
+                          context.tr(notification.body),
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -150,7 +151,7 @@ class NotificationCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _formatTime(notification.createdAt),
+                              _formatTime(context, notification.createdAt),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
@@ -218,18 +219,18 @@ class NotificationCard extends StatelessWidget {
     }
   }
 
-  String _formatTime(DateTime dateTime) {
+  String _formatTime(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'الآن';
+      return context.tr('common_now');
     } else if (difference.inHours < 1) {
-      return 'منذ ${difference.inMinutes} دقيقة';
+      return '${context.tr('notifications_since')} ${difference.inMinutes} ${context.tr('booking_minute')}';
     } else if (difference.inDays < 1) {
-      return 'منذ ${difference.inHours} ساعة';
+      return '${context.tr('notifications_since')} ${difference.inHours} ${context.tr('booking_hour')}';
     } else if (difference.inDays < 7) {
-      return 'منذ ${difference.inDays} يوم';
+      return '${context.tr('notifications_since')} ${difference.inDays} ${context.tr('booking_day')}';
     } else {
       return DateFormat('dd/MM/yyyy').format(dateTime);
     }

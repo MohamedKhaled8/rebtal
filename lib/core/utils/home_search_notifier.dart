@@ -6,6 +6,9 @@ class SearchFilters {
   final double? exactPrice;
   final int? minBedrooms;
   final int? minBathrooms;
+  final int? minChildren;
+  final bool dayUseOnly;
+  final bool hasOffers;
   final List<String> features;
   final List<String> facilities;
   final String? location;
@@ -17,6 +20,9 @@ class SearchFilters {
     this.exactPrice,
     this.minBedrooms,
     this.minBathrooms,
+    this.minChildren,
+    this.dayUseOnly = false,
+    this.hasOffers = false,
     this.features = const [],
     this.facilities = const [],
     this.location,
@@ -29,6 +35,9 @@ class SearchFilters {
     double? exactPrice,
     int? minBedrooms,
     int? minBathrooms,
+    int? minChildren,
+    bool? dayUseOnly,
+    bool? hasOffers,
     List<String>? features,
     List<String>? facilities,
     String? location,
@@ -40,6 +49,9 @@ class SearchFilters {
       exactPrice: exactPrice ?? this.exactPrice,
       minBedrooms: minBedrooms ?? this.minBedrooms,
       minBathrooms: minBathrooms ?? this.minBathrooms,
+      minChildren: minChildren ?? this.minChildren,
+      dayUseOnly: dayUseOnly ?? this.dayUseOnly,
+      hasOffers: hasOffers ?? this.hasOffers,
       features: features ?? this.features,
       facilities: facilities ?? this.facilities,
       location: location ?? this.location,
@@ -53,6 +65,9 @@ class SearchFilters {
       exactPrice == null &&
       minBedrooms == null &&
       minBathrooms == null &&
+      minChildren == null &&
+      !dayUseOnly &&
+      !hasOffers &&
       features.isEmpty &&
       facilities.isEmpty &&
       location == null &&

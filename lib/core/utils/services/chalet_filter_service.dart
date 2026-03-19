@@ -23,6 +23,9 @@ class ChaletFilterService {
       final priceRangeMatch = matchesPriceRange(chalet, filters.priceRange);
       final bedroomsMatch = matchesBedrooms(chalet, filters.minBedrooms);
       final bathroomsMatch = matchesBathrooms(chalet, filters.minBathrooms);
+      final childrenMatch = matchesChildren(chalet, filters.minChildren);
+      final dayUseMatch = matchesDayUse(chalet, filters.dayUseOnly);
+      final offersMatch = matchesOffers(chalet, filters.hasOffers);
       final areaMatch = matchesArea(chalet, filters.minArea);
       final featuresMatch = matchesFeatures(chalet, filters.features);
       final facilitiesMatch = matchesFacilities(chalet, filters.facilities);
@@ -32,6 +35,9 @@ class ChaletFilterService {
           priceRangeMatch &&
           bedroomsMatch &&
           bathroomsMatch &&
+          childrenMatch &&
+          dayUseMatch &&
+          offersMatch &&
           areaMatch &&
           featuresMatch &&
           facilitiesMatch;
@@ -43,6 +49,9 @@ class ChaletFilterService {
         if (!priceRangeMatch) print('      - Price range mismatch');
         if (!bedroomsMatch) print('      - Bedrooms mismatch');
         if (!bathroomsMatch) print('      - Bathrooms mismatch');
+        if (!childrenMatch) print('      - Children mismatch');
+        if (!dayUseMatch) print('      - Day use mismatch');
+        if (!offersMatch) print('      - Offers mismatch');
         if (!areaMatch) print('      - Area mismatch');
         if (!featuresMatch) print('      - Features mismatch');
         if (!facilitiesMatch) print('      - Facilities mismatch');
@@ -178,14 +187,32 @@ class ChaletFilterService {
     return chaletBathrooms >= minBathrooms!;
   }
 
-  /// Matches chalet against area filter (exact match)
   static bool matchesArea(Map<String, dynamic> chalet, double? minArea) {
     if (!isAreaActive(minArea)) return true;
 
     final chaletArea = NumberParser.parseDouble(chalet['chaletArea']);
 
-    // ✅ Exact match for area search
-    return chaletArea == minArea!;
+    // Area search should be >= (greater than or equal)
+    return chaletArea >= minArea!;
+  }
+
+  /// Matches chalet against children filter
+  static bool matchesChildren(Map<String, dynamic> chalet, int? minChildren) {
+    if (minChildren == null || minChildren <= 0) return true;
+    final chaletChildren = NumberParser.parseInt(chalet['childrenCount']);
+    return chaletChildren >= minChildren;
+  }
+
+  /// Matches chalet against day use filter
+  static bool matchesDayUse(Map<String, dynamic> chalet, bool dayUseOnly) {
+    if (!dayUseOnly) return true;
+    return chalet['dayUseEnabled'] == true;
+  }
+
+  /// Matches chalet against offers filter
+  static bool matchesOffers(Map<String, dynamic> chalet, bool hasOffers) {
+    if (!hasOffers) return true;
+    return chalet['discountEnabled'] == true;
   }
 
   /// Matches chalet against features filter (OR logic)
@@ -245,6 +272,9 @@ class ChaletFilterService {
     if (isPriceRangeActive(filters.priceRange)) count++;
     if (isBedroomsActive(filters.minBedrooms)) count++;
     if (isBathroomsActive(filters.minBathrooms)) count++;
+    if (filters.minChildren != null && filters.minChildren! > 0) count++;
+    if (filters.dayUseOnly) count++;
+    if (filters.hasOffers) count++;
     if (isAreaActive(filters.minArea)) count++;
     if (isFeaturesActive(filters.features)) count++;
     if (isFacilitiesActive(filters.facilities)) count++;

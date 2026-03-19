@@ -555,6 +555,9 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String get map_select_now => 'Select My Location Now';
 
   @override
+  String get notifications_since => 'since';
+
+  @override
   String get notifications_title => 'Notifications';
 
   @override
