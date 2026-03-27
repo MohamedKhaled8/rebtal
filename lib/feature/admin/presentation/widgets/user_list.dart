@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
 import 'package:rebtal/feature/admin/presentation/pages/dashboard.dart';
 import 'package:rebtal/feature/admin/widget/user/user_card.dart';
 
@@ -22,17 +25,17 @@ class UsersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection(collection).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return BlocBuilder<AdminCubit, AdminState>(
+      builder: (context, state) {
+        if (state is AdminLoading || state is AdminInitial) {
           return Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
             ),
           );
         }
-        if (snapshot.hasError) {
+
+        if (state is AdminError) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -40,14 +43,22 @@ class UsersList extends StatelessWidget {
                 Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading data',
+                  'Error loading data: ${state.message}',
                   style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                 ),
               ],
             ),
           );
         }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+
+        List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = [];
+        if (state is AdminDataLoaded) {
+          if (collection == 'Users') docs = state.users;
+          else if (collection == 'Owners') docs = state.owners;
+          else if (collection == 'Admin') docs = state.admins;
+        }
+
+        if (docs.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -62,14 +73,12 @@ class UsersList extends StatelessWidget {
             ),
           );
         }
-        final docs = snapshot.data!.docs;
 
-        // listen to global search and filter client-side
         return ValueListenableBuilder<String>(
           valueListenable: AdminSearch.q,
           builder: (context, query, _) {
             final filtered = docs
-                .map((d) => d.data() as Map<String, dynamic>..['__id'] = d.id)
+                .map((d) => d.data()..['__id'] = d.id)
                 .where((m) => _matchesQuery(m, query))
                 .toList();
 

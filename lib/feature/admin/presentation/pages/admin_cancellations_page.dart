@@ -1,3 +1,4 @@
+// Moved from ui/admin_cancellations_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
@@ -18,27 +19,6 @@ class AdminCancellationsPage extends StatelessWidget {
       backgroundColor: isDark
           ? ColorsManager.darkBackground121212
           : ColorsManager.lightGreyF9F9F9,
-
-      // No AppBar needed if it's a tab, but let's keep it minimal if used directly
-      // Or maybe it is properly embedded in tabs. The existing code had an AppBar.
-      // If it's a tab in admin dashboard, we might not need scaffold?
-      // The current implementation returns a Scaffold. Let's keep it consistent.
-      // If used inside the tab view, the dashboard handles header.
-      // The previous file had a Scaffold, so I will rewrite it as such.
-
-      // Update: The prompt implies this is "setting up the page".
-      // If used as a tab in Admin Dashboard, it usually just returns the content.
-      // However the previous implementation returned a Scaffold. I will stick to returning a widget that fits.
-      // The dashboard code puts the tab in a ClipRRect. So a Scaffold is safe or a Container.
-      // Let's use a Column/ListView directly since the header is external in admin dashboard tabs usually.
-      // Wait, let's look at `dashboard.dart` again.
-      // `UserManager.tabs` are widgets. `AdminCancellationsPage` is one of them.
-      // The dashboard structure: `Expanded(child: Container(child: ClipRRect(child: UserManager.tabs[index])))`.
-      // If I return a Scaffold, it will be nested. That's fine, but maybe redundant AppBar.
-      // The previous file had `AppBar(title: const Text('إلغاءات الحجز'), ...)`.
-      // Let's keep it for now but maybe remove AppBar if it duplicates the Dashboard Header.
-      // Actually, standard practice for these tabs might be just body.
-      // I'll keep the Scaffold for safety but remove Elevation/Background to blend in.
       body: BlocBuilder<AppCubit, AppState>(
         builder: (context, state) {
           if (state is! AppAuthenticated) {
@@ -62,18 +42,14 @@ class AdminCancellationsPage extends StatelessWidget {
                   Icon(
                     Icons.check_circle_outline,
                     size: 80,
-                    color: isDark
-                        ? ColorsManager.white24
-                        : ColorsManager.grey300,
+                    color: isDark ? ColorsManager.white24 : ColorsManager.grey300,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'لا توجد حجوزات ملغاة حالياً',
                     style: TextStyle(
                       fontSize: 18,
-                      color: isDark
-                          ? ColorsManager.white70
-                          : ColorsManager.grey,
+                      color: isDark ? ColorsManager.white70 : ColorsManager.grey,
                     ),
                   ),
                 ],
@@ -111,14 +87,9 @@ class _AdminCancelledBookingCard extends StatelessWidget {
     final cancelDate = booking.updatedAt ?? DateTime.now();
     final originalAmount = booking.amount ?? 0.0;
     final refundAmount = booking.refundAmount ?? 0.0;
-    final ownerShare =
-        originalAmount -
-        refundAmount; // Renaming "Net for You" to "Owner Share" for admin context
+    final ownerShare = originalAmount - refundAmount;
 
-    final currencyFormat = NumberFormat.currency(
-      symbol: 'EGP',
-      decimalDigits: 0,
-    );
+    final currencyFormat = NumberFormat.currency(symbol: 'EGP', decimalDigits: 0);
     final dateFormat = DateFormat('yyyy-MM-dd');
 
     return Container(
@@ -136,14 +107,11 @@ class _AdminCancelledBookingCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: ColorsManager.red.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
@@ -172,22 +140,18 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                 Text(
                   dateFormat.format(cancelDate),
                   style: TextStyle(
-                    color: isDark
-                        ? ColorsManager.white70
-                        : ColorsManager.grey600,
+                    color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                     fontSize: 14,
                   ),
                 ),
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Info Row: Chalet & Owner
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -200,9 +164,7 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? ColorsManager.white
-                                  : ColorsManager.chaletTextPrimaryLight,
+                              color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -210,9 +172,7 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                             'المالك: ${booking.ownerName}',
                             style: TextStyle(
                               fontSize: 13,
-                              color: isDark
-                                  ? ColorsManager.white70
-                                  : ColorsManager.grey600,
+                              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
                             ),
                           ),
                         ],
@@ -222,97 +182,43 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                       '#${booking.id.substring(0, 6)}',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark
-                            ? ColorsManager.white70
-                            : ColorsManager.grey400,
+                        color: isDark ? ColorsManager.white70 : ColorsManager.grey400,
                         fontFamily: 'monospace',
                       ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
                 const Divider(),
                 const SizedBox(height: 20),
-
-                // Financials Grid
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildFinancialItem(
-                        'المبلغ الأصلي',
-                        currencyFormat.format(originalAmount),
-                        isDark ? ColorsManager.white70 : ColorsManager.grey700,
-                        isDark ? ColorsManager.white : ColorsManager.black,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildFinancialItem(
-                        'المسترد للعميل',
-                        currencyFormat.format(refundAmount),
-                        ColorsManager.red.withOpacity(0.7),
-                        ColorsManager.red,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildFinancialItem(
-                        'حصة المالك', // Changed from "Net for You"
-                        currencyFormat.format(ownerShare),
-                        ColorsManager.green.withOpacity(0.7),
-                        ColorsManager.green,
-                      ),
-                    ),
+                    Expanded(child: _buildFinancialItem('المبلغ الأصلي', currencyFormat.format(originalAmount), isDark ? ColorsManager.white70 : ColorsManager.grey700, isDark ? ColorsManager.white : ColorsManager.black)),
+                    Expanded(child: _buildFinancialItem('المسترد للعميل', currencyFormat.format(refundAmount), ColorsManager.red.withOpacity(0.7), ColorsManager.red)),
+                    Expanded(child: _buildFinancialItem('حصة المالك', currencyFormat.format(ownerShare), ColorsManager.green.withOpacity(0.7), ColorsManager.green)),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-
-                // User & Booking Details
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? ColorsManager.white.withOpacity(0.05)
-                        : ColorsManager.grey50,
+                    color: isDark ? ColorsManager.white.withOpacity(0.05) : ColorsManager.grey50,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark
-                          ? ColorsManager.white10
-                          : ColorsManager.grey200,
-                    ),
+                    border: Border.all(color: isDark ? ColorsManager.white10 : ColorsManager.grey200),
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow(
-                        Icons.person_outline,
-                        'العميل',
-                        '${booking.userName}\n${booking.userPhone ?? ""}',
-                        isDark,
-                      ),
+                      _buildDetailRow(Icons.person_outline, 'العميل', '${booking.userName}\n${booking.userPhone ?? ""}', isDark),
                       const SizedBox(height: 12),
-                      _buildDetailRow(
-                        Icons.calendar_today_outlined,
-                        'تاريخ الحجز',
-                        '${dateFormat.format(booking.from)} - ${dateFormat.format(booking.to)}',
-                        isDark,
-                      ),
+                      _buildDetailRow(Icons.calendar_today_outlined, 'تاريخ الحجز', '${dateFormat.format(booking.from)} - ${dateFormat.format(booking.to)}', isDark),
                       if (booking.refundReason != null) ...[
                         const SizedBox(height: 12),
-                        _buildDetailRow(
-                          Icons.info_outline,
-                          'السبب/السياسة',
-                          booking.refundReason!,
-                          isDark,
-                          textColor: ColorsManager.orange,
-                        ),
+                        _buildDetailRow(Icons.info_outline, 'السبب/السياسة', booking.refundReason!, isDark, textColor: ColorsManager.orange),
                       ],
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Actions
                 Row(
                   children: [
                     Expanded(
@@ -324,9 +230,7 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                           backgroundColor: ColorsManager.primaryColor,
                           foregroundColor: ColorsManager.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
                       ),
@@ -341,9 +245,7 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                           backgroundColor: ColorsManager.orange,
                           foregroundColor: ColorsManager.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
                       ),
@@ -358,76 +260,29 @@ class _AdminCancelledBookingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFinancialItem(
-    String label,
-    String value,
-    Color labelColor,
-    Color valueColor,
-  ) {
+  Widget _buildFinancialItem(String label, String value, Color labelColor, Color valueColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11, // Slightly smaller for admin dense view
-            color: labelColor,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: labelColor)),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: valueColor,
-          ),
-        ),
+        Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: valueColor)),
       ],
     );
   }
 
-  Widget _buildDetailRow(
-    IconData icon,
-    String label,
-    String value,
-    bool isDark, {
-    Color? textColor,
-  }) {
+  Widget _buildDetailRow(IconData icon, String label, String value, bool isDark, {Color? textColor}) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment
-          .start, // Align to top because value might be multiline
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 18,
-          color: isDark ? ColorsManager.white70 : ColorsManager.grey400,
-        ),
+        Icon(icon, size: 18, color: isDark ? ColorsManager.white70 : ColorsManager.grey400),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark ? ColorsManager.white70 : ColorsManager.grey700,
-                ),
-              ),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color:
-                      textColor ??
-                      (isDark
-                          ? ColorsManager.white
-                          : ColorsManager.chaletTextPrimaryLight),
-                  fontWeight: FontWeight.w500,
-                  height: 1.3,
-                ),
-              ),
+              Text(label, style: TextStyle(fontSize: 11, color: isDark ? ColorsManager.white70 : ColorsManager.grey700)),
+              Text(value, style: TextStyle(fontSize: 14, color: textColor ?? (isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight), fontWeight: FontWeight.w500, height: 1.3)),
             ],
           ),
         ),

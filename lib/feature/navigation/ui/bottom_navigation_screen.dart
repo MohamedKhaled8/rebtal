@@ -10,7 +10,7 @@ import 'package:rebtal/feature/owner/ui/owner_chalets_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_bookings_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_cancellations_page.dart';
 import 'package:rebtal/feature/owner/ui/booking_transfers_page.dart';
-import 'package:rebtal/feature/admin/ui/dashboard.dart';
+import 'package:rebtal/feature/admin/presentation/pages/dashboard.dart';
 
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';

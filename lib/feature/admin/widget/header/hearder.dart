@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/config/space.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 

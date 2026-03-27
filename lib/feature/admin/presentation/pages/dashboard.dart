@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
-import 'package:rebtal/feature/admin/logic/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
+import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
+import 'package:rebtal/feature/admin/data/datasources/admin_remote_data_source.dart';
+import 'package:rebtal/feature/admin/data/repositories/admin_repository_impl.dart';
+import 'package:rebtal/feature/admin/domain/usecases/admin_usecases.dart';
 import 'package:rebtal/feature/admin/widget/desktop/desktop_sidebar_widget.dart';
 import 'package:rebtal/feature/admin/widget/header/hearder.dart';
 import 'package:rebtal/feature/admin/widget/mobile/mobile_drawer_widget.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
-// small shared search notifier used by lists (no constructor changes to tabs)
+// small shared search notifier used by lists
 class AdminSearch {
   static final ValueNotifier<String> q = ValueNotifier<String>('');
 }
@@ -22,7 +26,17 @@ class AdminDashboard extends StatelessWidget {
     final isLargeScreen = MediaQuery.of(context).size.width > 800;
 
     return BlocProvider(
-      create: (context) => AdminCubit(),
+      create: (context) {
+        final dataSource = AdminRemoteDataSourceImpl(FirebaseFirestore.instance);
+        final repository = AdminRepositoryImpl(dataSource);
+        
+        return AdminCubit(
+          getAdminStreamUseCase: GetAdminStreamUseCase(repository),
+          updateChaletStatusUseCase: UpdateChaletStatusUseCase(repository),
+          updatePaymentProofStatusUseCase: UpdatePaymentProofStatusUseCase(repository),
+          manageUserUseCase: ManageUserUseCase(repository),
+        )..startListeningToAll();
+      },
       child: BlocBuilder<AppCubit, AppState>(
         builder: (context, appState) {
           final isDark =
@@ -39,7 +53,6 @@ class AdminDashboard extends StatelessWidget {
                 backgroundColor: isDark
                     ? const Color(0xFF0F0F1E)
                     : Colors.grey[50],
-                // no AppBar — custom header is inside body so drawer can still open via the scaffold key
                 drawer: isLargeScreen
                     ? null
                     : MobileDrawerWidget(
@@ -50,7 +63,6 @@ class AdminDashboard extends StatelessWidget {
                       ),
                 body: Row(
                   children: [
-                    // Side navigation for larger screens
                     if (isLargeScreen)
                       DesktopSidebarWidget(
                         selectedIndex: cubit.selectedIndex,
@@ -58,14 +70,11 @@ class AdminDashboard extends StatelessWidget {
                         tabIcons: UserManager.tabIcons,
                         onItemSelected: (i) => cubit.changeTab(i),
                       ),
-                    // Main content
                     Expanded(
                       child: SafeArea(
                         child: Column(
                           children: [
-                            // custom header (replaces AppBar). On mobile shows menu icon that opens drawer.
                             HeaderAdmin(),
-                            // content area
                             Expanded(
                               child: Container(
                                 margin: isLargeScreen
@@ -117,15 +126,13 @@ String formatAvailabilityDate(dynamic dt) {
     DateTime d;
     if (dt is Timestamp) {
       d = dt.toDate();
-    } else if (dt is String && dt.isNotEmpty)
-      // ignore: curly_braces_in_flow_control_structures
+    } else if (dt is String && dt.isNotEmpty) {
       d = DateTime.parse(dt);
-    else if (dt is DateTime)
-      // ignore: curly_braces_in_flow_control_structures
+    } else if (dt is DateTime) {
       d = dt;
-    else
-      // ignore: curly_braces_in_flow_control_structures
+    } else {
       return dt.toString();
+    }
     return '${d.day}/${d.month}/${d.year}';
   } catch (_) {
     return 'Invalid date';

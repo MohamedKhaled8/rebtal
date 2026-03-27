@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
@@ -14,8 +13,8 @@ class HomeTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final appCubit = context.read<AppCubit>();
-    final user = appCubit.getCurrentUser();
+    final fallbackAvatar = (String? name) =>
+        'https://ui-avatars.com/api/?name=${name ?? 'User'}&background=2563EB&color=fff';
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -28,75 +27,106 @@ class HomeTopBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Left Side: Profile Image & Greeting
-          Row(
-            children: [
-              Container(
-                width: stv(context: context, mobile: 45.sw, tablet: 55.sw, desktop: 65.sw),
-                height: stv(context: context, mobile: 45.sw, tablet: 55.sw, desktop: 65.sw),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF2563EB).withOpacity(0.2),
-                    width: 2.sw,
-                  ),
-                ),
-                child: ClipOval(
-                  child: AppImageHelper(
-                    path:
-                        user?.profileImageUrl ??
-                        'https://ui-avatars.com/api/?name=${user?.name ?? 'User'}&background=2563EB&color=fff',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SizedBox(width: stv(context: context, mobile: 12.sw, tablet: 16.sw, desktop: 20.sw)),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          BlocSelector<AppCubit, AppState, ({String? name, String? imageUrl})>(
+            selector: (state) {
+              if (state is AppAuthenticated) {
+                return (
+                  name: state.user.name,
+                  imageUrl: state.user.profileImageUrl,
+                );
+              }
+              return (name: null, imageUrl: null);
+            },
+            builder: (context, userData) {
+              final avatarUrl =
+                  userData.imageUrl ?? fallbackAvatar(userData.name);
+              return Row(
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        context.tr('home_welcome_back'),
-                        style: TextStyle(
-                          fontSize: otv(
-                            context: context,
-                            portrait: stv(
-                              context: context,
-                              mobile: 12.spScaled,
-                              tablet: 14.spScaled,
-                              desktop: 16.spScaled,
-                            ),
-                            landscape: stv(
-                              context: context,
-                              mobile: 14.spScaled,
-                              tablet: 16.spScaled,
-                              desktop: 18.spScaled,
-                            ),
-                          ),
-                          color: isDark ? Colors.white70 : Colors.black54,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  Container(
+                    width: stv(
+                      context: context,
+                      mobile: 45.sw,
+                      tablet: 55.sw,
+                      desktop: 65.sw,
+                    ),
+                    height: stv(
+                      context: context,
+                      mobile: 45.sw,
+                      tablet: 55.sw,
+                      desktop: 65.sw,
+                    ),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF2563EB).withOpacity(0.2),
+                        width: 2.sw,
                       ),
-                      SizedBox(width: 4.sw),
-                      const _WavingHand(),
-                    ],
-                  ),
-                  Text(
-                    user?.name ?? context.tr('home_new_user'),
-                    style: TextStyle(
-                      fontSize: stv(
-                        context: context,
-                        mobile: 16.spScaled,
-                        tablet: 20.spScaled,
-                        desktop: 24.spScaled,
+                    ),
+                    child: ClipOval(
+                      child: AppImageHelper(
+                        key: ValueKey(avatarUrl),
+                        path: avatarUrl,
+                        fit: BoxFit.cover,
                       ),
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
+                  SizedBox(
+                    width: stv(
+                      context: context,
+                      mobile: 12.sw,
+                      tablet: 16.sw,
+                      desktop: 20.sw,
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            context.tr('home_welcome_back'),
+                            style: TextStyle(
+                              fontSize: otv(
+                                context: context,
+                                portrait: stv(
+                                  context: context,
+                                  mobile: 12.spScaled,
+                                  tablet: 14.spScaled,
+                                  desktop: 16.spScaled,
+                                ),
+                                landscape: stv(
+                                  context: context,
+                                  mobile: 14.spScaled,
+                                  tablet: 16.spScaled,
+                                  desktop: 18.spScaled,
+                                ),
+                              ),
+                              color: isDark ? Colors.white70 : Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 4.sw),
+                          const _WavingHand(),
+                        ],
+                      ),
+                      Text(
+                        userData.name ?? context.tr('home_new_user'),
+                        style: TextStyle(
+                          fontSize: stv(
+                            context: context,
+                            mobile: 16.spScaled,
+                            tablet: 20.spScaled,
+                            desktop: 24.spScaled,
+                          ),
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
 
           // Right Side: Notifications
@@ -228,9 +258,10 @@ class _WavingHandState extends State<_WavingHand>
   @override
   Widget build(BuildContext context) {
     return RotationTransition(
-      turns: Tween(begin: -0.1, end: 0.1).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
+      turns: Tween(
+        begin: -0.1,
+        end: 0.1,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
       child: Text(
         '👋',
         style: TextStyle(

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:rebtal/feature/admin/ui/full_screen_image_gallery.dart';
+import 'package:rebtal/feature/admin/presentation/pages/full_screen_image_gallery.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/get_chalet_booked_dates_usecase.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/toggle_booking_availability_usecase.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/update_chalet_status_usecase.dart';

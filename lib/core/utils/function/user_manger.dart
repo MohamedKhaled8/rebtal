@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rebtal/feature/admin/widget/request/approved_requests_tab.dart';
-import 'package:rebtal/feature/admin/widget/request/pending_requsted_tab.dart';
-import 'package:rebtal/feature/admin/widget/request/rejected_requests_tab.dart';
-import 'package:rebtal/feature/admin/widget/user/user_tab.dart';
-import 'package:rebtal/feature/admin/ui/admin_payments_page.dart';
-import 'package:rebtal/feature/admin/ui/admin_cancellations_page.dart';
+import 'package:rebtal/feature/admin/presentation/widgets/approved_requests_tab.dart';
+import 'package:rebtal/feature/admin/presentation/widgets/pending_requsted_tab.dart';
+import 'package:rebtal/feature/admin/presentation/widgets/rejected_requests_tab.dart';
+import 'package:rebtal/feature/admin/presentation/widgets/user_tab.dart';
+import 'package:rebtal/feature/admin/presentation/pages/admin_payments_page.dart';
+import 'package:rebtal/feature/admin/presentation/pages/admin_cancellations_page.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/admin/ui/admin_statistics_page.dart';
+import 'package:rebtal/feature/admin/presentation/pages/admin_statistics_page.dart';
 
 class UserManager {
   /// لون حسب الدور

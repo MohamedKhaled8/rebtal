@@ -1,6 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+
+class _SharedImageCacheManager {
+  static final BaseCacheManager instance = CacheManager(
+    Config(
+      'rebtalSharedImageCache',
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 500,
+    ),
+  );
+}
 
 class NetworkImageHelper extends StatelessWidget {
   final String imageUrl;
@@ -24,9 +35,15 @@ class NetworkImageHelper extends StatelessWidget {
   Widget build(BuildContext context) {
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: _SharedImageCacheManager.instance,
       width: width,
       height: height,
       fit: fit,
+      fadeInDuration: const Duration(milliseconds: 120),
+      fadeOutDuration: Duration.zero,
+      placeholderFadeInDuration: Duration.zero,
+      useOldImageOnUrlChange: true,
+      filterQuality: FilterQuality.low,
       placeholder: (context, url) =>
           placeholder ?? const Center(child: CircularProgressIndicator()),
       errorWidget: (context, url, error) {

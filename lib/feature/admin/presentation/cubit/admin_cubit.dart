@@ -1,0 +1,291 @@
+import 'dart:async';
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/feature/admin/presentation/pages/dashboard.dart';
+
+import '../../domain/usecases/admin_usecases.dart';
+import 'admin_state.dart';
+
+class AdminCubit extends Cubit<AdminState> {
+  final GetAdminStreamUseCase getAdminStreamUseCase;
+  final UpdateChaletStatusUseCase updateChaletStatusUseCase;
+  final UpdatePaymentProofStatusUseCase updatePaymentProofStatusUseCase;
+  final ManageUserUseCase manageUserUseCase;
+
+  AdminCubit({
+    required this.getAdminStreamUseCase,
+    required this.updateChaletStatusUseCase,
+    required this.updatePaymentProofStatusUseCase,
+    required this.manageUserUseCase,
+  }) : super(AdminInitial());
+
+  final TextEditingController searchController = TextEditingController();
+  int selectedIndex = 0;
+  int currentIndex = 0;
+  final PageController pageController = PageController();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
+  String currentQuery = '';
+  
+  // Galleries
+  bool showAppBar = true;
+  int currentImageIndex = 0;
+  PageController? galleryController;
+
+  // Stream Subscriptions
+  StreamSubscription? _usersSub;
+  StreamSubscription? _ownersSub;
+  StreamSubscription? _adminsSub;
+  StreamSubscription? _chaletsSub;
+  StreamSubscription? _bookingsSub;
+  StreamSubscription? _paymentsSub;
+
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _users = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _owners = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _admins = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _chalets = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _bookings = [];
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> _payments = [];
+
+  void startListeningToAll() {
+    emit(AdminLoading());
+
+    if (_usersSub == null) {
+      _usersSub = getAdminStreamUseCase.watchCollection('Users').listen((snapshot) {
+        _users = snapshot.docs;
+        _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching Users: $e'));
+      });
+    }
+
+    if (_ownersSub == null) {
+      _ownersSub = getAdminStreamUseCase.watchCollection('Owners').listen((snapshot) {
+        _owners = snapshot.docs;
+        _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching Owners: $e'));
+      });
+    }
+
+    if (_adminsSub == null) {
+      _adminsSub = getAdminStreamUseCase.watchCollection('Admin').listen((snapshot) {
+        _admins = snapshot.docs;
+        _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching Admin: $e'));
+      });
+    }
+
+    if (_chaletsSub == null) {
+      _chaletsSub = getAdminStreamUseCase.watchChalets().listen((snapshot) {
+        _chalets = snapshot.docs;
+        _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching chalets: $e'));
+      });
+    }
+
+    if (_bookingsSub == null) {
+      _bookingsSub = getAdminStreamUseCase.watchBookings().listen((snapshot) {
+        _bookings = snapshot.docs;
+         _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching bookings: $e'));
+      });
+    }
+
+    if (_paymentsSub == null) {
+      _paymentsSub = getAdminStreamUseCase.watchPaymentProofs().listen((snapshot) {
+        _payments = snapshot.docs;
+         _emitDataLoaded();
+      }, onError: (e) {
+        emit(AdminError('Error fetching payments: $e'));
+      });
+    }
+  }
+
+  void _emitDataLoaded() {
+    emit(AdminDataLoaded(
+      users: _users,
+      owners: _owners,
+      admins: _admins,
+      chalets: _chalets,
+      bookings: _bookings,
+      paymentProofs: _payments,
+    ));
+  }
+
+  void initGallery(int initialIndex) {
+    currentImageIndex = initialIndex;
+    galleryController = PageController(initialPage: initialIndex);
+    emit(AdminCurrentIndex(currentImageIndex));
+  }
+
+  void toggleAppBar() {
+    showAppBar = !showAppBar;
+    emit(AdminCurrentIndex(currentImageIndex));
+  }
+
+  void changeImageIndex(int index) {
+    currentImageIndex = index;
+    emit(AdminCurrentIndex(index));
+  }
+
+  void updateSearch(String value) {
+    currentQuery = value.trim();
+    AdminSearch.q.value = currentQuery;
+    emit(AdminSearchChanged(currentQuery));
+  }
+
+  void changeTab(int index) {
+    selectedIndex = index;
+    emit(AdminTabChanged(index));
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    currentQuery = '';
+    AdminSearch.q.value = '';
+    emit(AdminSearchChanged(currentQuery));
+  }
+
+  Future<void> updateStatus(BuildContext context, {required String docId, required String newStatus}) async {
+    try {
+      final docRef = FirebaseFirestore.instance.collection('chalets').doc(docId);
+      final chaletDoc = await docRef.get();
+
+      await updateChaletStatusUseCase(docId, newStatus);
+
+      // Notification logic
+      if (chaletDoc.exists) {
+        final chaletData = chaletDoc.data() as Map<String, dynamic>;
+        String? ownerId = (chaletData['ownerId'] ?? chaletData['merchantId'] ?? chaletData['userId'])?.toString();
+        final chaletName = chaletData['chaletName'] ?? 'شاليهك';
+
+        if (ownerId != null && ownerId.isNotEmpty) {
+          if (ownerId.contains(':')) ownerId = ownerId.split(':').last.trim();
+
+          NotificationType type = NotificationType.general;
+          String title = 'تحديث حالة الشاليه';
+          String body = 'تمت مراجعة شاليهك $chaletName من قبل الإدارة.';
+
+          if (newStatus == 'approved') {
+            type = NotificationType.chaletApproved;
+            title = 'تهانينا! تمت الموافقة 🎉';
+            body = 'تمت الموافقة على شاليهك $chaletName من قبل الإدارة وهو الآن متاح للمستخدمين.';
+          } else if (newStatus == 'rejected') {
+            type = NotificationType.chaletRejected;
+            title = 'تم رفض الشاليه ❌';
+            body = 'عذراً، تم رفض طلبك لإضافة شاليه $chaletName. يرجى مراجعة التفاصيل والتعديل.';
+          }
+
+          await NotificationService().sendNotification(
+            userId: ownerId,
+            title: title,
+            body: body,
+            type: type,
+            relatedId: docId,
+            data: {'chaletId': docId},
+          );
+        }
+      }
+
+      if (context.mounted) {
+        SnackBarHelper.showSuccess(context, 'Request $newStatus');
+        Navigator.pop(context);
+      }
+      emit(AdminStatusUpdated(newStatus));
+      _emitDataLoaded();
+    } catch (e) {
+      if (context.mounted) {
+        SnackBarHelper.showError(context, 'Error: $e');
+      }
+      emit(AdminError(e.toString()));
+    }
+  }
+
+  Future<void> updateUser(BuildContext context, String collection, String docId, Map<String, dynamic> data) async {
+    try {
+      await manageUserUseCase.updateUser(collection, docId, data);
+      if (context.mounted) {
+         SnackBarHelper.showSuccess(context, 'تم تحديث بيانات المستخدم بنجاح');
+         Navigator.pop(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+         SnackBarHelper.showError(context, 'خطأ: $e');
+      }
+    }
+  }
+
+  Future<void> deleteUserLocal(BuildContext context, String collection, String docId) async {
+    try {
+      await manageUserUseCase.deleteUser(collection, docId);
+      if (context.mounted) {
+         SnackBarHelper.showSuccess(context, 'تم حذف المستخدم بنجاح');
+         Navigator.pop(context);
+      }
+    } catch (e) {
+      if (context.mounted) {
+         SnackBarHelper.showError(context, 'خطأ: $e');
+      }
+    }
+  }
+
+  String formatDate(dynamic dt) {
+    if (dt == null) return 'Unknown';
+    try {
+      DateTime d;
+      if (dt is Timestamp) {
+        d = dt.toDate();
+      } else if (dt is String && dt.isNotEmpty) {
+        d = DateTime.parse(dt);
+      } else if (dt is DateTime) {
+        d = dt;
+      } else {
+        return dt.toString();
+      }
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    } catch (_) {
+      return 'Invalid date';
+    }
+  }
+
+  List<String> extractImages(Map<String, dynamic> requestData) {
+    final List<String> result = [];
+    final dynamic imagesField = requestData['images'];
+    final dynamic profileField = requestData['profileImage'];
+
+    if (imagesField is List) {
+      result.addAll(imagesField.whereType<String>().where((s) => s.isNotEmpty));
+    } else if (imagesField is String && imagesField.isNotEmpty) {
+      result.add(imagesField);
+    }
+
+    if (profileField is String && profileField.isNotEmpty) {
+      if (!result.contains(profileField)) result.insert(0, profileField);
+    } else if (profileField is List) {
+      result.addAll(profileField.whereType<String>().where((s) => s.isNotEmpty));
+    }
+    return result;
+  }
+
+  @override
+  Future<void> close() {
+    searchController.dispose();
+    pageController.dispose();
+    galleryController?.dispose();
+    _usersSub?.cancel();
+    _ownersSub?.cancel();
+    _adminsSub?.cancel();
+    _chaletsSub?.cancel();
+    _bookingsSub?.cancel();
+    _paymentsSub?.cancel();
+    return super.close();
+  }
+}

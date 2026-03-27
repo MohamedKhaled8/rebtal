@@ -12,7 +12,7 @@ import "package:rebtal/feature/auth/email_verification/logic/email_verification_
 import "package:rebtal/feature/auth/register/ui/resgister_screen.dart";
 import "package:rebtal/feature/auth/register/logic/register_cubit.dart";
 import "package:rebtal/feature/welcome/ui/welcome_screen.dart";
-import "package:rebtal/feature/admin/ui/dashboard.dart";
+import "package:rebtal/feature/admin/presentation/pages/dashboard.dart";
 import "package:rebtal/feature/home/ui/home_screen.dart";
 import "package:rebtal/feature/navigation/ui/bottom_navigation_screen.dart";
 import "package:rebtal/feature/onboarding/logic/cubit/onboarding_cubit.dart";
@@ -27,7 +27,7 @@ import "package:rebtal/feature/splash/ui/splash_screen.dart";
 import "package:rebtal/feature/booking/models/booking.dart";
 import "package:rebtal/feature/payment/ui/new_payment_method_page.dart";
 import "package:rebtal/feature/booking/ui/booking_confirmation_page.dart";
-import "package:rebtal/feature/admin/ui/admin_payments_page.dart";
+import "package:rebtal/feature/admin/presentation/pages/admin_payments_page.dart";
 import "package:rebtal/feature/booking/ui/cancellation_policy_page.dart";
 import "package:rebtal/feature/booking/ui/refund_request_page.dart";
 import "package:rebtal/feature/booking/ui/rating_page.dart";
