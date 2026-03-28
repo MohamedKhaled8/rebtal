@@ -6,6 +6,10 @@ class NotificationModel {
   final String userId;
   final String title;
   final String body;
+  final String titleKey; // مفتاح الترجمة
+  final String bodyKey; // مفتاح الترجمة
+  final Map<String, dynamic>? titleParams; // متغيرات الترجمة
+  final Map<String, dynamic>? bodyParams; // متغيرات الترجمة
   final NotificationType type;
   final String? relatedId;
   final Map<String, dynamic>? data;
@@ -15,8 +19,12 @@ class NotificationModel {
   NotificationModel({
     required this.id,
     required this.userId,
-    required this.title,
-    required this.body,
+    this.title = '',
+    this.body = '',
+    this.titleKey = '',
+    this.bodyKey = '',
+    this.titleParams,
+    this.bodyParams,
     required this.type,
     this.relatedId,
     this.data,
@@ -31,6 +39,10 @@ class NotificationModel {
       userId: data['userId'] ?? '',
       title: data['title'] ?? '',
       body: data['body'] ?? '',
+      titleKey: data['titleKey'] ?? '',
+      bodyKey: data['bodyKey'] ?? '',
+      titleParams: data['titleParams'] as Map<String, dynamic>?,
+      bodyParams: data['bodyParams'] as Map<String, dynamic>?,
       type: NotificationType.fromString(data['type'] ?? 'general'),
       relatedId: data['relatedId'],
       data: data['data'] as Map<String, dynamic>?,
@@ -44,6 +56,10 @@ class NotificationModel {
       'userId': userId,
       'title': title,
       'body': body,
+      'titleKey': titleKey,
+      'bodyKey': bodyKey,
+      'titleParams': titleParams,
+      'bodyParams': bodyParams,
       'type': type.value,
       'relatedId': relatedId,
       'data': data,
@@ -57,6 +73,10 @@ class NotificationModel {
     String? userId,
     String? title,
     String? body,
+    String? titleKey,
+    String? bodyKey,
+    Map<String, dynamic>? titleParams,
+    Map<String, dynamic>? bodyParams,
     NotificationType? type,
     String? relatedId,
     Map<String, dynamic>? data,
@@ -68,6 +88,10 @@ class NotificationModel {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       body: body ?? this.body,
+      titleKey: titleKey ?? this.titleKey,
+      bodyKey: bodyKey ?? this.bodyKey,
+      titleParams: titleParams ?? this.titleParams,
+      bodyParams: bodyParams ?? this.bodyParams,
       type: type ?? this.type,
       relatedId: relatedId ?? this.relatedId,
       data: data ?? this.data,

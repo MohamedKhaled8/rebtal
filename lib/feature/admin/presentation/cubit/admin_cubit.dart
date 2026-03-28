@@ -30,7 +30,7 @@ class AdminCubit extends Cubit<AdminState> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   String currentQuery = '';
-  
+
   // Galleries
   bool showAppBar = true;
   int currentImageIndex = 0;
@@ -55,108 +55,136 @@ class AdminCubit extends Cubit<AdminState> {
     emit(AdminLoading());
 
     if (_usersSub == null) {
-      _usersSub = getAdminStreamUseCase.watchCollection('Users').listen((snapshot) {
-        _users = snapshot.docs;
-        _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching Users: $e'));
-      });
+      _usersSub = getAdminStreamUseCase
+          .watchCollection('Users')
+          .listen(
+            (snapshot) {
+              _users = snapshot.docs;
+              _emitDataLoaded();
+            },
+            onError: (e) {
+              emit(AdminError('Error fetching Users: $e'));
+            },
+          );
     }
 
     if (_ownersSub == null) {
-      _ownersSub = getAdminStreamUseCase.watchCollection('Owners').listen((snapshot) {
-        _owners = snapshot.docs;
-        _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching Owners: $e'));
-      });
+      _ownersSub = getAdminStreamUseCase
+          .watchCollection('Owners')
+          .listen(
+            (snapshot) {
+              _owners = snapshot.docs;
+              _emitDataLoaded();
+            },
+            onError: (e) {
+              emit(AdminError('Error fetching Owners: $e'));
+            },
+          );
     }
 
     if (_adminsSub == null) {
-      _adminsSub = getAdminStreamUseCase.watchCollection('Admin').listen((snapshot) {
-        _admins = snapshot.docs;
-        _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching Admin: $e'));
-      });
+      _adminsSub = getAdminStreamUseCase
+          .watchCollection('Admin')
+          .listen(
+            (snapshot) {
+              _admins = snapshot.docs;
+              _emitDataLoaded();
+            },
+            onError: (e) {
+              emit(AdminError('Error fetching Admin: $e'));
+            },
+          );
     }
 
     if (_chaletsSub == null) {
-      _chaletsSub = getAdminStreamUseCase.watchChalets().listen((snapshot) {
-        _chalets = snapshot.docs;
-        _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching chalets: $e'));
-      });
+      _chaletsSub = getAdminStreamUseCase.watchChalets().listen(
+        (snapshot) {
+          _chalets = snapshot.docs;
+          _emitDataLoaded();
+        },
+        onError: (e) {
+          emit(AdminError('Error fetching chalets: $e'));
+        },
+      );
     }
 
     if (_bookingsSub == null) {
-      _bookingsSub = getAdminStreamUseCase.watchBookings().listen((snapshot) {
-        _bookings = snapshot.docs;
-         _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching bookings: $e'));
-      });
+      _bookingsSub = getAdminStreamUseCase.watchBookings().listen(
+        (snapshot) {
+          _bookings = snapshot.docs;
+          _emitDataLoaded();
+        },
+        onError: (e) {
+          emit(AdminError('Error fetching bookings: $e'));
+        },
+      );
     }
 
     if (_paymentsSub == null) {
-      _paymentsSub = getAdminStreamUseCase.watchPaymentProofs().listen((snapshot) {
-        _payments = snapshot.docs;
-         _emitDataLoaded();
-      }, onError: (e) {
-        emit(AdminError('Error fetching payments: $e'));
-      });
+      _paymentsSub = getAdminStreamUseCase.watchPaymentProofs().listen(
+        (snapshot) {
+          _payments = snapshot.docs;
+          _emitDataLoaded();
+        },
+        onError: (e) {
+          emit(AdminError('Error fetching payments: $e'));
+        },
+      );
     }
   }
 
   void _emitDataLoaded() {
-    emit(AdminDataLoaded(
-      users: _users,
-      owners: _owners,
-      admins: _admins,
-      chalets: _chalets,
-      bookings: _bookings,
-      paymentProofs: _payments,
-    ));
+    emit(
+      AdminDataLoaded(
+        users: _users,
+        owners: _owners,
+        admins: _admins,
+        chalets: _chalets,
+        bookings: _bookings,
+        paymentProofs: _payments,
+      ),
+    );
   }
 
   void initGallery(int initialIndex) {
     currentImageIndex = initialIndex;
     galleryController = PageController(initialPage: initialIndex);
-    emit(AdminCurrentIndex(currentImageIndex));
   }
 
   void toggleAppBar() {
     showAppBar = !showAppBar;
-    emit(AdminCurrentIndex(currentImageIndex));
   }
 
   void changeImageIndex(int index) {
     currentImageIndex = index;
-    emit(AdminCurrentIndex(index));
   }
 
   void updateSearch(String value) {
     currentQuery = value.trim();
     AdminSearch.q.value = currentQuery;
-    emit(AdminSearchChanged(currentQuery));
+    // Do not emit here: transient states replaced [AdminDataLoaded] and cleared all admin lists.
   }
 
   void changeTab(int index) {
     selectedIndex = index;
-    emit(AdminTabChanged(index));
+    _emitDataLoaded();
   }
 
   void clearSearch() {
     searchController.clear();
     currentQuery = '';
     AdminSearch.q.value = '';
-    emit(AdminSearchChanged(currentQuery));
   }
 
-  Future<void> updateStatus(BuildContext context, {required String docId, required String newStatus}) async {
+  Future<void> updateStatus(
+    BuildContext context, {
+    required String docId,
+    required String newStatus,
+  }) async {
     try {
-      final docRef = FirebaseFirestore.instance.collection('chalets').doc(docId);
+      final docRef = FirebaseFirestore.instance
+          .collection('chalets')
+          .doc(docId);
       final chaletDoc = await docRef.get();
 
       await updateChaletStatusUseCase(docId, newStatus);
@@ -164,7 +192,11 @@ class AdminCubit extends Cubit<AdminState> {
       // Notification logic
       if (chaletDoc.exists) {
         final chaletData = chaletDoc.data() as Map<String, dynamic>;
-        String? ownerId = (chaletData['ownerId'] ?? chaletData['merchantId'] ?? chaletData['userId'])?.toString();
+        String? ownerId =
+            (chaletData['ownerId'] ??
+                    chaletData['merchantId'] ??
+                    chaletData['userId'])
+                ?.toString();
         final chaletName = chaletData['chaletName'] ?? 'شاليهك';
 
         if (ownerId != null && ownerId.isNotEmpty) {
@@ -177,11 +209,13 @@ class AdminCubit extends Cubit<AdminState> {
           if (newStatus == 'approved') {
             type = NotificationType.chaletApproved;
             title = 'تهانينا! تمت الموافقة 🎉';
-            body = 'تمت الموافقة على شاليهك $chaletName من قبل الإدارة وهو الآن متاح للمستخدمين.';
+            body =
+                'تمت الموافقة على شاليهك $chaletName من قبل الإدارة وهو الآن متاح للمستخدمين.';
           } else if (newStatus == 'rejected') {
             type = NotificationType.chaletRejected;
             title = 'تم رفض الشاليه ❌';
-            body = 'عذراً، تم رفض طلبك لإضافة شاليه $chaletName. يرجى مراجعة التفاصيل والتعديل.';
+            body =
+                'عذراً، تم رفض طلبك لإضافة شاليه $chaletName. يرجى مراجعة التفاصيل والتعديل.';
           }
 
           await NotificationService().sendNotification(
@@ -199,7 +233,6 @@ class AdminCubit extends Cubit<AdminState> {
         SnackBarHelper.showSuccess(context, 'Request $newStatus');
         Navigator.pop(context);
       }
-      emit(AdminStatusUpdated(newStatus));
       _emitDataLoaded();
     } catch (e) {
       if (context.mounted) {
@@ -209,30 +242,39 @@ class AdminCubit extends Cubit<AdminState> {
     }
   }
 
-  Future<void> updateUser(BuildContext context, String collection, String docId, Map<String, dynamic> data) async {
+  Future<void> updateUser(
+    BuildContext context,
+    String collection,
+    String docId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       await manageUserUseCase.updateUser(collection, docId, data);
       if (context.mounted) {
-         SnackBarHelper.showSuccess(context, 'تم تحديث بيانات المستخدم بنجاح');
-         Navigator.pop(context);
+        SnackBarHelper.showSuccess(context, 'تم تحديث بيانات المستخدم بنجاح');
+        Navigator.pop(context);
       }
     } catch (e) {
       if (context.mounted) {
-         SnackBarHelper.showError(context, 'خطأ: $e');
+        SnackBarHelper.showError(context, 'خطأ: $e');
       }
     }
   }
 
-  Future<void> deleteUserLocal(BuildContext context, String collection, String docId) async {
+  Future<void> deleteUserLocal(
+    BuildContext context,
+    String collection,
+    String docId,
+  ) async {
     try {
       await manageUserUseCase.deleteUser(collection, docId);
       if (context.mounted) {
-         SnackBarHelper.showSuccess(context, 'تم حذف المستخدم بنجاح');
-         Navigator.pop(context);
+        SnackBarHelper.showSuccess(context, 'تم حذف المستخدم بنجاح');
+        Navigator.pop(context);
       }
     } catch (e) {
       if (context.mounted) {
-         SnackBarHelper.showError(context, 'خطأ: $e');
+        SnackBarHelper.showError(context, 'خطأ: $e');
       }
     }
   }
@@ -270,7 +312,9 @@ class AdminCubit extends Cubit<AdminState> {
     if (profileField is String && profileField.isNotEmpty) {
       if (!result.contains(profileField)) result.insert(0, profileField);
     } else if (profileField is List) {
-      result.addAll(profileField.whereType<String>().where((s) => s.isNotEmpty));
+      result.addAll(
+        profileField.whereType<String>().where((s) => s.isNotEmpty),
+      );
     }
     return result;
   }

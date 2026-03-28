@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/onboarding/data/constants/terms_content.dart';
 import 'package:rebtal/feature/onboarding/logic/cubit/terms_cubit.dart';
 import 'package:rebtal/feature/onboarding/logic/cubit/terms_state.dart';
@@ -39,81 +40,82 @@ class _TermsScreenState extends State<TermsScreen> {
   Widget build(BuildContext context) {
     return BlocListener<TermsCubit, TermsState>(
       listener: (context, state) {
-        // Navigate to login screen when terms are completed
+        // Navigate to auth entry when terms are completed
         if (state is TermsCompleted) {
           Navigator.pushNamedAndRemoveUntil(
             context,
-            Routes.loginScreen,
+            Routes.authEntryScreen,
             (route) => false,
           );
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                // Header matching Figma design
-                _buildHeader(),
-
-                // Terms content
-                _buildTermsContent(),
-
-                // Agreement checkbox with circular design
-                _buildAgreementCheckbox(),
-
-                SizedBox(height: 1.5.h),
-
-                // Action buttons matching Figma design
-                _buildActionButtons(),
-
-                SizedBox(height: 2.h),
-              ],
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: Text(context.tr('terms_title')),
+          backgroundColor: const Color(0xFF2563EB),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          actions: [
+            IconButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.close_rounded),
             ),
-          ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(5.w, 1.6.h, 5.w, 0.5.h),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        context.tr('terms_last_updated'),
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildTermsContent(),
+                  _buildAgreementCheckbox(),
+                  SizedBox(height: 1.5.h),
+                  _buildActionButtons(),
+                  SizedBox(height: 8.h),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: BlocBuilder<TermsCubit, TermsState>(
+                builder: (context, state) {
+                  final cubit = context.read<TermsCubit>();
+                  if (cubit.hasScrolledToBottom) return const SizedBox.shrink();
+                  return _ScrollToBottomFab(onTap: _scrollToBottom);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// Builds the header matching Figma design
-  Widget _buildHeader() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(5.w, 2.h, 5.w, 2.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // AGREEMENT label (uppercase, light gray)
-          Text(
-            'AGREEMENT',
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF94A3B8),
-              letterSpacing: 1.2,
-            ),
-          ),
-          SizedBox(height: 1.h),
-          // Terms of Service title
-          Text(
-            'Terms of Service',
-            style: TextStyle(
-              fontSize: 22.sp,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-          SizedBox(height: 0.5.h),
-          // Last updated date
-          Text(
-            'Last updated on 4 October 2023',
-            style: TextStyle(fontSize: 13.sp, color: const Color(0xFF94A3B8)),
-          ),
-        ],
-      ),
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 650),
+      curve: Curves.easeInOutCubic,
     );
   }
 
@@ -128,108 +130,24 @@ class _TermsScreenState extends State<TermsScreen> {
 
   /// Builds formatted terms text with bullet points
   Widget _buildFormattedTermsText() {
-    final text = TermsContent.termsAndConditions;
-    final lines = text.split('\n');
-    final List<Widget> widgets = [];
-
-    for (int i = 0; i < lines.length; i++) {
-      final line = lines[i].trim();
-
-      if (line.isEmpty) {
-        widgets.add(SizedBox(height: 1.h));
-        continue;
-      }
-
-      // Check if line starts with bullet point (•)
-      if (line.startsWith('•')) {
-        widgets.add(
-          Padding(
-            padding: EdgeInsets.only(left: 4.w, top: 0.5.h, bottom: 0.5.h),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '• ',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    color: const Color(0xFF475569),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    line.substring(1).trim(),
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      height: 1.6,
-                      color: const Color(0xFF475569),
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      } else if (line.startsWith(RegExp(r'^\d+\.'))) {
-        // Section numbers (1., 2., etc.)
-        widgets.add(
-          Padding(
-            padding: EdgeInsets.only(top: 1.5.h, bottom: 0.5.h),
-            child: Text(
-              line,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1E293B),
-                height: 1.4,
-              ),
-            ),
-          ),
-        );
-      } else if (line.startsWith(RegExp(r'^\d+\.\d+'))) {
-        // Subsection numbers (1.1, 1.2, etc.)
-        widgets.add(
-          Padding(
-            padding: EdgeInsets.only(top: 1.h, bottom: 0.5.h),
-            child: Text(
-              line,
-              style: TextStyle(
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E293B),
-                height: 1.4,
-              ),
-            ),
-          ),
-        );
-      } else if (line.contains(
-        '═══════════════════════════════════════════════════',
-      )) {
-        // Separator lines
-        widgets.add(SizedBox(height: 1.5.h));
-      } else {
-        // Regular text
-        widgets.add(
-          Padding(
-            padding: EdgeInsets.only(bottom: 0.8.h),
-            child: Text(
-              line,
-              style: TextStyle(
-                fontSize: 16.sp,
-                height: 1.6,
-                color: const Color(0xFF475569),
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-        );
-      }
-    }
+    final isAr = Directionality.of(context) == TextDirection.rtl;
+    final text = isAr
+        ? TermsContent.termsAndConditionsAr
+        : TermsContent.termsAndConditions;
+    final blocks = text
+        .split(RegExp(r'\n\s*---\s*\n'))
+        .map((b) => b.trim())
+        .where((b) => b.isNotEmpty)
+        .toList();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final block in blocks) ...[
+          _TermsBlockCard(block: block),
+          SizedBox(height: 1.2.h),
+        ],
+      ],
     );
   }
 
@@ -288,7 +206,7 @@ class _TermsScreenState extends State<TermsScreen> {
                         }
                       : null,
                   child: Text(
-                    'I have read and agree to the Terms & Conditions',
+                    '${context.tr('onboarding_terms_agree')}${context.tr('auth_and_privacy')}',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w500,
@@ -345,7 +263,7 @@ class _TermsScreenState extends State<TermsScreen> {
                     ),
                   ),
                   child: Text(
-                    'Accept & Continue',
+                    context.tr('onboarding_accept'),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
@@ -379,7 +297,7 @@ class _TermsScreenState extends State<TermsScreen> {
                     ),
                   ),
                   child: Text(
-                    'Scroll to Top',
+                    context.tr('onboarding_scroll_top'),
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -392,6 +310,143 @@ class _TermsScreenState extends State<TermsScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _TermsBlockCard extends StatelessWidget {
+  const _TermsBlockCard({required this.block});
+
+  final String block;
+
+  @override
+  Widget build(BuildContext context) {
+    final lines = block.split('\n').map((l) => l.trim()).toList();
+    final nonEmpty = lines.where((l) => l.isNotEmpty).toList();
+    if (nonEmpty.isEmpty) return const SizedBox.shrink();
+
+    final title = nonEmpty.first;
+    final bodyLines = nonEmpty.skip(1).toList();
+
+    final hasTitle = title.endsWith('?') ||
+        title.endsWith('؟') ||
+        title.startsWith('المادة') ||
+        title.startsWith('أولاً') ||
+        title.startsWith('ثانياً') ||
+        title.startsWith('ثالثاً') ||
+        title.startsWith('رابعاً') ||
+        title.startsWith('سياسة') ||
+        title.startsWith('ملاحظة') ||
+        title.startsWith('التعديلات') ||
+        title.startsWith('سياسة الاحتفاظ');
+
+    final effectiveTitle = hasTitle ? title : '';
+    final effectiveBody = hasTitle ? bodyLines : nonEmpty;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (effectiveTitle.isNotEmpty) ...[
+            Text(
+              effectiveTitle,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: Color(0xFF0F172A),
+                height: 1.25,
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          for (final l in effectiveBody) ...[
+            if (l.startsWith('- ')) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '• ',
+                    style: TextStyle(
+                      color: Color(0xFF334155),
+                      fontWeight: FontWeight.w900,
+                      height: 1.7,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      l.substring(2).trim(),
+                      style: const TextStyle(
+                        color: Color(0xFF334155),
+                        fontWeight: FontWeight.w500,
+                        height: 1.7,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              Text(
+                l,
+                style: const TextStyle(
+                  color: Color(0xFF334155),
+                  fontWeight: FontWeight.w500,
+                  height: 1.7,
+                  fontSize: 14.5,
+                ),
+              ),
+            ],
+            const SizedBox(height: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ScrollToBottomFab extends StatelessWidget {
+  const _ScrollToBottomFab({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2563EB),
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.18),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.keyboard_double_arrow_down_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
     );
   }
 }

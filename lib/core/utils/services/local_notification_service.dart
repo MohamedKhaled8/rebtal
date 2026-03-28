@@ -19,8 +19,10 @@ class LocalNotificationService {
       tz.initializeTimeZones();
 
       // Android initialization settings
+      // Must match android:icon in AndroidManifest (@mipmap/launcher_icon).
+      // ic_launcher is often still the default Flutter icon and shows in notifications.
       const androidSettings = AndroidInitializationSettings(
-        '@mipmap/ic_launcher',
+        '@mipmap/launcher_icon',
       );
 
       // iOS initialization settings
@@ -71,8 +73,7 @@ class LocalNotificationService {
         showWhen: true,
         enableVibration: true,
         playSound: true,
-        // استخدام أيقونة التطبيق كأيقونة كبيرة (ملونة)
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
       );
 
       const iosDetails = DarwinNotificationDetails(
@@ -115,8 +116,7 @@ class LocalNotificationService {
         channelDescription: 'Notifications for Rebtal app',
         importance: Importance.high,
         priority: Priority.high,
-        // استخدام أيقونة التطبيق كأيقونة كبيرة (ملونة)
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
       );
 
       const iosDetails = DarwinNotificationDetails();

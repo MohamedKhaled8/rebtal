@@ -37,85 +37,136 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       body: SafeArea(
         child: BlocBuilder<AdminCubit, AdminState>(
           builder: (context, state) {
-            Widget content = const Center(child: CircularProgressIndicator());
-
-            if (state is AdminDataLoaded) {
-              final proofs = state.paymentProofs.map((doc) => PaymentProof.fromMap({
-                ...doc.data(),
-                'id': doc.id,
-              })).toList();
-
-              if (proofs.isEmpty) {
-                content = SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildHeader(isDark),
-                      AdminPaymentsEmptyState(isDark: isDark),
-                    ],
-                  ),
-                );
-              } else {
-                final filteredDocs = proofs.where((proof) {
-                  if (_selectedFilter != 'all') {
-                    if (_selectedFilter == 'pending' && proof.status != PaymentProofStatus.pending) return false;
-                    if (_selectedFilter == 'approved' && proof.status != PaymentProofStatus.approved) return false;
-                    if (_selectedFilter == 'rejected' && proof.status != PaymentProofStatus.rejected) return false;
-                  }
-                  if (_searchQuery.isNotEmpty) {
-                    final query = _searchQuery.toLowerCase();
-                    return proof.bookingId.toLowerCase().contains(query) ||
-                        proof.id.toLowerCase().contains(query) ||
-                        proof.userName.toLowerCase().contains(query);
-                  }
-                  return true;
-                }).toList();
-
-                if (filteredDocs.isEmpty) {
-                  content = SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        _buildHeader(isDark),
-                        AdminPaymentsEmptyState(isDark: isDark, hasFilters: true),
-                      ],
-                    ),
-                  );
-                } else {
-                  content = CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(child: _buildHeader(isDark)),
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate((context, index) {
-                            final proof = filteredDocs[index];
-                            final booking = state.bookings.map((d) => d.data()..['__id'] = d.id)
-                                .where((b) => b['__id'] == proof.bookingId).firstOrNull;
-                            
-                            return AdminPaymentCard(
-                              proof: proof,
-                              bookingData: booking,
-                              isDark: isDark,
-                              isExpanded: _expandedCards.contains(proof.id),
-                              onToggleExpand: () {
-                                setState(() {
-                                  if (_expandedCards.contains(proof.id)) {
-                                    _expandedCards.remove(proof.id);
-                                  } else {
-                                    _expandedCards.add(proof.id);
-                                  }
-                                });
-                              },
-                            );
-                          }, childCount: filteredDocs.length),
-                        ),
-                      ),
-                    ],
-                  );
-                }
-              }
+            if (state is AdminLoading || state is AdminInitial) {
+              return Center(
+                child: CircularProgressIndicator(
+                  color: ColorsManager.chaletAccent,
+                ),
+              );
             }
 
-            return content;
+            if (state is AdminError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 56, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: isDark ? Colors.white70 : Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: () =>
+                            context.read<AdminCubit>().startListeningToAll(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('إعادة المحاولة'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            if (state is! AdminDataLoaded) {
+              return const SizedBox.shrink();
+            }
+
+            final proofs = state.paymentProofs
+                .map(
+                  (doc) => PaymentProof.fromMap({
+                    ...doc.data(),
+                    'id': doc.id,
+                  }),
+                )
+                .toList();
+
+            if (proofs.isEmpty) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildHeader(isDark),
+                    AdminPaymentsEmptyState(isDark: isDark),
+                  ],
+                ),
+              );
+            }
+
+            final filteredDocs = proofs.where((proof) {
+              if (_selectedFilter != 'all') {
+                if (_selectedFilter == 'pending' &&
+                    proof.status != PaymentProofStatus.pending) {
+                  return false;
+                }
+                if (_selectedFilter == 'approved' &&
+                    proof.status != PaymentProofStatus.approved) {
+                  return false;
+                }
+                if (_selectedFilter == 'rejected' &&
+                    proof.status != PaymentProofStatus.rejected) {
+                  return false;
+                }
+              }
+              if (_searchQuery.isNotEmpty) {
+                final query = _searchQuery.toLowerCase();
+                return proof.bookingId.toLowerCase().contains(query) ||
+                    proof.id.toLowerCase().contains(query) ||
+                    proof.userName.toLowerCase().contains(query);
+              }
+              return true;
+            }).toList();
+
+            if (filteredDocs.isEmpty) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildHeader(isDark),
+                    AdminPaymentsEmptyState(isDark: isDark, hasFilters: true),
+                  ],
+                ),
+              );
+            }
+
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader(isDark)),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final proof = filteredDocs[index];
+                      final booking = state.bookings
+                          .map((d) => d.data()..['__id'] = d.id)
+                          .where((b) => b['__id'] == proof.bookingId)
+                          .firstOrNull;
+
+                      return AdminPaymentCard(
+                        proof: proof,
+                        bookingData: booking,
+                        isDark: isDark,
+                        isExpanded: _expandedCards.contains(proof.id),
+                        onToggleExpand: () {
+                          setState(() {
+                            if (_expandedCards.contains(proof.id)) {
+                              _expandedCards.remove(proof.id);
+                            } else {
+                              _expandedCards.add(proof.id);
+                            }
+                          });
+                        },
+                      );
+                    }, childCount: filteredDocs.length),
+                  ),
+                ),
+              ],
+            );
           },
         ),
       ),

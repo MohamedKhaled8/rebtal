@@ -48,25 +48,41 @@ class _HomeScreenState extends State<HomeScreen>
             const SliverToBoxAdapter(child: SafeArea(child: HomeTopBar())),
 
             // 2. Clean Search Bar Trigger
-            SliverToBoxAdapter(child: CleanSearchBarTrigger(isDark: isDark)),
-
-            // 3. Promo Banners
-            SliverToBoxAdapter(child: HomePromoBanners()),
-
-            // 4. Destinations & Areas (under banner)
             SliverToBoxAdapter(
-              child: PopularDestinationsSection(),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: CleanSearchBarTrigger(isDark: isDark),
+              ),
             ),
 
-            // 5. Automated Exclusive Offers
-            const SliverToBoxAdapter(child: AutomatedOffersSection()),
+            // 3. Promo Banners (reduced margins)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: HomePromoBanners(),
+              ),
+            ),
 
-            // // 5. Top Rated
-            // const SliverToBoxAdapter(child: TopRatedSection()),
+            // 4. Destinations & Areas (compact circular design)
+            SliverToBoxAdapter(child: PopularDestinationsSection()),
+
+            // 5. Automated Exclusive Offers
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: AutomatedOffersSection(),
+              ),
+            ),
 
             // 6. Explore Everything Else
-            SliverToBoxAdapter(child: ExploreChaletHome(isDark: isDark)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: ExploreChaletHome(isDark: isDark),
+              ),
+            ),
 
+            // 7. Public Chalets List
             SliverToBoxAdapter(
               child: PublicChaletsList(
                 key: const ValueKey('public-chalets-list'),
@@ -76,9 +92,10 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
 
+            // Bottom spacing
             SliverToBoxAdapter(
               child: SizedBox(
-                height: otv(context: context, portrait: 16.sh, landscape: 8.sh),
+                height: otv(context: context, portrait: 16.0, landscape: 8.0),
               ),
             ),
           ],

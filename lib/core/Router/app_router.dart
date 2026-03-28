@@ -22,6 +22,8 @@ import "package:rebtal/feature/onboarding/ui/terms_screen.dart";
 import "package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart";
 import "package:rebtal/feature/notifications/ui/notifications_page.dart";
 import "package:rebtal/feature/splash/ui/splash_screen.dart";
+import "package:rebtal/feature/welcome/ui/auth_entry_screen.dart";
+import "package:rebtal/feature/welcome/ui/travel_onboarding_screen.dart";
 
 // Payment System Imports
 import "package:rebtal/feature/booking/models/booking.dart";
@@ -52,6 +54,16 @@ class AppRouter {
             create: (context) => OnboardingCubit(),
             child: OnboardingScreen(),
           ),
+        );
+      case Routes.travelOnboardingScreen:
+        return _buildAnimatedRoute(
+          const TravelOnboardingScreen(),
+          beginOffset: const Offset(0, 0.08),
+        );
+      case Routes.authEntryScreen:
+        return _buildAnimatedRoute(
+          const AuthEntryScreen(),
+          beginOffset: const Offset(0, 0.08),
         );
       case Routes.termsScreen:
         return MaterialPageRoute(

@@ -4,7 +4,6 @@ import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/config/space.dart';
 import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
-import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 
@@ -87,30 +86,27 @@ class HeaderAdmin extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: BlocBuilder<AdminCubit, AdminState>(
-                          builder: (context, state) {
-                            return TextField(
-                              controller: cubit.searchController,
-                              onChanged: cubit.updateSearch,
-                              textInputAction: TextInputAction.search,
-                              decoration: InputDecoration.collapsed(
-                                hintText: context.tr('admin_search_placeholder'),
-                                hintStyle: TextStyle(
-                                  color: isDark
-                                      ? Colors.white38
-                                      : Colors.grey[500],
-                                ),
-                              ),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                            );
-                          },
+                        child: TextField(
+                          controller: cubit.searchController,
+                          onChanged: cubit.updateSearch,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration.collapsed(
+                            hintText: context.tr('admin_search_placeholder'),
+                            hintStyle: TextStyle(
+                              color: isDark
+                                  ? Colors.white38
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
                         ),
                       ),
-                      BlocBuilder<AdminCubit, AdminState>(
-                        builder: (context, state) {
+                      ListenableBuilder(
+                        listenable: cubit.searchController,
+                        builder: (context, _) {
                           if (cubit.searchController.text.isEmpty) {
                             return const SizedBox.shrink();
                           }

@@ -14,32 +14,60 @@ class AppConstants {
   ];
 
   static const List<Map<String, dynamic>> serviceFacilities = [
-    {'label': 'مسبح', 'value': 'hasPool', 'icon': Icons.pool},
+    {'labelKey': 'facility_pool', 'value': 'hasPool', 'icon': Icons.pool},
     {
-      'label': 'موقف سيارات',
+      'labelKey': 'facility_parking',
       'value': 'hasParking',
       'icon': Icons.local_parking,
     },
-    {'label': 'نادي رياضي', 'value': 'hasGym', 'icon': Icons.fitness_center},
-    {'label': 'واي فاي', 'value': 'hasWifi', 'icon': Icons.wifi},
-    {'label': 'مشروبات', 'value': 'hasBars', 'icon': Icons.local_bar},
-    {'label': 'منطقة لعب', 'value': 'hasPlayground', 'icon': Icons.child_care},
-    {'label': 'تكييف', 'value': 'hasAirConditioning', 'icon': Icons.ac_unit},
-    {'label': 'حديقة', 'value': 'hasGarden', 'icon': Icons.yard},
-    {'label': 'شواء', 'value': 'hasBBQ', 'icon': Icons.outdoor_grill},
     {
-      'label': 'إطلالة بحرية',
+      'labelKey': 'facility_gym',
+      'value': 'hasGym',
+      'icon': Icons.fitness_center,
+    },
+    {'labelKey': 'facility_wifi', 'value': 'hasWifi', 'icon': Icons.wifi},
+    {'labelKey': 'facility_bars', 'value': 'hasBars', 'icon': Icons.local_bar},
+    {
+      'labelKey': 'facility_playground',
+      'value': 'hasPlayground',
+      'icon': Icons.child_care,
+    },
+    {
+      'labelKey': 'facility_ac',
+      'value': 'hasAirConditioning',
+      'icon': Icons.ac_unit,
+    },
+    {'labelKey': 'facility_garden', 'value': 'hasGarden', 'icon': Icons.yard},
+    {
+      'labelKey': 'facility_bbq',
+      'value': 'hasBBQ',
+      'icon': Icons.outdoor_grill,
+    },
+    {
+      'labelKey': 'facility_beach_view',
       'value': 'hasBeachView',
       'icon': Icons.beach_access,
     },
     {
-      'label': 'تنظيف',
+      'labelKey': 'facility_housekeeping',
       'value': 'hasHousekeeping',
       'icon': Icons.cleaning_services,
     },
-    {'label': 'حيوانات أليفة', 'value': 'hasPetsAllowed', 'icon': Icons.pets},
-    {'label': 'مطبخ', 'value': 'hasKitchen', 'icon': Icons.kitchen},
-    {'label': 'تلفاز', 'value': 'hasTV', 'icon': Icons.tv},
-    {'label': 'إفطار', 'value': 'hasBreakfast', 'icon': Icons.free_breakfast},
+    {
+      'labelKey': 'facility_pets',
+      'value': 'hasPetsAllowed',
+      'icon': Icons.pets,
+    },
+    {
+      'labelKey': 'facility_kitchen',
+      'value': 'hasKitchen',
+      'icon': Icons.kitchen,
+    },
+    {'labelKey': 'facility_tv', 'value': 'hasTV', 'icon': Icons.tv},
+    {
+      'labelKey': 'facility_breakfast',
+      'value': 'hasBreakfast',
+      'icon': Icons.free_breakfast,
+    },
   ];
 }

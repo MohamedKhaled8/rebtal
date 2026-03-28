@@ -330,30 +330,29 @@ class BookingCubit extends Cubit<BookingState> {
 
       // ✅ إرسال إشعار للمستخدم (OneSignal + In-App)
       final booking = currentBookings[index];
-      NotificationType notificationType = NotificationType.general;
-      String title = 'تحديث حالة الحجز';
-      String body = 'تم تحديث حالة حجزك في ${booking.chaletName}';
-
-      if (newStatus == BookingStatus.approved) {
-        notificationType = NotificationType.bookingApproved;
-        title = 'تمت الموافقة على الحجز! 🎉';
-        body =
-            'وافق المالك على طلب حجزك في ${booking.chaletName}. يمكنك الآن إتمام الدفع.';
-      } else if (newStatus == BookingStatus.rejected) {
-        notificationType = NotificationType.bookingRejected;
-        title = 'تم رفض الحجز ❌';
-        body = 'عذراً، تم رفض طلب حجزك في ${booking.chaletName}.';
-      }
 
       // 1. In-App Notification (Firestore) + Push (OneSignal)
-      await NotificationService().sendNotification(
-        userId: booking.userId,
-        title: title,
-        body: body,
-        type: notificationType,
-        relatedId: booking.id,
-        data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
-      );
+      if (newStatus == BookingStatus.approved) {
+        await NotificationService().sendNotification(
+          userId: booking.userId,
+          titleKey: 'notifications_booking_approved_title',
+          bodyKey: 'notifications_booking_approved_body',
+          bodyParams: {'chaletName': booking.chaletName},
+          type: NotificationType.bookingApproved,
+          relatedId: booking.id,
+          data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
+        );
+      } else if (newStatus == BookingStatus.rejected) {
+        await NotificationService().sendNotification(
+          userId: booking.userId,
+          titleKey: 'notifications_booking_rejected_title',
+          bodyKey: 'notifications_booking_rejected_body',
+          bodyParams: {'chaletName': booking.chaletName},
+          type: NotificationType.bookingRejected,
+          relatedId: booking.id,
+          data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
+        );
+      }
     } catch (e) {
       debugPrint('Error updating booking status: $e');
 
@@ -423,15 +422,15 @@ class BookingCubit extends Cubit<BookingState> {
       );
 
       if (booking.id.isNotEmpty && booking.ownerId.isNotEmpty) {
-        const title = 'تم إلغاء حجز ⚠️';
-        final body =
-            'قام ${booking.userName} بإلغاء حجزه في ${booking.chaletName}.';
-
         // 1. In-App + Push
         await NotificationService().sendNotification(
           userId: booking.ownerId,
-          title: title,
-          body: body,
+          titleKey: 'notifications_booking_cancelled_title',
+          bodyKey: 'notifications_booking_cancelled_body',
+          bodyParams: {
+            'userName': booking.userName,
+            'chaletName': booking.chaletName,
+          },
           type: NotificationType.general,
           relatedId: booking.id,
           data: {'bookingId': booking.id},
@@ -510,15 +509,15 @@ class BookingCubit extends Cubit<BookingState> {
 
         // ✅ إرسال إشعار للمالك
         if (booking.ownerId.isNotEmpty) {
-          final title = 'تم إلغاء حجز ⚠️';
-          final body =
-              'قام ${booking.userName} بإلغاء حجزه. ${refundAmount > 0 ? "يستحق استرداد: $refundAmount جنية" : "لا يستحق استرداد."}';
-
           // 1. In-App + Push
           await NotificationService().sendNotification(
             userId: booking.ownerId,
-            title: title,
-            body: body,
+            titleKey: 'notifications_booking_cancelled_title',
+            bodyKey: 'notifications_booking_cancelled_body',
+            bodyParams: {
+              'userName': booking.userName,
+              'chaletName': booking.chaletName,
+            },
             type: NotificationType.general,
             relatedId: booking.id,
             data: {'bookingId': booking.id},
@@ -604,15 +603,13 @@ class BookingCubit extends Cubit<BookingState> {
 
       // Send notification to user
       final booking = state.bookings.firstWhere((b) => b.id == bookingId);
-      final title = 'تم قبول الحجز! 🎉';
-      final body =
-          'يمكنك الآن إتمام عملية الدفع لحجزك في ${booking.chaletName}';
 
       // 1. In-App + Push
       await NotificationService().sendNotification(
         userId: booking.userId,
-        title: title,
-        body: body,
+        titleKey: 'notifications_booking_approved_title',
+        bodyKey: 'notifications_booking_approved_body',
+        bodyParams: {'chaletName': booking.chaletName},
         type: NotificationType.bookingApproved,
         relatedId: booking.id,
         data: {'bookingId': booking.id},
@@ -938,8 +935,8 @@ class BookingCubit extends Cubit<BookingState> {
       try {
         await NotificationService().sendNotification(
           userId: newTenantId,
-          title: 'تم قبول طلب نقل الحجز',
-          body: 'تم الموافقة على نقل الحجز إليك من قبل المالك. مبروك!',
+          titleKey: 'notifications_general_title',
+          bodyKey: 'notifications_general_body',
           type: NotificationType.transferTicket,
           relatedId: bookingId,
           data: {'bookingId': bookingId, 'chaletName': oldBooking.chaletName},

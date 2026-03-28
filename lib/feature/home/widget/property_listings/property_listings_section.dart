@@ -21,6 +21,7 @@ class PropertyListingsSection extends StatelessWidget {
         'guests': 3,
         'city': 'Tokyo',
         'isFavorite': false,
+        'rating': 4.8,
       },
       {
         'name': 'Mountain View Resort',
@@ -33,6 +34,7 @@ class PropertyListingsSection extends StatelessWidget {
         'guests': 4,
         'city': 'Tokyo',
         'isFavorite': true,
+        'rating': 4.6,
       },
       {
         'name': 'Beachfront Paradise',
@@ -45,6 +47,7 @@ class PropertyListingsSection extends StatelessWidget {
         'guests': 6,
         'city': 'Tokyo',
         'isFavorite': false,
+        'rating': 4.9,
       },
       {
         'name': 'Urban Luxury Suite',
@@ -57,6 +60,7 @@ class PropertyListingsSection extends StatelessWidget {
         'guests': 2,
         'city': 'Tokyo',
         'isFavorite': true,
+        'rating': 4.5,
       },
     ];
 
@@ -76,175 +80,181 @@ class PropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Base card
-        Container(
-          margin: const EdgeInsets.only(
-            bottom: 32,
-            left: 20,
-            right: 20,
-            top: 48,
+    return Container(
+      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      decoration: BoxDecoration(
+        color: ColorsManager.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: ColorsManager.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          padding: const EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: 20,
-          ),
-          decoration: BoxDecoration(
-            color: ColorsManager.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: ColorsManager.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Space for overlapping image
-              const SizedBox(height: 70),
-
-              // Title and price
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      property['name'],
-                      style: const TextStyle(
-                        color: ColorsManager.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    CurrencyFormatter.egp(
-                      context,
-                      double.tryParse(
-                            property['price'].toString().replaceAll(
-                              RegExp(r'[^0-9.]'),
-                              '',
-                            ),
-                          ) ??
-                          0,
-                      withSuffixPerNight: true,
-                    ),
-                    style: TextStyle(
-                      color: ColorsManager.kPrimaryGradient.colors.first,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // Location
-              Text(
-                property['location'],
-                style: const TextStyle(
-                  color: ColorsManager.gray,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Details
-              Row(
-                children: [
-                  PropertyDetail(
-                    icon: Icons.bed,
-                    text: '${property['beds']} Beds',
-                  ),
-                  const SizedBox(width: 24),
-                  PropertyDetail(
-                    icon: Icons.bathtub_outlined,
-                    text: '${property['baths']} Baths',
-                  ),
-                  const SizedBox(width: 24),
-                  PropertyDetail(
-                    icon: Icons.people,
-                    text: '${property['guests']} Guests',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Floating/overlapping circular image outside the card
-        Positioned(
-          top: 0,
-          left: 40,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorsManager.black.withOpacity(0.15),
-                      blurRadius: 24,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: ClipOval(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Stack(
+              children: [
+                SizedBox(
+                  height: 180,
+                  width: double.infinity,
                   child: AppImageHelper(
                     path: property['image'],
                     fit: BoxFit.cover,
                   ),
                 ),
-              ),
-
-              // Favorite badge
-              Positioned(
-                bottom: -4,
-                right: -4,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: ColorsManager.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: ColorsManager.black.withOpacity(0.12),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        shape: BoxShape.circle,
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    property['isFavorite']
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: ColorsManager.red,
-                    size: 18,
+                      child: Icon(
+                        property['isFavorite']
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: property['isFavorite']
+                            ? ColorsManager.red
+                            : Colors.grey,
+                        size: 20,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                if (property['rating'] != null)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${property['rating']}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        property['name'],
+                        style: const TextStyle(
+                          color: ColorsManager.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      CurrencyFormatter.egp(
+                        context,
+                        double.tryParse(
+                              property['price'].toString().replaceAll(
+                                RegExp(r'[^0-9.]'),
+                                '',
+                              ),
+                            ) ??
+                            0,
+                        withSuffixPerNight: true,
+                      ),
+                      style: TextStyle(
+                        color: ColorsManager.kPrimaryGradient.colors.first,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: ColorsManager.gray,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        property['location'],
+                        style: const TextStyle(
+                          color: ColorsManager.gray,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    PropertyDetail(
+                      icon: Icons.bed_outlined,
+                      text: '${property['beds']}',
+                      compact: true,
+                    ),
+                    const SizedBox(width: 16),
+                    PropertyDetail(
+                      icon: Icons.bathtub_outlined,
+                      text: '${property['baths']}',
+                      compact: true,
+                    ),
+                    const SizedBox(width: 16),
+                    PropertyDetail(
+                      icon: Icons.people_outline,
+                      text: '${property['guests']}',
+                      compact: true,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

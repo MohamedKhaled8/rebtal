@@ -1,8 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+
+String? _firstNonEmptyUrl(Map<String, dynamic> data, List<String> keys) {
+  for (final k in keys) {
+    final v = data[k];
+    if (v == null) continue;
+    final s = v.toString().trim();
+    if (s.isNotEmpty && s != 'null') return s;
+  }
+  return null;
+}
+
+bool _isGoogleStaticMapUrl(String url) =>
+    url.contains('maps.googleapis.com/maps/api/staticmap');
+
+Map<String, String>? _httpHeadersForUrl(String url) {
+  if (url.contains('googleapis.com')) {
+    return const {
+      'User-Agent':
+          'Mozilla/5.0 (compatible; RebtalAdmin/1.0; +https://rebtal.app)',
+    };
+  }
+  return null;
+}
+
+Future<void> _openUrlExternal(String url) async {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return;
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+}
 
 class UserCard extends StatelessWidget {
   final Map<String, dynamic> userData;
@@ -23,8 +55,21 @@ class UserCard extends StatelessWidget {
     final phone = userData['phone'] ?? 'No Phone';
     final uid = userData['uid'] ?? docId;
     final role = userData['role'] ?? 'user';
-    final profileImageUrl = userData['profileImageUrl']?.toString();
-    final idCardUrl = userData['idCardUrl']?.toString();
+    final profileImageUrl = _firstNonEmptyUrl(userData, const [
+      'profileImageUrl',
+      'profileImage',
+      'photoUrl',
+      'avatar',
+      'image',
+    ]);
+    final idCardUrl = _firstNonEmptyUrl(userData, const [
+      'idCardUrl',
+      'idCard',
+      'nationalIdUrl',
+      'identityDocumentUrl',
+      'id_card_url',
+      'idCardImageUrl',
+    ]);
     final isDark = DynamicThemeManager.isDarkMode(context);
     final hasPhotos = (profileImageUrl != null && profileImageUrl.isNotEmpty) ||
         (idCardUrl != null && idCardUrl.isNotEmpty);
@@ -55,7 +100,7 @@ class UserCard extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: hasPhotos
-                      ? () => _showPhotosDialog(context, name, profileImageUrl, idCardUrl, isDark)
+                      ? () => _showPhotosDialog(context, name, userData, isDark)
                       : null,
                   child: Container(
                     width: 56,
@@ -224,13 +269,7 @@ class UserCard extends StatelessWidget {
                 label: context.tr('admin_user_view_photos'),
                 color: const Color(0xFF10B981),
                 onPressed: () {
-                  _showPhotosDialog(
-                    context,
-                    name,
-                    profileImageUrl,
-                    idCardUrl,
-                    isDark,
-                  );
+                  _showPhotosDialog(context, name, userData, isDark);
                 },
                 isDark: isDark,
               ),
@@ -244,18 +283,33 @@ class UserCard extends StatelessWidget {
   void _showPhotosDialog(
     BuildContext context,
     String userName,
-    String? profileImageUrl,
-    String? idCardUrl,
+    Map<String, dynamic> data,
     bool isDark,
   ) {
-    final photos = <String>[];
-    if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
-      photos.add(profileImageUrl);
+    final profileUrl = _firstNonEmptyUrl(data, const [
+      'profileImageUrl',
+      'profileImage',
+      'photoUrl',
+      'avatar',
+      'image',
+    ]);
+    final idUrl = _firstNonEmptyUrl(data, const [
+      'idCardUrl',
+      'idCard',
+      'nationalIdUrl',
+      'identityDocumentUrl',
+      'id_card_url',
+      'idCardImageUrl',
+    ]);
+
+    if ((profileUrl == null || profileUrl.isEmpty) &&
+        (idUrl == null || idUrl.isEmpty)) {
+      return;
     }
-    if (idCardUrl != null && idCardUrl.isNotEmpty) {
-      photos.add(idCardUrl);
-    }
-    if (photos.isEmpty) return;
+
+    final sameUrl = profileUrl != null &&
+        idUrl != null &&
+        profileUrl.trim() == idUrl.trim();
 
     showGeneralDialog(
       context: context,
@@ -269,29 +323,61 @@ class UserCard extends StatelessWidget {
           body: SafeArea(
             child: Stack(
               children: [
-                PageView.builder(
-                  itemCount: photos.length,
-                  itemBuilder: (_, index) {
-                    final url = photos[index];
-                    return Center(
-                      child: InteractiveViewer(
-                        minScale: 0.8,
-                        maxScale: 4,
-                        child: CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.contain,
-                          placeholder: (c, _) => const Center(
-                            child: CircularProgressIndicator(),
+                Positioned.fill(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 56, 16, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (sameUrl) ...[
+                          Text(
+                            '${dialogContext.tr('admin_user_profile_photo')} · ${dialogContext.tr('admin_user_id_card')}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          errorWidget: (c, _, __) => const Icon(
-                            Icons.broken_image_rounded,
-                            size: 64,
-                            color: Colors.grey,
+                          const SizedBox(height: 6),
+                          Text(
+                            dialogContext.tr('admin_user_same_url_warning'),
+                            style: TextStyle(
+                              color: Colors.amber.shade200,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
+                          const SizedBox(height: 10),
+                          _dialogImageBlock(dialogContext, profileUrl),
+                        ] else ...[
+                          if (profileUrl != null && profileUrl.isNotEmpty) ...[
+                            Text(
+                              dialogContext.tr('admin_user_profile_photo'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _dialogImageBlock(dialogContext, profileUrl),
+                            const SizedBox(height: 28),
+                          ],
+                          if (idUrl != null && idUrl.isNotEmpty) ...[
+                            Text(
+                              dialogContext.tr('admin_user_id_card'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _dialogImageBlock(dialogContext, idUrl),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
                 Positioned(
                   top: 8,
@@ -304,14 +390,20 @@ class UserCard extends StatelessWidget {
                 Positioned(
                   top: 12,
                   right: 16,
-                  child: Text(
-                    dialogContext
-                        .tr('admin_user_photos_title')
-                        .replaceAll('{}', userName),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(dialogContext).size.width * 0.65,
+                    ),
+                    child: Text(
+                      dialogContext
+                          .tr('admin_user_photos_title')
+                          .replaceAll('{}', userName),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ),
@@ -320,6 +412,78 @@ class UserCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _dialogImageBlock(BuildContext context, String url) {
+    if (_isGoogleStaticMapUrl(url)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(Icons.map_rounded, size: 48, color: Colors.amber.shade200),
+          const SizedBox(height: 8),
+          Text(
+            context.tr('admin_user_image_link_invalid'),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () => _openUrlExternal(url),
+            icon: const Icon(Icons.open_in_browser_rounded, size: 20),
+            label: Text(context.tr('admin_user_open_in_browser')),
+          ),
+        ],
+      );
+    }
+
+    final headers = _httpHeadersForUrl(url);
+    final maxH = MediaQuery.sizeOf(context).height * 0.5;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: double.infinity,
+        height: maxH.clamp(200.0, 520.0),
+        child: InteractiveViewer(
+          minScale: 0.6,
+          maxScale: 5,
+          child: CachedNetworkImage(
+            imageUrl: url,
+            httpHeaders: headers,
+            width: double.infinity,
+            height: maxH.clamp(200.0, 520.0),
+            fit: BoxFit.contain,
+            placeholder: (c, _) => const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            errorWidget: (c, failedUrl, err) {
+              debugPrint('❌ Admin user image failed: $failedUrl ($err)');
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.broken_image_rounded,
+                    size: 56,
+                    color: Colors.white38,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    context.tr('admin_user_image_link_invalid'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: () => _openUrlExternal(failedUrl),
+                    icon: const Icon(Icons.open_in_browser_rounded, size: 20),
+                    label: Text(context.tr('admin_user_open_in_browser')),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 

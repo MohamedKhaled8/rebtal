@@ -263,42 +263,29 @@ class _NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isApproved = booking.status == BookingStatus.approved;
+    final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isApproved
-              ? [
-                  ColorsManager.chaletAvailableGreen.withOpacity(0.1),
-                  ColorsManager.chaletAvailableGreen.withOpacity(0.2),
-                ]
-              : [
-                  ColorsManager.chaletUnavailableRed.withOpacity(0.1),
-                  ColorsManager.chaletUnavailableRed.withOpacity(0.2),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? const Color(0xFF1E293B) : ColorsManager.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: ColorsManager.black.withOpacity(0.05),
+            color: ColorsManager.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
-          ),
-          BoxShadow(
-            color: (isApproved ? ColorsManager.green : ColorsManager.red)
-                .withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
           ),
         ],
         border: Border.all(
           color: isApproved
-              ? ColorsManager.chaletAvailableGreen.withOpacity(0.3)
-              : ColorsManager.chaletUnavailableRed.withOpacity(0.3),
-          width: 1,
+              ? ColorsManager.chaletAvailableGreen.withOpacity(
+                  isDark ? 0.5 : 0.3,
+                )
+              : ColorsManager.chaletUnavailableRed.withOpacity(
+                  isDark ? 0.5 : 0.3,
+                ),
+          width: 2,
         ),
       ),
       child: Padding(
@@ -344,10 +331,10 @@ class _NotificationCard extends StatelessWidget {
                     children: [
                       Text(
                         booking.chaletName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: ColorsManager.black,
+                          color: isDark ? Colors.white : ColorsManager.black,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -355,7 +342,9 @@ class _NotificationCard extends StatelessWidget {
                         'صاحب الشاليه: ${booking.ownerName}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: ColorsManager.chaletGrey500,
+                          color: isDark
+                              ? Colors.white70
+                              : ColorsManager.chaletGrey500,
                         ),
                       ),
                     ],
@@ -402,11 +391,11 @@ class _NotificationCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: ColorsManager.white,
+                color: isDark ? const Color(0xFF0F172A) : ColorsManager.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: (isApproved ? ColorsManager.green : ColorsManager.red)
-                      .withValues(alpha: 0.3),
+                      .withOpacity(isDark ? 0.4 : 0.3),
                 ),
               ),
               child: Column(
@@ -504,9 +493,11 @@ class _NotificationCard extends StatelessWidget {
                               ? 'يمكنك الآن الاستمتاع بإقامتك في ${booking.chaletName}'
                               : 'للأسف، لم يتم قبول طلب حجزك في ${booking.chaletName}',
                           style: TextStyle(
-                            color: isApproved
-                                ? ColorsManager.green.withValues(alpha: 0.8)
-                                : ColorsManager.red.withValues(alpha: 0.8),
+                            color: isDark
+                                ? Colors.white.withOpacity(0.8)
+                                : (isApproved
+                                      ? ColorsManager.green.withOpacity(0.8)
+                                      : ColorsManager.red.withOpacity(0.8)),
                             fontSize: 14,
                           ),
                         ),
@@ -546,12 +537,13 @@ class _DetailItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = DynamicThemeManager.isDarkMode(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: ColorsManager.white,
+        color: isDark ? const Color(0xFF1E293B) : ColorsManager.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -561,7 +553,7 @@ class _DetailItem extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: ColorsManager.grey600,
+              color: isDark ? Colors.white60 : ColorsManager.grey600,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -570,7 +562,7 @@ class _DetailItem extends StatelessWidget {
             value,
             style: TextStyle(
               fontSize: 14,
-              color: color,
+              color: isDark ? Colors.white : color,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,

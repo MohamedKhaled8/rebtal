@@ -20,7 +20,7 @@ class CleanSearchBarTrigger extends StatelessWidget {
           tablet: 24.sw,
           desktop: 32.sw,
         ),
-        vertical: otv(context: context, portrait: 10.sh, landscape: 5.sh),
+        vertical: otv(context: context, portrait: 10.sh, landscape: 10.sh),
       ),
       child: GestureDetector(
         onTap: () {
@@ -32,10 +32,10 @@ class CleanSearchBarTrigger extends StatelessWidget {
           );
         },
         child: Container(
-          height: otv(context: context, portrait: 65.sh, landscape: 70.sh),
+          height: otv(context: context, portrait: 52.sh, landscape: 150.sh),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-            borderRadius: BorderRadius.circular(40),
+            borderRadius: BorderRadius.circular(15.sp),
             boxShadow: [
               BoxShadow(
                 color: isDark
@@ -53,12 +53,14 @@ class CleanSearchBarTrigger extends StatelessWidget {
             children: [
               SizedBox(width: 8.sw),
               Container(
-                padding: EdgeInsets.all(stv(
-                  context: context,
-                  mobile: 10.sp,
-                  tablet: 12.sp,
-                  desktop: 14.sp,
-                )),
+                padding: EdgeInsets.all(
+                  stv(
+                    context: context,
+                    mobile: 10.sp,
+                    tablet: 12.sp,
+                    desktop: 14.sp,
+                  ),
+                ),
                 decoration: const BoxDecoration(
                   color: Color(0xFF10B981), // primary green
                   shape: BoxShape.circle,
@@ -133,12 +135,14 @@ class CleanSearchBarTrigger extends StatelessWidget {
               ),
               Container(
                 margin: EdgeInsets.only(right: 12.sw, left: 12.sw),
-                padding: EdgeInsets.all(stv(
-                  context: context,
-                  mobile: 8.sp,
-                  tablet: 10.sp,
-                  desktop: 12.sp,
-                )),
+                padding: EdgeInsets.all(
+                  stv(
+                    context: context,
+                    mobile: 8.sp,
+                    tablet: 10.sp,
+                    desktop: 12.sp,
+                  ),
+                ),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(

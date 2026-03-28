@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
+import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -103,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
           '🔥 SplashScreen: No auth state after timeout, going to login',
         );
         _hasNavigated = true;
-        Navigator.pushReplacementNamed(context, Routes.loginScreen);
+        _navigateToOnboardingOrLogin();
       }
     });
   }
@@ -127,13 +128,14 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     _maxWaitTimer?.cancel();
-    _hasNavigated = true;
 
     if (_pendingAuthState is AuthSuccess) {
       debugPrint('🔥 SplashScreen: Navigating based on role');
+      _hasNavigated = true;
       _navigateBasedOnRole();
     } else if (_pendingAuthState is AuthRegistrationSuccess) {
       final state = _pendingAuthState as AuthRegistrationSuccess;
+      _hasNavigated = true;
       Navigator.pushReplacementNamed(
         context,
         Routes.emailVerification,
@@ -143,6 +145,18 @@ class _SplashScreenState extends State<SplashScreen>
         _pendingAuthState is AuthUnauthenticated ||
         _pendingAuthState is AuthOfflineWarning) {
       debugPrint('🔥 SplashScreen: Navigating to login');
+      _navigateToOnboardingOrLogin();
+    }
+  }
+
+  Future<void> _navigateToOnboardingOrLogin() async {
+    final completed = await getIt<OnboardingRepository>()
+        .isOnboardingCompleted();
+    if (!mounted || _hasNavigated) return;
+    _hasNavigated = true;
+    if (!completed) {
+      Navigator.pushReplacementNamed(context, Routes.travelOnboardingScreen);
+    } else {
       Navigator.pushReplacementNamed(context, Routes.loginScreen);
     }
   }
@@ -188,9 +202,9 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.villa_rounded,
+                    Icons.holiday_village_rounded,
                     size: 80,
-                    color: const Color(0xFFFF5A5F),
+                    color: const Color(0xFF2563EB),
                   ),
                   const SizedBox(height: 16),
                   Directionality(
@@ -204,7 +218,7 @@ class _SplashScreenState extends State<SplashScreen>
                         color: Color(0xFFE0E0E0),
                         letterSpacing: 4,
                       ),
-                      liquidColor: const Color(0xFFFF5A5F),
+                      liquidColor: const Color(0xFF2563EB),
                     ),
                   ),
                 ],

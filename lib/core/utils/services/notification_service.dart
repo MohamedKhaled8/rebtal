@@ -194,10 +194,17 @@ class NotificationService {
 
   /// Send in-app notification (creates a document in Firestore)
   /// Also triggers a local notification for immediate display
+  ///
+  /// For translations, use titleKey and bodyKey with optional titleParams/bodyParams
+  /// Example: titleKey: 'notifications.booking_approved', titleParams: {'chaletName': 'Villa'}
   Future<void> sendNotification({
     required String userId,
-    required String title,
-    required String body,
+    String? title, // النص المباشر (للـ backward compatibility)
+    String? body,
+    String? titleKey, // مفتاح الترجمة (مفضل)
+    String? bodyKey,
+    Map<String, dynamic>? titleParams, // متغيرات الترجمة
+    Map<String, dynamic>? bodyParams,
     required NotificationType type,
     String? relatedId,
     Map<String, dynamic>? data,
@@ -206,8 +213,12 @@ class NotificationService {
       final notification = NotificationModel(
         id: '', // Will be set by Firestore
         userId: userId,
-        title: title,
-        body: body,
+        title: title ?? '',
+        body: body ?? '',
+        titleKey: titleKey ?? '',
+        bodyKey: bodyKey ?? '',
+        titleParams: titleParams,
+        bodyParams: bodyParams,
         type: type,
         relatedId: relatedId,
         data: data,
@@ -220,23 +231,32 @@ class NotificationService {
           .collection('notifications')
           .add(notification.toFirestore());
 
+      // For local notification, try to get translated text if available
+      // (in real app, you might want to translate here based on device locale)
+      final displayTitle = title ?? titleKey ?? 'إشعار جديد';
+      final displayBody = body ?? bodyKey ?? '';
+
       // Show local notification immediately for visual feedback
       await _localNotificationService.showNotification(
         id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: title,
-        body: body,
+        title: displayTitle,
+        body: displayBody,
         payload: relatedId,
       );
 
       // ✅ AUTOMATICALLY SEND PUSH VIA ONESIGNAL
       // This ensures EVERY notification sent in the app becomes a Push Notification
       await OneSignalService().sendNotification(
-        title: title,
-        body: body,
+        title: displayTitle,
+        body: displayBody,
         targetUserId: userId,
         data: {
           'type': type.name,
           'relatedId': relatedId,
+          'titleKey': titleKey,
+          'bodyKey': bodyKey,
+          if (titleParams != null) 'titleParams': titleParams,
+          if (bodyParams != null) 'bodyParams': bodyParams,
           if (data != null) ...data,
         },
       );
@@ -250,10 +270,16 @@ class NotificationService {
   }
 
   /// Send push notification to specific user via FCM tokens
+  ///
+  /// For translations, use titleKey and bodyKey with optional titleParams/bodyParams
   Future<void> sendPushNotification({
     required String userId,
-    required String title,
-    required String body,
+    String? title,
+    String? body,
+    String? titleKey,
+    String? bodyKey,
+    Map<String, dynamic>? titleParams,
+    Map<String, dynamic>? bodyParams,
     required NotificationType type,
     String? relatedId,
     Map<String, dynamic>? data,
@@ -264,6 +290,10 @@ class NotificationService {
         userId: userId,
         title: title,
         body: body,
+        titleKey: titleKey,
+        bodyKey: bodyKey,
+        titleParams: titleParams,
+        bodyParams: bodyParams,
         type: type,
         relatedId: relatedId,
         data: data,

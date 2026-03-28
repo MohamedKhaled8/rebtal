@@ -2,6 +2,8 @@ abstract class Routes {
   static const String splashScreen = '/splashScreen';
   static const String welcomeScreen = '/WelcomeScreen';
   static const String onBardingScreen = '/onBardingScreen';
+  static const String travelOnboardingScreen = '/travelOnboardingScreen';
+  static const String authEntryScreen = '/authEntryScreen';
   static const String termsScreen = '/termsScreen';
   static const String loginScreen = '/loginScreen';
   static const String emailVerification = '/emailVerification';

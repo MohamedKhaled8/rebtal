@@ -20,11 +20,150 @@ class NotificationCard extends StatelessWidget {
     this.onMarkAsRead,
   });
 
+  /// ترجم العنوان باستخدام المفتاح والمتغيرات
+  String _getTranslatedTitle(BuildContext context) {
+    // لو فيه مفتاح ترجمة، استخدمه
+    if (notification.titleKey.isNotEmpty) {
+      String translated = context.tr(notification.titleKey);
+      // استبدل المتغيرات
+      if (notification.titleParams != null) {
+        notification.titleParams!.forEach((key, value) {
+          translated = translated.replaceAll('{$key}', value.toString());
+        });
+      }
+      return translated;
+    }
+    // ترجمة ذكية للنصوص القديمة المخزنة
+    return _translateOldTitle(context);
+  }
+
+  /// ترجم النصوص القديمة المخزنة مباشرة في Firestore
+  String _translateOldTitle(BuildContext context) {
+    final title = notification.title;
+
+    // محاولة مطابقة النص العربي مع مفاتيح الترجمة
+    if (title.contains('موافقة') || title.contains('🎉')) {
+      return context.tr('notifications_booking_approved_title');
+    } else if (title.contains('رفض') || title.contains('❌')) {
+      return context.tr('notifications_booking_rejected_title');
+    } else if (title.contains('إلغاء') || title.contains('⚠️')) {
+      return context.tr('notifications_booking_cancelled_title');
+    } else if (title.contains('طلب') && title.contains('جديد')) {
+      return context.tr('notifications_booking_request_title');
+    } else if (title.contains('دفع') || title.contains('✅')) {
+      return context.tr('notifications_payment_confirmed_title');
+    } else if (title.contains('شاليه') && title.contains('قبول')) {
+      return context.tr('notifications_chalet_approved_title');
+    } else if (title.contains('شاليه') && title.contains('رفض')) {
+      return context.tr('notifications_chalet_rejected_title');
+    }
+
+    // لو مفيش تطابق، رجع النص الأصلي
+    return title;
+  }
+
+  /// ترجم المحتوى باستخدام المفتاح والمتغيرات
+  String _getTranslatedBody(BuildContext context) {
+    // لو فيه مفتاح ترجمة، استخدمه
+    if (notification.bodyKey.isNotEmpty) {
+      String translated = context.tr(notification.bodyKey);
+      // استبدل المتغيرات
+      if (notification.bodyParams != null) {
+        notification.bodyParams!.forEach((key, value) {
+          translated = translated.replaceAll('{$key}', value.toString());
+        });
+      }
+      return translated;
+    }
+    // ترجمة ذكية للنصوص القديمة المخزنة
+    return _translateOldBody(context);
+  }
+
+  /// ترجم نصوص body القديمة
+  String _translateOldBody(BuildContext context) {
+    final body = notification.body;
+
+    // استخراج اسم الشاليه من النص العربي
+    final chaletName = _extractChaletName(body);
+
+    if (body.contains('وافق المالك') || body.contains('يمكنك الآن')) {
+      String translated = context.tr('notifications_booking_approved_body');
+      if (chaletName.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', chaletName);
+      }
+      return translated;
+    } else if (body.contains('رفض') || body.contains('عذراً')) {
+      String translated = context.tr('notifications_booking_rejected_body');
+      if (chaletName.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', chaletName);
+      }
+      return translated;
+    } else if (body.contains('إلغاء') ||
+        body.contains('قام') && body.contains('بإلغاء')) {
+      String translated = context.tr('notifications_booking_cancelled_body');
+      // استخراج اسم المستخدم
+      final userName = _extractUserName(body);
+      if (userName.isNotEmpty) {
+        translated = translated.replaceAll('{userName}', userName);
+      }
+      if (chaletName.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', chaletName);
+      }
+      return translated;
+    } else if (body.contains('طلب حجز جديد') ||
+        body.contains('يرجى المراجعة')) {
+      String translated = context.tr('notifications_booking_request_body');
+      if (chaletName.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', chaletName);
+      }
+      return translated;
+    } else if (body.contains('تم تأكيد') || body.contains('الحجز مؤكد')) {
+      String translated = context.tr('notifications_payment_confirmed_body');
+      if (chaletName.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', chaletName);
+      }
+      return translated;
+    }
+
+    return body;
+  }
+
+  /// استخراج اسم الشاليه من النص العربي
+  String _extractChaletName(String text) {
+    // أحاول استخراج الاسم من بين علامات الاقتباس أو بعد "في"
+    final regExp = RegExp(r'في\s+([^،.]+)');
+    final match = regExp.firstMatch(text);
+    if (match != null) {
+      return match.group(1)?.trim() ?? '';
+    }
+    // أو بعد اسم الشاليه مباشرة
+    final chaletExp = RegExp(r'شاليه\s+([^،.]+)');
+    final chaletMatch = chaletExp.firstMatch(text);
+    if (chaletMatch != null) {
+      return chaletMatch.group(1)?.trim() ?? '';
+    }
+    return '';
+  }
+
+  /// استخراج اسم المستخدم من النص العربي
+  String _extractUserName(String text) {
+    final regExp = RegExp(r'قام\s+([^\s]+)\s+بإلغاء');
+    final match = regExp.firstMatch(text);
+    if (match != null) {
+      return match.group(1)?.trim() ?? '';
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
     final iconData = _getIconForType(notification.type);
     final color = _getColorForType(notification.type);
+
+    // احصل على النصوص المترجمة
+    final title = _getTranslatedTitle(context);
+    final body = _getTranslatedBody(context);
 
     return Dismissible(
       key: Key(notification.id),
@@ -47,22 +186,24 @@ class NotificationCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: isDark
-              ? ColorsManager.chaletCardDark
+              ? const Color(
+                  0xFF1A1F2E,
+                ) // Dark blue-gray instead of almost black
               : ColorsManager.chaletCardLight,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: notification.isRead
                 ? (isDark
-                      ? ColorsManager.white.withOpacity(0.05)
+                      ? ColorsManager.white.withOpacity(0.1)
                       : ColorsManager.black.withOpacity(0.05))
                 : color.withOpacity(0.3),
             width: notification.isRead ? 1 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: ColorsManager.black.withOpacity(isDark ? 0.3 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: ColorsManager.black.withOpacity(isDark ? 0.2 : 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -104,15 +245,15 @@ class NotificationCard extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                context.tr(notification.title),
+                                title, // مترجم
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: notification.isRead
                                       ? FontWeight.w600
                                       : FontWeight.w800,
                                   color: isDark
-                                      ? ColorsManager.chaletTextPrimaryDark
-                                      : ColorsManager.chaletTextPrimaryLight,
+                                      ? Colors.white
+                                      : ColorsManager.black,
                                 ),
                               ),
                             ),
@@ -129,12 +270,12 @@ class NotificationCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          context.tr(notification.body),
+                          body, // مترجم
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
-                                ? ColorsManager.chaletTextSecondaryDark
-                                : ColorsManager.chaletTextSecondaryLight,
+                                ? Colors.white.withOpacity(0.8)
+                                : ColorsManager.grey700,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -155,8 +296,8 @@ class NotificationCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
-                                    ? ColorsManager.chaletTextSecondaryDark
-                                    : ColorsManager.chaletTextSecondaryLight,
+                                    ? Colors.white60
+                                    : ColorsManager.grey600,
                               ),
                             ),
                           ],

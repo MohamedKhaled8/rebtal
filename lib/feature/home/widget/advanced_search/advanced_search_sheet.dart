@@ -22,7 +22,6 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
   int? _minChildren;
   bool _dayUseOnly = false;
   bool _hasOffers = false;
-  List<String> _selectedFeatures = [];
   List<String> _selectedFacilities = [];
   double _minArea = 0;
 
@@ -45,7 +44,6 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     _minChildren = currentFilters.minChildren;
     _dayUseOnly = currentFilters.dayUseOnly;
     _hasOffers = currentFilters.hasOffers;
-    _selectedFeatures = List.from(currentFilters.features);
     _selectedFacilities = List.from(currentFilters.facilities);
     _minArea = currentFilters.minArea ?? 0;
   }
@@ -60,14 +58,18 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
 
   void _applySearch() {
     final exactPriceText = _exactPriceController.text.trim();
-    final exactPrice = exactPriceText.isEmpty ? null : double.tryParse(exactPriceText);
+    final exactPrice = exactPriceText.isEmpty
+        ? null
+        : double.tryParse(exactPriceText);
 
     final RangeValues? activePriceRange =
         (_priceRange.start > 0 || _priceRange.end < 10000) ? _priceRange : null;
 
     HomeSearch.filters.value = SearchFilters(
       query: _queryController.text.trim(),
-      location: _locationController.text.trim().isEmpty ? null : _locationController.text.trim(),
+      location: _locationController.text.trim().isEmpty
+          ? null
+          : _locationController.text.trim(),
       priceRange: activePriceRange,
       exactPrice: exactPrice,
       minBedrooms: _minBedrooms,
@@ -75,7 +77,7 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
       minChildren: _minChildren,
       dayUseOnly: _dayUseOnly,
       hasOffers: _hasOffers,
-      features: _selectedFeatures,
+      features: [],
       facilities: _selectedFacilities,
       minArea: _minArea > 0 ? _minArea : null,
     );
@@ -98,7 +100,6 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
       _minChildren = null;
       _dayUseOnly = false;
       _hasOffers = false;
-      _selectedFeatures = [];
       _selectedFacilities = [];
       _minArea = 0;
     });
@@ -108,15 +109,21 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
     final themeColor = isDark ? Colors.white : Colors.black;
-    final bgColor = isDark ? const Color(0xFF151520) : const Color(0xFFFFFFFF); // Lighter background
-    final cardColor = isDark ? const Color(0xFF1E1E2E) : const Color(0xFFF9FAFB); // Very light grey for light mode
+    final bgColor = isDark
+        ? const Color(0xFF151520)
+        : const Color(0xFFFFFFFF); // Lighter background
+    final cardColor = isDark
+        ? const Color(0xFF1E1E2E)
+        : const Color(0xFFF9FAFB); // Very light grey for light mode
     const primaryGreen = Color(0xFF10B981);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.92,
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)), // Reduced radius
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(24),
+        ), // Reduced radius
       ),
       child: Column(
         children: [
@@ -124,41 +131,73 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), // Softer padding
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ), // Softer padding
               children: [
-                _buildSectionHeader(context.tr('home_search'), Icons.search_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('home_search'),
+                  Icons.search_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
                 _buildSearchInput(isDark, themeColor, cardColor),
 
                 const SizedBox(height: 28), // Reduced spacing
-                _buildSectionHeader(context.tr('owner_availability_period'), Icons.explore_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('owner_availability_period'),
+                  Icons.explore_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
-                _buildBookingOptions(isDark, primaryGreen, themeColor, cardColor),
+                _buildBookingOptions(
+                  isDark,
+                  primaryGreen,
+                  themeColor,
+                  cardColor,
+                ),
 
                 const SizedBox(height: 28),
-                _buildSectionHeader(context.tr('home_price_range_per_night'), Icons.payments_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('home_price_range_per_night'),
+                  Icons.payments_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
                 _buildPriceRange(cardColor, primaryGreen, themeColor, isDark),
 
                 const SizedBox(height: 28),
-                _buildSectionHeader(context.tr('home_chalet_area_m2'), Icons.square_foot_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('home_chalet_area_m2'),
+                  Icons.square_foot_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
                 _buildAreaSlider(cardColor, primaryGreen, themeColor, isDark),
 
                 const SizedBox(height: 28),
-                _buildSectionHeader(context.tr('home_rooms_facilities'), Icons.meeting_room_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('home_rooms_facilities'),
+                  Icons.meeting_room_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
                 _buildCapacityCard(cardColor, themeColor, primaryGreen, isDark),
 
                 const SizedBox(height: 28),
-                _buildSectionHeader(context.tr('home_features'), Icons.loyalty_rounded, themeColor),
+                _buildSectionHeader(
+                  context.tr('home_facilities_services'),
+                  Icons.spa_rounded,
+                  themeColor,
+                ),
                 const SizedBox(height: 12),
-                _buildFeaturesWrap(isDark, primaryGreen, themeColor, cardColor),
-
-                const SizedBox(height: 28),
-                _buildSectionHeader(context.tr('home_facilities_services'), Icons.spa_rounded, themeColor),
-                const SizedBox(height: 12),
-                _buildFacilitiesWrap(isDark, primaryGreen, themeColor, cardColor),
+                _buildFacilitiesWrap(
+                  isDark,
+                  primaryGreen,
+                  themeColor,
+                  cardColor,
+                ),
 
                 const SizedBox(height: 32),
               ],
@@ -204,7 +243,10 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
                 onTap: _resetFilters,
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   child: Text(
                     context.tr('home_reset'),
                     style: const TextStyle(
@@ -245,7 +287,9 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16), // Lighter radius
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+        ),
       ),
       child: TextField(
         controller: _queryController,
@@ -255,7 +299,11 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
           hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
           prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 16, right: 12),
-            child: Icon(Icons.search_rounded, color: Color(0xFF10B981), size: 20),
+            child: Icon(
+              Icons.search_rounded,
+              color: Color(0xFF10B981),
+              size: 20,
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -267,7 +315,12 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     );
   }
 
-  Widget _buildBookingOptions(bool isDark, Color primaryColor, Color themeColor, Color cardColor) {
+  Widget _buildBookingOptions(
+    bool isDark,
+    Color primaryColor,
+    Color themeColor,
+    Color cardColor,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -318,7 +371,9 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
           color: isSelected ? primaryColor.withOpacity(0.1) : cardColor,
           borderRadius: BorderRadius.circular(16), // Lighter radius
           border: Border.all(
-            color: isSelected ? primaryColor.withOpacity(0.5) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+            color: isSelected
+                ? primaryColor.withOpacity(0.5)
+                : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
           ),
         ),
         child: Column(
@@ -328,7 +383,9 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? primaryColor : (isDark ? Colors.grey[400] : Colors.grey[500]),
+              color: isSelected
+                  ? primaryColor
+                  : (isDark ? Colors.grey[400] : Colors.grey[500]),
             ),
             const SizedBox(height: 8),
             Text(
@@ -346,22 +403,41 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     );
   }
 
-  Widget _buildPriceRange(Color cardColor, Color primaryColor, Color themeColor, bool isDark) {
+  Widget _buildPriceRange(
+    Color cardColor,
+    Color primaryColor,
+    Color themeColor,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+        ),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildPriceBadge('${_priceRange.start.round()} EGP', primaryColor, true),
-              Container(width: 12, height: 2, color: isDark ? Colors.white24 : Colors.black12),
-              _buildPriceBadge('${_priceRange.end.round()} EGP', primaryColor, true),
+              _buildPriceBadge(
+                '${_priceRange.start.round()} EGP',
+                primaryColor,
+                true,
+              ),
+              Container(
+                width: 12,
+                height: 2,
+                color: isDark ? Colors.white24 : Colors.black12,
+              ),
+              _buildPriceBadge(
+                '${_priceRange.end.round()} EGP',
+                primaryColor,
+                true,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -369,11 +445,16 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
             data: SliderThemeData(
               trackHeight: 12, // Thicker track for dashed lines
               activeTrackColor: primaryColor,
-              inactiveTrackColor: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+              inactiveTrackColor: isDark
+                  ? Colors.white10
+                  : Colors.black.withOpacity(0.05),
               thumbColor: Colors.white,
               overlayColor: primaryColor.withOpacity(0.1),
               rangeTrackShape: DashedRangeSliderTrackShape(),
-              rangeThumbShape: const RoundRangeSliderThumbShape(elevation: 3, pressedElevation: 6),
+              rangeThumbShape: const RoundRangeSliderThumbShape(
+                elevation: 3,
+                pressedElevation: 6,
+              ),
             ),
             child: RangeSlider(
               values: _priceRange,
@@ -387,29 +468,45 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     );
   }
 
-  Widget _buildAreaSlider(Color cardColor, Color primaryColor, Color themeColor, bool isDark) {
+  Widget _buildAreaSlider(
+    Color cardColor,
+    Color primaryColor,
+    Color themeColor,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+        ),
       ),
       child: Column(
         children: [
           Center(
-            child: _buildPriceBadge('${_minArea.round()} ${context.tr('common_m2')} +', primaryColor, false),
+            child: _buildPriceBadge(
+              '${_minArea.round()} ${context.tr('common_m2')} +',
+              primaryColor,
+              false,
+            ),
           ),
           const SizedBox(height: 16),
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 12,
               activeTrackColor: primaryColor,
-              inactiveTrackColor: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
+              inactiveTrackColor: isDark
+                  ? Colors.white10
+                  : Colors.black.withOpacity(0.05),
               thumbColor: Colors.white,
               overlayColor: primaryColor.withOpacity(0.1),
               trackShape: DashedSliderTrackShape(),
-              thumbShape: const RoundSliderThumbShape(elevation: 3, pressedElevation: 6),
+              thumbShape: const RoundSliderThumbShape(
+                elevation: 3,
+                pressedElevation: 6,
+              ),
             ),
             child: Slider(
               value: _minArea,
@@ -443,21 +540,49 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     return isExpanded ? Expanded(child: Center(child: badge)) : badge;
   }
 
-  Widget _buildCapacityCard(Color cardColor, Color themeColor, Color primaryColor, bool isDark) {
+  Widget _buildCapacityCard(
+    Color cardColor,
+    Color themeColor,
+    Color primaryColor,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+        ),
       ),
       child: Column(
         children: [
-          _buildCounterRow(context.tr('home_bedrooms'), Icons.bed_rounded, _minBedrooms, (v) => setState(() => _minBedrooms = v), themeColor, primaryColor),
+          _buildCounterRow(
+            context.tr('home_bedrooms'),
+            Icons.bed_rounded,
+            _minBedrooms,
+            (v) => setState(() => _minBedrooms = v),
+            themeColor,
+            primaryColor,
+          ),
           _buildDivider(isDark),
-          _buildCounterRow(context.tr('home_bathrooms'), Icons.bathtub_rounded, _minBathrooms, (v) => setState(() => _minBathrooms = v), themeColor, primaryColor),
+          _buildCounterRow(
+            context.tr('home_bathrooms'),
+            Icons.bathtub_rounded,
+            _minBathrooms,
+            (v) => setState(() => _minBathrooms = v),
+            themeColor,
+            primaryColor,
+          ),
           _buildDivider(isDark),
-          _buildCounterRow(context.tr('booking_children'), Icons.child_care_rounded, _minChildren, (v) => setState(() => _minChildren = v), themeColor, primaryColor),
+          _buildCounterRow(
+            context.tr('booking_children'),
+            Icons.child_care_rounded,
+            _minChildren,
+            (v) => setState(() => _minChildren = v),
+            themeColor,
+            primaryColor,
+          ),
         ],
       ),
     );
@@ -466,7 +591,10 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
   Widget _buildDivider(bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Divider(color: isDark ? Colors.white10 : Colors.black.withOpacity(0.03), height: 1),
+      child: Divider(
+        color: isDark ? Colors.white10 : Colors.black.withOpacity(0.03),
+        height: 1,
+      ),
     );
   }
 
@@ -490,24 +618,42 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
               const SizedBox(width: 10),
               Text(
                 label,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: themeColor),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: themeColor,
+                ),
               ),
             ],
           ),
           Row(
             children: [
-              _buildCircleBtn(Icons.remove, () {
-                if (count > 0) onChanged(count - 1 == 0 ? null : count - 1);
-              }, primaryColor, themeColor),
+              _buildCircleBtn(
+                Icons.remove,
+                () {
+                  if (count > 0) onChanged(count - 1 == 0 ? null : count - 1);
+                },
+                primaryColor,
+                themeColor,
+              ),
               SizedBox(
                 width: 36,
                 child: Text(
                   count == 0 ? context.tr('common_any') : '$count+',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: themeColor),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: themeColor,
+                  ),
                 ),
               ),
-              _buildCircleBtn(Icons.add, () => onChanged(count + 1), primaryColor, themeColor),
+              _buildCircleBtn(
+                Icons.add,
+                () => onChanged(count + 1),
+                primaryColor,
+                themeColor,
+              ),
             ],
           ),
         ],
@@ -515,7 +661,12 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     );
   }
 
-  Widget _buildCircleBtn(IconData icon, VoidCallback onTap, Color primaryColor, Color themeColor) {
+  Widget _buildCircleBtn(
+    IconData icon,
+    VoidCallback onTap,
+    Color primaryColor,
+    Color themeColor,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -532,45 +683,49 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
     );
   }
 
-  Widget _buildFeaturesWrap(bool isDark, Color primaryColor, Color themeColor, Color cardColor) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: AppConstants.chaletCategories.map((cat) {
-        final isSelected = _selectedFeatures.contains(cat['value']);
-        return _buildChip(cat['label'], null, isSelected, () {
-          setState(() {
-            if (isSelected) {
-              _selectedFeatures.remove(cat['value']);
-            } else {
-              _selectedFeatures.add(cat['value']);
-            }
-          });
-        }, isDark, primaryColor, themeColor, cardColor);
-      }).toList(),
-    );
-  }
-
-  Widget _buildFacilitiesWrap(bool isDark, Color primaryColor, Color themeColor, Color cardColor) {
+  Widget _buildFacilitiesWrap(
+    bool isDark,
+    Color primaryColor,
+    Color themeColor,
+    Color cardColor,
+  ) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: AppConstants.serviceFacilities.map((fac) {
         final isSelected = _selectedFacilities.contains(fac['value']);
-        return _buildChip(fac['label'], fac['icon'], isSelected, () {
-          setState(() {
-            if (isSelected) {
-              _selectedFacilities.remove(fac['value']);
-            } else {
-              _selectedFacilities.add(fac['value']);
-            }
-          });
-        }, isDark, primaryColor, themeColor, cardColor);
+        return _buildChip(
+          context.tr(fac['labelKey']),
+          fac['icon'],
+          isSelected,
+          () {
+            setState(() {
+              if (isSelected) {
+                _selectedFacilities.remove(fac['value']);
+              } else {
+                _selectedFacilities.add(fac['value']);
+              }
+            });
+          },
+          isDark,
+          primaryColor,
+          themeColor,
+          cardColor,
+        );
       }).toList(),
     );
   }
 
-  Widget _buildChip(String label, IconData? icon, bool isSelected, VoidCallback onTap, bool isDark, Color primary, Color theme, Color card) {
+  Widget _buildChip(
+    String label,
+    IconData? icon,
+    bool isSelected,
+    VoidCallback onTap,
+    bool isDark,
+    Color primary,
+    Color theme,
+    Color card,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -580,14 +735,20 @@ class _AdvancedSearchSheetState extends State<AdvancedSearchSheet> {
           color: isSelected ? primary.withOpacity(0.1) : card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? primary.withOpacity(0.5) : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
+            color: isSelected
+                ? primary.withOpacity(0.5)
+                : (isDark ? Colors.white10 : Colors.black.withOpacity(0.04)),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16, color: isSelected ? primary : theme.withOpacity(0.5)),
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected ? primary : theme.withOpacity(0.5),
+              ),
               const SizedBox(width: 6),
             ],
             Text(
@@ -655,7 +816,8 @@ class DashedRangeSliderTrackShape extends RangeSliderTrackShape {
   }) {
     final double trackHeight = sliderTheme.trackHeight ?? 4.0;
     final double trackLeft = offset.dx;
-    final double trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
     final double trackWidth = parentBox.size.width;
     return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
@@ -700,14 +862,18 @@ class DashedRangeSliderTrackShape extends RangeSliderTrackShape {
 
     while (startX < trackRect.right) {
       final double endX = startX + dashWidth;
-      final bool isActive = startX >= startThumbCenter.dx && endX <= endThumbCenter.dx;
-      
+      final bool isActive =
+          startX >= startThumbCenter.dx && endX <= endThumbCenter.dx;
+
       canvas.drawLine(
         Offset(startX, trackRect.center.dy),
-        Offset(endX > trackRect.right ? trackRect.right : endX, trackRect.center.dy),
+        Offset(
+          endX > trackRect.right ? trackRect.right : endX,
+          trackRect.center.dy,
+        ),
         isActive ? activePaint : inactivePaint,
       );
-      
+
       startX += dashWidth + dashSpace;
     }
   }
@@ -725,7 +891,8 @@ class DashedSliderTrackShape extends SliderTrackShape {
   }) {
     final double trackHeight = sliderTheme.trackHeight ?? 4.0;
     final double trackLeft = offset.dx;
-    final double trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final double trackTop =
+        offset.dy + (parentBox.size.height - trackHeight) / 2;
     final double trackWidth = parentBox.size.width;
     return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
@@ -772,13 +939,16 @@ class DashedSliderTrackShape extends SliderTrackShape {
     while (startX < trackRect.right) {
       final double endX = startX + dashWidth;
       final bool isActive = startX <= thumbCenter.dx;
-      
+
       canvas.drawLine(
         Offset(startX, trackRect.center.dy),
-        Offset(endX > trackRect.right ? trackRect.right : endX, trackRect.center.dy),
+        Offset(
+          endX > trackRect.right ? trackRect.right : endX,
+          trackRect.center.dy,
+        ),
         isActive ? activePaint : inactivePaint,
       );
-      
+
       startX += dashWidth + dashSpace;
     }
   }
