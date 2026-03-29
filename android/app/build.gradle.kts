@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -8,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.rebtal"
+    namespace = "com.rebtal.app"
     compileSdk = 36
     ndkVersion = "28.1.13356709"
 
@@ -24,20 +26,61 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.rebtal"
+        applicationId = "com.rebtal.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        // Keep secrets (like Maps key) out of source-control.
+        // Provide it via:
+        // - gradle.properties: MAPS_API_KEY=...
+        // - OR environment variable: MAPS_API_KEY=...
+        // If empty, maps may not work until you add it.
+        manifestPlaceholders["MAPS_API_KEY"] =
+            (project.findProperty("MAPS_API_KEY") as String?)
+                ?: System.getenv("MAPS_API_KEY")
+                ?: ""
+    }
+
+    signingConfigs {
+        create("release") {
+            // Uses android/key.properties (ignored by git) if present.
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                val props = Properties()
+                keystorePropertiesFile.inputStream().use { stream ->
+                    props.load(stream)
+                }
+                storeFile = file(props["storeFile"] as String)
+                storePassword = props["storePassword"] as String
+                keyAlias = props["keyAlias"] as String
+                keyPassword = props["keyPassword"] as String
+            }
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // For Play Store you must sign with a release keystore (key.properties).
+            val keystorePropertiesFile = rootProject.file("key.properties")
+            signingConfig =
+                if (keystorePropertiesFile.exists()) {
+                    signingConfigs.getByName("release")
+                } else {
+                    // Allows local release builds to succeed, but NOT store uploads.
+                    signingConfigs.getByName("debug")
+                }
+
+            // Keep size reasonable for store releases.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 

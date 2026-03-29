@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/payment/ui/new_payment_confirmation_page.dart';
@@ -37,7 +38,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
       'accountName': 'ريبتال',
       'phoneNumber': '01008422234',
       'instructions':
-          'اتصل على *9*رقم المحفظة*المبلغ# أو استخدم تطبيق فودافون كاش',
+          'استخدم تطبيق فودافون كاش لإتمام التحويل ثم تابع الخطوات داخل التطبيق.',
     },
     PaymentMethod.bankTransfer: {
       'bankName': 'البنك الأهلي المصري',
@@ -52,28 +53,42 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
     },
   };
 
+  String _resolveAccountName(String raw) {
+    final v = raw.trim();
+    if (v == 'ريبتال' || v.toLowerCase() == 'rebtal') {
+      return context.tr('brand_rebtal');
+    }
+    if (v.contains('شركة') && v.contains('ريبتال')) {
+      return context.tr('brand_rebtal_company');
+    }
+    return raw;
+  }
+
   String _getMethodTitle() {
     switch (widget.paymentMethod) {
       case PaymentMethod.instaPay:
-        return 'إنستاباي';
+        return context.tr('payment_method_instapay');
       case PaymentMethod.vodafoneCash:
-        return 'فودافون كاش';
+        return context.tr('payment_method_vodafone_cash');
       case PaymentMethod.bankTransfer:
-        return 'تحويل بنكي';
+        return context.tr('payment_method_bank');
       case PaymentMethod.cashOnArrival:
-        return 'الدفع عند الوصول';
+        return context.tr('payment_method_cash_on_arrival');
     }
   }
 
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
-    SnackBarHelper.showSuccess(context, 'تم نسخ $label');
+    SnackBarHelper.showSuccess(
+      context,
+      '${context.tr('payment_copied_label')} $label',
+    );
   }
 
   Future<void> _sendProofViaWhatsApp() async {
     final phone = '201008422234'; // رقم المالك أو الإدارة
     final message =
-        'مرحباً، قمت بتحويل مبلغ ${widget.amount} ج.م لحجز رقم ${widget.booking.id.substring(0, 8)}. مرفق إيصال الدفع.';
+        '${context.tr('payment_whatsapp_message_prefix')} ${widget.amount.round()} ${context.tr('booking_egp_currency')} ${context.tr('payment_whatsapp_message_booking')} ${widget.booking.id.substring(0, 8)}. ${context.tr('payment_whatsapp_message_suffix')}';
 
     try {
       await UriLauncherService.openWhatsApp(phone, message);
@@ -83,7 +98,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
       });
     } catch (e) {
       if (mounted) {
-        SnackBarHelper.showError(context, 'تعذر فتح واتساب');
+        SnackBarHelper.showError(context, context.tr('payment_whatsapp_error'));
       }
     }
   }
@@ -127,7 +142,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'تفاصيل الدفع',
+          context.tr('payment_details_title'),
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontSize: 18,
@@ -145,12 +160,16 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Payment Method
-                  _buildSection(isDark, 'طريقة الدفع', [
-                    _buildInfoRow(isDark, 'الطريقة', _getMethodTitle()),
+                  _buildSection(isDark, context.tr('payment_screen_title'), [
                     _buildInfoRow(
                       isDark,
-                      'المبلغ',
-                      '${widget.amount.round()} ج.م',
+                      context.tr('payment_label_method'),
+                      _getMethodTitle(),
+                    ),
+                    _buildInfoRow(
+                      isDark,
+                      context.tr('payment_amount_label'),
+                      '${widget.amount.round()} ${context.tr('booking_egp_currency')}',
                     ),
                   ]),
 
@@ -158,23 +177,23 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
 
                   // Payment Details
                   if (widget.paymentMethod != PaymentMethod.cashOnArrival) ...[
-                    _buildSection(isDark, 'بيانات التحويل', [
+                    _buildSection(isDark, context.tr('payment_transfer_details_title'), [
                       if (details.containsKey('bankName'))
                         _buildInfoRow(
                           isDark,
-                          'اسم البنك',
+                          context.tr('payment_label_bank_name'),
                           details['bankName']!,
                         ),
                       if (details.containsKey('accountName'))
                         _buildInfoRow(
                           isDark,
-                          'اسم الحساب',
-                          details['accountName']!,
+                          context.tr('payment_label_account_name'),
+                          _resolveAccountName(details['accountName']!),
                         ),
                       if (details.containsKey('accountNumber'))
                         _buildCopyableRow(
                           isDark,
-                          'رقم الحساب',
+                          context.tr('payment_label_account_number'),
                           details['accountNumber']!,
                         ),
                       if (details.containsKey('iban'))
@@ -182,15 +201,12 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                       if (details.containsKey('phoneNumber'))
                         _buildCopyableRow(
                           isDark,
-                          'رقم المحفظة',
+                          context.tr('payment_label_wallet_number'),
                           details['phoneNumber']!,
                         ),
                     ]),
                     const SizedBox(height: 24),
                   ],
-
-                  // Instructions
-                  _buildInstructions(isDark, details['instructions']!),
 
                   const SizedBox(height: 24),
 
@@ -252,8 +268,8 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                         )
                       : Text(
                           widget.paymentMethod == PaymentMethod.cashOnArrival
-                              ? 'تأكيد الحجز'
-                              : 'تم الدفع',
+                              ? context.tr('payment_confirm_booking')
+                              : context.tr('payment_mark_paid'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -361,37 +377,6 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
     );
   }
 
-  Widget _buildInstructions(bool isDark, String text) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            size: 20,
-            color: isDark ? Colors.white70 : Colors.grey.shade600,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white70 : Colors.grey.shade700,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSupportCard(bool isDark) {
     return GestureDetector(
       onTap: _sendProofViaWhatsApp,
@@ -417,7 +402,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'هل تحتاج مساعدة؟',
+                    context.tr('payment_need_help_title'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -426,7 +411,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'تواصل معنا عبر واتساب',
+                    context.tr('payment_contact_whatsapp'),
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? Colors.white70 : Colors.grey.shade600,
@@ -451,7 +436,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'تأكيد الدفع',
+          context.tr('payment_confirm_section_title'),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -475,7 +460,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
                 const Icon(Icons.chat, color: Colors.green, size: 24),
                 const SizedBox(width: 12),
                 Text(
-                  'إرسال صورة الإيصال واتساب',
+                  context.tr('payment_send_receipt_whatsapp'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -493,7 +478,7 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
               const Icon(Icons.check_circle, size: 16, color: Colors.green),
               const SizedBox(width: 8),
               Text(
-                'تم الفتح، قم بتأكيد الدفع الآن',
+                context.tr('payment_whatsapp_opened_hint'),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.green.shade700,

@@ -1,9 +1,158 @@
+import 'dart:convert';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+Future<(double, double)?> _geocodeAddressWithNominatim(String query) async {
+  final q = query.trim();
+  if (q.isEmpty) return null;
+  try {
+    final uri = Uri.parse(
+      'https://nominatim.openstreetmap.org/search'
+      '?q=${Uri.encodeComponent(q)}&format=json&limit=1',
+    );
+    final response = await http.get(
+      uri,
+      headers: const {
+        'User-Agent': 'Rebtal/1.0 (chalet map preview; contact via app store listing)',
+        'Accept-Language': 'ar,en',
+      },
+    );
+    if (response.statusCode != 200) return null;
+    final list = jsonDecode(response.body) as List<dynamic>;
+    if (list.isEmpty) return null;
+    final map = list.first as Map<String, dynamic>;
+    final lat = double.tryParse(map['lat']?.toString() ?? '');
+    final lon = double.tryParse(map['lon']?.toString() ?? '');
+    if (lat == null || lon == null) return null;
+    return (lat, lon);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Resolves coordinates (Firestore or Nominatim) and shows a real OSM tile map.
+class _ResolvedLatLngMap extends StatefulWidget {
+  const _ResolvedLatLngMap({
+    required this.location,
+    required this.latitude,
+    required this.longitude,
+    required this.isDark,
+    required this.placeholder,
+  });
+
+  final String location;
+  final double? latitude;
+  final double? longitude;
+  final bool isDark;
+  final Widget placeholder;
+
+  @override
+  State<_ResolvedLatLngMap> createState() => _ResolvedLatLngMapState();
+}
+
+class _ResolvedLatLngMapState extends State<_ResolvedLatLngMap> {
+  late final Future<LatLng?> _centerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.latitude != null && widget.longitude != null) {
+      _centerFuture = Future.value(
+        LatLng(widget.latitude!, widget.longitude!),
+      );
+    } else {
+      final addr = widget.location.trim();
+      _centerFuture = addr.isEmpty
+          ? Future.value(null)
+          : _geocodeAddressWithNominatim(addr).then(
+              (c) => c == null ? null : LatLng(c.$1, c.$2),
+            );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<LatLng?>(
+      future: _centerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Container(
+            color: widget.isDark ? const Color(0xFF1A1A1A) : Colors.grey[100],
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: widget.isDark ? Colors.white54 : Colors.black45,
+              ),
+            ),
+          );
+        }
+        final center = snapshot.data;
+        if (center == null) {
+          return widget.placeholder;
+        }
+        return _InteractiveOsmMap(center: center);
+      },
+    );
+  }
+}
+
+/// Real map tiles (OpenStreetMap) with pan/zoom — same stack as owner location picker.
+class _InteractiveOsmMap extends StatelessWidget {
+  const _InteractiveOsmMap({required this.center});
+
+  final LatLng center;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterMap(
+      options: MapOptions(
+        initialCenter: center,
+        initialZoom: 15,
+        minZoom: 3,
+        maxZoom: 19,
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.rebtal.app',
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              width: 48,
+              height: 48,
+              point: center,
+              child: Icon(
+                Icons.location_on_rounded,
+                size: 44,
+                color: Colors.redAccent.shade400,
+                shadows: const [
+                  Shadow(
+                    blurRadius: 6,
+                    color: Colors.black45,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
 class LocationMapCard extends StatelessWidget {
   final String location;
@@ -35,7 +184,8 @@ class LocationMapCard extends StatelessWidget {
           if (await canLaunchUrl(fallbackUri)) {
             await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
           } else {
-            _showError(context, 'لا يمكن فتح الخريطة');
+            if (!context.mounted) return;
+            _showError(context, context.tr('cannot_open_map'));
           }
         }
       } else {
@@ -51,12 +201,14 @@ class LocationMapCard extends StatelessWidget {
           if (await canLaunchUrl(fallbackUri)) {
             await launchUrl(fallbackUri, mode: LaunchMode.externalApplication);
           } else {
-            _showError(context, 'لا يمكن فتح الخريطة');
+            if (!context.mounted) return;
+            _showError(context, context.tr('cannot_open_map'));
           }
         }
       }
     } catch (e) {
-      _showError(context, 'خطأ: $e');
+      if (!context.mounted) return;
+      _showError(context, '${context.tr('common_error')}: $e');
     }
   }
 
@@ -73,13 +225,7 @@ class LocationMapCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Divider(
-            color: isDark ? Colors.white12 : Colors.grey[200],
-            thickness: 1,
-            indent: 20,
-            endIndent: 20,
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Title with Accent
           Row(
@@ -93,9 +239,9 @@ class LocationMapCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'الموقع',
-                style: TextStyle(
+              Text(
+                context.tr('chalet_location'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Outfit',
@@ -105,124 +251,155 @@ class LocationMapCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Map Container
-          GestureDetector(
-            onTap: () => _openMapInApp(context),
-            child: Container(
-              height: 220,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+          // Map — interactive OSM tiles; tap overlays to open external maps app.
+          Container(
+            height: 220,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _ResolvedLatLngMap(
+                      location: location,
+                      latitude: latitude,
+                      longitude: longitude,
+                      isDark: isDark,
+                      placeholder: _buildMapImagePlaceholder(
+                        context,
+                        isDark,
+                        fallbackPhoto: fallbackImage,
+                      ),
+                    ),
+                  ),
+
+                  // Top address — opens Google Maps / geo for directions
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    right: 16,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _openMapInApp(context),
+                        borderRadius: BorderRadius.circular(16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.black.withValues(alpha: 0.58)
+                                    : Colors.white.withValues(alpha: 0.88),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.12)
+                                      : Colors.white.withValues(alpha: 0.25),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on_rounded,
+                                    color: Colors.redAccent[400],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      location,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.open_in_new_rounded,
+                                    size: 16,
+                                    color: isDark ? Colors.white54 : Colors.black45,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Open in maps app
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _openMapInApp(context),
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+                            ),
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.directions_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                context.tr('chalet_view_route'),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Stack(
-                  children: [
-                    // The Map Image
-                    _buildRealMapImage(isDark),
-
-                    // Center Pulse Marker (Visual indicator of target)
-                    const Center(child: _MapPulseMarker()),
-
-                    // Top Glassmorphism Overlay (Address info)
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      right: 16,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.black.withOpacity(0.6)
-                                  : Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white.withOpacity(0.1)
-                                    : Colors.white.withOpacity(0.2),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on_rounded,
-                                  color: Colors.redAccent[400],
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    location,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Bottom Navigation Button Badge
-                    Positioned(
-                      bottom: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.directions_rounded,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'عرض المسار',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
@@ -231,56 +408,39 @@ class LocationMapCard extends StatelessWidget {
     );
   }
 
-  String _getStaticMapImageUrl() {
-    if (latitude != null && longitude != null) {
-      const apiKey = 'AIzaSyBMO8r4waPphzE5AxGbe95OW8WRNNlbUo0';
-      return 'https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=15&size=800x480&scale=2&maptype=roadmap&markers=color:red%7C$latitude,$longitude&key=$apiKey';
-    }
-    return '';
-  }
+  Widget _buildMapImagePlaceholder(
+    BuildContext context,
+    bool isDark, {
+    String? fallbackPhoto,
+  }) {
+    final photo = fallbackPhoto?.trim();
+    final hasNetworkPhoto =
+        photo != null && photo.startsWith('http');
+    final networkUrl = hasNetworkPhoto ? photo : null;
 
-  Widget _buildRealMapImage(bool isDark) {
-    if (latitude != null && longitude != null) {
-      final imageUrl = _getStaticMapImageUrl();
-
-      return AppImageHelper(
-        path: imageUrl,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        placeholder: _buildMapImagePlaceholder(isDark),
-        errorWidget: _buildMapImagePlaceholder(isDark),
-      );
-    }
-
-    return _buildMapImagePlaceholder(isDark);
-  }
-
-  Widget _buildMapImagePlaceholder(bool isDark) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 1. Stylized Fake Map Image
-        Image.network(
-          isDark
-              ? 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=1200'
-              : 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200',
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: isDark ? const Color(0xFF1A1A1A) : Colors.grey[100],
+        if (networkUrl != null)
+          AppImageHelper(
+            path: networkUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
+        Container(
+          color: hasNetworkPhoto
+              ? Colors.black.withValues(alpha: isDark ? 0.5 : 0.35)
+              : (isDark ? const Color(0xFF1A1A1A) : Colors.grey[100]),
         ),
-
-        // 2. Subtle Dark overlay for readability
-        Container(color: Colors.black.withOpacity(isDark ? 0.4 : 0.1)),
-
-        // 3. Stylized Map Patterns
+        if (!hasNetworkPhoto)
+          Container(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+          ),
         Opacity(
           opacity: 0.1,
           child: CustomPaint(painter: _MapPatternPainter(isDark: isDark)),
         ),
-
-        // 4. Center Content
         Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -290,7 +450,7 @@ class LocationMapCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isDark
                       ? Colors.white10
-                      : Colors.black.withOpacity(0.05),
+                      : Colors.black.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -300,9 +460,9 @@ class LocationMapCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'اضغط لفتح الموقع على الخريطة',
-                style: TextStyle(
+              Text(
+                context.tr('chalet_tap_to_open'),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
@@ -310,7 +470,7 @@ class LocationMapCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'عرض تفاصيل الموقع بدقة عالية',
+                context.tr('chalet_view_location_details'),
                 style: TextStyle(
                   fontSize: 12,
                   color: isDark ? Colors.white60 : Colors.black54,
@@ -335,7 +495,6 @@ class _MapPatternPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // Draw some random grid lines to simulate a map
     for (int i = 1; i < 5; i++) {
       canvas.drawLine(
         Offset(size.width * i / 5, 0),
@@ -352,76 +511,4 @@ class _MapPatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _MapPulseMarker extends StatefulWidget {
-  const _MapPulseMarker();
-
-  @override
-  State<_MapPulseMarker> createState() => _MapPulseMarkerState();
-}
-
-class _MapPulseMarkerState extends State<_MapPulseMarker>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-    _animation = Tween<double>(
-      begin: 1.0,
-      end: 2.5,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Container(
-              width: 40 * _animation.value,
-              height: 40 * _animation.value,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.redAccent.withOpacity(1.0 - _controller.value),
-              ),
-            );
-          },
-        ),
-        Container(
-          width: 14,
-          height: 14,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.redAccent,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

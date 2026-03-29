@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +7,7 @@ import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
 import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
 import 'package:rebtal/feature/admin/presentation/widgets/admin_statistics_line_chart.dart';
 import 'package:rebtal/feature/admin/presentation/widgets/admin_statistics_pie_charts.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminStatisticsPage extends StatefulWidget {
   const AdminStatisticsPage({super.key});
@@ -40,7 +40,7 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
           return _buildContent(context, state, isDark);
         }
 
-        return const Center(child: Text('حدث خطأ'));
+        return Center(child: Text(context.tr('admin_requests_error')));
       },
     );
   }
@@ -137,69 +137,123 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'التحليلات الشاملة',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                        fontFamily: 'Tajawal',
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final narrow = constraints.maxWidth < 440;
+                final headingStyle = TextStyle(
+                  fontSize: narrow ? 20 : 24,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontFamily: 'Tajawal',
+                );
+                final tagStyle = TextStyle(
+                  fontSize: narrow ? 11 : 12,
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Tajawal',
+                );
+
+                Widget refreshChip() {
+                  return GestureDetector(
+                    onTap: () {
+                      context.read<AdminCubit>().startListeningToAll();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ColorsManager.chaletAccent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: ColorsManager.chaletAccent.withOpacity(0.5),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.refresh,
+                            color: ColorsManager.chaletAccent,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            context.tr('admin_refresh'),
+                            style: const TextStyle(
+                              color: ColorsManager.chaletAccent,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                    const Text(
-                      'نظرة عامة على أداء التطبيق',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Tajawal',
+                  );
+                }
+
+                if (narrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        context.tr('admin_analytics_heading'),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: headingStyle,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        context.tr('admin_analytics_tagline'),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: tagStyle,
+                      ),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: refreshChip(),
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.tr('admin_analytics_heading'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: headingStyle,
+                          ),
+                          Text(
+                            context.tr('admin_analytics_tagline'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: tagStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: refreshChip(),
                       ),
                     ),
                   ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    context.read<AdminCubit>().startListeningToAll(); // Refresh
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: ColorsManager.chaletAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: ColorsManager.chaletAccent.withOpacity(0.5),
-                      ),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(
-                          Icons.refresh,
-                          color: ColorsManager.chaletAccent,
-                          size: 16,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'تحديث',
-                          style: TextStyle(
-                            color: ColorsManager.chaletAccent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             GridView.count(
@@ -214,7 +268,7 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
               children: [
                 _buildStatCard(
                   context,
-                  title: 'المستخدمين',
+                  title: context.tr('admin_users'),
                   value: totalUsers.toString(),
                   icon: Icons.people_alt_rounded,
                   color: const Color(0xFF3B82F6),
@@ -227,7 +281,7 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
                 ),
                 _buildStatCard(
                   context,
-                  title: 'الشاليهات',
+                  title: context.tr('admin_chalets'),
                   value: totalChalets.toString(),
                   icon: Icons.holiday_village_rounded,
                   color: const Color(0xFF10B981),
@@ -253,8 +307,11 @@ class _AdminStatisticsPageState extends State<AdminStatisticsPage> {
                 ),
                 _buildStatCard(
                   context,
-                  title: 'الإيرادات',
-                  value: '${(revenue / 1000).toStringAsFixed(1)}k EGP',
+                  title: context.tr('admin_revenue'),
+                  value: context.tr('admin_stat_revenue_k_egp').replaceAll(
+                        '{value}',
+                        (revenue / 1000).toStringAsFixed(1),
+                      ),
                   icon: Icons.monetization_on_rounded,
                   color: const Color(0xFFEC4899),
                   isDark: isDark,

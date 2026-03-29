@@ -4,6 +4,17 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+class _OwnerImageCacheManager {
+  static final BaseCacheManager instance = CacheManager(
+    Config(
+      'rebtalOwnerImageCache',
+      stalePeriod: const Duration(days: 30),
+      maxNrOfCacheObjects: 300,
+    ),
+  );
+}
 
 class OwnerInformationCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -129,20 +140,27 @@ class OwnerInformationCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: profileImageUrl != null && profileImageUrl.isNotEmpty
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(profileImageUrl),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
                     color: isDark ? Colors.white10 : Colors.grey[200],
                   ),
-                  child: profileImageUrl == null || profileImageUrl.isEmpty
-                      ? Icon(
-                          Icons.person,
-                          color: isDark ? Colors.white54 : Colors.grey,
-                        )
-                      : null,
+                  child: ClipOval(
+                    child: profileImageUrl != null && profileImageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: profileImageUrl,
+                            cacheManager: _OwnerImageCacheManager.instance,
+                            fit: BoxFit.cover,
+                            fadeInDuration: const Duration(milliseconds: 120),
+                            fadeOutDuration: Duration.zero,
+                            placeholderFadeInDuration: Duration.zero,
+                            errorWidget: (_, url, error) => Icon(
+                              Icons.person,
+                              color: isDark ? Colors.white54 : Colors.grey,
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            color: isDark ? Colors.white54 : Colors.grey,
+                          ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -193,11 +211,14 @@ class OwnerInformationCard extends StatelessWidget {
       ];
       for (final col in collections) {
         try {
-          final doc = await FirebaseFirestore.instance
-              .collection(col)
-              .doc(ownerId)
-              .get();
-          if (doc.exists) return doc;
+          final ref = FirebaseFirestore.instance.collection(col).doc(ownerId);
+          try {
+            final serverDoc = await ref.get(const GetOptions(source: Source.server));
+            if (serverDoc.exists) return serverDoc;
+          } catch (_) {}
+
+          final cachedDoc = await ref.get(const GetOptions(source: Source.cache));
+          if (cachedDoc.exists) return cachedDoc;
         } catch (_) {}
       }
       return null;

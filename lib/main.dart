@@ -12,15 +12,24 @@ import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/helper/firebase_options.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
+import 'package:rebtal/core/utils/localization/static_translation.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/rebtal_app.dart';
 import 'package:rebtal/core/utils/services/onesignal_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
+  // Load environment variables (optional file — OneSignal has code fallback)
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    debugPrint('⚠️ .env not found or empty — using OneSignal defaults in code.');
+  }
+
+  // Cairo / Google Fonts: keep runtime fetch; first paint may still fetch glyphs.
+  GoogleFonts.config.allowRuntimeFetching = true;
 
   if (kIsWeb) {
     // للويب لازم تبعت الـ options
@@ -32,11 +41,13 @@ void main() async {
 
   // ✅ 1. Check Storage Configuration
   try {
-    print('\n📦 ========================================');
-    print('📦 Storage Bucket: ${FirebaseStorage.instance.bucket}');
-    print('📦 ========================================\n');
+    if (kDebugMode) {
+      debugPrint('\n📦 ========================================');
+      debugPrint('📦 Storage Bucket: ${FirebaseStorage.instance.bucket}');
+      debugPrint('📦 ========================================\n');
+    }
   } catch (e) {
-    print('⚠️ Failed to get storage bucket: $e');
+    if (kDebugMode) debugPrint('⚠️ Failed to get storage bucket: $e');
   }
 
   // ✅ 2. Activate App Check
@@ -53,15 +64,16 @@ void main() async {
         )
         .then((_) {
           FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-          print('✅ Firebase App Check Activated');
+          if (kDebugMode) debugPrint('✅ Firebase App Check Activated');
         })
         .catchError((e) {
-          print('⚠️ Firebase App Check Failed: $e');
+          if (kDebugMode) debugPrint('⚠️ Firebase App Check Failed: $e');
         }),
   );
 
   setupGetIt();
   await getIt<CacheHelper>().init();
+  await StaticTranslation.load();
 
   // Initialize notification service
   final notificationService = NotificationService();
@@ -70,12 +82,14 @@ void main() async {
   // Print Token for testing
   try {
     String? token = await FirebaseMessaging.instance.getToken();
-    print('\n==================================================');
-    print('🔥 FCM TOKEN FOR TESTING:');
-    print(token);
-    print('==================================================\n');
+    if (kDebugMode) {
+      debugPrint('\n==================================================');
+      debugPrint('🔥 FCM TOKEN FOR TESTING:');
+      debugPrint(token);
+      debugPrint('==================================================\n');
+    }
   } catch (e) {
-    print('Error getting token: $e');
+    if (kDebugMode) debugPrint('Error getting token: $e');
   }
 
   // Initialize OneSignal

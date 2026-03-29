@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminStatisticsPieCharts extends StatelessWidget {
   final bool isDark;
@@ -20,17 +21,17 @@ class AdminStatisticsPieCharts extends StatelessWidget {
         if (constraints.maxWidth > 800) {
           return Row(
             children: [
-              Expanded(child: _buildChaletStatusChart()),
+              Expanded(child: _buildChaletStatusChart(context)),
               const SizedBox(width: 24),
-              Expanded(child: _buildBookingStatusChart()),
+              Expanded(child: _buildBookingStatusChart(context)),
             ],
           );
         } else {
           return Column(
             children: [
-              _buildChaletStatusChart(),
+              _buildChaletStatusChart(context),
               const SizedBox(height: 24),
-              _buildBookingStatusChart(),
+              _buildBookingStatusChart(context),
             ],
           );
         }
@@ -38,27 +39,29 @@ class AdminStatisticsPieCharts extends StatelessWidget {
     );
   }
 
-  Widget _buildChaletStatusChart() {
+  Widget _buildChaletStatusChart(BuildContext context) {
     int total = (chaletStatusDistribution['Active'] ?? 0) + (chaletStatusDistribution['Pending'] ?? 0);
     return _buildPieChartCard(
-      title: 'حالة الشاليهات',
-      centerText: 'إجمالي\n$total',
+      context,
+      title: context.tr('admin_chalet_status'),
+      centerText: '${context.tr('admin_pie_center_total')}\n$total',
       sections: [
         PieChartSectionData(color: const Color(0xFF10B981), value: (chaletStatusDistribution['Active'] ?? 0).toDouble(), title: '${_getPercentage(chaletStatusDistribution['Active'] ?? 0, total)}%', radius: 25, titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12)),
         PieChartSectionData(color: const Color(0xFFEF4444), value: (chaletStatusDistribution['Pending'] ?? 0).toDouble(), title: '${_getPercentage(chaletStatusDistribution['Pending'] ?? 0, total)}%', radius: 25, titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12)),
       ],
       legendItems: [
-        _buildLegendItem(const Color(0xFF10B981), 'نشط', '${chaletStatusDistribution['Active'] ?? 0}'),
-        _buildLegendItem(const Color(0xFFEF4444), 'قيد المراجعة', '${chaletStatusDistribution['Pending'] ?? 0}'),
+        _buildLegendItem(const Color(0xFF10B981), context.tr('admin_chalet_active'), '${chaletStatusDistribution['Active'] ?? 0}'),
+        _buildLegendItem(const Color(0xFFEF4444), context.tr('admin_pending_review'), '${chaletStatusDistribution['Pending'] ?? 0}'),
       ],
     );
   }
 
-  Widget _buildBookingStatusChart() {
+  Widget _buildBookingStatusChart(BuildContext context) {
     int total = bookingStatusDistribution.values.fold(0, (a, b) => a + b);
     return _buildPieChartCard(
-      title: 'توزيع الحجوزات',
-      centerText: 'حجوزات\n$total',
+      context,
+      title: context.tr('admin_booking_distribution'),
+      centerText: '${context.tr('admin_pie_center_bookings')}\n$total',
       sections: [
         PieChartSectionData(color: const Color(0xFF10B981), value: (bookingStatusDistribution['Completed'] ?? 0).toDouble(), radius: 30, title: ''),
         PieChartSectionData(color: const Color(0xFF3B82F6), value: (bookingStatusDistribution['Accepted'] ?? 0).toDouble(), radius: 25, title: ''),
@@ -66,10 +69,10 @@ class AdminStatisticsPieCharts extends StatelessWidget {
         PieChartSectionData(color: const Color(0xFFEF4444), value: (bookingStatusDistribution['Cancelled'] ?? 0).toDouble(), radius: 25, title: ''),
       ],
       legendItems: [
-        _buildLegendItem(const Color(0xFF10B981), 'مكتمل', '${bookingStatusDistribution['Completed'] ?? 0}'),
-        _buildLegendItem(const Color(0xFF3B82F6), 'مقبول', '${bookingStatusDistribution['Accepted'] ?? 0}'),
-        _buildLegendItem(const Color(0xFFF59E0B), 'معلق', '${bookingStatusDistribution['Pending'] ?? 0}'),
-        _buildLegendItem(const Color(0xFFEF4444), 'ملغي', '${bookingStatusDistribution['Cancelled'] ?? 0}'),
+        _buildLegendItem(const Color(0xFF10B981), context.tr('booking_status_completed'), '${bookingStatusDistribution['Completed'] ?? 0}'),
+        _buildLegendItem(const Color(0xFF3B82F6), context.tr('booking_status_accepted'), '${bookingStatusDistribution['Accepted'] ?? 0}'),
+        _buildLegendItem(const Color(0xFFF59E0B), context.tr('booking_status_pending'), '${bookingStatusDistribution['Pending'] ?? 0}'),
+        _buildLegendItem(const Color(0xFFEF4444), context.tr('booking_status_cancelled'), '${bookingStatusDistribution['Cancelled'] ?? 0}'),
       ],
     );
   }
@@ -79,7 +82,13 @@ class AdminStatisticsPieCharts extends StatelessWidget {
     return ((value / total) * 100).toStringAsFixed(0);
   }
 
-  Widget _buildPieChartCard({required String title, required List<PieChartSectionData> sections, required List<Widget> legendItems, required String centerText}) {
+  Widget _buildPieChartCard(
+    BuildContext context, {
+    required String title,
+    required List<PieChartSectionData> sections,
+    required List<Widget> legendItems,
+    required String centerText,
+  }) {
     bool isEmpty = sections.every((s) => s.value == 0);
     List<PieChartSectionData> finalSections = isEmpty ? [PieChartSectionData(value: 1, color: isDark ? Colors.white10 : Colors.grey[200]!, title: '', radius: 25)] : sections;
 
@@ -111,7 +120,10 @@ class AdminStatisticsPieCharts extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(isEmpty ? '0' : centerText.split('\n').last, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black87, height: 1)),
-                          Text(isEmpty ? 'لا يوجد' : centerText.split('\n').first, style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[500], height: 1.5)),
+                          Text(
+                            isEmpty ? context.tr('admin_none') : centerText.split('\n').first,
+                            style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[500], height: 1.5),
+                          ),
                         ],
                       ),
                     ],

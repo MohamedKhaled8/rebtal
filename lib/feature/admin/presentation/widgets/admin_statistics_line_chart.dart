@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminStatisticsLineChart extends StatelessWidget {
   final bool isDark;
@@ -43,31 +44,39 @@ class AdminStatisticsLineChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.analytics_rounded, color: Colors.blueAccent, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'مسار النمو الموحد',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87, fontFamily: 'Tajawal'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'مقارنة شاملة لجميع مؤشرات الأداء معاً',
-                    style: TextStyle(fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[500], fontFamily: 'Tajawal'),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.analytics_rounded, color: Colors.blueAccent, size: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            context.tr('admin_unified_growth'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87, fontFamily: 'Tajawal'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      context.tr('admin_growth_comparison'),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[500], fontFamily: 'Tajawal'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -131,11 +140,11 @@ class AdminStatisticsLineChart extends StatelessWidget {
                         String label = '';
                         String value = spot.y.toInt().toString();
 
-                        if (color == const Color(0xFF3B82F6)) label = '👤 مستخدمين';
-                        else if (color == const Color(0xFF10B981)) label = '🏡 شاليهات';
-                        else if (color == const Color(0xFFF59E0B)) label = '📅 حجوزات';
+                        if (color == const Color(0xFF3B82F6)) label = '👤 ${context.tr('admin_users')}';
+                        else if (color == const Color(0xFF10B981)) label = '🏡 ${context.tr('admin_chalets')}';
+                        else if (color == const Color(0xFFF59E0B)) label = '📅 ${context.tr('nav_bookings')}';
                         else if (color == const Color(0xFFEC4899)) {
-                          label = '💰 إيرادات';
+                          label = '💰 ${context.tr('admin_revenue')}';
                           value = '${(spot.y * revenueScaleFactor).toInt()}';
                         }
 
@@ -155,10 +164,10 @@ class AdminStatisticsLineChart extends StatelessWidget {
               runSpacing: 12,
               alignment: WrapAlignment.center,
               children: [
-                _buildLegendToggle('المستخدمين', const Color(0xFF3B82F6), 'Users'),
-                _buildLegendToggle('الشاليهات', const Color(0xFF10B981), 'Chalets'),
-                _buildLegendToggle('الحجوزات', const Color(0xFFF59E0B), 'Bookings'),
-                _buildLegendToggle('الإيرادات (k)', const Color(0xFFEC4899), 'Revenue'),
+                _buildLegendToggle(context, context.tr('admin_users'), const Color(0xFF3B82F6), 'Users'),
+                _buildLegendToggle(context, context.tr('admin_chalets'), const Color(0xFF10B981), 'Chalets'),
+                _buildLegendToggle(context, context.tr('nav_bookings'), const Color(0xFFF59E0B), 'Bookings'),
+                _buildLegendToggle(context, context.tr('admin_legend_revenue_k'), const Color(0xFFEC4899), 'Revenue'),
               ],
             ),
           ),
@@ -184,7 +193,12 @@ class AdminStatisticsLineChart extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendToggle(String text, Color color, String key) {
+  Widget _buildLegendToggle(
+    BuildContext context,
+    String text,
+    Color color,
+    String key,
+  ) {
     bool isActive = chartVisibility[key]!;
     return GestureDetector(
       onTap: () => onToggleLegend(key),

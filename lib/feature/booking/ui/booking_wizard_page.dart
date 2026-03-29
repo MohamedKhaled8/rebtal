@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/logic/wizard_cubit/booking_wizard_state.d
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:confetti/confetti.dart';
 
@@ -39,8 +40,16 @@ class BookingWizardPage extends StatelessWidget {
     final user = appCubit.authCubit.getCurrentUser();
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text("Please login to continue")),
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              context.tr('booking_please_login'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
       );
     }
 
@@ -88,19 +97,42 @@ class _BookingWizardViewState extends State<BookingWizardView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? kDarkBg : kLightBg;
     final text = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
-      backgroundColor: bg,
-      body: BlocListener<BookingWizardCubit, BookingWizardState>(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? const [
+                    Color(0xFF0E1812),
+                    Color(0xFF121212),
+                    Color(0xFF0A0F0C),
+                  ]
+                : const [
+                    Color(0xFFE6FBF0),
+                    Color(0xFFFAFAFA),
+                    Color(0xFFFFFFFF),
+                  ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: BlocListener<BookingWizardCubit, BookingWizardState>(
         listener: (context, state) {
           if (!mounted) return;
           if (state.errorMessage != null) {
             SnackBarHelper.showError(context, state.errorMessage!);
           }
           if (state.status == BookingWizardStatus.submitting) {
-            PremiumLoadingOverlay.show(context, message: 'Processing...');
+            PremiumLoadingOverlay.show(
+              context,
+              message: context.tr('booking_wizard_processing'),
+            );
           } else if (state.status == BookingWizardStatus.success) {
             PremiumLoadingOverlay.dismiss(context);
             // Play Celebration
@@ -190,42 +222,88 @@ class _BookingWizardViewState extends State<BookingWizardView> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, Color textColor) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw),
-        vertical: otv(context: context, portrait: 12.sh, landscape: 6.sh),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.close_rounded,
-              size: stv(context: context, mobile: 24.spScaled, tablet: 28.spScaled, desktop: 32.spScaled),
-              color: isDark ? Colors.white70 : Colors.black54,
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: isDark ? Colors.white10 : Colors.grey[100],
-              padding: EdgeInsets.all(stv(context: context, mobile: 6.sw, tablet: 8.sw, desktop: 10.sw)),
+    final hPad = stv(
+      context: context,
+      mobile: 20.sw,
+      tablet: 24.sw,
+      desktop: 28.sw,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: hPad,
+            vertical: otv(context: context, portrait: 8.sh, landscape: 4.sh),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(
+                  Icons.close_rounded,
+                  size: stv(
+                    context: context,
+                    mobile: 24.spScaled,
+                    tablet: 28.spScaled,
+                    desktop: 32.spScaled,
+                  ),
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: isDark ? Colors.white10 : Colors.grey[100],
+                  padding: EdgeInsets.all(
+                    stv(
+                      context: context,
+                      mobile: 6.sw,
+                      tablet: 8.sw,
+                      desktop: 10.sw,
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                context.tr('booking_confirm'),
+                style: TextStyle(
+                  fontSize: stv(
+                    context: context,
+                    mobile: 18.spScaled,
+                    tablet: 20.spScaled,
+                    desktop: 22.spScaled,
+                  ),
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(width: 48),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: hPad),
+          child: Container(
+            height: 3,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              gradient: LinearGradient(
+                colors: [
+                  kPrimaryColor,
+                  kPrimaryColor.withValues(alpha: 0.35),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
-          Text(
-            'تأكيد الحجز',
-            style: TextStyle(
-              fontSize: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled),
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          const SizedBox(width: 48), // Balance for back button
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -258,67 +336,183 @@ class _WizardProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BookingWizardCubit, BookingWizardState>(
       builder: (context, state) {
-        final step = state.currentStep;
+        final step = state.currentStep.clamp(0, 1);
         final isDark = Theme.of(context).brightness == Brightness.dark;
+        final labels = [
+          context.tr('booking_wizard_step_date'),
+          context.tr('booking_wizard_step_review'),
+        ];
 
-        return Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: stv(context: context, mobile: 32.sw, tablet: 40.sw, desktop: 48.sw),
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 32.sw),
+            4,
+            stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 32.sw),
+            otv(context: context, portrait: 12.sh, landscape: 8.sh),
           ),
-          margin: EdgeInsets.only(bottom: otv(context: context, portrait: 6.sh, landscape: 4.sh)),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDot(0, step, "التاريخ", isDark),
-              Expanded(child: _buildLine(0, step, isDark)),
-              _buildDot(1, step, "المراجعة", isDark),
-              Expanded(child: _buildLine(1, step, isDark)),
-              _buildDot(2, step, "الدفع", isDark),
+              Expanded(
+                child: _WizardStepTile(
+                  index: 1,
+                  label: labels[0],
+                  isDone: step >= 1,
+                  isCurrent: step == 0,
+                  isDark: isDark,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 14, left: 6, right: 6),
+                child: _WizardStepConnector(
+                  filled: step >= 1,
+                  isDark: isDark,
+                ),
+              ),
+              Expanded(
+                child: _WizardStepTile(
+                  index: 2,
+                  label: labels[1],
+                  isDone: false,
+                  isCurrent: step == 1,
+                  isDark: isDark,
+                ),
+              ),
             ],
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildDot(int index, int currentStep, String label, bool isDark) {
-    final isActive = index <= currentStep;
-    final color = isActive
+class _WizardStepTile extends StatelessWidget {
+  const _WizardStepTile({
+    required this.index,
+    required this.label,
+    required this.isDone,
+    required this.isCurrent,
+    required this.isDark,
+  });
+
+  final int index;
+  final String label;
+  final bool isDone;
+  final bool isCurrent;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = isCurrent || isDone;
+    final ring = active
         ? kPrimaryColor
-        : (isDark ? Colors.white24 : Colors.grey[300]!);
+        : (isDark ? Colors.white24 : Colors.grey[400]!);
+    final fill = isDone && !isCurrent
+        ? kPrimaryColor.withValues(alpha: 0.2)
+        : (isCurrent
+              ? kPrimaryColor.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey[100]!));
 
     return Column(
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: 12,
-          height: 12,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            boxShadow: isActive
+            color: fill,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ring.withValues(alpha: active ? 0.9 : 0.35),
+              width: active ? 1.5 : 1,
+            ),
+            boxShadow: isCurrent
                 ? [
                     BoxShadow(
-                      color: color.withOpacity(0.4),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+                      color: kPrimaryColor.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ]
-                : [],
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: active ? kPrimaryColor : Colors.transparent,
+                  border: Border.all(
+                    color: active ? kPrimaryColor : ring,
+                    width: 2,
+                  ),
+                ),
+                child: isDone && !isCurrent
+                    ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                    : Text(
+                        '$index',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          color: active && !isDone
+                              ? Colors.white
+                              : (isDark ? Colors.white70 : Colors.black54),
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: active
+                        ? (isDark ? Colors.white : Colors.black87)
+                        : (isDark ? Colors.white38 : Colors.black45),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildLine(int index, int currentStep, bool isDark) {
-    final isActive = index < currentStep;
-    final color = isActive
-        ? kPrimaryColor
-        : (isDark ? Colors.white12 : Colors.grey[200]!);
-    return Container(
-      height: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: color,
+class _WizardStepConnector extends StatelessWidget {
+  const _WizardStepConnector({
+    required this.filled,
+    required this.isDark,
+  });
+
+  final bool filled;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      height: 4,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          gradient: LinearGradient(
+            colors: filled
+                ? [kPrimaryColor, kPrimaryColor.withValues(alpha: 0.6)]
+                : [
+                    isDark ? Colors.white12 : Colors.grey[300]!,
+                    isDark ? Colors.white10 : Colors.grey[200]!,
+                  ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -335,7 +529,12 @@ class _DateSelectionStep extends StatelessWidget {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.all(stv(context: context, mobile: 24.sw, tablet: 28.sw, desktop: 32.sw)),
+      padding: EdgeInsets.fromLTRB(
+        stv(context: context, mobile: 24.sw, tablet: 28.sw, desktop: 32.sw),
+        otv(context: context, portrait: 12.sh, landscape: 8.sh),
+        stv(context: context, mobile: 24.sw, tablet: 28.sw, desktop: 32.sw),
+        stv(context: context, mobile: 24.sw, tablet: 28.sw, desktop: 32.sw),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -348,7 +547,7 @@ class _DateSelectionStep extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        "اختر موعد رحلتك",
+                        context.tr('booking_select_trip_date'),
                         style: TextStyle(
                           fontSize: stv(context: context, mobile: 24.spScaled, tablet: 26.spScaled, desktop: 28.spScaled),
                           fontWeight: FontWeight.w800,
@@ -360,7 +559,7 @@ class _DateSelectionStep extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        "حدد تواريخ الإقامة المناسبة لك.",
+                        context.tr('booking_wizard_select_dates_desc'),
                         style: TextStyle(
                           fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
                           color: isDark ? Colors.white60 : Colors.grey[600],
@@ -374,7 +573,7 @@ class _DateSelectionStep extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "اختر موعد رحلتك",
+                    context.tr('booking_select_trip_date'),
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
@@ -384,7 +583,7 @@ class _DateSelectionStep extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "حدد تواريخ الإقامة المناسبة لك.",
+                    context.tr('booking_wizard_select_dates_desc'),
                     style: TextStyle(
                       fontSize: 16,
                       color: isDark ? Colors.white60 : Colors.grey[600],
@@ -395,33 +594,88 @@ class _DateSelectionStep extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
+          SizedBox(height: otv(context: context, portrait: 16.sh, landscape: 8.sh)),
+
+          if (cubit.chaletName.trim().isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              margin: EdgeInsets.only(
+                bottom: otv(context: context, portrait: 14.sh, landscape: 10.sh),
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: isDark
+                    ? kPrimaryColor.withValues(alpha: 0.12)
+                    : kPrimaryColor.withValues(alpha: 0.08),
+                border: Border.all(
+                  color: kPrimaryColor.withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.cottage_outlined, color: kPrimaryColor, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      cubit.chaletName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: textColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           BlocBuilder<BookingWizardCubit, BookingWizardState>(
             builder: (context, state) {
               return Container(
-                padding: EdgeInsets.all(stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw)),
                 decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.grey[100]!,
+                  borderRadius: BorderRadius.circular(26),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      kPrimaryColor.withValues(alpha: 0.7),
+                      kPrimaryColor.withValues(alpha: 0.15),
+                      const Color(0xFF6366F1).withValues(alpha: 0.35),
+                    ],
                   ),
                 ),
-                child: otv(
+                padding: const EdgeInsets.all(2),
+                child: Container(
+                  padding: EdgeInsets.all(
+                    stv(context: context, mobile: 20.sw, tablet: 24.sw, desktop: 28.sw),
+                  ),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.35 : 0.06,
+                        ),
+                        blurRadius: 28,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.white,
+                      width: 1,
+                    ),
+                  ),
+                  child: otv(
                   context: context,
                   portrait: Column(
                     children: [
                       _buildDateInput(
                         context,
-                        label: "الوصول",
+                        label: context.tr('booking_wizard_arrival'),
                         date: state.startDate,
                         icon: Icons.login_rounded,
                         color: const Color(0xFF4CAF50),
@@ -451,7 +705,7 @@ class _DateSelectionStep extends StatelessWidget {
                       ),
                       _buildDateInput(
                         context,
-                        label: "المغادرة",
+                        label: context.tr('booking_wizard_departure'),
                         date: state.endDate,
                         icon: Icons.logout_rounded,
                         color: const Color(0xFFFF5252),
@@ -464,7 +718,7 @@ class _DateSelectionStep extends StatelessWidget {
                       Expanded(
                         child: _buildDateInput(
                           context,
-                          label: "الوصول",
+                          label: context.tr('booking_wizard_arrival'),
                           date: state.startDate,
                           icon: Icons.login_rounded,
                           color: const Color(0xFF4CAF50),
@@ -482,7 +736,7 @@ class _DateSelectionStep extends StatelessWidget {
                       Expanded(
                         child: _buildDateInput(
                           context,
-                          label: "المغادرة",
+                          label: context.tr('booking_wizard_departure'),
                           date: state.endDate,
                           icon: Icons.logout_rounded,
                           color: const Color(0xFFFF5252),
@@ -491,6 +745,7 @@ class _DateSelectionStep extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
                 ),
               );
             },
@@ -552,7 +807,7 @@ class _DateSelectionStep extends StatelessWidget {
                   Text(
                     hasDate
                         ? "${date.day}/${date.month}/${date.year}"
-                        : "اختر التاريخ",
+                        : context.tr('booking_wizard_pick_date'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -606,9 +861,9 @@ class _DateSelectionStep extends StatelessWidget {
       rangeLast = today.add(const Duration(days: 30));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'فترة الحجز غير محددة. يمكنك اختيار من اليوم ولمدة 30 يوماً.',
+              context.tr('booking_wizard_undef_period_30'),
             ),
           ),
         );
@@ -694,7 +949,7 @@ class _BookingReviewStep extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          'الإجمالي',
+                          context.tr('booking_total_label').replaceAll(':', ''),
                           style: TextStyle(
                             color: isDark ? Colors.white54 : Colors.grey[600],
                             fontSize: 14,
@@ -712,7 +967,7 @@ class _BookingReviewStep extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${state.nights} ليالي',
+                          '${state.nights} ${context.tr('booking_wizard_nights')}',
                           style: TextStyle(
                             color: isDark ? Colors.white38 : Colors.grey[400],
                             fontWeight: FontWeight.bold,
@@ -766,7 +1021,7 @@ class _BookingReviewStep extends StatelessWidget {
                                 ),
                                 Expanded(
                                   child: Text(
-                                    'أوافق على الشروط وسياسات الإلغاء',
+                                    context.tr('booking_wizard_agree_terms'),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: textColor,
@@ -820,7 +1075,7 @@ class _BookingReviewStep extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "الأطفال",
+              context.tr('booking_wizard_children_title'),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -828,7 +1083,7 @@ class _BookingReviewStep extends StatelessWidget {
               ),
             ),
             Text(
-              "أضف عدد الأطفال",
+              context.tr('booking_wizard_children_subtitle'),
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? Colors.white54 : Colors.grey,
@@ -920,11 +1175,19 @@ class _WizardBottomBar extends StatelessWidget {
             color: isDark ? kDarkCard : kLightCard,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                blurRadius: 20,
-                offset: const Offset(0, -5),
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                blurRadius: 24,
+                offset: const Offset(0, -8),
               ),
             ],
+            border: Border(
+              top: BorderSide(
+                color: isDark
+                    ? kPrimaryColor.withValues(alpha: 0.25)
+                    : kPrimaryColor.withValues(alpha: 0.35),
+                width: 1,
+              ),
+            ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Row(
@@ -952,37 +1215,92 @@ class _WizardBottomBar extends StatelessWidget {
                   ),
                 ),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: isValid
-                      ? () => isLast ? cubit.submitBooking() : cubit.nextStep()
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryColor,
-                    disabledBackgroundColor: isDark
-                        ? Colors.white10
-                        : Colors.grey[300],
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: otv(context: context, portrait: 16.sh, landscape: 10.sh)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
+                child: SizedBox(
+                  height: otv(
+                    context: context,
+                    portrait: 52.sh,
+                    landscape: 44.sh,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        isLast ? "تأكيد واستمرار" : "التالي",
-                        style: TextStyle(
-                          fontSize: stv(context: context, mobile: 16.spScaled, tablet: 17.spScaled, desktop: 18.spScaled),
-                          fontWeight: FontWeight.bold,
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(18),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: isValid
+                          ? () {
+                              if (isLast) {
+                                cubit.submitBooking();
+                              } else {
+                                cubit.nextStep();
+                              }
+                            }
+                          : null,
+                      borderRadius: BorderRadius.circular(18),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          gradient: isValid
+                              ? const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF3CE89F),
+                                    kPrimaryColor,
+                                    Color(0xFF00A656),
+                                  ],
+                                )
+                              : null,
+                          color: !isValid
+                              ? (isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.grey[300])
+                              : null,
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                isLast
+                                    ? context.tr('booking_wizard_confirm_continue')
+                                    : context.tr('booking_wizard_next'),
+                                style: TextStyle(
+                                  fontSize: stv(
+                                    context: context,
+                                    mobile: 16.spScaled,
+                                    tablet: 17.spScaled,
+                                    desktop: 18.spScaled,
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                  color: isValid
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.white38
+                                            : Colors.black45),
+                                ),
+                              ),
+                              if (!isLast) ...[
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: stv(
+                                    context: context,
+                                    mobile: 18.spScaled,
+                                    tablet: 20.spScaled,
+                                    desktop: 22.spScaled,
+                                  ),
+                                  color: isValid
+                                      ? Colors.white
+                                      : (isDark
+                                            ? Colors.white38
+                                            : Colors.black45),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
-                      if (!isLast) ...[
-                        const SizedBox(width: 8),
-                        Icon(Icons.arrow_forward_rounded, size: stv(context: context, mobile: 18.spScaled, tablet: 20.spScaled, desktop: 22.spScaled)),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -1041,7 +1359,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
               ),
               SizedBox(height: otv(context: context, portrait: 24.sh, landscape: 12.sh)),
               Text(
-                'كيف كانت تجربتك؟',
+                context.tr('booking_rating_how_experience'),
                 style: TextStyle(
                   fontSize: stv(context: context, mobile: 22.spScaled, tablet: 24.spScaled, desktop: 26.spScaled),
                   fontWeight: FontWeight.bold,
@@ -1050,7 +1368,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
               ),
               const SizedBox(height: 8),
               Text(
-                'تقييمك يساعدنا على تحسين الخدمة',
+                context.tr('booking_rating_helps'),
                 style: TextStyle(
                   fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
                   color: isDark ? Colors.white54 : Colors.grey,
@@ -1090,7 +1408,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                     setState(() {}), // Update canSubmit in real-time
                 style: TextStyle(color: text),
                 decoration: InputDecoration(
-                  hintText: 'اكتبي ملاحظاتك هنا...',
+                  hintText: context.tr('booking_rating_write_notes'),
                   hintStyle: TextStyle(
                     color: isDark ? Colors.white30 : Colors.grey[400],
                     fontSize: stv(context: context, mobile: 14.spScaled, tablet: 15.spScaled, desktop: 16.spScaled),
@@ -1131,7 +1449,7 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
                           ),
                         )
                       : Text(
-                          "إرسال التقييم",
+                          context.tr('booking_wizard_submit_rating'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: stv(context: context, mobile: 16.spScaled, tablet: 17.spScaled, desktop: 18.spScaled),
@@ -1174,12 +1492,15 @@ class _RatingBottomSheetState extends State<RatingBottomSheet> {
       );
 
       if (mounted) {
-        SnackBarHelper.showSuccess(context, 'شكراً لتقييمك! ⭐');
+        SnackBarHelper.showSuccess(context, context.tr('booking_rating_thanks'));
         widget.onComplete();
       }
     } catch (e) {
       if (mounted) {
-        SnackBarHelper.showError(context, 'حدث خطأ: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('common_error')}: $e',
+        );
         setState(() => isSubmitting = false);
       }
     }

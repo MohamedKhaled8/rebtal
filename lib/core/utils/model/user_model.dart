@@ -59,6 +59,8 @@ class UserModel {
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
+    final dynamic profile =
+        map['profileImageUrl'] ?? map['profileImage'] ?? map['photoUrl'] ?? map['avatarUrl'];
     return UserModel(
       uid: map['uid'] ?? '',
       email: map['email'] ?? '',
@@ -72,7 +74,7 @@ class UserModel {
       bankAccountName: map['bankAccountName'],
       vodafoneCashNumber: map['vodafoneCashNumber'],
       instaPayNumber: map['instaPayNumber'],
-      profileImageUrl: map['profileImageUrl'],
+      profileImageUrl: profile?.toString(),
       idCardUrl: map['idCardUrl'],
     );
   }

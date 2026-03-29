@@ -300,7 +300,9 @@ class ChaletRequestCard extends StatelessWidget {
                           icon: isVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          label: isVisible ? 'مخفي' : 'إظهار',
+                          label: isVisible
+                              ? context.tr('common_hidden')
+                              : context.tr('common_show'),
                           color: isVisible ? Colors.orange : Colors.green,
                           onPressed: () => _toggleVisibility(context),
                         ),
@@ -315,8 +317,8 @@ class ChaletRequestCard extends StatelessWidget {
                               ? Icons.lock_outline
                               : Icons.lock_open,
                           label: bookingAvailability == 'available'
-                              ? 'إيقاف الحجز'
-                              : 'تشغيل الحجز',
+                              ? context.tr('owner_stop_booking')
+                              : context.tr('owner_start_booking'),
                           color: bookingAvailability == 'available'
                               ? Colors.red
                               : Colors.green,
@@ -386,14 +388,23 @@ class ChaletRequestCard extends StatelessWidget {
 
       if (context.mounted) {
         if (newVisibility) {
-          SnackBarHelper.showSuccess(context, 'تم إظهار الشاليه بنجاح');
+          SnackBarHelper.showSuccess(
+            context,
+            context.tr('admin_show_chalet_success'),
+          );
         } else {
-          SnackBarHelper.showWarning(context, 'تم إخفاء الشاليه بنجاح');
+          SnackBarHelper.showWarning(
+            context,
+            context.tr('admin_hide_chalet_success'),
+          );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الشاليه: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('common_error')}: $e',
+        );
       }
     }
   }
@@ -413,14 +424,23 @@ class ChaletRequestCard extends StatelessWidget {
 
       if (context.mounted) {
         if (newAvailability == 'available') {
-          SnackBarHelper.showSuccess(context, 'تم تشغيل الحجز بنجاح');
+          SnackBarHelper.showSuccess(
+            context,
+            context.tr('admin_booking_started_success'),
+          );
         } else {
-          SnackBarHelper.showError(context, 'تم إيقاف الحجز بنجاح');
+          SnackBarHelper.showSuccess(
+            context,
+            context.tr('admin_booking_stopped_success'),
+          );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        SnackBarHelper.showError(context, 'خطأ في تحديث حالة الحجز: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('common_error')}: $e',
+        );
       }
     }
   }

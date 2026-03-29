@@ -55,7 +55,7 @@ class BookingTicketWidget extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Booking Receipt',
+                    context.tr('booking_receipt_subtitle'),
                     style: TextStyle(
                       fontSize: 14,
                       color: isDark ? Colors.white54 : Colors.grey,
@@ -93,7 +93,7 @@ class BookingTicketWidget extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Booking ID',
+                        context.tr('booking_id_label'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -121,7 +121,13 @@ class BookingTicketWidget extends StatelessWidget {
 
               // Host Details
               _buildSectionTitle(context.tr('booking_host_info'), isDark),
-              _buildDetailRow(context.tr('booking_name_label'), booking.ownerName, isDark),
+              _buildDetailRow(
+                context.tr('booking_name_label'),
+                booking.ownerName.trim().isNotEmpty
+                    ? booking.ownerName.trim()
+                    : context.tr('common_unavailable_short'),
+                isDark,
+              ),
               _buildDetailRow(
                 context.tr('booking_phone_label'),
                 booking.ownerPhone ?? ownerPhone ?? context.tr('common_unavailable_short'),

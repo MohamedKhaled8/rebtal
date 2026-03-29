@@ -7,6 +7,7 @@ import 'package:rebtal/feature/admin/presentation/widgets/user_tab.dart';
 import 'package:rebtal/feature/admin/presentation/pages/admin_payments_page.dart';
 import 'package:rebtal/feature/admin/presentation/pages/admin_cancellations_page.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/admin/presentation/pages/admin_statistics_page.dart';
 
 class UserManager {
@@ -112,7 +113,7 @@ class UserManager {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'تعديل بيانات العميل',
+                              context.tr('admin_edit_client_title'),
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -123,7 +124,7 @@ class UserManager {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'تعديل معلومات المستخدم',
+                              context.tr('admin_edit_client_subtitle'),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: isDark
@@ -150,7 +151,7 @@ class UserManager {
                   _buildTextField(
                     context: context,
                     controller: nameController,
-                    label: 'الاسم',
+                    label: context.tr('auth_full_name'),
                     icon: Icons.person_outline_rounded,
                     isDark: isDark,
                   ),
@@ -159,7 +160,7 @@ class UserManager {
                   _buildTextField(
                     context: context,
                     controller: emailController,
-                    label: 'البريد الإلكتروني',
+                    label: context.tr('auth_email'),
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     isDark: isDark,
@@ -169,7 +170,7 @@ class UserManager {
                   _buildTextField(
                     context: context,
                     controller: phoneController,
-                    label: 'رقم الهاتف',
+                    label: context.tr('profile_phone'),
                     icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                     isDark: isDark,
@@ -179,7 +180,7 @@ class UserManager {
                   _buildPasswordField(
                     context: context,
                     controller: passwordController,
-                    label: 'كلمة المرور',
+                    label: context.tr('auth_password'),
                     icon: Icons.lock_outline_rounded,
                     isDark: isDark,
                   ),
@@ -190,7 +191,7 @@ class UserManager {
                       Expanded(
                         child: _buildButton(
                           context: context,
-                          label: 'إلغاء',
+                          label: context.tr('common_cancel'),
                           onPressed: () => Navigator.pop(context),
                           isPrimary: false,
                           isDark: isDark,
@@ -200,12 +201,12 @@ class UserManager {
                       Expanded(
                         child: _buildButton(
                           context: context,
-                          label: 'حفظ التغييرات',
+                          label: context.tr('user_save_changes'),
                           onPressed: () async {
                             if (nameController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text('الرجاء إدخال الاسم'),
+                                  content: Text(context.tr('auth_please_enter_name')),
                                   backgroundColor: ColorsManager.red,
                                 ),
                               );
@@ -214,8 +215,8 @@ class UserManager {
                             if (emailController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'الرجاء إدخال البريد الإلكتروني',
+                                  content: Text(
+                                    context.tr('auth_email_required'),
                                   ),
                                   backgroundColor: ColorsManager.red,
                                 ),
@@ -225,8 +226,8 @@ class UserManager {
                             if (passwordController.text.trim().isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'الرجاء إدخال كلمة المرور',
+                                  content: Text(
+                                    context.tr('auth_please_enter_password'),
                                   ),
                                   backgroundColor: ColorsManager.red,
                                 ),
@@ -248,8 +249,8 @@ class UserManager {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'تم تحديث بيانات المستخدم بنجاح',
+                                  content: Text(
+                                    context.tr('admin_user_updated_success'),
                                   ),
                                   backgroundColor: Colors.green,
                                   behavior: SnackBarBehavior.floating,
@@ -262,7 +263,7 @@ class UserManager {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('خطأ: $e'),
+                                  content: Text('${context.tr('common_error')}: $e'),
                                   backgroundColor: ColorsManager.red,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(

@@ -116,8 +116,16 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
     final appCubit = context.read<AppCubit>();
     final authCubit = appCubit.authCubit;
 
-    return BlocBuilder(
+    return BlocBuilder<AuthCubit, AuthState>(
       bloc: authCubit,
+      buildWhen: (previous, current) {
+        if (previous.runtimeType != current.runtimeType) return true;
+        if (previous is AuthSuccess && current is AuthSuccess) {
+          return previous.user.uid != current.user.uid ||
+              previous.user.role != current.user.role;
+        }
+        return true;
+      },
       builder: (context, state) {
         final currentUser = (state is AuthSuccess)
             ? state.user
@@ -192,75 +200,100 @@ class _SimpleNavBar extends StatelessWidget {
     required this.onTap,
   });
 
+  static const Color _active = Color(0xFF2563EB);
+
   final List<NavItem> items;
   final int currentIndex;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isDark = DynamicThemeManager.isDarkMode(context);
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final inactive = isDark
+        ? Colors.white.withValues(alpha: 0.5)
+        : Colors.black.withValues(alpha: 0.45);
+    final inactiveBorder = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.black.withValues(alpha: 0.08);
 
-    return Container(
-      height: 65 + bottomPadding,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0B0F0D) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
-            width: 0.5,
-          ),
+    /// لون خلفية المؤشر (مش بقعة متدرجة — سطح هادي زي Material 3 الرسمي).
+    final indicatorSurface = isDark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFE2E8F0);
+
+    final barBg = isDark ? const Color(0xFF0B0F0D) : Colors.white;
+
+    return Material(
+      color: barBg,
+      elevation: 0,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: barBg,
+          border: Border(top: BorderSide(color: inactiveBorder, width: 0.5)),
         ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottomPadding),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(items.length, (index) {
-            final item = items[index];
-            final isActive = index == currentIndex;
-
-            return Expanded(
-              child: InkWell(
-                onTap: () => onTap(index),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      item.icon,
-                      color: isActive
-                          ? const Color(0xFF2563EB)
-                          : isDark
-                          ? Colors.white.withOpacity(0.5)
-                          : Colors.black.withOpacity(0.5),
-                      size: 26,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        color: isActive
-                            ? const Color(0xFF2563EB)
-                            : isDark
-                            ? Colors.white.withOpacity(0.5)
-                            : Colors.black.withOpacity(0.5),
-                        fontSize: 11,
-                        fontWeight: isActive
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+        child: Padding(
+          padding: EdgeInsets.only(bottom: bottomPadding),
+          child: Theme(
+            data: theme.copyWith(
+              splashColor: _active.withValues(alpha: 0.12),
+              highlightColor: _active.withValues(alpha: 0.04),
+              navigationBarTheme: NavigationBarThemeData(
+                height: 64,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                indicatorColor: indicatorSurface,
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                indicatorShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
+                labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                  final selected = states.contains(WidgetState.selected);
+                  return TextStyle(
+                    fontSize: 10,
+                    height: 1.15,
+                    fontWeight:
+                        selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected ? _active : inactive,
+                  );
+                }),
+                iconTheme: WidgetStateProperty.resolveWith((states) {
+                  final selected = states.contains(WidgetState.selected);
+                  return IconThemeData(
+                    color: selected ? _active : inactive,
+                    size: 26,
+                  );
+                }),
+                overlayColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.pressed)) {
+                    return _active.withValues(alpha: 0.1);
+                  }
+                  return Colors.transparent;
+                }),
               ),
-            );
-          }),
+            ),
+            child: NavigationBar(
+              selectedIndex: currentIndex,
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              elevation: 0,
+              onDestinationSelected: (i) {
+                HapticFeedback.selectionClick();
+                onTap(i);
+              },
+              destinations: [
+                for (final item in items)
+                  NavigationDestination(
+                    icon: Icon(item.icon),
+                    label: item.label,
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

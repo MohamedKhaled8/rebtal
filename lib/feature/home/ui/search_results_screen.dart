@@ -29,13 +29,10 @@ class SearchResultsScreen extends StatelessWidget {
           color: isDark ? Colors.white : Colors.black,
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: PublicChaletsList(
-          emptyIcon: Icons.search_off_rounded,
-          emptyTitle: context.tr('home_no_results'),
-          emptySubtitle: context.tr('home_try_other_search'),
-        ),
+      body: PublicChaletsList(
+        emptyIcon: Icons.search_off_rounded,
+        emptyTitle: context.tr('home_no_results'),
+        emptySubtitle: context.tr('home_try_other_search'),
       ),
     );
   }

@@ -7,8 +7,6 @@ import 'package:rebtal/feature/home/widget/home_promo_banners/home_promo_banners
 import 'package:rebtal/feature/home/widget/automated_offers/automated_offers_section.dart';
 import 'package:rebtal/feature/home/widget/popular_destinations/popular_destinations_section.dart';
 
-import 'package:responsive_screen_master/responsive_screen_master.dart';
-
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -23,11 +21,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   @override
-  bool get wantKeepAlive => true; // Keep state alive to avoid rebuilds
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
@@ -36,69 +34,51 @@ class _HomeScreenState extends State<HomeScreen>
           : ColorsManager.chaletBackgroundLight,
       body: RefreshIndicator(
         onRefresh: () async {
-          await Future.delayed(const Duration(milliseconds: 800));
+          await Future<void>.delayed(const Duration(milliseconds: 800));
           if (mounted) setState(() {});
         },
         color: const Color(0xFF2563EB),
         backgroundColor: isDark ? ColorsManager.darkGrey252540 : Colors.white,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // 1. Top Bar (Profile & Notifications)
-            const SliverToBoxAdapter(child: SafeArea(child: HomeTopBar())),
-
-            // 2. Clean Search Bar Trigger
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: CleanSearchBarTrigger(isDark: isDark),
+        child: NestedScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              const SliverToBoxAdapter(child: SafeArea(child: HomeTopBar())),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: CleanSearchBarTrigger(isDark: isDark),
+                ),
               ),
-            ),
-
-            // 3. Promo Banners (reduced margins)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: HomePromoBanners(),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: HomePromoBanners(),
+                ),
               ),
-            ),
-
-            // 4. Destinations & Areas (compact circular design)
-            SliverToBoxAdapter(child: PopularDestinationsSection()),
-
-            // 5. Automated Exclusive Offers
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: AutomatedOffersSection(),
+              const SliverToBoxAdapter(child: PopularDestinationsSection()),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: AutomatedOffersSection(),
+                ),
               ),
-            ),
-
-            // 6. Explore Everything Else
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: ExploreChaletHome(isDark: isDark),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: ExploreChaletHome(isDark: isDark),
+                ),
               ),
-            ),
-
-            // 7. Public Chalets List
-            SliverToBoxAdapter(
-              child: PublicChaletsList(
-                key: const ValueKey('public-chalets-list'),
-                emptyIcon: Icons.search_off_rounded,
-                emptyTitle: context.tr('home_no_results'),
-                emptySubtitle: context.tr('home_try_other_search'),
-              ),
-            ),
-
-            // Bottom spacing
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: otv(context: context, portrait: 16.0, landscape: 8.0),
-              ),
-            ),
-          ],
+            ];
+          },
+          body: PublicChaletsList(
+            key: const ValueKey('public-chalets-list'),
+            emptyIcon: Icons.search_off_rounded,
+            emptyTitle: context.tr('home_no_results'),
+            emptySubtitle: context.tr('home_try_other_search'),
+          ),
         ),
       ),
     );

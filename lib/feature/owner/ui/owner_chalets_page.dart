@@ -149,7 +149,7 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage> {
                             valueListenable: HomeSearch.filters,
                             builder: (context, filters, _) {
                               return TextField(
-                                onChanged: HomeSearch.updateQuery,
+                                onChanged: HomeSearch.updateQueryDebounced,
                                 style: TextStyle(
                                   color: isDark ? Colors.white : Colors.black87,
                                   fontSize: 14.sp,

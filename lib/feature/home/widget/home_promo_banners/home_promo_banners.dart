@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
@@ -102,7 +103,20 @@ class _HomePromoBannersState extends State<HomePromoBanners> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(banner['image']!, fit: BoxFit.cover),
+                      CachedNetworkImage(
+                        imageUrl: banner['image']!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 800,
+                        fadeInDuration: const Duration(milliseconds: 200),
+                        placeholder: (context, url) => Container(
+                          color: Colors.black12,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.black26,
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(

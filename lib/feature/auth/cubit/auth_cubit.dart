@@ -9,6 +9,7 @@ import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/utils/services/onesignal_service.dart';
 
 import 'package:rebtal/feature/auth/repository/base_auth_repository.dart';
 
@@ -139,6 +140,9 @@ class AuthCubit extends Cubit<AuthState> {
 
         // ✅ Save role locally
         await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
+        // Keep OneSignal user alias synced for targeted pushes by userId.
+        await OneSignalService().login(user.uid);
+        await NotificationService().saveFCMToken(user.uid);
 
         // ✅ Restore saved view mode for owners
         if (user.role.toLowerCase().trim() == 'owner') {
@@ -285,6 +289,11 @@ class AuthCubit extends Cubit<AuthState> {
               .timeout(const Duration(seconds: 2));
         } catch (e) {
           debugPrint("FCM Token deletion skipped or timed out: $e");
+        }
+        try {
+          await OneSignalService().logout();
+        } catch (e) {
+          debugPrint("OneSignal logout skipped: $e");
         }
       }
 

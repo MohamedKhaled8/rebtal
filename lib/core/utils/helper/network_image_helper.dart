@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 
@@ -47,7 +48,9 @@ class NetworkImageHelper extends StatelessWidget {
       placeholder: (context, url) =>
           placeholder ?? const Center(child: CircularProgressIndicator()),
       errorWidget: (context, url, error) {
-        debugPrint('❌ Image failed to load: $url');
+        if (kDebugMode) {
+          debugPrint('❌ Image failed to load: $url | error=$error');
+        }
         return errorWidget ??
             const Center(child: Icon(Icons.error, color: ColorsManager.red));
       },

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/payment/models/payment_proof.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminPaymentCard extends StatelessWidget {
   final PaymentProof proof;
@@ -30,7 +31,7 @@ class AdminPaymentCard extends StatelessWidget {
           color: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: const Center(child: Text('Booking data missing')),
+        child: Center(child: Text(context.tr('admin_booking_data_missing'))),
       );
     }
 
@@ -63,14 +64,23 @@ class AdminPaymentCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            bookingData!['chaletName'] ?? 'شاليه',
+                            () {
+                              final n =
+                                  bookingData!['chaletName']?.toString().trim() ??
+                                  '';
+                              return n.isNotEmpty
+                                  ? n
+                                  : context.tr('admin_chalet_unnamed');
+                            }(),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -80,7 +90,7 @@ class AdminPaymentCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Text('رقم الطلب:', style: TextStyle(fontSize: 12, color: isDark ? ColorsManager.white70 : ColorsManager.grey600)),
+                              Text(context.tr('admin_order_id_label'), style: TextStyle(fontSize: 12, color: isDark ? ColorsManager.white70 : ColorsManager.grey600)),
                               const SizedBox(width: 4),
                               Text('#$shortId', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: ColorsManager.chaletAccent)),
                             ],
@@ -88,16 +98,22 @@ class AdminPaymentCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Row(
-                      children: [
-                        _buildStatusBadge(proof.status),
-                        const SizedBox(width: 12),
-                        AnimatedRotation(
-                          duration: const Duration(milliseconds: 200),
-                          turns: isExpanded ? 0.5 : 0,
-                          child: Icon(Icons.keyboard_arrow_down_rounded, color: isDark ? ColorsManager.white70 : ColorsManager.grey600),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: _buildStatusBadge(context, proof.status),
+                          ),
+                          const SizedBox(width: 8),
+                          AnimatedRotation(
+                            duration: const Duration(milliseconds: 200),
+                            turns: isExpanded ? 0.5 : 0,
+                            child: Icon(Icons.keyboard_arrow_down_rounded, color: isDark ? ColorsManager.white70 : ColorsManager.grey600),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -122,13 +138,24 @@ class AdminPaymentCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildDetailRow(Icons.calendar_today_rounded, 'تاريخ الوصول', dateFormat.format(bookingFrom), ColorsManager.primaryColor),
+                          _buildDetailRow(Icons.calendar_today_rounded, context.tr('booking_check_in'), dateFormat.format(bookingFrom), ColorsManager.primaryColor),
                           const SizedBox(height: 16),
-                          _buildDetailRow(Icons.calendar_month_rounded, 'تاريخ المغادرة', dateFormat.format(bookingTo), ColorsManager.red),
+                          _buildDetailRow(Icons.calendar_month_rounded, context.tr('booking_check_out'), dateFormat.format(bookingTo), ColorsManager.red),
                           const SizedBox(height: 16),
-                          _buildDetailRow(Icons.nights_stay_rounded, 'المدة', '$nights ليالي', ColorsManager.purple),
+                          _buildDetailRow(
+                            Icons.nights_stay_rounded,
+                            context.tr('admin_duration'),
+                            context.tr('payment_nights_label_short').replaceAll('{count}', '$nights'),
+                            ColorsManager.purple,
+                          ),
                           const SizedBox(height: 16),
-                          _buildDetailRow(Icons.monetization_on_rounded, 'المبلغ الإجمالي', '${(bookingData!['amount'] as num?)?.toInt() ?? 0} جنيه', ColorsManager.green, isBold: true),
+                          _buildDetailRow(
+                            Icons.monetization_on_rounded,
+                            context.tr('admin_total_amount'),
+                            '${(bookingData!['amount'] as num?)?.toInt() ?? 0} ${context.tr('booking_egp_currency')}',
+                            ColorsManager.green,
+                            isBold: true,
+                          ),
                         ],
                       ),
                     ),
@@ -146,11 +173,11 @@ class AdminPaymentCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildSectionTitle('معلومات الضيف', Icons.person_rounded, ColorsManager.green),
+                              _buildSectionTitle(context.tr('admin_guest_info'), Icons.person_rounded, ColorsManager.green),
                               const SizedBox(height: 16),
-                              _buildContactRowFull(Icons.person_outline_rounded, 'الاسم', bookingData!['userName']?.toString() ?? 'غير متوفر'),
+                              _buildContactRowFull(Icons.person_outline_rounded, context.tr('booking_name_label'), bookingData!['userName']?.toString() ?? context.tr('common_unavailable_short')),
                               const SizedBox(height: 12),
-                              _buildContactRowFull(Icons.phone_iphone_rounded, 'رقم الهاتف', bookingData!['userPhone']?.toString() ?? 'غير متوفر'),
+                              _buildContactRowFull(Icons.phone_iphone_rounded, context.tr('booking_phone_label'), bookingData!['userPhone']?.toString() ?? context.tr('common_unavailable_short')),
                             ],
                           ),
                         ),
@@ -165,11 +192,11 @@ class AdminPaymentCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildSectionTitle('معلومات المالك', Icons.business_rounded, ColorsManager.orange),
+                              _buildSectionTitle(context.tr('admin_owner_info'), Icons.business_rounded, ColorsManager.orange),
                               const SizedBox(height: 16),
-                              _buildContactRowFull(Icons.person_outline_rounded, 'الاسم', bookingData!['ownerName']?.toString() ?? 'غير متوفر'),
+                              _buildContactRowFull(Icons.person_outline_rounded, context.tr('booking_name_label'), bookingData!['ownerName']?.toString() ?? context.tr('common_unavailable_short')),
                               const SizedBox(height: 12),
-                              _buildContactRowFull(Icons.phone_iphone_rounded, 'رقم الهاتف', bookingData!['ownerPhone']?.toString() ?? 'غير متوفر'),
+                              _buildContactRowFull(Icons.phone_iphone_rounded, context.tr('booking_phone_label'), bookingData!['ownerPhone']?.toString() ?? context.tr('common_unavailable_short')),
                             ],
                           ),
                         ),
@@ -183,7 +210,7 @@ class AdminPaymentCard extends StatelessWidget {
                             child: OutlinedButton.icon(
                               onPressed: () => _showProofImage(context, proof.imageUrl!),
                               icon: const Icon(Icons.image_rounded, size: 20),
-                              label: const Text('عرض الإيصال', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                              label: Text(context.tr('admin_view_receipt'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -197,7 +224,7 @@ class AdminPaymentCard extends StatelessWidget {
                             child: ElevatedButton.icon(
                               onPressed: () => _showReviewDialog(context, proof, bookingData!),
                               icon: const Icon(Icons.check_circle_rounded, size: 20),
-                              label: const Text('مراجعة', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                              label: Text(context.tr('admin_payment_review'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: ColorsManager.green,
                                 foregroundColor: ColorsManager.white,
@@ -220,18 +247,18 @@ class AdminPaymentCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(PaymentProofStatus status) {
+  Widget _buildStatusBadge(BuildContext context, PaymentProofStatus status) {
     Color color = ColorsManager.orange;
-    String text = 'قيد المراجعة';
+    String text = context.tr('admin_pending_review');
     IconData icon = Icons.access_time_rounded;
 
     if (status == PaymentProofStatus.approved) {
       color = ColorsManager.green;
-      text = 'مؤكد';
+      text = context.tr('booking_status_confirmed');
       icon = Icons.check_circle_rounded;
     } else if (status == PaymentProofStatus.rejected) {
       color = ColorsManager.red;
-      text = 'مرفوض';
+      text = context.tr('booking_status_rejected');
       icon = Icons.cancel_rounded;
     }
 
@@ -247,7 +274,14 @@ class AdminPaymentCard extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
-          Text(text, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -332,7 +366,7 @@ class AdminPaymentCard extends StatelessWidget {
                 foregroundColor: ColorsManager.chaletTextPrimaryLight,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: const Text('إغلاق'),
+              child: Text(context.tr('admin_close')),
             ),
           ],
         ),
@@ -344,19 +378,19 @@ class AdminPaymentCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('مراجعة الدفع'),
-        content: const Text('الرجاء اختيار الإجراء المناسب لطلب الدفع هذا:'),
+        title: Text(ctx.tr('admin_payment_review')),
+        content: Text(ctx.tr('admin_please_select_action')),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.tr('common_cancel'))),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(ctx);
               // TODO: Implement reject in Cubit method
             },
             icon: const Icon(Icons.close_rounded, size: 18),
-            label: const Text('رفض'),
+            label: Text(ctx.tr('admin_reject')),
             style: ElevatedButton.styleFrom(backgroundColor: ColorsManager.red, foregroundColor: ColorsManager.white, elevation: 0),
           ),
           ElevatedButton.icon(
@@ -365,7 +399,7 @@ class AdminPaymentCard extends StatelessWidget {
               // TODO: Implement approve in Cubit method
             },
             icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('موافقة'),
+            label: Text(ctx.tr('admin_approve')),
             style: ElevatedButton.styleFrom(backgroundColor: ColorsManager.green, foregroundColor: ColorsManager.white, elevation: 0),
           ),
         ],

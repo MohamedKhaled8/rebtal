@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
@@ -146,12 +147,6 @@ class LocationAreasSection extends StatelessWidget {
                                   height: 70,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    image: imageUrl.isNotEmpty
-                                        ? DecorationImage(
-                                            image: NetworkImage(imageUrl),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
                                     color: isDark
                                         ? Colors.white.withOpacity(0.05)
                                         : Colors.black.withOpacity(0.05),
@@ -167,14 +162,33 @@ class LocationAreasSection extends StatelessWidget {
                                           ]
                                         : null,
                                   ),
-                                  child: imageUrl.isEmpty
-                                      ? Icon(
+                                  clipBehavior: Clip.antiAlias,
+                                  child: imageUrl.isNotEmpty
+                                      ? CachedNetworkImage(
+                                          imageUrl: imageUrl,
+                                          fit: BoxFit.cover,
+                                          memCacheWidth: 140,
+                                          fadeInDuration: Duration.zero,
+                                          placeholder: (context, url) =>
+                                              Container(
+                                            color: isDark
+                                                ? Colors.white10
+                                                : Colors.black12,
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              Icon(
+                                            Icons.location_on,
+                                            color: isDark
+                                                ? Colors.white38
+                                                : Colors.black26,
+                                          ),
+                                        )
+                                      : Icon(
                                           Icons.location_on,
                                           color: isDark
                                               ? Colors.white38
                                               : Colors.black26,
-                                        )
-                                      : null,
+                                        ),
                                 ),
                               ),
                               const SizedBox(height: 8),

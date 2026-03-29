@@ -4436,6 +4436,12 @@ abstract class ArbLocalizations {
   /// **'Stop Booking'**
   String get owner_stop_booking;
 
+  /// No description provided for @owner_open_booking.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get owner_open_booking;
+
   /// No description provided for @owner_start_booking.
   ///
   /// In en, this message translates to:

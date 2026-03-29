@@ -5,6 +5,9 @@ import 'package:rebtal/core/utils/localization/app_localization.dart';
 extension TranslationExtension on BuildContext {
   /// Translate a key using [AppLocalizations]
   String tr(String key) {
-    return AppLocalizations.of(this)?.translate(key) ?? key;
+    final loc = AppLocalizations.of(this);
+    if (loc == null) return key;
+    final s = loc.translate(key);
+    return s.isEmpty ? key : s;
   }
 }

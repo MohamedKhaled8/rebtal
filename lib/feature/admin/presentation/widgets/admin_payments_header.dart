@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminPaymentsHeader extends StatelessWidget {
   final bool isDark;
@@ -72,7 +73,7 @@ class AdminPaymentsHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'إدارة المدفوعات',
+                      context.tr('admin_payments'),
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -82,7 +83,7 @@ class AdminPaymentsHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'مراجعة واعتماد طلبات الدفع',
+                      context.tr('admin_payments_review'),
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
@@ -115,7 +116,7 @@ class AdminPaymentsHeader extends StatelessWidget {
               ),
               onChanged: onSearchChanged,
               decoration: InputDecoration(
-                hintText: 'بحث برقم الطلب أو اسم المستخدم...',
+                hintText: context.tr('admin_search_payment'),
                 hintStyle: TextStyle(
                   color: isDark ? ColorsManager.white70 : ColorsManager.grey700,
                   fontSize: 15,
@@ -178,13 +179,13 @@ class AdminPaymentsHeader extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('الكل', 'all', Icons.dashboard_outlined),
+                _buildFilterChip(context, context.tr('admin_all'), 'all', Icons.dashboard_outlined),
                 const SizedBox(width: 12),
-                _buildFilterChip('قيد المراجعة', 'pending', Icons.access_time_rounded),
+                _buildFilterChip(context, context.tr('admin_pending_review'), 'pending', Icons.access_time_rounded),
                 const SizedBox(width: 12),
-                _buildFilterChip('مؤكد', 'approved', Icons.check_circle_outline_rounded),
+                _buildFilterChip(context, context.tr('booking_status_confirmed'), 'approved', Icons.check_circle_outline_rounded),
                 const SizedBox(width: 12),
-                _buildFilterChip('مرفوض', 'rejected', Icons.cancel_outlined),
+                _buildFilterChip(context, context.tr('booking_status_rejected'), 'rejected', Icons.cancel_outlined),
               ],
             ),
           ),
@@ -193,7 +194,12 @@ class AdminPaymentsHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterChip(String label, String value, IconData icon) {
+  Widget _buildFilterChip(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     final isSelected = selectedFilter == value;
     final activeColor = ColorsManager.chaletAccent;
 

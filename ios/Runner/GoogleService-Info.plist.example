@@ -1,0 +1,7 @@
+<!--
+ Copy your real `GoogleService-Info.plist` from Firebase Console
+ into this folder as: `ios/Runner/GoogleService-Info.plist`
+
+ Never commit the real file if it contains environment-specific values.
+-->
+

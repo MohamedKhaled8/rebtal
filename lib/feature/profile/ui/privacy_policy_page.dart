@@ -113,6 +113,27 @@ class PrivacyPolicyPage extends StatelessWidget {
 
             _buildSection(
               isDark: isDark,
+              title: _serviceNatureTitle(context),
+              content: _serviceNatureContent(context),
+            ),
+            const SizedBox(height: 24),
+
+            _buildSection(
+              isDark: isDark,
+              title: _infoAccuracyTitle(context),
+              content: _infoAccuracyContent(context),
+            ),
+            const SizedBox(height: 24),
+
+            _buildSection(
+              isDark: isDark,
+              title: _liabilityTitle(context),
+              content: _liabilityContent(context),
+            ),
+            const SizedBox(height: 24),
+
+            _buildSection(
+              isDark: isDark,
               title: context.tr('profile_contact'),
               content: context
                   .tr('profile_privacy_policy_contact')
@@ -183,5 +204,47 @@ class PrivacyPolicyPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  bool _isArabic(BuildContext context) =>
+      Localizations.localeOf(context).languageCode.toLowerCase().startsWith('ar');
+
+  String _serviceNatureTitle(BuildContext context) => _isArabic(context)
+      ? 'بند طبيعة الخدمة (الوساطة التقنية)'
+      : 'Nature of Service (Technical Mediation)';
+
+  String _serviceNatureContent(BuildContext context) {
+    if (_isArabic(context)) {
+      return 'يقر المستخدم بأن التطبيق هو منصة إلكترونية للربط بين أصحاب الشاليهات (المؤجرين) وبين الراغبين في الاستئجار (المستأجرين). ولا يعد التطبيق مالكاً، أو مديراً، أو موظفاً، أو وكيلاً عن أي من العقارات المعروضة. إن عقد الإيجار يتم مباشرة بين المؤجر والمستأجر، ولا يتحمل التطبيق أي التزامات ناتجة عن هذا التعاقد، غير تأمين المبلغ المالي للأطراف طبقاً لسياسة التطبيق.';
+    }
+    return 'The app is an electronic platform connecting chalet owners (lessors) with renters (lessees). The app is not the owner, manager, employee, or agent of listed properties. The rental contract is concluded directly between lessor and lessee. The app is not liable for obligations arising from that contract, except securing the rental amount according to app policy.';
+  }
+
+  String _infoAccuracyTitle(BuildContext context) => _isArabic(context)
+      ? '2. إخلاء المسؤولية عن دقة المعلومات'
+      : '2. Information Accuracy Disclaimer';
+
+  String _infoAccuracyContent(BuildContext context) {
+    if (_isArabic(context)) {
+      return 'بما أن محتوى الإعلانات يتم رفعه من قبل المؤجرين، فإن التطبيق لا يضمن دقة أو اكتمال أو جودة الصور، أو الأوصاف، أو المرافق المذكورة في الإعلان. تقع مسؤولية التحقق من مطابقة الشاليه للواقع بالكامل على عاتق المستأجر.';
+    }
+    return 'Since listing content is uploaded by lessors, the app does not guarantee the accuracy, completeness, or quality of photos, descriptions, or listed amenities. The renter is fully responsible for verifying that the chalet matches reality.';
+  }
+
+  String _liabilityTitle(BuildContext context) => _isArabic(context)
+      ? '3. المسؤولية عن الأضرار والإصابات'
+      : '3. Liability for Damages and Injuries';
+
+  String _liabilityContent(BuildContext context) {
+    if (_isArabic(context)) {
+      return 'لا يتحمل مالك التطبيق أو إدارته أي مسؤولية قانونية عن:\n'
+          '• أي إصابات جسدية أو حوادث تقع للمستأجر أو مرافقيه داخل الشاليه.\n'
+          '• فقدان أو سرقة الممتلكات الشخصية الخاصة بالمستخدمين.\n'
+          '• الأضرار التي قد يلحقها المستأجر بالعقار؛ حيث يتم تسوية هذه النزاعات بين الطرفين مباشرة بعيداً عن المنصة.';
+    }
+    return 'The app owner/management bears no legal liability for:\n'
+        '• Any bodily injuries or incidents affecting renters or their companions inside the chalet.\n'
+        '• Loss or theft of users’ personal belongings.\n'
+        '• Damages caused by renters to the property; such disputes are settled directly between the parties outside the platform.';
   }
 }

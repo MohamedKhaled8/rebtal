@@ -2224,6 +2224,9 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get owner_stop_booking => 'إيقاف الحجز';
 
   @override
+  String get owner_open_booking => 'فتح';
+
+  @override
   String get owner_start_booking => 'تشغيل الحجز';
 
   @override

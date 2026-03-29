@@ -7,6 +7,7 @@ import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/services/email_service.dart';
+import 'package:rebtal/core/utils/helper/booking_profile_fields.dart';
 
 // ✅ إضافة هذه الدوال للـ BookingCubit
 
@@ -164,32 +165,24 @@ class BookingCubit extends Cubit<BookingState> {
           debugPrint('Error fetching chalet details: $e');
         }
 
-        // جلب معلومات المستخدم
+        // جلب معلومات المستخدم (الاسم من الملف إذا لم يُخزَّن في الحجز)
         String? userPhone;
         String? userEmail;
+        String resolvedUserName = (data['userName'] ?? '').toString().trim();
 
         try {
           final userId = data['userId'] ?? '';
           if (userId.isNotEmpty) {
-            // Try Users collection first
-            var userDoc = await FirebaseFirestore.instance
-                .collection('Users')
-                .doc(userId)
-                .get();
-
-            // If not found, try Owners collection
-            if (!userDoc.exists) {
-              userDoc = await FirebaseFirestore.instance
-                  .collection('Owners')
-                  .doc(userId)
-                  .get();
-            }
-
-            if (userDoc.exists) {
+            final userDoc = await fetchFirestoreProfileDoc(userId);
+            if (userDoc != null && userDoc.exists) {
               final userData = userDoc.data();
               if (userData != null) {
-                userPhone = (userData['phone']?.toString() ?? '').trim();
-                userEmail = (userData['email']?.toString() ?? '').trim();
+                if (resolvedUserName.isEmpty) {
+                  resolvedUserName = displayNameFromProfileMap(userData);
+                }
+                userPhone = phoneFromProfileMap(userData);
+                final em = (userData['email']?.toString() ?? '').trim();
+                userEmail = em.isEmpty ? null : em;
               }
             }
           }
@@ -200,29 +193,21 @@ class BookingCubit extends Cubit<BookingState> {
         // جلب معلومات المالك
         String? ownerPhone;
         String? ownerEmail;
+        String resolvedOwnerName = (data['ownerName'] ?? '').toString().trim();
 
         try {
           final ownerId = data['ownerId'] ?? '';
           if (ownerId.isNotEmpty) {
-            // Try Users collection first
-            var ownerDoc = await FirebaseFirestore.instance
-                .collection('Users')
-                .doc(ownerId)
-                .get();
-
-            // If not found, try Owners collection
-            if (!ownerDoc.exists) {
-              ownerDoc = await FirebaseFirestore.instance
-                  .collection('Owners')
-                  .doc(ownerId)
-                  .get();
-            }
-
-            if (ownerDoc.exists) {
+            final ownerDoc = await fetchFirestoreProfileDoc(ownerId);
+            if (ownerDoc != null && ownerDoc.exists) {
               final ownerData = ownerDoc.data();
               if (ownerData != null) {
-                ownerPhone = (ownerData['phone']?.toString() ?? '').trim();
-                ownerEmail = (ownerData['email']?.toString() ?? '').trim();
+                if (resolvedOwnerName.isEmpty) {
+                  resolvedOwnerName = displayNameFromProfileMap(ownerData);
+                }
+                ownerPhone = phoneFromProfileMap(ownerData);
+                final oem = (ownerData['email']?.toString() ?? '').trim();
+                ownerEmail = oem.isEmpty ? null : oem;
               }
             }
           }
@@ -242,9 +227,9 @@ class BookingCubit extends Cubit<BookingState> {
           chaletId: data['chaletId'] ?? '',
           chaletName: data['chaletName'] ?? '',
           ownerId: data['ownerId'] ?? '',
-          ownerName: data['ownerName'] ?? '',
+          ownerName: resolvedOwnerName,
           userId: data['userId'] ?? '',
-          userName: data['userName'] ?? '',
+          userName: resolvedUserName,
           from: _parseDateTime(data['from']),
           to: _parseDateTime(data['to']),
           status: _parseStatus(data['status']),

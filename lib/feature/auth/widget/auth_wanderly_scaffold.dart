@@ -6,6 +6,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
+/// Resort-style photo used behind the auth header (login / register / forgot password).
+const String kDefaultAuthHeaderBackground =
+    'assets/images/jpg/onboarding_1.jpg';
+
+/// Keeps the curved header from exceeding short viewports (landscape / split-screen).
+double _authMobileHeaderHeight(BuildContext context) {
+  final h = MediaQuery.sizeOf(context).height;
+  final insetBottom = MediaQuery.viewInsetsOf(context).bottom;
+  final effectiveH = (h - insetBottom).clamp(240.0, 900.0);
+  if (effectiveH < 520) {
+    return (effectiveH * 0.40).clamp(150.0, 240.0);
+  }
+  if (effectiveH < 680) {
+    return (effectiveH * 0.38).clamp(200.0, 280.0);
+  }
+  return 300.0;
+}
+
+/// Scroll padding so the form overlaps the header curve (tuned with header height).
+double _authMobileScrollTopPadding(double headerHeight) {
+  return (headerHeight - 82).clamp(88.0, 240.0);
+}
+
 class AuthWanderlyScaffold extends StatelessWidget {
   const AuthWanderlyScaffold({
     super.key,
@@ -17,6 +40,8 @@ class AuthWanderlyScaffold extends StatelessWidget {
     this.brandSubtitle = '',
     this.primaryColor = ColorsManager.blue2563EB,
     this.logoAssetPath = 'assets/images/jpg/logo2.jpeg',
+    /// Full-bleed header image; set empty to use the solid/gradient fallback only.
+    this.headerBackgroundAssetPath = kDefaultAuthHeaderBackground,
     this.maxWidth = 520,
   });
 
@@ -30,6 +55,8 @@ class AuthWanderlyScaffold extends StatelessWidget {
 
   final Color primaryColor;
   final String logoAssetPath;
+  /// Background for the top brand strip (mobile + desktop left panel).
+  final String headerBackgroundAssetPath;
   final double maxWidth;
 
   @override
@@ -48,10 +75,13 @@ class AuthWanderlyScaffold extends StatelessWidget {
         isDark ? Colors.white70 : ColorsManager.grey6B7280;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: scaffoldBg,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 900;
+          final mobileHeaderH = _authMobileHeaderHeight(context);
+          final mobileScrollTop = _authMobileScrollTopPadding(mobileHeaderH);
 
           final card = ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),
@@ -108,6 +138,7 @@ class AuthWanderlyScaffold extends StatelessWidget {
                         brandSubtitle: brandSubtitle,
                         primaryColor: primaryColor,
                         logoAssetPath: logoAssetPath,
+                        headerBackgroundAssetPath: headerBackgroundAssetPath,
                         isDark: isDark,
                       ),
                     ),
@@ -133,13 +164,17 @@ class AuthWanderlyScaffold extends StatelessWidget {
                       brandSubtitle: brandSubtitle,
                       primaryColor: primaryColor,
                       logoAssetPath: logoAssetPath,
+                      headerBackgroundAssetPath: headerBackgroundAssetPath,
+                      headerHeight: mobileHeaderH,
                       isDark: isDark,
                     ),
                     SafeArea(
                       child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         padding: EdgeInsets.fromLTRB(
                           18,
-                          180,
+                          mobileScrollTop,
                           18,
                           18 + viewInsets.bottom,
                         ),
@@ -162,6 +197,7 @@ class _BrandPanel extends StatelessWidget {
     required this.brandSubtitle,
     required this.primaryColor,
     required this.logoAssetPath,
+    required this.headerBackgroundAssetPath,
     required this.isDark,
   });
 
@@ -169,47 +205,85 @@ class _BrandPanel extends StatelessWidget {
   final String brandSubtitle;
   final Color primaryColor;
   final String logoAssetPath;
+  final String headerBackgroundAssetPath;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
+    final usePhoto = headerBackgroundAssetPath.trim().isNotEmpty;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (usePhoto)
+          Positioned.fill(
+            child: Image.asset(
+              headerBackgroundAssetPath,
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, -0.15),
+              errorBuilder: (context, error, stackTrace) =>
+                  _AuthHeaderGradientFallback(primaryColor: primaryColor, isDark: isDark),
+            ),
+          )
+        else
+          Positioned.fill(
+            child: _AuthHeaderGradientFallback(primaryColor: primaryColor, isDark: isDark),
+          ),
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  ColorsManager.darkBackground0F121F,
-                  ColorsManager.navyBlue0F3460,
+                  Colors.black.withOpacity(isDark ? 0.34 : 0.28),
+                  Colors.black.withOpacity(isDark ? 0.52 : 0.42),
                 ],
-              )
-            : null,
-        color: isDark ? null : primaryColor,
-        borderRadius: BorderRadius.circular(0),
-      ),
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 36),
-            _WanderlyLogoMark(text: appName),
-            const SizedBox(height: 10),
-            Text(
-              brandSubtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.cairo(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-                color: Colors.white.withOpacity(0.90),
               ),
             ),
-          ],
+          ),
         ),
-      ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Padding(
+              padding: const EdgeInsets.all(28),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: math.min(420, constraints.maxWidth - 8),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 24),
+                        _WanderlyLogoMark(text: appName),
+                        const SizedBox(height: 10),
+                        Text(
+                          brandSubtitle,
+                          textAlign: TextAlign.center,
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.cairo(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                            color: Colors.white.withOpacity(0.90),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -220,6 +294,8 @@ class _MobileHeader extends StatelessWidget {
     required this.brandSubtitle,
     required this.primaryColor,
     required this.logoAssetPath,
+    required this.headerBackgroundAssetPath,
+    required this.headerHeight,
     required this.isDark,
   });
 
@@ -227,12 +303,122 @@ class _MobileHeader extends StatelessWidget {
   final String brandSubtitle;
   final Color primaryColor;
   final String logoAssetPath;
+  final String headerBackgroundAssetPath;
+  final double headerHeight;
   final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 260,
+    final usePhoto = headerBackgroundAssetPath.trim().isNotEmpty;
+    final topPad = MediaQuery.paddingOf(context).top + 6;
+
+    return SizedBox(
+      height: headerHeight,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final innerMaxH =
+              math.max(40.0, constraints.maxHeight - topPad - 8);
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: ClipPath(
+                  clipper: _BottomCurveClipper(),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (usePhoto)
+                        Image.asset(
+                          headerBackgroundAssetPath,
+                          fit: BoxFit.cover,
+                          alignment: const Alignment(0, -0.2),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _AuthHeaderGradientFallback(primaryColor: primaryColor, isDark: isDark),
+                        )
+                      else
+                        _AuthHeaderGradientFallback(primaryColor: primaryColor, isDark: isDark),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(isDark ? 0.28 : 0.22),
+                              Colors.black.withOpacity(isDark ? 0.45 : 0.38),
+                            ],
+                          ),
+                        ),
+                        child: const SizedBox.expand(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: topPad,
+                    left: 16,
+                    right: 16,
+                    bottom: 6,
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      height: innerMaxH > 0 ? innerMaxH : 1,
+                      width: double.infinity,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topCenter,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: math.min(340, constraints.maxWidth - 32),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _WanderlyLogoMark(text: appName),
+                              const SizedBox(height: 6),
+                              Text(
+                                brandSubtitle,
+                                textAlign: TextAlign.center,
+                                maxLines: 4,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.cairo(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.3,
+                                  color: Colors.white.withOpacity(0.92),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Original solid / navy gradient when no photo is used or [Image.asset] fails.
+class _AuthHeaderGradientFallback extends StatelessWidget {
+  const _AuthHeaderGradientFallback({
+    required this.primaryColor,
+    required this.isDark,
+  });
+
+  final Color primaryColor;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -246,56 +432,7 @@ class _MobileHeader extends StatelessWidget {
             : null,
         color: isDark ? null : primaryColor,
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ClipPath(
-              clipper: _BottomCurveClipper(),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: isDark
-                      ? const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            ColorsManager.darkBackground0F121F,
-                            ColorsManager.navyBlue0F3460,
-                          ],
-                        )
-                      : null,
-                  color: isDark ? null : primaryColor,
-                ),
-                child: const SizedBox.expand(),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 54, left: 16, right: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _WanderlyLogoMark(text: appName),
-                  const SizedBox(height: 6),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 320),
-                    child: Text(
-                      brandSubtitle,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.cairo(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        height: 1.3,
-                        color: Colors.white.withOpacity(0.92),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: const SizedBox.expand(),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/image_gallery_cubit.dart';
 import 'package:responsive_screen_master/extensions/responsive_nums.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class ImageGalleryCard extends StatelessWidget {
   final List<String> images;
@@ -40,7 +41,7 @@ class ImageGalleryCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Photo Gallery',
+                      context.tr('chalet_gallery_title'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -50,7 +51,7 @@ class ImageGalleryCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${images.length} photos',
+                      '${images.length} ${context.tr('common_photos')}',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark ? Colors.white54 : Colors.grey[500],
@@ -84,7 +85,7 @@ class ImageGalleryCard extends StatelessWidget {
                             // Simple subtle shadow if needed, or none
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),

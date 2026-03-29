@@ -1,4 +1,4 @@
-package com.example.rebtal
+package com.rebtal.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -38,6 +38,10 @@ class AdminDashboard extends StatelessWidget {
         )..startListeningToAll();
       },
       child: BlocBuilder<AppCubit, AppState>(
+        buildWhen: (prev, curr) =>
+            prev.themeMode != curr.themeMode ||
+            prev.locale != curr.locale ||
+            prev.runtimeType != curr.runtimeType,
         builder: (context, appState) {
           final isDark =
               (appState.themeMode == ThemeMode.dark) ||

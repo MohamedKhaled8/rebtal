@@ -2,82 +2,89 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+/// OneSignal: يقرأ من `.env` إن وُجد؛ وإلا يستخدم القيم الافتراضية لمشروعك
+/// (للتشغيل الفوري). للإنتاج الأفضل: إرسال Push من السيرفر فقط.
 class OneSignalService {
-  // ⚠️ تم تحديث القيم ببياناتك الصحيحة
-  static const String _appId = "4f2b6648-33f3-4d34-a324-81347e1fb020";
-  static const String _restApiKey =
-      "os_v2_app_j4vwmsbt6ngtjizeqe2h4h5qedr5qmflcm2uysnscrv6eazqjlyfckpwuolqtalw7bqeahtsimvtfr4apqrjffqfiojks7y4pqyqzky";
+  static const String _defaultAppId =
+      '4f2b6648-33f3-4d34-a324-81347e1fb020';
+
+  /// لا تُضمّن REST API Key داخل التطبيق (يُعتبر سر). استخدم `.env` محلياً فقط،
+  /// وفي الإنتاج أرسل الإشعارات من السيرفر/Cloud Functions.
+  static const String _defaultRestApiKey = '';
+
+  static String get _appId {
+    final e = dotenv.env['ONESIGNAL_APP_ID']?.trim();
+    if (e != null && e.isNotEmpty && !e.startsWith('YOUR_')) return e;
+    return _defaultAppId;
+  }
+
+  static String get _restApiKey {
+    final k = dotenv.env['ONESIGNAL_REST_API_KEY']?.trim();
+    if (k != null && k.isNotEmpty && !k.startsWith('YOUR_')) return k;
+    return _defaultRestApiKey;
+  }
 
   static final OneSignalService _instance = OneSignalService._internal();
   factory OneSignalService() => _instance;
   OneSignalService._internal();
 
-  /// تهيئة OneSignal (Updated for v5.0+)
   Future<void> initialize() async {
     try {
-      if (_appId == "YOUR_ONESIGNAL_APP_ID") {
-        debugPrint("⚠️ OneSignal App ID is missing!");
+      if (_appId == 'YOUR_ONESIGNAL_APP_ID') {
+        debugPrint('⚠️ OneSignal App ID is missing!');
         return;
       }
 
-      // 1. Set Log Level (Optional)
       OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-
-      // 2. Initialize
-      // Note: In v5, initialize is synchronous-like but sets up the SDK
       OneSignal.initialize(_appId);
-
-      // 3. Request Permission
-      // The user will be prompted to allow notifications
       await OneSignal.Notifications.requestPermission(true);
 
-      debugPrint("✅ OneSignal initialized successfully");
+      debugPrint('✅ OneSignal initialized successfully');
     } catch (e) {
-      debugPrint("❌ Error initializing OneSignal: $e");
+      debugPrint('❌ Error initializing OneSignal: $e');
     }
   }
 
-  /// تسجيل المستخدم الحالي (لربطه بـ user_id الخاص بنا)
   Future<void> login(String userId) async {
     try {
-      // In v5: login replaces setExternalUserId
       OneSignal.login(userId);
-      debugPrint("✅ OneSignal login: $userId");
+      debugPrint('✅ OneSignal login: $userId');
     } catch (e) {
-      debugPrint("❌ Error logging in to OneSignal: $e");
+      debugPrint('❌ Error logging in to OneSignal: $e');
     }
   }
 
-  /// تسجيل الخروج
   Future<void> logout() async {
     try {
-      // In v5: logout replaces removeExternalUserId
       OneSignal.logout();
-      debugPrint("✅ OneSignal logout");
+      debugPrint('✅ OneSignal logout');
     } catch (e) {
-      debugPrint("❌ Error logging out from OneSignal: $e");
+      debugPrint('❌ Error logging out from OneSignal: $e');
     }
   }
 
-  /// إرسال إشعار لمستخدم محدد (client-side using REST API)
+  /// يرسل عبر OneSignal REST (مفتاح من `.env` أو الافتراضي في الكود).
   Future<bool> sendNotification({
     required String title,
     required String body,
     required String targetUserId,
     Map<String, dynamic>? data,
   }) async {
-    if (_restApiKey.startsWith("YOUR_")) {
-      debugPrint("⚠️ OneSignal REST API Key is missing!");
+    final key = _restApiKey;
+    if (key.isEmpty) {
+      debugPrint(
+        '⚠️ OneSignal REST API Key missing. Send notifications from your server instead.',
+      );
       return false;
     }
-
     try {
       final response = await http.post(
         Uri.parse('https://onesignal.com/api/v1/notifications'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': 'Basic $_restApiKey',
+          'Authorization': 'Basic $key',
         },
         body: jsonEncode({
           'app_id': _appId,
@@ -88,23 +95,21 @@ class OneSignalService {
           },
           'target_channel': 'push',
           'data': data,
-          // Omit large_icon: wrong URL or CDN issues show a bad image; OS uses app icon.
-          // Android specific settings for sound and priority
-          'android_channel_id': 'rebtal_channel_id',
+          'android_channel_id': 'rebtal_channel',
           'priority': 10,
-          'android_visibility': 1, // Public visibility
+          'android_visibility': 1,
         }),
       );
 
       if (response.statusCode == 200) {
-        debugPrint("✅ Notification sent successfully to $targetUserId");
+        debugPrint('✅ Notification sent successfully to $targetUserId');
         return true;
       } else {
-        debugPrint("❌ Failed to send notification: ${response.body}");
+        debugPrint('❌ Failed to send notification: ${response.body}');
         return false;
       }
     } catch (e) {
-      debugPrint("❌ Error sending notification: $e");
+      debugPrint('❌ Error sending notification: $e');
       return false;
     }
   }

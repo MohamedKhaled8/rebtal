@@ -114,7 +114,7 @@ class LocationPicker extends StatelessWidget {
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.rebtal',
+                      userAgentPackageName: 'com.rebtal.app',
                       ),
                       MarkerLayer(
                         markers: [

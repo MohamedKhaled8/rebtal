@@ -87,7 +87,10 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
     required String docId,
     required Map<String, dynamic> requestData,
   }) async {
-    final currentStatus = requestData['bookingAvailability'] ?? 'available';
+    final currentStatus =
+        state.bookingAvailability ??
+        requestData['bookingAvailability'] ??
+        'available';
     emit(ActionButtonsLoading(bookingAvailability: currentStatus));
     try {
       final newStatus = currentStatus == 'available'

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/debouncer.dart';
 
 class SearchFilters {
   final String query;
@@ -83,8 +84,20 @@ class HomeSearch {
   // though we should migrate usages.
   static String get currentQuery => filters.value.query;
 
+  static final Debouncer _queryDebounce =
+      Debouncer(duration: const Duration(milliseconds: 280));
+
+  /// Immediate query update (e.g. Apply button).
   static void updateQuery(String q) {
+    _queryDebounce.cancel();
     filters.value = filters.value.copyWith(query: q);
+  }
+
+  /// Debounced — use for live [TextField] typing (owner search, etc.).
+  static void updateQueryDebounced(String q) {
+    _queryDebounce.run(() {
+      filters.value = filters.value.copyWith(query: q);
+    });
   }
 
   static void clear() {

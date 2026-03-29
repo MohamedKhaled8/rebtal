@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminPaymentsEmptyState extends StatelessWidget {
   final bool isDark;
@@ -27,7 +28,9 @@ class AdminPaymentsEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            hasFilters ? 'لا توجد نتائج' : 'لا توجد طلبات دفع',
+            hasFilters
+                ? context.tr('admin_no_results')
+                : context.tr('admin_no_payment_requests'),
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

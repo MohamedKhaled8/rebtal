@@ -8,6 +8,7 @@ import 'package:rebtal/feature/admin/presentation/widgets/admin_payments_header.
 import 'package:rebtal/feature/admin/presentation/widgets/admin_payments_empty_state.dart';
 import 'package:rebtal/feature/payment/models/payment_proof.dart';
 import 'package:rebtal/feature/admin/presentation/widgets/admin_payment_card.dart';
+import 'package:rebtal/core/utils/helper/booking_profile_fields.dart';
 
 class AdminPaymentsPage extends StatefulWidget {
   const AdminPaymentsPage({super.key});
@@ -142,10 +143,18 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final proof = filteredDocs[index];
-                      final booking = state.bookings
-                          .map((d) => d.data()..['__id'] = d.id)
-                          .where((b) => b['__id'] == proof.bookingId)
+                      final bd = state.bookings
+                          .where((d) => d.id == proof.bookingId)
                           .firstOrNull;
+                      Map<String, dynamic>? raw;
+                      if (bd != null) {
+                        raw = {...bd.data(), '__id': bd.id};
+                      }
+                      final booking = enrichBookingMapWithOwnerProfiles(
+                        raw,
+                        state.users,
+                        state.owners,
+                      );
 
                       return AdminPaymentCard(
                         proof: proof,

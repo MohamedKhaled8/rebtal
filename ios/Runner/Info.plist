@@ -45,6 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to take photos of your chalet and profile picture.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -53,7 +57,5 @@
 	<string>This app needs location access to show your current location and find nearby chalets.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs location access to show your current location and find nearby chalets.</string>
-	<key>MBXAccessToken</key>
-	<string>YOUR_MAPBOX_ACCESS_TOKEN</string>
 </dict>
 </plist>

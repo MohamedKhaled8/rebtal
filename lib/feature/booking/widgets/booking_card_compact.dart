@@ -86,6 +86,12 @@ class BookingCardCompact extends StatelessWidget {
       booking.chaletLocation,
       booking.chaletName,
     );
+    final hostDisplay = booking.ownerName.trim().isNotEmpty
+        ? booking.ownerName.trim()
+        : ((booking.ownerPhone != null &&
+                booking.ownerPhone!.trim().isNotEmpty)
+            ? booking.ownerPhone!.trim()
+            : context.tr('common_unavailable_short'));
 
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -279,7 +285,7 @@ class BookingCardCompact extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '${context.tr('booking_host')} : ${booking.ownerName}',
+                        '${context.tr('booking_host')} : $hostDisplay',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark ? Colors.white54 : Colors.grey.shade600,

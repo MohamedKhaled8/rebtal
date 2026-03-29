@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/services/onesignal_service.dart';
 
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/models/notification_model.dart';
+import 'package:rebtal/core/utils/localization/static_translation.dart';
 
 // Top-level function for background message handling
 @pragma('vm:entry-point')
@@ -34,6 +35,29 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
+
+  /// Prefer recipient profile [preferredLanguage] / [locale]; default Arabic.
+  Future<String> _languageForNotificationRecipient(String userId) async {
+    if (userId.isEmpty) return await StaticTranslation.currentLanguageCode();
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .get();
+      if (doc.exists) {
+        final m = doc.data();
+        final c = m?['preferredLanguage'] ?? m?['locale'] ?? m?['language'];
+        if (c is String && c.isNotEmpty) {
+          final low = c.toLowerCase();
+          if (low.startsWith('en')) return 'en';
+          if (low.startsWith('ar')) return 'ar';
+        }
+      }
+    } catch (e) {
+      debugPrint('notification locale fallback: $e');
+    }
+    return 'ar';
+  }
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final LocalNotificationService _localNotificationService =
@@ -210,11 +234,39 @@ class NotificationService {
     Map<String, dynamic>? data,
   }) async {
     try {
+      await StaticTranslation.load();
+      final lang = await _languageForNotificationRecipient(userId);
+
+      var resolvedTitle = (title ?? '').trim();
+      var resolvedBody = (body ?? '').trim();
+      final tk = titleKey?.trim();
+      final bk = bodyKey?.trim();
+      if (resolvedTitle.isEmpty && tk != null && tk.isNotEmpty) {
+        resolvedTitle = StaticTranslation.tr(
+          tk,
+          languageCode: lang,
+          params: titleParams,
+        );
+      }
+      if (resolvedBody.isEmpty && bk != null && bk.isNotEmpty) {
+        resolvedBody = StaticTranslation.tr(
+          bk,
+          languageCode: lang,
+          params: bodyParams,
+        );
+      }
+      if (resolvedTitle.isEmpty) {
+        resolvedTitle = StaticTranslation.tr(
+          'notifications_generic_title',
+          languageCode: lang,
+        );
+      }
+
       final notification = NotificationModel(
         id: '', // Will be set by Firestore
         userId: userId,
-        title: title ?? '',
-        body: body ?? '',
+        title: resolvedTitle,
+        body: resolvedBody,
         titleKey: titleKey ?? '',
         bodyKey: bodyKey ?? '',
         titleParams: titleParams,
@@ -231,24 +283,18 @@ class NotificationService {
           .collection('notifications')
           .add(notification.toFirestore());
 
-      // For local notification, try to get translated text if available
-      // (in real app, you might want to translate here based on device locale)
-      final displayTitle = title ?? titleKey ?? 'إشعار جديد';
-      final displayBody = body ?? bodyKey ?? '';
-
       // Show local notification immediately for visual feedback
       await _localNotificationService.showNotification(
         id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: displayTitle,
-        body: displayBody,
+        title: resolvedTitle,
+        body: resolvedBody,
         payload: relatedId,
       );
 
-      // ✅ AUTOMATICALLY SEND PUSH VIA ONESIGNAL
-      // This ensures EVERY notification sent in the app becomes a Push Notification
+      // Send push directly from app via OneSignal (no Cloud Functions required).
       await OneSignalService().sendNotification(
-        title: displayTitle,
-        body: displayBody,
+        title: resolvedTitle,
+        body: resolvedBody,
         targetUserId: userId,
         data: {
           'type': type.name,

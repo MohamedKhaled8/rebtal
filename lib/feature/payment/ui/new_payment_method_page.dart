@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/feature/payment/ui/new_payment_details_page.dart';
@@ -123,7 +124,7 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'طريقة الدفع',
+          context.tr('payment_screen_title'),
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontSize: 18,
@@ -148,7 +149,7 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
 
                         // Payment Methods
                         Text(
-                          'اختر طريقة الدفع',
+                          context.tr('payment_choose_method'),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -160,28 +161,28 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
                         _buildPaymentOption(
                           isDark,
                           PaymentMethod.instaPay,
-                          'إنستاباي',
+                          context.tr('payment_method_instapay'),
                           Icons.flash_on_outlined,
                         ),
                         const SizedBox(height: 12),
                         _buildPaymentOption(
                           isDark,
                           PaymentMethod.vodafoneCash,
-                          'فودافون كاش',
+                          context.tr('payment_method_vodafone_cash'),
                           Icons.phone_android_outlined,
                         ),
                         const SizedBox(height: 12),
                         _buildPaymentOption(
                           isDark,
                           PaymentMethod.bankTransfer,
-                          'تحويل بنكي',
+                          context.tr('payment_method_bank'),
                           Icons.account_balance_outlined,
                         ),
                         const SizedBox(height: 12),
                         _buildPaymentOption(
                           isDark,
                           PaymentMethod.cashOnArrival,
-                          'الدفع عند الوصول',
+                          context.tr('payment_method_cash_on_arrival'),
                           Icons.payments_outlined,
                         ),
                       ],
@@ -219,9 +220,9 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text(
-                          'متابعة',
-                          style: TextStyle(
+                        child: Text(
+                          context.tr('payment_continue'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -261,7 +262,10 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '$displayNights ليلة',
+            context.tr('payment_nights_label_short').replaceAll(
+                  '{count}',
+                  '$displayNights',
+                ),
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white70 : Colors.grey.shade600,
@@ -272,7 +276,7 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'الإجمالي',
+                context.tr('booking_total'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -280,7 +284,7 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
                 ),
               ),
               Text(
-                '${_calculatedAmount.round()} ج.م',
+                '${_calculatedAmount.round()} ${context.tr('booking_egp_currency')}',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -311,7 +315,7 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected
-                ? Colors.black
+                ? (isDark ? const Color(0xFF22C55E) : Colors.black)
                 : (isDark ? Colors.white10 : Colors.grey.shade200),
             width: isSelected ? 2 : 1,
           ),
@@ -335,7 +339,11 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: Colors.black, size: 24)
+              Icon(
+                Icons.check_circle,
+                color: isDark ? const Color(0xFF22C55E) : Colors.black,
+                size: 24,
+              )
             else
               Icon(
                 Icons.circle_outlined,

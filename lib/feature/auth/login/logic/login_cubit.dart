@@ -13,6 +13,7 @@ import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/feature/auth/domain/usecases/login_usecase.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/validators/auth_validator.dart';
 
 part 'login_state.dart';
@@ -240,7 +241,7 @@ class LoginCubit extends Cubit<LoginState> {
         // Show success message first - only once
         SnackBarHelper.showSuccess(
           context,
-          'تم تسجيل الدخول بنجاح',
+          context.tr('auth_login_success'),
           icon: Icons.check_circle,
         );
 

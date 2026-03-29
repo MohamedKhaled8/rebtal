@@ -62,14 +62,14 @@ class OwnerChaletCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isDark
-                ? ColorsManager.white.withOpacity(0.05)
-                : ColorsManager.chaletGrey200.withOpacity(0.1),
+                ? ColorsManager.white.withValues(alpha: 0.05)
+                : ColorsManager.chaletGrey200.withValues(alpha: 0.1),
           ),
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? ColorsManager.black.withOpacity(0.2)
-                  : ColorsManager.black.withOpacity(0.05),
+                  ? ColorsManager.black.withValues(alpha: 0.2)
+                  : ColorsManager.black.withValues(alpha: 0.05),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -147,42 +147,46 @@ class OwnerChaletCard extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // Info Row: Bed, Bath, Children
-                    Row(
-                      children: [
-                        _InfoBadge(
-                          icon: Icons.bed_outlined,
-                          text:
-                              '${chaletData['bedrooms'] ?? 0} ${context.tr('common_rooms')}',
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 12),
-                        _InfoBadge(
-                          icon: Icons.bathtub_outlined,
-                          text:
-                              '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths')}',
-                          isDark: isDark,
-                        ),
-                        if (chaletData['childrenCount'] != null &&
-                            (chaletData['childrenCount'] as int) > 0) ...[
-                          const SizedBox(width: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
                           _InfoBadge(
-                            icon: Icons.child_care_outlined,
+                            icon: Icons.bed_outlined,
                             text:
-                                '${chaletData['childrenCount']} ${context.tr('common_children')}',
+                                '${chaletData['bedrooms'] ?? 0} ${context.tr('common_rooms')}',
                             isDark: isDark,
                           ),
-                        ],
-                        if (chaletData['chaletArea'] != null &&
-                            chaletData['chaletArea'].toString().isNotEmpty) ...[
                           const SizedBox(width: 12),
                           _InfoBadge(
-                            icon: Icons.square_foot_rounded,
+                            icon: Icons.bathtub_outlined,
                             text:
-                                '${chaletData['chaletArea']} ${context.tr('common_m2')}',
+                                '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths')}',
                             isDark: isDark,
                           ),
+                          if (chaletData['childrenCount'] != null &&
+                              (chaletData['childrenCount'] as int) > 0) ...[
+                            const SizedBox(width: 12),
+                            _InfoBadge(
+                              icon: Icons.child_care_outlined,
+                              text:
+                                  '${chaletData['childrenCount']} ${context.tr('common_children')}',
+                              isDark: isDark,
+                            ),
+                          ],
+                          if (chaletData['chaletArea'] != null &&
+                              chaletData['chaletArea'].toString().isNotEmpty) ...[
+                            const SizedBox(width: 12),
+                            _InfoBadge(
+                              icon: Icons.square_foot_rounded,
+                              text:
+                                  '${chaletData['chaletArea']} ${context.tr('common_m2')}',
+                              isDark: isDark,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
 
                     const SizedBox(height: 12),
@@ -321,7 +325,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.9),
+        color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -350,7 +354,7 @@ class _CompactBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.9),
+        color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -379,7 +383,7 @@ class _LocationRow extends StatelessWidget {
           Icons.location_on_outlined,
           size: 14,
           color: isDark
-              ? ColorsManager.white.withOpacity(0.6)
+              ? ColorsManager.white.withValues(alpha: 0.6)
               : ColorsManager.chaletGrey500,
         ),
         const SizedBox(width: 4),
@@ -388,7 +392,7 @@ class _LocationRow extends StatelessWidget {
             location,
             style: TextStyle(
               color: isDark
-                  ? ColorsManager.white.withOpacity(0.6)
+                  ? ColorsManager.white.withValues(alpha: 0.6)
                   : ColorsManager.chaletGrey500,
               fontSize: 12,
             ),
@@ -468,9 +472,9 @@ class _ActionToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -511,7 +515,7 @@ class _InfoBadge extends StatelessWidget {
           icon,
           size: 16,
           color: isDark
-              ? ColorsManager.white.withOpacity(0.7)
+              ? ColorsManager.white.withValues(alpha: 0.7)
               : ColorsManager.grey,
         ),
         const SizedBox(width: 4),
@@ -520,7 +524,7 @@ class _InfoBadge extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             color: isDark
-                ? ColorsManager.white.withOpacity(0.7)
+                ? ColorsManager.white.withValues(alpha: 0.7)
                 : Colors.black87,
             fontWeight: FontWeight.w500,
           ),

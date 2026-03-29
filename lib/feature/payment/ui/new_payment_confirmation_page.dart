@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class NewPaymentConfirmationPage extends StatefulWidget {
   final Booking booking;
@@ -75,9 +76,12 @@ class _NewPaymentConfirmationPageState
       final notificationService = NotificationService();
       await notificationService.sendNotification(
         userId: adminId,
-        title: 'دفع جديد مستلم',
-        body:
-            'تم استلام دفع جديد للحجز #${widget.booking.id.substring(0, 8).toUpperCase()} - ${widget.booking.chaletName}',
+        titleKey: 'notifications_admin_new_payment_title',
+        bodyKey: 'notifications_admin_new_payment_body',
+        bodyParams: {
+          'bookingShort': widget.booking.id.substring(0, 8).toUpperCase(),
+          'chaletName': widget.booking.chaletName,
+        },
         type: NotificationType.paymentConfirmed,
         relatedId: widget.booking.id,
         data: {
@@ -111,16 +115,16 @@ class _NewPaymentConfirmationPageState
     });
   }
 
-  String _getMethodTitle() {
+  String _getMethodTitle(BuildContext context) {
     switch (widget.paymentMethod) {
       case PaymentMethod.instaPay:
-        return 'إنستاباي';
+        return context.tr('payment_method_instapay');
       case PaymentMethod.vodafoneCash:
-        return 'فودافون كاش';
+        return context.tr('payment_method_vodafone_cash');
       case PaymentMethod.bankTransfer:
-        return 'تحويل بنكي';
+        return context.tr('payment_method_bank');
       case PaymentMethod.cashOnArrival:
-        return 'الدفع عند الوصول';
+        return context.tr('payment_method_cash_on_arrival');
     }
   }
 
@@ -147,7 +151,10 @@ class _NewPaymentConfirmationPageState
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        SnackBarHelper.showError(context, 'حدث خطأ: $e');
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('booking_error_msg')} $e',
+        );
       }
     }
   }
@@ -156,6 +163,7 @@ class _NewPaymentConfirmationPageState
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
     final nights = widget.booking.to.difference(widget.booking.from).inDays;
+    final displayNights = nights > 0 ? nights : 1;
 
     return Scaffold(
       backgroundColor: isDark
@@ -166,7 +174,7 @@ class _NewPaymentConfirmationPageState
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'تأكيد الحجز',
+          context.tr('booking_confirm'),
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
             fontSize: 18,
@@ -223,8 +231,8 @@ class _NewPaymentConfirmationPageState
                       // Success Message
                       Text(
                         widget.paymentMethod == PaymentMethod.cashOnArrival
-                            ? 'تم تأكيد الحجز'
-                            : 'تم استلام طلب الدفع',
+                            ? context.tr('payment_booking_confirmed_title')
+                            : context.tr('payment_request_received_title'),
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -237,8 +245,8 @@ class _NewPaymentConfirmationPageState
 
                       Text(
                         widget.paymentMethod == PaymentMethod.cashOnArrival
-                            ? 'حجزك مؤكد! سيتم الدفع عند استلام المفتاح'
-                            : 'سيتم مراجعة الدفع والتأكيد خلال 24 ساعة',
+                            ? context.tr('payment_booking_confirmed_subtitle')
+                            : context.tr('payment_review_24h_subtitle'),
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? Colors.white70 : Colors.grey.shade600,
@@ -249,22 +257,29 @@ class _NewPaymentConfirmationPageState
                       const SizedBox(height: 40),
 
                       // Booking Details
-                      _buildSection(isDark, 'تفاصيل الحجز', [
-                        _buildRow(isDark, 'الشاليه', widget.booking.chaletName),
+                      _buildSection(isDark, context.tr('payment_section_booking_details'), [
+                        _buildRow(isDark, context.tr('payment_label_chalet'), widget.booking.chaletName),
                         _buildRow(
                           isDark,
-                          'تاريخ الوصول',
+                          context.tr('booking_check_in'),
                           '${widget.booking.from.day}/${widget.booking.from.month}/${widget.booking.from.year}',
                         ),
                         _buildRow(
                           isDark,
-                          'تاريخ المغادرة',
+                          context.tr('booking_check_out'),
                           '${widget.booking.to.day}/${widget.booking.to.month}/${widget.booking.to.year}',
                         ),
-                        _buildRow(isDark, 'عدد الليالي', '$nights ليلة'),
                         _buildRow(
                           isDark,
-                          'رقم الحجز',
+                          context.tr('booking_nights_label'),
+                          context.tr('payment_nights_label_short').replaceAll(
+                                '{count}',
+                                '$displayNights',
+                              ),
+                        ),
+                        _buildRow(
+                          isDark,
+                          context.tr('payment_booking_id_short'),
                           '#${widget.booking.id.substring(0, 8).toUpperCase()}',
                         ),
                       ]),
@@ -272,12 +287,16 @@ class _NewPaymentConfirmationPageState
                       const SizedBox(height: 16),
 
                       // Payment Details
-                      _buildSection(isDark, 'تفاصيل الدفع', [
-                        _buildRow(isDark, 'طريقة الدفع', _getMethodTitle()),
+                      _buildSection(isDark, context.tr('payment_section_payment_details'), [
                         _buildRow(
                           isDark,
-                          'المبلغ',
-                          '${widget.amount.round()} ج.م',
+                          context.tr('payment_screen_title'),
+                          _getMethodTitle(context),
+                        ),
+                        _buildRow(
+                          isDark,
+                          context.tr('payment_amount_label'),
+                          '${widget.amount.round()} ${context.tr('booking_egp_currency')}',
                         ),
                       ]),
 
@@ -306,7 +325,7 @@ class _NewPaymentConfirmationPageState
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'الخطوات القادمة',
+                                  context.tr('payment_next_steps_title'),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -322,13 +341,16 @@ class _NewPaymentConfirmationPageState
                               isDark,
                               widget.paymentMethod ==
                                       PaymentMethod.cashOnArrival
-                                  ? 'حجزك مؤكد ومضمون'
-                                  : 'سيتم مراجعة الدفع خلال 24 ساعة',
+                                  ? context.tr('payment_step_cash_confirmed')
+                                  : context.tr('payment_step_review_pending'),
                             ),
-                            _buildStep(isDark, 'سيتم إرسال إشعار بالتأكيد'),
                             _buildStep(
                               isDark,
-                              'يمكنك مراجعة حجوزاتك من قسم "حجوزاتي"',
+                              context.tr('payment_step_push_notification'),
+                            ),
+                            _buildStep(
+                              isDark,
+                              context.tr('payment_step_my_bookings_hint'),
                             ),
                           ],
                         ),
@@ -356,19 +378,18 @@ class _NewPaymentConfirmationPageState
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
-                            'تم',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        child: Text(
+                          context.tr('common_done'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                    ),
                     ],
                   ),
                 ),
-
           // Done Overlay with Blur
           if (_showDoneOverlay) _buildDoneOverlay(isDark),
         ],
@@ -379,7 +400,7 @@ class _NewPaymentConfirmationPageState
   /// Build Done overlay with blur effect
   Widget _buildDoneOverlay(bool isDark) {
     return Container(
-      color: Colors.black.withOpacity(0.7),
+      color: Colors.black.withValues(alpha: 0.7),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
@@ -397,7 +418,7 @@ class _NewPaymentConfirmationPageState
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.withOpacity(0.4),
+                        color: Colors.green.withValues(alpha: 0.4),
                         blurRadius: 20,
                         spreadRadius: 5,
                       ),
@@ -408,7 +429,7 @@ class _NewPaymentConfirmationPageState
                 const SizedBox(height: 24),
                 // Done text
                 Text(
-                  'Done',
+                  context.tr('common_done'),
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
@@ -417,7 +438,7 @@ class _NewPaymentConfirmationPageState
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'جاري تحضير الفاتورة...',
+                  context.tr('payment_invoice_preparing'),
                   style: TextStyle(
                     fontSize: 16,
                     color: isDark ? Colors.white70 : Colors.white70,
