@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/payment/models/payment_proof.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class AdminPaymentCard extends StatelessWidget {
   final PaymentProof proof;
@@ -11,14 +12,20 @@ class AdminPaymentCard extends StatelessWidget {
   final bool isDark;
   final bool isExpanded;
   final VoidCallback onToggleExpand;
+  final Future<void> Function(String proofDocId, String bookingId)?
+      onApprovePayment;
+  final Future<void> Function(String proofDocId, String bookingId)?
+      onRejectPayment;
 
   const AdminPaymentCard({
-    super.key, 
-    required this.proof, 
-    required this.bookingData, 
+    super.key,
+    required this.proof,
+    required this.bookingData,
     required this.isDark,
     required this.isExpanded,
     required this.onToggleExpand,
+    this.onApprovePayment,
+    this.onRejectPayment,
   });
 
   @override
@@ -37,7 +44,7 @@ class AdminPaymentCard extends StatelessWidget {
 
     final bookingFrom = _parseDate(bookingData!['from']) ?? DateTime.now();
     final bookingTo = _parseDate(bookingData!['to']) ?? DateTime.now();
-    final nights = bookingTo.difference(bookingFrom).inDays + 1;
+    final nights = bookingTo.difference(bookingFrom).inDays.clamp(1, 365);
     final shortId = proof.bookingId.length > 8 ? proof.bookingId.substring(0, 8).toUpperCase() : proof.bookingId.toUpperCase();
     final dateFormat = DateFormat('dd/MM/yyyy');
 
@@ -222,7 +229,11 @@ class AdminPaymentCard extends StatelessWidget {
                         if (proof.status == PaymentProofStatus.pending)
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _showReviewDialog(context, proof, bookingData!),
+                              onPressed: () => _showReviewDialog(
+                                context,
+                                proof,
+                                bookingData!,
+                              ),
                               icon: const Icon(Icons.check_circle_rounded, size: 20),
                               label: Text(context.tr('admin_payment_review'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                               style: ElevatedButton.styleFrom(
@@ -374,7 +385,11 @@ class AdminPaymentCard extends StatelessWidget {
     );
   }
 
-  void _showReviewDialog(BuildContext context, PaymentProof proof, Map<String, dynamic> bookingMap) {
+  void _showReviewDialog(
+    BuildContext context,
+    PaymentProof proof,
+    Map<String, dynamic> bookingMap,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -383,24 +398,61 @@ class AdminPaymentCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(ctx.tr('common_cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(ctx.tr('common_cancel')),
+          ),
           ElevatedButton.icon(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              // TODO: Implement reject in Cubit method
+              if (onRejectPayment == null) return;
+              try {
+                await onRejectPayment!(proof.id, proof.bookingId);
+                if (context.mounted) {
+                  SnackBarHelper.showSuccess(
+                    context,
+                    context.tr('admin_rejected_notification'),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  SnackBarHelper.showError(context, '$e');
+                }
+              }
             },
             icon: const Icon(Icons.close_rounded, size: 18),
             label: Text(ctx.tr('admin_reject')),
-            style: ElevatedButton.styleFrom(backgroundColor: ColorsManager.red, foregroundColor: ColorsManager.white, elevation: 0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorsManager.red,
+              foregroundColor: ColorsManager.white,
+              elevation: 0,
+            ),
           ),
           ElevatedButton.icon(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              // TODO: Implement approve in Cubit method
+              if (onApprovePayment == null) return;
+              try {
+                await onApprovePayment!(proof.id, proof.bookingId);
+                if (context.mounted) {
+                  SnackBarHelper.showSuccess(
+                    context,
+                    context.tr('admin_payment_confirmed'),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  SnackBarHelper.showError(context, '$e');
+                }
+              }
             },
             icon: const Icon(Icons.check_rounded, size: 18),
             label: Text(ctx.tr('admin_approve')),
-            style: ElevatedButton.styleFrom(backgroundColor: ColorsManager.green, foregroundColor: ColorsManager.white, elevation: 0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorsManager.green,
+              foregroundColor: ColorsManager.white,
+              elevation: 0,
+            ),
           ),
         ],
       ),

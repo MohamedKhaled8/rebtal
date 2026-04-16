@@ -8,6 +8,8 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/helper/chalet_booked_calendar_helper.dart';
+import 'package:rebtal/feature/booking/widgets/booking_table_range_picker_dialog.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:confetti/confetti.dart';
 
@@ -870,42 +872,19 @@ class _DateSelectionStep extends StatelessWidget {
       }
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // أيام تُغلق على التقويم بعد تأكيد الحجز — تقويم مخصص: الأيام المقفولة دائرة حمراء «محددة»
+    final bookedDays = await loadChaletBookedDaySet(cubit.chaletId);
 
-    // Theme Data
-    final themeData = Theme.of(context).copyWith(
-      colorScheme: isDark
-          ? const ColorScheme.dark(
-              primary: kPrimaryColor,
-              onPrimary: Colors.black,
-              surface: Color(0xFF1E1E1E),
-              onSurface: Colors.white,
-              secondary: kPrimaryColor,
-              onSecondary: Colors.black,
-            )
-          : const ColorScheme.light(
-              primary: kPrimaryColor,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-      dialogBackgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: isDark ? Colors.white : kPrimaryColor,
-        ),
-      ),
-    );
+    if (!context.mounted) return;
 
-    // Range Picker (مقيد بفترة الحجز فقط)
-    final picked = await showDateRangePicker(
-      context: context,
-      initialDateRange: state.startDate != null && state.endDate != null
-          ? DateTimeRange(start: state.startDate!, end: state.endDate!)
-          : null,
+    final picked = await showBookingTableRangePicker(
+      context,
       firstDate: rangeFirst,
       lastDate: rangeLast,
-      builder: (context, child) => Theme(data: themeData, child: child!),
+      bookedDays: bookedDays,
+      initialRange: state.startDate != null && state.endDate != null
+          ? DateTimeRange(start: state.startDate!, end: state.endDate!)
+          : null,
     );
     if (picked != null) {
       cubit.selectDates(picked.start, picked.end);

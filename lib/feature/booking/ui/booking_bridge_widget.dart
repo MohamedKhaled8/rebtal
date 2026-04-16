@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
+import 'package:rebtal/core/utils/helper/chalet_booked_calendar_helper.dart';
 
 class BookingBridgeWidget extends StatefulWidget {
   final BuildContext parentContext;
@@ -69,6 +70,7 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
   late final String _bookingId;
   DateTime? _from;
   DateTime? _to;
+  Set<DateTime> _bookedDays = {};
 
   @override
   void initState() {
@@ -78,9 +80,47 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
 
     _from = null;
     _to = null;
+    _loadBookedDays();
 
     // Do not add booking on init. Booking will be created only when the
     // user explicitly confirms or rejects after returning from external app.
+  }
+
+  Future<void> _loadBookedDays() async {
+    final s = await loadChaletBookedDaySet(widget.chaletId);
+    if (mounted) setState(() => _bookedDays = s);
+  }
+
+  ThemeData _bookingDatePickerTheme(BuildContext context, {required bool isDark}) {
+    return Theme.of(context).copyWith(
+      colorScheme: ColorScheme.light(
+        primary: ColorsManager.chaletAccent,
+        onPrimary: Colors.white,
+        surface: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+        onSurface: isDark ? Colors.white : Colors.black,
+      ),
+      datePickerTheme: DatePickerThemeData(
+        dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return Colors.white;
+          }
+          return null;
+        }),
+        dayBackgroundColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return ColorsManager.chaletActionRed;
+          }
+          return null;
+        }),
+        dayOverlayColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.disabled)) {
+            return Colors.transparent;
+          }
+          return null;
+        }),
+        dayShape: MaterialStateProperty.all(const CircleBorder()),
+      ),
+    );
   }
 
   @override
@@ -350,15 +390,13 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 initialDate: _from ?? firstDate,
                                 firstDate: firstDate,
                                 lastDate: lastDate,
+                                selectableDayPredicate: (d) =>
+                                    !isChaletDayBooked(_bookedDays, d),
                                 builder: (context, child) {
                                   return Theme(
-                                    data: Theme.of(context).copyWith(
-                                      colorScheme: ColorScheme.light(
-                                        primary: ColorsManager.chaletAccent,
-                                        onPrimary: Colors.white,
-                                        surface: Colors.white,
-                                        onSurface: Colors.black,
-                                      ),
+                                    data: _bookingDatePickerTheme(
+                                      context,
+                                      isDark: isDark,
                                     ),
                                     child: child!,
                                   );
@@ -437,15 +475,13 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
                                 initialDate: _to ?? fromDate,
                                 firstDate: fromDate,
                                 lastDate: lastDate,
+                                selectableDayPredicate: (d) =>
+                                    !isChaletDayBooked(_bookedDays, d),
                                 builder: (context, child) {
                                   return Theme(
-                                    data: Theme.of(context).copyWith(
-                                      colorScheme: ColorScheme.light(
-                                        primary: ColorsManager.chaletAccent,
-                                        onPrimary: Colors.white,
-                                        surface: Colors.white,
-                                        onSurface: Colors.black,
-                                      ),
+                                    data: _bookingDatePickerTheme(
+                                      context,
+                                      isDark: isDark,
                                     ),
                                     child: child!,
                                   );
@@ -1795,15 +1831,14 @@ class _BookingBridgeWidgetState extends State<BookingBridgeWidget>
     });
   }
 
-  /// Full days between check-in and check-out (e.g. Jan10→Jan15 = 5 days).
+  /// Calendar span between check-in and check-out dates (date-only).
   int _getDays(DateTime from, DateTime to) {
     return to.difference(from).inDays.clamp(0, 365);
   }
 
-  /// Nights = days - 1; billing is per night (e.g. Jan10→Jan15 = 4 nights).
+  /// Number of billed nights (e.g. 20→24 = 4 nights).
   int _getNights(DateTime from, DateTime to) {
-    final d = _getDays(from, to);
-    return (d - 1).clamp(0, 364);
+    return _getDays(from, to).clamp(0, 365);
   }
 
   double _calculateNightlyPrice() {

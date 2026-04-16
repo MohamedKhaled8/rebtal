@@ -20,10 +20,7 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nights = (booking.to.difference(booking.from).inDays + 1).clamp(
-      1,
-      365,
-    );
+    final nights = booking.to.difference(booking.from).inDays.clamp(1, 365);
     return Container(
       decoration: BoxDecoration(
         color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,

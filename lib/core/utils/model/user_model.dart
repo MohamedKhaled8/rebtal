@@ -22,6 +22,9 @@ class UserModel {
   // ID Card URL
   final String? idCardUrl;
 
+  // Device type (brand + model + OS)
+  final String? deviceType;
+
   const UserModel({
     required this.uid,
     required this.email,
@@ -37,6 +40,7 @@ class UserModel {
     this.instaPayNumber,
     this.profileImageUrl,
     this.idCardUrl,
+    this.deviceType,
   });
 
   Map<String, dynamic> toMap() {
@@ -55,6 +59,7 @@ class UserModel {
       'instaPayNumber': instaPayNumber,
       'profileImageUrl': profileImageUrl,
       'idCardUrl': idCardUrl,
+      'deviceType': deviceType,
     };
   }
 
@@ -76,6 +81,7 @@ class UserModel {
       instaPayNumber: map['instaPayNumber'],
       profileImageUrl: profile?.toString(),
       idCardUrl: map['idCardUrl'],
+      deviceType: map['deviceType'],
     );
   }
 }

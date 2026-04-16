@@ -32,5 +32,14 @@ abstract class BaseOwnerRepository {
 
   Future<Either<Failure, void>> updateChalet(ChaletEntity chalet);
 
+  /// Partial update with arbitrary Firestore fields (e.g. owner edit flow).
+  Future<Either<Failure, void>> updateChaletFields(
+    String chaletId,
+    Map<String, dynamic> fields,
+  );
+
+  /// Upload a single gallery image (same Cloudinary pipeline as add flow).
+  Future<Either<Failure, String>> uploadChaletImage(File image);
+
   Future<Either<Failure, void>> deleteChalet(String chaletId);
 }

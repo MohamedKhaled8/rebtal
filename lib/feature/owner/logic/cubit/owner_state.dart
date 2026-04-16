@@ -85,6 +85,8 @@ class OwnerState extends Equatable {
 
 class ChaletDraft extends Equatable {
   final List<File> uploadedImages;
+  /// Existing remote URLs when editing an approved listing (not mixed with [uploadedImages]).
+  final List<String> existingImageUrls;
   final File? profileImage;
   final String selectedLocation;
   final bool isAvailable;
@@ -130,6 +132,7 @@ class ChaletDraft extends Equatable {
 
   const ChaletDraft({
     this.uploadedImages = const [],
+    this.existingImageUrls = const [],
     this.profileImage,
     this.selectedLocation = '',
     this.isAvailable = true,
@@ -172,6 +175,7 @@ class ChaletDraft extends Equatable {
 
   ChaletDraft copyWith({
     List<File>? uploadedImages,
+    List<String>? existingImageUrls,
     File? profileImage,
     String? selectedLocation,
     bool? isAvailable,
@@ -212,6 +216,7 @@ class ChaletDraft extends Equatable {
   }) {
     return ChaletDraft(
       uploadedImages: uploadedImages ?? this.uploadedImages,
+      existingImageUrls: existingImageUrls ?? this.existingImageUrls,
       profileImage: clearProfileImage
           ? null
           : (profileImage ?? this.profileImage),
@@ -256,6 +261,7 @@ class ChaletDraft extends Equatable {
   @override
   List<Object?> get props => [
     uploadedImages,
+    existingImageUrls,
     profileImage,
     selectedLocation,
     isAvailable,

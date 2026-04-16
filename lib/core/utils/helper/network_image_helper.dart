@@ -35,6 +35,7 @@ class NetworkImageHelper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
+      key: ValueKey(imageUrl),
       imageUrl: imageUrl,
       cacheManager: _SharedImageCacheManager.instance,
       width: width,
@@ -43,7 +44,9 @@ class NetworkImageHelper extends StatelessWidget {
       fadeInDuration: const Duration(milliseconds: 120),
       fadeOutDuration: Duration.zero,
       placeholderFadeInDuration: Duration.zero,
-      useOldImageOnUrlChange: true,
+      // In fast-scrolling lists and live-updating streams, keeping the old image
+      // can cause incorrect images to appear for other list items.
+      useOldImageOnUrlChange: false,
       filterQuality: FilterQuality.low,
       placeholder: (context, url) =>
           placeholder ?? const Center(child: CircularProgressIndicator()),

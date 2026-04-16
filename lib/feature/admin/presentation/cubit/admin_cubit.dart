@@ -176,6 +176,60 @@ class AdminCubit extends Cubit<AdminState> {
     AdminSearch.q.value = '';
   }
 
+  /// Approve uploaded payment proof and confirm the booking (blocks dates on calendar).
+  Future<void> approvePaymentProof({
+    required String proofDocId,
+    required String bookingId,
+  }) async {
+    final bookingRef =
+        FirebaseFirestore.instance.collection('bookings').doc(bookingId);
+    final bookingSnap = await bookingRef.get();
+    final before = bookingSnap.data();
+    final guestUserId = before?['userId']?.toString();
+    final chaletName = before?['chaletName']?.toString() ?? '';
+
+    await updatePaymentProofStatusUseCase(proofDocId, 'approved');
+    await bookingRef.update({
+      'status': 'confirmed',
+      'adminConfirmedPaymentAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (guestUserId != null && guestUserId.isNotEmpty) {
+      await NotificationService().sendNotification(
+        userId: guestUserId,
+        titleKey: 'notifications_payment_confirmed_title',
+        bodyKey: 'notifications_payment_confirmed_body',
+        bodyParams: {'chaletName': chaletName},
+        type: NotificationType.paymentConfirmed,
+        relatedId: bookingId,
+        data: {
+          'bookingId': bookingId,
+          'chaletName': chaletName,
+        },
+      );
+    }
+  }
+
+  /// Reject payment proof and send booking back to awaiting payment.
+  Future<void> rejectPaymentProof({
+    required String proofDocId,
+    required String bookingId,
+    String? reason,
+  }) async {
+    await updatePaymentProofStatusUseCase(proofDocId, 'rejected');
+    await FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(bookingId)
+        .update({
+          'status': 'awaitingPayment',
+          'paymentProofUrl': null,
+          'paymentProofUploadedAt': null,
+          if (reason != null && reason.isNotEmpty) 'adminPaymentNotes': reason,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
   Future<void> updateStatus(
     BuildContext context, {
     required String docId,

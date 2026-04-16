@@ -36,6 +36,7 @@ class AuthRepository implements BaseAuthRepository {
     throw Exception('Max retries exceeded');
   }
 
+  @override
   Future<Either<Failure, UserModel>> register({
     required String email,
     required String password,
@@ -44,6 +45,7 @@ class AuthRepository implements BaseAuthRepository {
     required String role,
     String? profileImageUrl,
     String? idCardUrl,
+    String? deviceType,
   }) async {
     try {
       final emailError = AuthValidator.validateEmail(email);
@@ -68,36 +70,7 @@ class AuthRepository implements BaseAuthRepository {
         return Left(ServerFailure('فشل إنشاء الحساب'));
       }
 
-      // Wait a bit to ensure user is fully created before sending verification
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (!user.emailVerified) {
-        try {
-          debugPrint(
-            '📧 Attempting to send email verification to: ${user.email}',
-          );
-          await user.sendEmailVerification();
-          debugPrint(
-            '✅ Email verification sent successfully to: ${user.email}',
-          );
-        } catch (e) {
-          // Log but don't fail registration if email sending fails
-          FirebaseErrorHandler.logError(
-            e,
-            context: 'SendEmailVerificationDuringRegister',
-          );
-          debugPrint('❌ Failed to send email verification: $e');
-          if (e is FirebaseAuthException) {
-            debugPrint('❌ Firebase Auth Error Code: ${e.code}');
-            debugPrint('❌ Firebase Auth Error Message: ${e.message}');
-          }
-        }
-      } else {
-        debugPrint('ℹ️ User email is already verified: ${user.email}');
-      }
-
-      // Don't save to Firestore yet - wait for email verification
-      // Return UserModel for temporary use only
+      // Save user directly to Firestore (no email verification needed)
       final normalizedRole = role.toLowerCase().trim();
       final userModel = UserModel(
         uid: user.uid,
@@ -109,9 +82,15 @@ class AuthRepository implements BaseAuthRepository {
         phone: phone.trim(),
         profileImageUrl: profileImageUrl,
         idCardUrl: idCardUrl,
+        deviceType: deviceType,
       );
 
-      return Right(userModel);
+      // Save to Firestore immediately
+      final saveResult = await saveUserToFirestore(userModel);
+      return saveResult.fold(
+        (failure) => Left(failure),
+        (savedUser) => Right(savedUser),
+      );
     } catch (e) {
       FirebaseErrorHandler.logError(e, context: 'Register');
       final errorMessage = FirebaseErrorHandler.getErrorMessage(e);
@@ -124,6 +103,7 @@ class AuthRepository implements BaseAuthRepository {
     }
   }
 
+  @override
   Future<Either<Failure, UserModel>> saveUserToFirestore(
     UserModel userModel,
   ) async {
@@ -160,6 +140,7 @@ class AuthRepository implements BaseAuthRepository {
     }
   }
 
+  @override
   Future<Either<Failure, UserModel>> login({
     required String email,
     required String password,
@@ -232,6 +213,7 @@ class AuthRepository implements BaseAuthRepository {
     }
   }
 
+  @override
   Future<Either<Failure, void>> sendPasswordResetEmail(String email) async {
     try {
       final emailError = AuthValidator.validateEmail(email);
@@ -253,6 +235,7 @@ class AuthRepository implements BaseAuthRepository {
     }
   }
 
+  @override
   Future<Either<Failure, void>> sendEmailVerification() async {
     try {
       final user = _auth.currentUser;

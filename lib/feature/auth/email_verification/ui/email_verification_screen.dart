@@ -4,6 +4,7 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/auth/email_verification/logic/email_verification_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class EmailVerificationScreen extends StatelessWidget {
   final String email;
@@ -19,9 +20,12 @@ class EmailVerificationScreen extends StatelessWidget {
         if (state is EmailVerificationVerified) {
           context.read<EmailVerificationCubit>().handleVerified(context);
         } else if (state is EmailVerificationEmailSent) {
-          SnackBarHelper.showSuccess(context, 'تم إرسال بريد التحقق مرة أخرى.');
+          SnackBarHelper.showSuccess(
+            context,
+            context.tr('auth_email_verification_resent'),
+          );
         } else if (state is EmailVerificationError) {
-          SnackBarHelper.showError(context, state.message);
+          SnackBarHelper.showError(context, context.tr(state.message));
         }
       },
       child: BlocBuilder<EmailVerificationCubit, EmailVerificationState>(

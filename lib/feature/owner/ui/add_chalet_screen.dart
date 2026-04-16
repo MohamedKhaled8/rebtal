@@ -12,22 +12,40 @@ import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
 import 'package:rebtal/feature/owner/widget/modern_image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/modern_amenities_section.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 class AddChaletScreen extends StatefulWidget {
-  const AddChaletScreen({super.key});
+  const AddChaletScreen({super.key, this.editDocId, this.initialChaletData});
+
+  /// When set with [initialChaletData], loads the form for editing an existing listing.
+  final String? editDocId;
+  final Map<String, dynamic>? initialChaletData;
+
+  bool get _isEditMode => editDocId != null && initialChaletData != null;
 
   @override
   State<AddChaletScreen> createState() => _AddChaletScreenState();
 }
 
 class _AddChaletScreenState extends State<AddChaletScreen> {
+  /// Bumped once after edit draft hydrates so [TextFormField] `initialValue` rebuilds.
+  int _formRebuildGeneration = 0;
+  bool _didRebuildFormAfterEditLoad = false;
+
   @override
   void initState() {
     super.initState();
-    // Reset form when entering the screen to ensure clean state
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AppCubit>().ownerCubit.resetForm();
+      final cubit = context.read<AppCubit>().ownerCubit;
+      if (widget._isEditMode) {
+        cubit.loadChaletDataForEdit(
+          widget.initialChaletData!,
+          widget.editDocId!,
+        );
+      } else {
+        cubit.resetForm();
+      }
     });
   }
 
@@ -39,6 +57,31 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
 
     return MultiBlocListener(
       listeners: [
+        BlocListener<OwnerCubit, OwnerState>(
+          bloc: ownerCubit,
+          listenWhen: (previous, current) {
+            if (!widget._isEditMode || _didRebuildFormAfterEditLoad) {
+              return false;
+            }
+            final d = current.draft;
+            final hasData =
+                (d.chaletName != null && d.chaletName!.trim().isNotEmpty) ||
+                d.existingImageUrls.isNotEmpty ||
+                d.selectedLocation.trim().isNotEmpty ||
+                d.price.trim().isNotEmpty ||
+                (d.description != null && d.description!.trim().isNotEmpty) ||
+                d.availableFrom != null ||
+                (d.bedrooms != null && d.bedrooms! > 0);
+            return hasData;
+          },
+          listener: (context, state) {
+            if (!mounted) return;
+            setState(() {
+              _didRebuildFormAfterEditLoad = true;
+              _formRebuildGeneration++;
+            });
+          },
+        ),
         BlocListener<OwnerCubit, OwnerState>(
           bloc: ownerCubit,
           listenWhen: (previous, current) =>
@@ -58,7 +101,12 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
               previous.formError != current.formError,
           listener: (context, state) {
             if (state.isFormSuccess) {
-              SnackBarHelper.showSuccess(context, "Chalet added successfully!");
+              SnackBarHelper.showSuccess(
+                context,
+                widget._isEditMode
+                    ? context.tr('owner_chalet_updated_success')
+                    : context.tr('owner_chalet_added'),
+              );
               Navigator.pop(context);
             } else if (state.formError != null) {
               SnackBarHelper.showError(context, state.formError!);
@@ -71,10 +119,14 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
             ? ColorsManager.darkBackground0A0E27
             : ColorsManager.lightBackgroundF8FAFF,
         appBar: _buildAppBar(context, isDark),
-        body: _AddChaletContent(ownerCubit: ownerCubit),
+        body: _AddChaletContent(
+          key: ValueKey<int>(_formRebuildGeneration),
+          ownerCubit: ownerCubit,
+        ),
         bottomNavigationBar: _SubmitButton(
           ownerCubit: ownerCubit,
           appCubit: appCubit,
+          isEditMode: widget._isEditMode,
         ),
       ),
     );
@@ -99,13 +151,18 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
             size: 20.spScaled,
           ),
         ),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () {
+          context.read<AppCubit>().ownerCubit.resetForm();
+          Navigator.pop(context);
+        },
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Add New Chalet",
+            widget._isEditMode
+                ? context.tr('owner_edit_chalet')
+                : context.tr('owner_add_new_chalet'),
             style: TextStyle(
               color: isDark ? ColorsManager.white : ColorsManager.black,
               fontSize: 20.sp,
@@ -113,7 +170,9 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
             ),
           ),
           Text(
-            "Fill in the details below",
+            widget._isEditMode
+                ? context.tr('owner_edit_chalet_subtitle')
+                : context.tr('owner_fill_data'),
             style: TextStyle(
               color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
               fontSize: 12.sp,
@@ -127,7 +186,7 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
 }
 
 class _AddChaletContent extends StatelessWidget {
-  const _AddChaletContent({required this.ownerCubit});
+  const _AddChaletContent({super.key, required this.ownerCubit});
 
   final OwnerCubit ownerCubit;
 
@@ -185,21 +244,25 @@ class _AddChaletContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Progress Indicator
-        _buildProgressIndicator(isDark),
+        _buildProgressIndicator(context, isDark),
         SizedBox(height: 24.sh),
 
         // Image Section
         ModernImageUploadSection(
           images: draft.uploadedImages,
+          networkImageUrls: draft.existingImageUrls,
           onAdd: () => HelperImage().addSampleImages(context),
           onRemove: (index) => ownerCubit.removeChaletImage(index),
+          onRemoveNetwork: draft.existingImageUrls.isEmpty
+              ? null
+              : (i) => ownerCubit.removeExistingImageUrl(i),
         ),
         SizedBox(height: 24.sh),
 
         // Basic Info Card
         _buildSectionCard(
           isDark: isDark,
-          title: "Basic Information",
+          title: context.tr('owner_section_basic_info'),
           icon: Icons.info_outline_rounded,
           iconColor: ColorsManager.blue2563EB,
           child: Column(
@@ -207,8 +270,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.chaletName,
-                label: "Chalet Name",
-                hint: "Enter a catchy name for your chalet",
+                label: context.tr('owner_chalet_name'),
+                hint: context.tr('owner_chalet_name_hint'),
                 icon: Icons.villa_rounded,
                 onChanged: ownerCubit.updateChaletName,
               ),
@@ -216,8 +279,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.description,
-                label: "Description",
-                hint: "Describe what makes your chalet special...",
+                label: context.tr('owner_description'),
+                hint: context.tr('owner_description_hint'),
                 icon: Icons.description_rounded,
                 maxLines: 4,
                 onChanged: ownerCubit.updateDescription,
@@ -260,7 +323,7 @@ class _AddChaletContent extends StatelessWidget {
         // Pricing & Details Card
         _buildSectionCard(
           isDark: isDark,
-          title: "Pricing & Details",
+          title: context.tr('owner_pricing_and_details'),
           icon: Icons.attach_money_rounded,
           iconColor: ColorsManager.green3DDC84,
           child: Column(
@@ -268,8 +331,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.price,
-                label: "Price per Night (EGP)",
-                hint: "0.00",
+                label: context.tr('owner_price_per_night'),
+                hint: context.tr('owner_price_hint_zero'),
                 icon: Icons.payments_rounded,
                 keyboardType: TextInputType.number,
                 onChanged: ownerCubit.updatePrice,
@@ -281,8 +344,8 @@ class _AddChaletContent extends StatelessWidget {
                     child: _buildModernTextField(
                       isDark: isDark,
                       initialValue: draft.bedrooms?.toString() ?? '',
-                      label: "Bedrooms",
-                      hint: "0",
+                      label: context.tr('home_bedrooms'),
+                      hint: context.tr('owner_count_hint'),
                       icon: Icons.bed_rounded,
                       keyboardType: TextInputType.number,
                       onChanged: (val) {
@@ -296,8 +359,8 @@ class _AddChaletContent extends StatelessWidget {
                     child: _buildModernTextField(
                       isDark: isDark,
                       initialValue: draft.bathrooms?.toString() ?? '',
-                      label: "Bathrooms",
-                      hint: "0",
+                      label: context.tr('home_bathrooms'),
+                      hint: context.tr('owner_count_hint'),
                       icon: Icons.bathtub_rounded,
                       keyboardType: TextInputType.number,
                       onChanged: (val) {
@@ -309,7 +372,22 @@ class _AddChaletContent extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 16.sh),
-              _buildDayUseToggle(isDark, draft.dayUseEnabled, ownerCubit),
+              _buildModernTextField(
+                isDark: isDark,
+                initialValue: draft.chaletArea ?? '',
+                label: context.tr('owner_area_m2'),
+                hint: context.tr('owner_count_hint'),
+                icon: Icons.straighten_rounded,
+                keyboardType: TextInputType.number,
+                onChanged: ownerCubit.updateChaletArea,
+              ),
+              SizedBox(height: 16.sh),
+              _buildDayUseToggle(
+                context,
+                isDark,
+                draft.dayUseEnabled,
+                ownerCubit,
+              ),
             ],
           ),
         ),
@@ -383,21 +461,25 @@ class _AddChaletContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Progress Indicator
-        _buildProgressIndicator(isDark),
+        _buildProgressIndicator(context, isDark),
         SizedBox(height: 24.sh),
 
         // Image Section
         ModernImageUploadSection(
           images: draft.uploadedImages,
+          networkImageUrls: draft.existingImageUrls,
           onAdd: () => HelperImage().addSampleImages(context),
           onRemove: (index) => ownerCubit.removeChaletImage(index),
+          onRemoveNetwork: draft.existingImageUrls.isEmpty
+              ? null
+              : (i) => ownerCubit.removeExistingImageUrl(i),
         ),
         SizedBox(height: 24.sh),
 
         // Basic Info Card
         _buildSectionCard(
           isDark: isDark,
-          title: "Basic Information",
+          title: context.tr('owner_section_basic_info'),
           icon: Icons.info_outline_rounded,
           iconColor: ColorsManager.blue2563EB,
           child: Column(
@@ -405,8 +487,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.chaletName,
-                label: "Chalet Name",
-                hint: "Enter a catchy name for your chalet",
+                label: context.tr('owner_chalet_name'),
+                hint: context.tr('owner_chalet_name_hint'),
                 icon: Icons.villa_rounded,
                 onChanged: ownerCubit.updateChaletName,
               ),
@@ -414,8 +496,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.description,
-                label: "Description",
-                hint: "Describe what makes your chalet special...",
+                label: context.tr('owner_description'),
+                hint: context.tr('owner_description_hint'),
                 icon: Icons.description_rounded,
                 maxLines: 4,
                 onChanged: ownerCubit.updateDescription,
@@ -504,7 +586,7 @@ class _AddChaletContent extends StatelessWidget {
         // Pricing & Details Card
         _buildSectionCard(
           isDark: isDark,
-          title: "Pricing & Details",
+          title: context.tr('owner_pricing_and_details'),
           icon: Icons.attach_money_rounded,
           iconColor: ColorsManager.green3DDC84,
           child: Column(
@@ -512,8 +594,8 @@ class _AddChaletContent extends StatelessWidget {
               _buildModernTextField(
                 isDark: isDark,
                 initialValue: draft.price,
-                label: "Price per Night (EGP)",
-                hint: "0.00",
+                label: context.tr('owner_price_per_night'),
+                hint: context.tr('owner_price_hint_zero'),
                 icon: Icons.payments_rounded,
                 keyboardType: TextInputType.number,
                 onChanged: ownerCubit.updatePrice,
@@ -525,8 +607,8 @@ class _AddChaletContent extends StatelessWidget {
                     child: _buildModernTextField(
                       isDark: isDark,
                       initialValue: draft.bedrooms?.toString() ?? '',
-                      label: "Bedrooms",
-                      hint: "0",
+                      label: context.tr('home_bedrooms'),
+                      hint: context.tr('owner_count_hint'),
                       icon: Icons.bed_rounded,
                       keyboardType: TextInputType.number,
                       onChanged: (val) {
@@ -540,8 +622,8 @@ class _AddChaletContent extends StatelessWidget {
                     child: _buildModernTextField(
                       isDark: isDark,
                       initialValue: draft.bathrooms?.toString() ?? '',
-                      label: "Bathrooms",
-                      hint: "0",
+                      label: context.tr('home_bathrooms'),
+                      hint: context.tr('owner_count_hint'),
                       icon: Icons.bathtub_rounded,
                       keyboardType: TextInputType.number,
                       onChanged: (val) {
@@ -553,7 +635,22 @@ class _AddChaletContent extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 16.sh),
-              _buildDayUseToggle(isDark, draft.dayUseEnabled, ownerCubit),
+              _buildModernTextField(
+                isDark: isDark,
+                initialValue: draft.chaletArea ?? '',
+                label: context.tr('owner_area_m2'),
+                hint: context.tr('owner_count_hint'),
+                icon: Icons.straighten_rounded,
+                keyboardType: TextInputType.number,
+                onChanged: ownerCubit.updateChaletArea,
+              ),
+              SizedBox(height: 16.sh),
+              _buildDayUseToggle(
+                context,
+                isDark,
+                draft.dayUseEnabled,
+                ownerCubit,
+              ),
             ],
           ),
         ),
@@ -582,7 +679,7 @@ class _AddChaletContent extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressIndicator(bool isDark) {
+  Widget _buildProgressIndicator(BuildContext context, bool isDark) {
     return Container(
       padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
@@ -626,7 +723,7 @@ class _AddChaletContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Create Your Listing",
+                  context.tr('owner_create_listing'),
                   style: TextStyle(
                     color: isDark ? ColorsManager.white : ColorsManager.black,
                     fontSize: 16.sp,
@@ -635,7 +732,7 @@ class _AddChaletContent extends StatelessWidget {
                 ),
                 SizedBox(height: 4.sh),
                 Text(
-                  "Add photos, details, and amenities",
+                  context.tr('owner_add_photos_details'),
                   style: TextStyle(
                     color: isDark
                         ? ColorsManager.grey400
@@ -773,6 +870,7 @@ class _AddChaletContent extends StatelessWidget {
   }
 
   Widget _buildDayUseToggle(
+    BuildContext context,
     bool isDark,
     bool dayUseEnabled,
     OwnerCubit ownerCubit,
@@ -816,14 +914,16 @@ class _AddChaletContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Day Use (استخدام يومي)",
+                  context.tr('owner_day_use_feature'),
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  dayUseEnabled ? "مفعل" : "غير مفعل",
+                  dayUseEnabled
+                      ? context.tr('owner_toggle_status_on')
+                      : context.tr('owner_toggle_status_off'),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: ColorsManager.grey600,
@@ -846,8 +946,13 @@ class _AddChaletContent extends StatelessWidget {
 class _SubmitButton extends StatelessWidget {
   final OwnerCubit ownerCubit;
   final AppCubit appCubit;
+  final bool isEditMode;
 
-  const _SubmitButton({required this.ownerCubit, required this.appCubit});
+  const _SubmitButton({
+    required this.ownerCubit,
+    required this.appCubit,
+    this.isEditMode = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -904,7 +1009,11 @@ class _SubmitButton extends StatelessWidget {
                       : () {
                           final user = appCubit.authCubit.getCurrentUser();
                           if (user != null) {
-                            ownerCubit.submitChalet(user.uid, user.name);
+                            if (isEditMode) {
+                              ownerCubit.submitChaletEdit(user.uid, user.name);
+                            } else {
+                              ownerCubit.submitChalet(user.uid, user.name);
+                            }
                           }
                         },
                   borderRadius: BorderRadius.circular(16.sp),
@@ -927,7 +1036,7 @@ class _SubmitButton extends StatelessWidget {
                               ),
                               SizedBox(width: 12.sw),
                               Text(
-                                "Submitting...",
+                                context.tr('owner_submitting'),
                                 style: TextStyle(
                                   color: isDark
                                       ? ColorsManager.grey400
@@ -948,7 +1057,9 @@ class _SubmitButton extends StatelessWidget {
                               ),
                               SizedBox(width: 10.sw),
                               Text(
-                                "Submit Chalet",
+                                isEditMode
+                                    ? context.tr('owner_save_changes')
+                                    : context.tr('owner_submit_chalet'),
                                 style: TextStyle(
                                   color: ColorsManager.white,
                                   fontSize: 17.sp,

@@ -607,11 +607,12 @@ class BookingCard extends StatelessWidget {
   }
 
   int _calculateDays(DateTime from, DateTime to) {
-    return to.difference(from).inDays.clamp(0, 365);
+    final span = to.difference(from).inDays.clamp(0, 365);
+    return span + 1;
   }
 
   int _calculateNights(DateTime from, DateTime to) {
-    return (_calculateDays(from, to) - 1).clamp(0, 364);
+    return to.difference(from).inDays.clamp(0, 365);
   }
 
   void _payNow(BuildContext context, Booking booking) {

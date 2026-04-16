@@ -145,10 +145,13 @@ Future<void> setupGetIt() async {
     () => OwnerCubit(
       addChaletUseCase: getIt<AddChaletUseCase>(),
       getOwnerChaletsUseCase: getIt<GetOwnerChaletsUseCase>(),
+      ownerRepository: getIt<BaseOwnerRepository>(),
     ),
   );
 
-  getIt.registerLazySingleton<ChaletDetailCubit>(
+  // Must be a factory: each chalet detail screen needs its own cubit + PageController.
+  // Singleton caused wrong images/state to leak across different chalet opens.
+  getIt.registerFactory<ChaletDetailCubit>(
     () => ChaletDetailCubit(
       getChaletBookedDatesUseCase: getIt<GetChaletBookedDatesUseCase>(),
       updateChaletStatusUseCase: getIt<UpdateChaletStatusUseCase>(),

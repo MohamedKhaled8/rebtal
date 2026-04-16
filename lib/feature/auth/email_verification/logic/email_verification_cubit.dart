@@ -10,6 +10,8 @@ import 'package:rebtal/feature/auth/domain/usecases/save_user_usecase.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
+import 'package:rebtal/core/utils/error/firebase_error_handler.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 part 'email_verification_state.dart';
 
@@ -89,7 +91,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        emit(EmailVerificationError('لا يوجد مستخدم مسجل دخول'));
+        emit(EmailVerificationError('auth_error_no_current_user'));
         return;
       }
 
@@ -105,7 +107,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       }
     } catch (e) {
       debugPrint('❌ Error checking verification status: $e');
-      emit(EmailVerificationError('حدث خطأ أثناء التحقق من حالة البريد'));
+      emit(EmailVerificationError(FirebaseErrorHandler.getErrorMessage(e)));
     }
   }
 
@@ -134,7 +136,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
             // The UI calls handleVerified when state is EmailVerificationVerified.
             SnackBarHelper.showError(
               context,
-              'فشل حفظ البيانات: ${failure.message}',
+              context.tr('auth_error_save_user_failed'),
             );
           },
           (savedUser) async {
@@ -153,7 +155,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
 
             SnackBarHelper.showSuccess(
               context,
-              'تم التحقق من بريدك الإلكتروني بنجاح.',
+              context.tr('auth_email_verified_success'),
             );
             Future.delayed(const Duration(seconds: 2), () {
               if (Navigator.of(context).mounted) {
@@ -170,7 +172,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       debugPrint("Error confirming email verification: $e");
       SnackBarHelper.showError(
         context,
-        'حدث خطأ أثناء التحقق من البريد الإلكتروني',
+        context.tr(FirebaseErrorHandler.getErrorMessage(e)),
       );
     }
   }

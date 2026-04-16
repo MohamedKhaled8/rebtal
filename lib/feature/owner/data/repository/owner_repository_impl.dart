@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:http/http.dart' as http;
@@ -33,9 +34,16 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
           "https://api.cloudinary.com/v1_1/$_cloudName/image/upload",
         );
 
+        // Ensure each uploaded image gets a unique public_id to prevent overwrite.
+        final uniquePublicId =
+            'rebtal_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1 << 32)}';
+
         final request = http.MultipartRequest('POST', uri)
           ..fields['upload_preset'] = _uploadPreset
           ..fields['api_key'] = _apiKey
+          ..fields['public_id'] = uniquePublicId
+          ..fields['overwrite'] = 'false'
+          ..fields['unique_filename'] = 'true'
           ..files.add(
             await http.MultipartFile.fromPath('file', imageFile.path),
           );
@@ -55,23 +63,18 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
           final jsonResp = jsonDecode(respStr);
           return jsonResp['secure_url'];
         } else {
-          final respStr = await response.stream.bytesToString();
-          print("🌐 Cloudinary error body: $respStr");
           throw Exception(
             "Cloudinary upload failed with status: ${response.statusCode}",
           );
         }
-      } on SocketException catch (e) {
-        print("🌐 Network error (attempt $attempt/$maxRetries): $e");
+      } on SocketException catch (_) {
         if (attempt == maxRetries) {
           throw Exception(
             'فشل الاتصال بالإنترنت. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
           );
         }
-        // Wait before retry
         await Future.delayed(Duration(seconds: attempt * 2));
-      } on TimeoutException catch (e) {
-        print("🌐 Timeout error (attempt $attempt/$maxRetries): $e");
+      } on TimeoutException catch (_) {
         if (attempt == maxRetries) {
           throw Exception(
             'انتهت مهلة الاتصال. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
@@ -79,9 +82,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         }
         await Future.delayed(Duration(seconds: attempt * 2));
       } catch (e) {
-        print("🌐 Cloudinary upload error (attempt $attempt/$maxRetries): $e");
         if (attempt == maxRetries) {
-          // Check if it's a network error
           final errorStr = e.toString().toLowerCase();
           if (errorStr.contains('socket') ||
               errorStr.contains('network') ||
@@ -120,10 +121,6 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
     bool? dayUseEnabled,
   }) async {
     try {
-      print(
-        '📦 Using Cloudinary for image uploads (no Firebase Storage needed)',
-      );
-
       // 1. Create Document Reference to get ID
       final docRef = _firestore.collection('chalets').doc();
       final String chaletId = docRef.id;
@@ -135,14 +132,10 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
       if (profileImage != null) {
         try {
           profileImageUrl = await _uploadToCloudinary(profileImage);
-        } catch (e) {
-          print('❌ Failed to upload profile image to Cloudinary: $e');
-        }
+        } catch (e) {}
       }
 
       // 3. Upload Gallery Images to Cloudinary - مع معالجة أخطاء أفضل
-      print('📤 Starting upload of ${images.length} images to Cloudinary...');
-      int successCount = 0;
       int failCount = 0;
 
       // Upload images with individual error handling
@@ -150,28 +143,16 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         images.map((img) async {
           try {
             final url = await _uploadToCloudinary(img);
-            successCount++;
-            print(
-              '✅ Image uploaded successfully ($successCount/${images.length})',
-            );
             return url;
           } catch (e) {
             failCount++;
-            print('❌ Failed to upload image $failCount: $e');
-            return null; // Return null on error instead of throwing
+            return null;
           }
         }),
-        eagerError: false, // Don't stop on first error
+        eagerError: false,
       );
 
-      // Filter out null values (failed uploads)
       imageUrls.addAll(uploadResults.whereType<String>());
-
-      if (failCount > 0) {
-        print('⚠️ Upload summary: $successCount succeeded, $failCount failed');
-      } else {
-        print('✅ All $successCount images uploaded successfully!');
-      }
 
       // Build final images list (even if empty - we'll save the chalet anyway)
       final List<String> allImages = [...imageUrls];
@@ -261,41 +242,16 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
           dataMap['lon'] = chalet.longitude;
         }
 
-        // Debug: Print all data being saved
-        print('📝 Saving chalet data to Firestore:');
-        print('   - ID: $chaletId');
-        print('   - ownerId: ${dataMap['ownerId']}');
-        print('   - ownerName: ${dataMap['ownerName']}');
-        print('   - merchantName: ${dataMap['merchantName']}');
-        print('   - phoneNumber: ${dataMap['phoneNumber']}');
-        print('   - email: ${dataMap['email']}');
-        print('   - bookingAvailability: ${dataMap['bookingAvailability']}');
-        print('   - isAvailable: ${dataMap['isAvailable']}');
-        print('   - availableFrom: ${dataMap['availableFrom']}');
-        print('   - availableTo: ${dataMap['availableTo']}');
-        print(
-          '   - latitude: ${dataMap['latitude']}, longitude: ${dataMap['longitude']}',
-        );
-        print('   - lat: ${dataMap['lat']}, lon: ${dataMap['lon']}');
-        print('   - status: ${dataMap['status']}');
-        print('   - chaletName: ${dataMap['chaletName']}');
-        print('   - images count: ${(dataMap['images'] as List).length}');
-
         await docRef.set(dataMap);
-        print('✅ Chalet saved to Firestore successfully (ID: $chaletId)');
 
-        // ✅ إرسال إشعارات للأدمن
+        // إرسال إشعارات للأدمن
         try {
           final adminsSnapshot = await _firestore.collection('Admin').get();
-
-          print(
-            '📧 Sending notifications to ${adminsSnapshot.docs.length} admin(s)',
-          );
 
           for (var adminDoc in adminsSnapshot.docs) {
             await NotificationService().sendNotification(
               userId: adminDoc.id,
-              title: 'شاليه جديد قيد المراجعة 🏗️',
+              title: 'شاليه جديد قيد المراجعة',
               body:
                   'قام ${chalet.ownerName} برفع شاليه جديد (${chalet.chaletName}) وهو بانتظار موافقتك.',
               type: NotificationType.chaletSubmission,
@@ -307,30 +263,17 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
               },
             );
           }
-
-          print('✅ Notifications sent to all admins successfully');
-        } catch (e) {
-          print('⚠️ Error sending admin notifications: $e');
-          // لا نوقف العملية إذا فشل إرسال الإشعارات
-        }
+        } catch (e) {}
 
         // إذا فشل رفع بعض الصور، نعطي تحذير لكن نكمل العملية
         if (allImages.isEmpty) {
-          print('⚠️ Chalet saved without images - images can be added later');
           return Right(chaletId);
         } else if (failCount > 0) {
-          print(
-            '⚠️ Chalet saved with ${allImages.length} images ($failCount failed)',
-          );
           return Right(chaletId);
         } else {
-          print(
-            '✅ Chalet saved with all ${allImages.length} images successfully',
-          );
           return Right(chaletId);
         }
       } catch (e) {
-        print('❌ Failed to save chalet to Firestore: $e');
         return Left(ServerFailure('فشل حفظ البيانات: $e'));
       }
     } on FirebaseException catch (e) {
@@ -353,8 +296,6 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
             .get();
       } on FirebaseException catch (e) {
         if (e.code == 'failed-precondition') {
-          // Index not created yet - use simpler query without orderBy
-          print('⚠️ Firestore index not found, using simpler query');
           querySnapshot = await _firestore
               .collection('chalets')
               .where('ownerId', isEqualTo: ownerId)
@@ -429,6 +370,34 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
             return data as dynamic;
           }).toList();
         });
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadChaletImage(File image) async {
+    try {
+      final url = await _uploadToCloudinary(image);
+      return Right(url);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateChaletFields(
+    String chaletId,
+    Map<String, dynamic> fields,
+  ) async {
+    try {
+      // Avoid passing null values: on some Firestore versions null removes fields.
+      final safe = <String, dynamic>{};
+      fields.forEach((k, v) {
+        if (v != null) safe[k] = v;
+      });
+      await _firestore.collection('chalets').doc(chaletId).update(safe);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
   }
 
   @override

@@ -32,18 +32,13 @@ class BookingCubit extends Cubit<BookingState> {
         const GetOptions(source: Source.server),
       );
       await _processSnapshot(serverSnapshot);
-    } catch (e) {
-      debugPrint(
-        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
-      );
-    }
+    } catch (e) {}
 
     _bookingsSubscription = query.snapshots().listen(
       (snapshot) async {
         await _processSnapshot(snapshot);
       },
       onError: (e) {
-        debugPrint('Error loading owner bookings: $e');
         emit(state.copyWith(isLoading: false));
       },
     );
@@ -65,24 +60,18 @@ class BookingCubit extends Cubit<BookingState> {
         const GetOptions(source: Source.server),
       );
       await _processSnapshot(serverSnapshot);
-    } catch (e) {
-      debugPrint(
-        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
-      );
-    }
+    } catch (e) {}
 
     _bookingsSubscription = query.snapshots().listen(
       (snapshot) async {
         await _processSnapshot(snapshot);
       },
       onError: (e) {
-        debugPrint('Error loading user bookings: $e');
         emit(state.copyWith(isLoading: false));
       },
     );
   }
 
-  // ✅ تحميل كل الحجوزات (للأدمن أو الاستخدام العام)
   Future<void> loadBookings() async {
     await _bookingsSubscription?.cancel();
     emit(state.copyWith(isLoading: true, bookings: []));
@@ -91,37 +80,25 @@ class BookingCubit extends Cubit<BookingState> {
     // .orderBy('createdAt', descending: true) // ⚠️ تم التعطيل مؤقتاً
     ;
 
-    // ⚡️ محاولة تحديث الكاش من السيرفر مباشرة أولاً
     try {
       final serverSnapshot = await query.get(
         const GetOptions(source: Source.server),
       );
       await _processSnapshot(serverSnapshot);
-    } catch (e) {
-      debugPrint(
-        '⚠️ Could not fetch from server (offline?), falling back to stream: $e',
-      );
-    }
+    } catch (e) {}
 
     _bookingsSubscription = query.snapshots().listen(
       (snapshot) async {
         await _processSnapshot(snapshot);
       },
       onError: (e) {
-        debugPrint('Error loading all bookings: $e');
         emit(state.copyWith(isLoading: false));
       },
     );
   }
 
-  // معالجة البيانات المشتركة
   Future<void> _processSnapshot(QuerySnapshot snapshot) async {
-    debugPrint(
-      '🔎 _processSnapshot called. Docs found: ${snapshot.docs.length}',
-    );
-
     if (snapshot.docs.isEmpty) {
-      debugPrint('📭 Snapshot is empty. Emitting empty list.');
       emit(state.copyWith(bookings: [], isLoading: false));
       return;
     }
@@ -129,9 +106,6 @@ class BookingCubit extends Cubit<BookingState> {
     final bookings = await Future.wait(
       snapshot.docs.map((doc) async {
         final data = doc.data() as Map<String, dynamic>;
-        debugPrint(
-          '📄 Processing Doc: ${doc.id} | UserID: ${data['userId']} | OwnerID: ${data['ownerId']}',
-        );
 
         // جلب معلومات الشاليه
         String? chaletImage;
@@ -162,10 +136,10 @@ class BookingCubit extends Cubit<BookingState> {
             }
           }
         } catch (e) {
-          debugPrint('Error fetching chalet details: $e');
+          // Removed debugPrint
         }
 
-        // جلب معلومات المستخدم (الاسم من الملف إذا لم يُخزَّن في الحجز)
+        // جلب معلومات المستخدم (الاسم من الملف إذا لم يُخزَّن في الحجز)
         String? userPhone;
         String? userEmail;
         String resolvedUserName = (data['userName'] ?? '').toString().trim();
@@ -211,9 +185,7 @@ class BookingCubit extends Cubit<BookingState> {
               }
             }
           }
-        } catch (e) {
-          debugPrint('Error fetching owner details: $e');
-        }
+        } catch (e) {}
 
         // Parse payment rejection fields
         final paymentRejected = data['paymentRejected'] as bool? ?? false;
@@ -256,9 +228,6 @@ class BookingCubit extends Cubit<BookingState> {
       }).toList(),
     );
 
-    debugPrint(
-      '✅ Finished processing bookings. Total count: ${bookings.length}',
-    );
     emit(state.copyWith(bookings: bookings, isLoading: false));
   }
 
@@ -339,14 +308,8 @@ class BookingCubit extends Cubit<BookingState> {
         );
       }
     } catch (e) {
-      debugPrint('Error updating booking status: $e');
-
-      // ❌ تراجع عن التحديث في حالة الخطأ
       emit(state.copyWith(bookings: previousBookings));
-
-      // إعادة تحميل الحجوزات للتأكد من التزامن
-      // await loadBookings();
-      rethrow; // إعادة رمي الخطأ ليتم معالجته في واجهة المستخدم
+      rethrow;
     }
   }
 
@@ -365,10 +328,7 @@ class BookingCubit extends Cubit<BookingState> {
             'paidAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
           });
-
-      debugPrint('✅ Booking $bookingId marked as paid');
     } catch (e) {
-      debugPrint('❌ Error marking booking as paid: $e');
       rethrow;
     }
   }
@@ -421,9 +381,7 @@ class BookingCubit extends Cubit<BookingState> {
           data: {'bookingId': booking.id},
         );
       }
-    } catch (e) {
-      debugPrint('Error cancelling booking: $e');
-    }
+    } catch (e) {}
   }
 
   // ✅ حذف الحجز
@@ -510,7 +468,6 @@ class BookingCubit extends Cubit<BookingState> {
         }
       }
     } catch (e) {
-      debugPrint('Error cancelling booking with refund: $e');
       rethrow;
     }
   }
@@ -538,9 +495,8 @@ class BookingCubit extends Cubit<BookingState> {
         return dateTime;
       }
     } catch (e) {
-      debugPrint('Error parsing datetime: $e');
+      return DateTime.now();
     }
-
     return DateTime.now();
   }
 
@@ -574,7 +530,6 @@ class BookingCubit extends Cubit<BookingState> {
           return BookingStatus.pending;
       }
     } catch (e) {
-      debugPrint('Error parsing status: $e');
       return BookingStatus.pending;
     }
   }
@@ -599,10 +554,7 @@ class BookingCubit extends Cubit<BookingState> {
         relatedId: booking.id,
         data: {'bookingId': booking.id},
       );
-
-      debugPrint('✅ Booking approved, awaiting payment: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error approving booking: $e');
       rethrow;
     }
   }
@@ -630,10 +582,7 @@ class BookingCubit extends Cubit<BookingState> {
         );
         emit(state.copyWith(bookings: currentBookings));
       }
-
-      debugPrint('✅ Payment method selected: ${paymentMethod.name}');
     } catch (e) {
-      debugPrint('❌ Error selecting payment method: $e');
       rethrow;
     }
   }
@@ -680,11 +629,7 @@ class BookingCubit extends Cubit<BookingState> {
         );
         emit(state.copyWith(bookings: currentBookings));
       }
-
-      // TODO: Send notification to admin
-      debugPrint('✅ Payment proof uploaded: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error uploading payment proof: $e');
       rethrow;
     }
   }
@@ -721,9 +666,7 @@ class BookingCubit extends Cubit<BookingState> {
       EmailService().sendBookingConfirmationEmail(booking);
 
       // TODO: Send notification to user and owner
-      debugPrint('✅ Payment confirmed by admin: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error confirming payment: $e');
       rethrow;
     }
   }
@@ -756,9 +699,7 @@ class BookingCubit extends Cubit<BookingState> {
       }
 
       // TODO: Send notification to user
-      debugPrint('✅ Payment rejected by admin: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error rejecting payment: $e');
       rethrow;
     }
   }
@@ -785,10 +726,7 @@ class BookingCubit extends Cubit<BookingState> {
         );
         emit(state.copyWith(bookings: currentBookings));
       }
-
-      debugPrint('✅ Cash on arrival confirmed: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error confirming cash on arrival: $e');
       rethrow;
     }
   }
@@ -813,10 +751,7 @@ class BookingCubit extends Cubit<BookingState> {
         );
         emit(state.copyWith(bookings: currentBookings));
       }
-
-      debugPrint('✅ Booking completed: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error completing booking: $e');
       rethrow;
     }
   }
@@ -853,9 +788,7 @@ class BookingCubit extends Cubit<BookingState> {
       }
 
       // TODO: Send notification to admin
-      debugPrint('✅ Refund requested: $bookingId');
     } catch (e) {
-      debugPrint('❌ Error requesting refund: $e');
       rethrow;
     }
   }
@@ -870,7 +803,6 @@ class BookingCubit extends Cubit<BookingState> {
           .get();
 
       if (!bookingDoc.exists) {
-        debugPrint('Booking does not exist');
         return;
       }
 
@@ -887,7 +819,6 @@ class BookingCubit extends Cubit<BookingState> {
       final newTenantEmail = bookingData['pendingNewTenantEmail'] as String?;
 
       if (newTenantId == null) {
-        debugPrint('No pending tenant info found');
         return;
       }
 
@@ -926,9 +857,7 @@ class BookingCubit extends Cubit<BookingState> {
           relatedId: bookingId,
           data: {'bookingId': bookingId, 'chaletName': oldBooking.chaletName},
         );
-      } catch (e) {
-        debugPrint('Notification error: $e');
-      }
+      } catch (e) {}
 
       // إرسال إيميل للمستأجر الجديد
       if (newTenantEmail != null && newTenantEmail.isNotEmpty) {
@@ -952,9 +881,7 @@ class BookingCubit extends Cubit<BookingState> {
           },
         });
       }
-    } catch (e) {
-      debugPrint('Error finalizing transfer: $e');
-    }
+    } catch (e) {}
   }
 
   String _formatDate(DateTime date) {

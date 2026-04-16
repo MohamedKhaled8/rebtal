@@ -33,14 +33,12 @@ class ChaletRemoteDataSourceImpl implements ChaletRemoteDataSource {
     return _firestore
         .collection('bookings')
         .where('chaletId', isEqualTo: chaletId)
+        // فقط حجوزات مُؤكدة بعد الدفع/موافقة الأدمن — لا نغلق التقويم على pending أو قيد المراجعة
         .where(
           'status',
           whereIn: const [
-            'approved',
             'confirmed',
             'completed',
-            'awaitingPayment',
-            'paymentUnderReview',
           ],
         )
         .withConverter<Map<String, dynamic>>(

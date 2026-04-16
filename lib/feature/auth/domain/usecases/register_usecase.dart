@@ -16,6 +16,7 @@ class RegisterUseCase {
     required String role,
     String? profileImageUrl,
     String? idCardUrl,
+    String? deviceType,
   }) async {
     return await authRepository.register(
       email: email,
@@ -25,6 +26,7 @@ class RegisterUseCase {
       role: role,
       profileImageUrl: profileImageUrl,
       idCardUrl: idCardUrl,
+      deviceType: deviceType,
     );
   }
 }

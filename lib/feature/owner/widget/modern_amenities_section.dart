@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
+
+String _amenitiesSelectedBadgeText(BuildContext context, int count) {
+  final template = context.tr('owner_amenities_selected_phrase');
+  final resolved = template.isEmpty
+      ? (Localizations.localeOf(context).languageCode == 'ar'
+            ? '{count} محددة'
+            : '{count} selected')
+      : template;
+  return resolved.replaceAll('{count}', '$count');
+}
 
 class ModernAmenitiesSection extends StatelessWidget {
   final Map<String, bool> selectedAmenities;
@@ -62,7 +73,7 @@ class ModernAmenitiesSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Amenities & Features',
+                      context.tr('owner_amenities_section_title'),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -73,7 +84,7 @@ class ModernAmenitiesSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Select all that apply',
+                      context.tr('owner_amenities_section_subtitle'),
                       style: TextStyle(
                         fontSize: 12,
                         color: isDark
@@ -103,7 +114,7 @@ class ModernAmenitiesSection extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '$selectedCount selected',
+                    _amenitiesSelectedBadgeText(context, selectedCount),
                     style: const TextStyle(
                       color: ColorsManager.purple764BA2,
                       fontSize: 12,

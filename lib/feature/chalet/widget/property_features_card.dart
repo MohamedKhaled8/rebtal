@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/services_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+
+/// Rebuild [ServicesCubit] when merged listing data changes (e.g. after edit save).
+String _propertyFeaturesSignature(Map<String, dynamic> r) {
+  final buf = StringBuffer();
+  buf.write(r['bathrooms']);
+  buf.write('|');
+  final am = r['amenities'];
+  if (am is List) {
+    buf.write(am.map((e) => e.toString()).join(','));
+  }
+  const keys = <String>[
+    'hasWifi',
+    'hasPool',
+    'hasAirConditioning',
+    'hasParking',
+    'hasGarden',
+    'hasBBQ',
+    'hasBeachView',
+    'hasHousekeeping',
+    'hasPetsAllowed',
+    'hasGym',
+    'hasKitchen',
+    'hasTV',
+  ];
+  for (final k in keys) {
+    buf.write('$k:${r[k]}|');
+  }
+  return buf.toString();
+}
 
 class PropertyFeaturesCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -18,6 +45,7 @@ class PropertyFeaturesCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
+      key: ValueKey(_propertyFeaturesSignature(requestData)),
       create: (context) => ServicesCubit()..loadAmenities(requestData),
       child: Padding(
         padding: EdgeInsets.zero,
@@ -156,7 +184,12 @@ class _AmenitiesListState extends State<_AmenitiesList>
               child: Text(
                 _isExpanded
                     ? context.tr('chalet_show_less')
-                    : context.tr('chalet_show_all_amenities').replaceFirst('{}', widget.amenities.length.toString()),
+                    : context
+                          .tr('chalet_show_all_amenities')
+                          .replaceFirst(
+                            '{}',
+                            widget.amenities.length.toString(),
+                          ),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

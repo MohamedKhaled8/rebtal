@@ -2,149 +2,149 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 /// Centralized error handler for Firebase Authentication and Firestore errors
 class FirebaseErrorHandler {
-  /// Maps Firebase Auth exceptions to user-friendly messages
+  /// Maps Firebase Auth exceptions to localization keys
   static String handleAuthException(dynamic error) {
     if (error is FirebaseAuthException) {
       switch (error.code) {
         case 'wrong-password':
-          return 'The password you entered is incorrect. Please try again.';
-        
+          return 'auth_error_wrong_password';
+
         case 'user-not-found':
-          return 'No account found with this email address. Please check your email or sign up.';
-        
+          return 'auth_error_user_not_found';
+
         case 'email-already-in-use':
-          return 'An account with this email already exists. Please sign in or use a different email.';
-        
+          return 'auth_error_email_already_in_use';
+
         case 'weak-password':
-          return 'Password is too weak. Please use at least 6 characters with a mix of letters and numbers.';
-        
+          return 'auth_error_weak_password';
+
         case 'invalid-email':
-          return 'The email address is invalid. Please enter a valid email address.';
-        
+          return 'auth_error_invalid_email';
+
         case 'user-disabled':
-          return 'This account has been disabled. Please contact support for assistance.';
-        
+          return 'auth_error_user_disabled';
+
         case 'too-many-requests':
-          return 'Too many failed login attempts. Please wait a few minutes before trying again.';
-        
+          return 'auth_error_too_many_requests';
+
         case 'operation-not-allowed':
-          return 'This sign-in method is not enabled. Please contact support.';
-        
+          return 'auth_error_operation_not_allowed';
+
         case 'requires-recent-login':
-          return 'This operation requires recent authentication. Please sign in again.';
-        
+          return 'auth_error_requires_recent_login';
+
         case 'invalid-credential':
-          return 'The email or password is incorrect. Please check your credentials and try again.';
-        
+          return 'auth_error_invalid_credential';
+
         case 'invalid-verification-code':
-          return 'The verification code is invalid. Please request a new code.';
-        
+          return 'auth_error_invalid_verification_code';
+
         case 'invalid-verification-id':
-          return 'The verification ID is invalid. Please try again.';
-        
+          return 'auth_error_invalid_verification_id';
+
         case 'session-expired':
-          return 'Your session has expired. Please sign in again.';
-        
+          return 'auth_error_session_expired';
+
         case 'network-request-failed':
-          return 'Network error. Please check your internet connection and try again.';
-        
+          return 'auth_error_network';
+
         case 'internal-error':
-          return 'An internal error occurred. Please try again later.';
-        
+          return 'auth_error_internal';
+
         default:
-          return 'Authentication failed: ${error.message ?? error.code}. Please try again.';
+          return 'auth_error_unknown';
       }
     }
-    
+
     return _handleGenericError(error);
   }
 
-  /// Maps Firestore exceptions to user-friendly messages
+  /// Maps Firestore exceptions to localization keys
   static String handleFirestoreException(dynamic error) {
     if (error is FirebaseException) {
       switch (error.code) {
         case 'unavailable':
-          return 'The service is currently unavailable. This is likely a temporary issue. Please check your internet connection and try again.';
-        
+          return 'db_error_unavailable';
+
         case 'permission-denied':
-          return 'You don\'t have permission to perform this action. Please contact support.';
-        
+          return 'db_error_permission_denied';
+
         case 'not-found':
-          return 'The requested data was not found.';
-        
+          return 'db_error_not_found';
+
         case 'already-exists':
-          return 'This record already exists.';
-        
+          return 'db_error_already_exists';
+
         case 'failed-precondition':
-          return 'The operation was rejected because the system is not in a required state.';
-        
+          return 'db_error_failed_precondition';
+
         case 'aborted':
-          return 'The operation was aborted. Please try again.';
-        
+          return 'db_error_aborted';
+
         case 'out-of-range':
-          return 'The operation was attempted past the valid range.';
-        
+          return 'db_error_out_of_range';
+
         case 'unimplemented':
-          return 'This operation is not implemented.';
-        
+          return 'db_error_unimplemented';
+
         case 'deadline-exceeded':
-          return 'The operation timed out. Please check your internet connection and try again.';
-        
+          return 'db_error_deadline_exceeded';
+
         case 'resource-exhausted':
-          return 'The system has exhausted resources. Please try again later.';
-        
+          return 'db_error_resource_exhausted';
+
         case 'cancelled':
-          return 'The operation was cancelled.';
-        
+          return 'db_error_cancelled';
+
         case 'data-loss':
-          return 'Unrecoverable data loss or corruption occurred.';
-        
+          return 'db_error_data_loss';
+
         case 'unauthenticated':
-          return 'The request does not have valid authentication credentials.';
-        
+          return 'db_error_unauthenticated';
+
         case 'internal':
-          return 'An internal error occurred. Please try again later.';
-        
+          return 'db_error_internal';
+
         default:
-          return 'Database error: ${error.message ?? error.code}. Please try again.';
+          return 'db_error_unknown';
       }
     }
-    
+
     return _handleGenericError(error);
   }
 
-  /// Handles generic exceptions and network errors
+  /// Handles generic exceptions and network errors (localization keys)
   static String _handleGenericError(dynamic error) {
     final errorString = error.toString().toLowerCase();
-    
+
     // Network-related errors
-    if (errorString.contains('network') || 
+    if (errorString.contains('network') ||
         errorString.contains('connection') ||
         errorString.contains('socket') ||
         errorString.contains('timeout') ||
         errorString.contains('unreachable')) {
-      return 'Network error. Please check your internet connection and try again.';
+      return 'auth_error_network';
     }
-    
+
     // Firestore unavailable errors
-    if (errorString.contains('unavailable') || 
+    if (errorString.contains('unavailable') ||
         errorString.contains('backend didn\'t respond') ||
         errorString.contains('could not reach')) {
-      return 'Unable to connect to the server. The service may be temporarily unavailable. Please check your internet connection and try again.';
+      return 'db_error_unavailable';
     }
-    
+
     // Format errors
     if (errorString.contains('format') || errorString.contains('invalid')) {
-      return 'Invalid data format. Please check your input and try again.';
+      return 'common_error_invalid_data';
     }
-    
+
     // Permission errors
     if (errorString.contains('permission') || errorString.contains('denied')) {
-      return 'Permission denied. Please contact support if you believe this is an error.';
+      return 'common_error_permission_denied';
     }
-    
+
     // Default fallback
-    return 'An unexpected error occurred: ${error.toString()}. Please try again or contact support if the problem persists.';
+    return 'common_error_generic';
   }
 
   /// Determines if an error is retryable (network issues, timeouts, etc.)

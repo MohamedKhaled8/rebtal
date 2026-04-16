@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/feature/owner/ui/add_chalet_screen.dart';
 
 class OwnerButtons extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -17,14 +20,196 @@ class OwnerButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusRaw = (requestData['status'] ?? '').toString().toLowerCase();
+    final isApproved = statusRaw == 'approved';
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
       child: Column(
         children: [
           _BookingToggleButton(requestData: requestData, docId: docId),
+          if (isApproved) ...[
+            const SizedBox(height: 12),
+            _OwnerEditChaletButton(
+              docId: docId,
+              requestData: requestData,
+            ),
+            const SizedBox(height: 12),
+            _OwnerDeleteChaletButton(docId: docId, requestData: requestData),
+          ],
           const SizedBox(height: 16),
           const _OwnerStatusButton(),
         ],
+      ),
+    );
+  }
+}
+
+class _OwnerEditChaletButton extends StatelessWidget {
+  final String docId;
+  final Map<String, dynamic> requestData;
+
+  const _OwnerEditChaletButton({
+    required this.docId,
+    required this.requestData,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            ColorsManager.blue2563EB,
+            ColorsManager.purple764BA2,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: ColorsManager.blue2563EB.withOpacity(0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => AddChaletScreen(
+                editDocId: docId,
+                initialChaletData: Map<String, dynamic>.from(requestData),
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: const Icon(Icons.edit_rounded, color: ColorsManager.white),
+        label: Text(
+          context.tr('owner_edit_chalet'),
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: ColorsManager.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OwnerDeleteChaletButton extends StatelessWidget {
+  final String docId;
+  final Map<String, dynamic> requestData;
+
+  const _OwnerDeleteChaletButton({
+    required this.docId,
+    required this.requestData,
+  });
+
+  Future<void> _confirmAndDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(context.tr('owner_delete_chalet_confirm_title')),
+          content: Text(context.tr('owner_delete_chalet_confirm_body')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(context.tr('common_cancel')),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: TextButton.styleFrom(
+                foregroundColor: ColorsManager.chaletActionRed,
+              ),
+              child: Text(context.tr('common_confirm')),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final ownerId = requestData['ownerId']?.toString();
+    if (ownerId == null || ownerId.isEmpty) {
+      SnackBarHelper.showError(
+        context,
+        context.tr('owner_error_id_not_found'),
+      );
+      return;
+    }
+
+    PremiumLoadingOverlay.show(context);
+    var ok = false;
+    try {
+      ok = await context.read<AppCubit>().ownerCubit.deleteChaletAsOwner(
+            docId,
+            ownerId,
+          );
+    } finally {
+      if (context.mounted) {
+        PremiumLoadingOverlay.dismiss(context);
+      }
+    }
+
+    if (!context.mounted) return;
+
+    if (ok) {
+      SnackBarHelper.showSuccess(
+        context,
+        context.tr('owner_delete_chalet_success'),
+      );
+      Navigator.of(context).pop();
+    } else {
+      SnackBarHelper.showError(
+        context,
+        context.tr('owner_delete_chalet_failed'),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: ColorsManager.chaletActionRed.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: ColorsManager.chaletActionRed.withOpacity(0.5),
+        ),
+      ),
+      child: OutlinedButton.icon(
+        onPressed: () => _confirmAndDelete(context),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: ColorsManager.chaletActionRed,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: const Icon(Icons.delete_forever_rounded),
+        label: Text(
+          context.tr('owner_delete_chalet'),
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

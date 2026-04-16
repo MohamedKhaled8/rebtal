@@ -134,13 +134,10 @@ class _SplashScreenState extends State<SplashScreen>
       _hasNavigated = true;
       _navigateBasedOnRole();
     } else if (_pendingAuthState is AuthRegistrationSuccess) {
-      final state = _pendingAuthState as AuthRegistrationSuccess;
+      // Skip email verification - go directly to main screen
+      debugPrint('🔥 SplashScreen: Registration success, navigating to main screen');
       _hasNavigated = true;
-      Navigator.pushReplacementNamed(
-        context,
-        Routes.emailVerification,
-        arguments: state.user,
-      );
+      _navigateBasedOnRole();
     } else if (_pendingAuthState is AuthFailure ||
         _pendingAuthState is AuthUnauthenticated ||
         _pendingAuthState is AuthOfflineWarning) {
@@ -162,7 +159,18 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateBasedOnRole() {
-    final String? role = getIt<CacheHelper>().getDataString(key: 'userRole');
+    // Prefer role from the resolved Auth state to avoid timing issues where
+    // CacheHelper hasn't persisted `userRole` yet.
+    String? roleFromAuthState;
+    final pending = _pendingAuthState;
+    if (pending is AuthSuccess) {
+      roleFromAuthState = pending.user.role;
+    } else if (pending is AuthRegistrationSuccess) {
+      roleFromAuthState = pending.user.role;
+    }
+
+    final String? role =
+        roleFromAuthState ?? getIt<CacheHelper>().getDataString(key: 'userRole');
     final normalizedRole = role?.toLowerCase().trim();
     debugPrint('🔥 SplashScreen: Navigating with role: $normalizedRole');
     if (normalizedRole == 'admin') {

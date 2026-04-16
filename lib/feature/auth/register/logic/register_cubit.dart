@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/utils/error/failure.dart';
@@ -10,7 +11,10 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
+import 'package:rebtal/core/utils/services/device_info_service.dart';
 import 'package:rebtal/feature/auth/domain/usecases/register_usecase.dart';
+import 'package:rebtal/core/utils/validators/auth_validator.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 part 'register_state.dart';
 
@@ -71,6 +75,7 @@ class RegisterCubit extends Cubit<RegisterState> {
     }
   }
 
+  /// Used by register UI when wrapped in a `Form`.
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   Future<void> register() async {
@@ -80,33 +85,44 @@ class RegisterCubit extends Cubit<RegisterState> {
     final phone = phoneController.text.trim();
     final role = selectedRole;
 
-    // Trigger form validation to show red borders
-    final bool isFormValid = formKey.currentState?.validate() ?? false;
+    // NOTE: Register UI uses custom `WanderlyField` widgets, so there is no `Form`
+    // and `formKey.currentState?.validate()` would always be false.
+    // Validate manually here instead.
 
-    // Check if everything is empty
-    if (name.isEmpty &&
-        email.isEmpty &&
-        password.isEmpty &&
-        phone.isEmpty &&
-        profileImage == null &&
-        idCardImage == null) {
-      emit(RegisterValidationError("يرجى ملئ جميع الحقول للمتابعة"));
+    // If the UI is using a Form (e.g. CustomInputField/TextFormField),
+    // trigger it first to show red borders and per-field validation.
+    // (Safe even if no Form exists.)
+    final isFormValid = formKey.currentState?.validate() ?? true;
+
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        phone.isEmpty) {
+      emit(RegisterValidationError("auth_fill_empty_fields"));
       return;
     }
 
     if (!isFormValid) {
-      emit(RegisterValidationError("يرجى ملئ جميع الحقول بشكل صحيح"));
+      emit(RegisterValidationError("auth_fill_fields_correctly"));
+      return;
+    }
+
+    // Lightweight format checks (we keep app-specific Arabic messages).
+    if (AuthValidator.validateEmail(email) != null ||
+        AuthValidator.validatePassword(password) != null ||
+        AuthValidator.validatePhone(phone) != null) {
+      emit(RegisterValidationError("auth_fill_fields_correctly"));
       return;
     }
 
     // Input validation for images
     if (profileImage == null) {
-      emit(RegisterValidationError("يرجى إرفاق الصورة الشخصية للمتابعة"));
+      emit(RegisterValidationError("auth_profile_image_required"));
       return;
     }
 
     if (idCardImage == null) {
-      emit(RegisterValidationError("يرجى إرفاق صورة البطاقة الشخصية للمتابعة"));
+      emit(RegisterValidationError("auth_id_card_required"));
       return;
     }
 
@@ -131,6 +147,8 @@ class RegisterCubit extends Cubit<RegisterState> {
       return;
     }
 
+    final deviceTypeStr = await DeviceInfoService.getDeviceType();
+
     final result = await _registerUseCase.call(
       email: email,
       password: password,
@@ -139,6 +157,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       phone: phone,
       profileImageUrl: profileImageUrl,
       idCardUrl: idCardUrl,
+      deviceType: deviceTypeStr,
     );
 
     result.fold(
@@ -154,11 +173,6 @@ class RegisterCubit extends Cubit<RegisterState> {
         );
       },
       (user) async {
-        await getIt<CacheHelper>().saveData(
-          key: 'justRegistered',
-          value: 'true',
-        );
-
         emit(RegisterSuccess(user: user, phoneNumber: phone));
       },
     );
@@ -166,14 +180,14 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   bool _isDialogShowing = false;
 
-  void handleRegisterState(BuildContext context, RegisterState state) {
+  Future<void> handleRegisterState(BuildContext context, RegisterState state) async {
     if (_isDialogShowing) return;
 
     if (state is RegisterFailure) {
       _isDialogShowing = true;
       _showErrorDialog(
         context,
-        state.error,
+        context.tr(state.error),
         isRetryable: state.isRetryable,
         onRetry: state.isRetryable
             ? () {
@@ -184,27 +198,46 @@ class RegisterCubit extends Cubit<RegisterState> {
       );
     } else if (state is RegisterValidationError) {
       _isDialogShowing = true;
-      SnackBarHelper.showWarning(context, state.message);
+      SnackBarHelper.showWarning(context, context.tr(state.message));
       _isDialogShowing = false;
     } else if (state is RegisterOfflineWarning) {
       _isDialogShowing = true;
-      _showOfflineWarning(context, state.message).then((_) {
+      _showOfflineWarning(context, context.tr(state.message)).then((_) {
         _isDialogShowing = false;
       });
     } else if (state is RegisterSuccess) {
       _isDialogShowing = false;
-      // Notify AuthCubit about potential pending user if needed?
-      // For now, let's assume we pass data via arguments to verification screen OR we set it in AuthCubit via a method.
-      // The original code set `_pendingUserData` in AuthCubit.
-      // We should probably expose a method in AuthCubit to set pending user data locally if we want to keep `confirmEmailVerification` there?
-      // WAIT, user wanted `confirmEmailVerification` in `EmailVerificationCubit`.
-      // So `RegisterCubit` produces a user. `EmailVerificationCubit` needs that user to save it later.
-      // We can pass it as argument to the route!
-      Navigator.of(context).pushNamed(
-        Routes.emailVerification,
-        arguments:
-            state.user, // Pass the whole user object instead of just email
+      // Save role locally
+      await getIt<CacheHelper>().saveData(
+        key: 'userRole',
+        value: state.user.role,
       );
+
+      if (!context.mounted) return;
+
+      // Reload auth state
+      try {
+        final authCubit = context.read<AppCubit>().authCubit;
+        await authCubit.reloadUserData();
+      } catch (e) {
+        debugPrint('Failed to reload AuthCubit: $e');
+      }
+
+      if (!context.mounted) return;
+
+      // Show success and navigate to main screen
+      SnackBarHelper.showSuccess(
+        context,
+        context.tr('auth_register_success'),
+      );
+
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (!context.mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          Routes.bottomNavigationBarScreen,
+          (route) => false,
+        );
+      });
     }
   }
 

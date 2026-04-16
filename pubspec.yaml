@@ -73,6 +73,8 @@ dependencies:
   confetti: ^0.7.0
   flutter_rating_bar: ^4.0.1
   responsive_screen_master: ^2.0.2
+  device_info_plus: ^11.3.3
+  table_calendar: ^3.2.0
 
 dev_dependencies:
   flutter_test:

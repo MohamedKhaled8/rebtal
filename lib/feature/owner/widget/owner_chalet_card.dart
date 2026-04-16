@@ -9,6 +9,18 @@ import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
+double _averageRatingFromMap(Map<String, dynamic> d) {
+  final v = d['averageRating'] ?? d['avgRating'] ?? d['rating'];
+  if (v is num) return v.toDouble();
+  return 0.0;
+}
+
+int _ratingCountFromMap(Map<String, dynamic> d) {
+  final c = d['ratingCount'] ?? d['reviewCount'];
+  if (c is num) return c.toInt();
+  return 0;
+}
+
 class OwnerChaletCard extends StatelessWidget {
   final Map<String, dynamic> chaletData;
   final String docId;
@@ -191,11 +203,8 @@ class OwnerChaletCard extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Rating Row
-                    const _RatingRow(
-                      rating: 4.5,
-                      count: 24,
-                    ), // Mock data as requested layout
+                    // Rating Row (Firestore: averageRating, ratingCount / reviewCount)
+                    _RatingRow(chaletData: chaletData),
 
                     const SizedBox(height: 12),
 
@@ -535,14 +544,32 @@ class _InfoBadge extends StatelessWidget {
 }
 
 class _RatingRow extends StatelessWidget {
-  final double rating;
-  final int count;
+  final Map<String, dynamic> chaletData;
 
-  const _RatingRow({required this.rating, required this.count});
+  const _RatingRow({required this.chaletData});
 
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
+    final rating = _averageRatingFromMap(chaletData);
+    final count = _ratingCountFromMap(chaletData);
+
+    if (count <= 0 && rating <= 0) {
+      return Text(
+        context.tr('chalet_detail_no_reviews'),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: isDark ? Colors.white54 : Colors.grey[600],
+        ),
+      );
+    }
+
+    final label = count > 0
+        ? '${rating == rating.roundToDouble() ? rating.toInt() : rating.toStringAsFixed(1)} ($count ${context.tr('common_ratings')})'
+        : (rating == rating.roundToDouble()
+              ? rating.toInt().toString()
+              : rating.toStringAsFixed(1));
 
     return Row(
       children: [
@@ -559,12 +586,14 @@ class _RatingRow extends StatelessWidget {
           return Icon(icon, size: 18, color: color);
         }),
         const SizedBox(width: 6),
-        Text(
-          '$rating ($count ${context.tr('common_ratings')})',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.grey[600],
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.grey[600],
+            ),
           ),
         ),
       ],

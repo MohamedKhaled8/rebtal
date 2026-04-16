@@ -31,8 +31,30 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     return _pageController!;
   }
 
-  void initialize(Map<String, dynamic> requestData) {
-    final images = _extractImagesFromRequestData(requestData);
+  Future<void> initialize(
+    Map<String, dynamic> requestData, {
+    String? docId,
+  }) async {
+    // Prefer loading the latest chalet data by Firestore docId.
+    // This avoids showing wrong/stale images when requestData is incomplete
+    // or reused across list items/favorites.
+    Map<String, dynamic> effectiveData = requestData;
+    if (docId != null && docId.isNotEmpty) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('chalets')
+            .doc(docId)
+            .get(const GetOptions(source: Source.server));
+        final data = snap.data();
+        if (data != null) {
+          effectiveData = {...requestData, ...data, 'id': docId};
+        }
+      } catch (e) {
+        // Best-effort: fall back to requestData if Firestore fails/offline.
+      }
+    }
+
+    final images = _extractImagesFromRequestData(effectiveData);
     final bookingDates = requestData['bookedDates'];
     List<DateTime>? initialDates;
 
@@ -50,9 +72,30 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     _startAutoPlay();
 
     // Fetch latest bookings
-    final chaletId = requestData['id'] ?? requestData['chaletId'];
+    final chaletId = docId ?? effectiveData['id'] ?? effectiveData['chaletId'];
     if (chaletId != null) {
       _fetchBookedDates(chaletId.toString());
+    }
+  }
+
+  /// When owner list is patched after edit, keep gallery in sync with Firestore fields.
+  void syncImagesFromMap(Map<String, dynamic> data) {
+    if (isClosed) return;
+    final next = _extractImagesFromRequestData(data);
+    final s = state;
+    if (s is! ChaletDetailLoaded) return;
+    final idx = next.isEmpty
+        ? 0
+        : s.currentImageIndex.clamp(0, next.length - 1);
+    emit(s.copyWith(images: next, currentImageIndex: idx));
+    final c = _pageController;
+    if (c != null && c.hasClients && next.isNotEmpty) {
+      Future.microtask(() {
+        if (isClosed) return;
+        try {
+          c.jumpToPage(idx);
+        } catch (_) {}
+      });
     }
   }
 
@@ -63,6 +106,7 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     result.fold(
       (failure) => debugPrint('Error fetching booked dates: $failure'),
       (bookedDates) {
+        if (isClosed) return;
         final currentState = state;
         if (currentState is ChaletDetailLoaded) {
           emit(currentState.copyWith(bookedDates: bookedDates));
@@ -90,25 +134,31 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (isClosed) return;
       final currentState = state;
       if (currentState is ChaletDetailLoaded) {
-        if (_pageController?.hasClients == true &&
-            currentState.images.length > 1) {
+        final controller = _pageController;
+        if (controller?.hasClients == true && currentState.images.length > 1) {
           int nextIndex = currentState.currentImageIndex + 1;
           if (nextIndex >= currentState.images.length) {
             nextIndex = 0;
           }
-          _pageController?.animateToPage(
-            nextIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+          try {
+            controller?.animateToPage(
+              nextIndex,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          } catch (_) {
+            // Ignore controller lifecycle races during route pops.
+          }
         }
       }
     });
   }
 
   void onPageChanged(int index) {
+    if (isClosed) return;
     final currentState = state;
     if (currentState is ChaletDetailLoaded) {
       emit(currentState.copyWith(currentImageIndex: index));
@@ -116,11 +166,18 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   void navigateToImage(int index) {
-    _pageController?.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (isClosed) return;
+    final controller = _pageController;
+    if (controller?.hasClients != true) return;
+    try {
+      controller?.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } catch (_) {
+      // Ignore if controller is disposed mid-flight.
+    }
   }
 
   void toggleDescription() {
@@ -271,7 +328,13 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   @override
   Future<void> close() {
     _autoPlayTimer?.cancel();
-    _pageController?.dispose();
+    final controller = _pageController;
+    _pageController = null;
+    try {
+      controller?.dispose();
+    } catch (_) {
+      // Ignore double-dispose races during widget finalization.
+    }
     return super.close();
   }
 }

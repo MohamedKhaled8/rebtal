@@ -25,12 +25,13 @@ class NotificationCard extends StatelessWidget {
     // لو فيه مفتاح ترجمة، استخدمه
     if (notification.titleKey.isNotEmpty) {
       String translated = context.tr(notification.titleKey);
-      // استبدل المتغيرات
-      if (notification.titleParams != null) {
-        notification.titleParams!.forEach((key, value) {
-          translated = translated.replaceAll('{$key}', value.toString());
-        });
-      }
+      final merged = <String, dynamic>{
+        if (notification.data != null) ...notification.data!,
+        if (notification.titleParams != null) ...notification.titleParams!,
+      };
+      merged.forEach((key, value) {
+        translated = translated.replaceAll('{$key}', value.toString());
+      });
       return translated;
     }
     // ترجمة ذكية للنصوص القديمة المخزنة
@@ -67,12 +68,13 @@ class NotificationCard extends StatelessWidget {
     // لو فيه مفتاح ترجمة، استخدمه
     if (notification.bodyKey.isNotEmpty) {
       String translated = context.tr(notification.bodyKey);
-      // استبدل المتغيرات
-      if (notification.bodyParams != null) {
-        notification.bodyParams!.forEach((key, value) {
-          translated = translated.replaceAll('{$key}', value.toString());
-        });
-      }
+      final merged = <String, dynamic>{
+        if (notification.data != null) ...notification.data!,
+        if (notification.bodyParams != null) ...notification.bodyParams!,
+      };
+      merged.forEach((key, value) {
+        translated = translated.replaceAll('{$key}', value.toString());
+      });
       return translated;
     }
     // ترجمة ذكية للنصوص القديمة المخزنة
@@ -111,10 +113,20 @@ class NotificationCard extends StatelessWidget {
       }
       return translated;
     } else if (body.contains('طلب حجز جديد') ||
-        body.contains('يرجى المراجعة')) {
+        body.contains('يرجى المراجعة') ||
+        body.contains('new booking request') ||
+        body.toLowerCase().contains('booking request for')) {
+      final parsed = _parseBookingRequestLegacyBody(body);
       String translated = context.tr('notifications_booking_request_body');
-      if (chaletName.isNotEmpty) {
-        translated = translated.replaceAll('{chaletName}', chaletName);
+      final ch = parsed.$1.isNotEmpty ? parsed.$1 : chaletName;
+      final un = parsed.$2.isNotEmpty
+          ? parsed.$2
+          : (notification.data?['userName']?.toString() ?? '');
+      if (ch.isNotEmpty) {
+        translated = translated.replaceAll('{chaletName}', ch);
+      }
+      if (un.isNotEmpty) {
+        translated = translated.replaceAll('{userName}', un);
       }
       return translated;
     } else if (body.contains('تم تأكيد') || body.contains('الحجز مؤكد')) {
@@ -128,6 +140,31 @@ class NotificationCard extends StatelessWidget {
     return body;
   }
 
+  /// (chaletName, userName) من نص طلب الحجز القديم المخزن في Firestore
+  (String, String) _parseBookingRequestLegacyBody(String text) {
+    final ar = RegExp(
+      r'لشاليه\s+(.+?)\s+من\s+([^.]+?)(?:\.\s*يرجى|\.\s*$)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (ar != null) {
+      return (
+        ar.group(1)?.trim() ?? '',
+        ar.group(2)?.trim() ?? '',
+      );
+    }
+    final en = RegExp(
+      r'(?:booking request|request)\s+for\s+(.+?)\s+from\s+([^.]+?)(?:\.|\s*Please)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (en != null) {
+      return (
+        en.group(1)?.trim() ?? '',
+        en.group(2)?.trim() ?? '',
+      );
+    }
+    return ('', '');
+  }
+
   /// استخراج اسم الشاليه من النص العربي
   String _extractChaletName(String text) {
     // أحاول استخراج الاسم من بين علامات الاقتباس أو بعد "في"
@@ -136,8 +173,8 @@ class NotificationCard extends StatelessWidget {
     if (match != null) {
       return match.group(1)?.trim() ?? '';
     }
-    // أو بعد اسم الشاليه مباشرة
-    final chaletExp = RegExp(r'شاليه\s+([^،.]+)');
+    // أو بعد اسم الشاليه مباشرة (توقف عند " من " إن وُجدت لتجنب ابتلاع اسم الضيف)
+    final chaletExp = RegExp(r'شاليه\s+(.+?)(?:\s+من\s+|$)');
     final chaletMatch = chaletExp.firstMatch(text);
     if (chaletMatch != null) {
       return chaletMatch.group(1)?.trim() ?? '';

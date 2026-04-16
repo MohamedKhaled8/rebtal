@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_app_check/firebase_app_check.dart'; // ✅ Import App Check
-import 'package:firebase_storage/firebase_storage.dart'; // ✅ Import Storage
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,9 +23,7 @@ void main() async {
   // Load environment variables (optional file — OneSignal has code fallback)
   try {
     await dotenv.load(fileName: '.env');
-  } catch (_) {
-    debugPrint('⚠️ .env not found or empty — using OneSignal defaults in code.');
-  }
+  } catch (_) {}
 
   // Cairo / Google Fonts: keep runtime fetch; first paint may still fetch glyphs.
   GoogleFonts.config.allowRuntimeFetching = true;
@@ -39,19 +36,12 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  // ✅ 1. Check Storage Configuration
+  // Check Storage Configuration
   try {
-    if (kDebugMode) {
-      debugPrint('\n📦 ========================================');
-      debugPrint('📦 Storage Bucket: ${FirebaseStorage.instance.bucket}');
-      debugPrint('📦 ========================================\n');
-    }
-  } catch (e) {
-    if (kDebugMode) debugPrint('⚠️ Failed to get storage bucket: $e');
-  }
+    if (kDebugMode) {}
+  } catch (e) {}
 
-  // ✅ 2. Activate App Check
-  // We wrap this in a non-awaited future to prevent it from blocking runApp if it stalls in release mode
+  // Activate App Check
   unawaited(
     FirebaseAppCheck.instance
         .activate(
@@ -64,11 +54,8 @@ void main() async {
         )
         .then((_) {
           FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-          if (kDebugMode) debugPrint('✅ Firebase App Check Activated');
         })
-        .catchError((e) {
-          if (kDebugMode) debugPrint('⚠️ Firebase App Check Failed: $e');
-        }),
+        .catchError((e) {}),
   );
 
   setupGetIt();
@@ -79,18 +66,11 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.initialize();
 
-  // Print Token for testing
+  // Get FCM Token
   try {
-    String? token = await FirebaseMessaging.instance.getToken();
-    if (kDebugMode) {
-      debugPrint('\n==================================================');
-      debugPrint('🔥 FCM TOKEN FOR TESTING:');
-      debugPrint(token);
-      debugPrint('==================================================\n');
-    }
-  } catch (e) {
-    if (kDebugMode) debugPrint('Error getting token: $e');
-  }
+    await FirebaseMessaging.instance.getToken();
+  // ignore: empty_catches
+  } catch (e) {}
 
   // Initialize OneSignal
   await OneSignalService().initialize();

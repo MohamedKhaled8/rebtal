@@ -34,7 +34,9 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: isDark ? ColorsManager.darkBackground0F0F1E : ColorsManager.bookingsBackgroundLight,
+      backgroundColor: isDark
+          ? ColorsManager.darkBackground0F0F1E
+          : ColorsManager.bookingsBackgroundLight,
       body: SafeArea(
         child: BlocBuilder<AdminCubit, AdminState>(
           builder: (context, state) {
@@ -53,7 +55,11 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 56, color: Colors.red[300]),
+                      Icon(
+                        Icons.error_outline,
+                        size: 56,
+                        color: Colors.red[300],
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         state.message,
@@ -82,10 +88,7 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
 
             final proofs = state.paymentProofs
                 .map(
-                  (doc) => PaymentProof.fromMap({
-                    ...doc.data(),
-                    'id': doc.id,
-                  }),
+                  (doc) => PaymentProof.fromMap({...doc.data(), 'id': doc.id}),
                 )
                 .toList();
 
@@ -170,6 +173,16 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
                             }
                           });
                         },
+                        onApprovePayment: (proofDocId, bookingId) =>
+                            context.read<AdminCubit>().approvePaymentProof(
+                              proofDocId: proofDocId,
+                              bookingId: bookingId,
+                            ),
+                        onRejectPayment: (proofDocId, bookingId) =>
+                            context.read<AdminCubit>().rejectPaymentProof(
+                              proofDocId: proofDocId,
+                              bookingId: bookingId,
+                            ),
                       );
                     }, childCount: filteredDocs.length),
                   ),
@@ -187,7 +200,8 @@ class _AdminPaymentsPageState extends State<AdminPaymentsPage> {
       isDark: isDark,
       searchController: _searchController,
       searchQuery: _searchQuery,
-      onSearchChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
+      onSearchChanged: (value) =>
+          setState(() => _searchQuery = value.toLowerCase()),
       onClearSearch: () {
         _searchController.clear();
         setState(() => _searchQuery = '');

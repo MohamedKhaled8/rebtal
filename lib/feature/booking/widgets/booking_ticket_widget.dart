@@ -243,7 +243,7 @@ class BookingTicketWidget extends StatelessWidget {
   static int _getDays(DateTime from, DateTime to) =>
       to.difference(from).inDays.clamp(0, 365);
   static int _getNights(DateTime from, DateTime to) =>
-      (_getDays(from, to) - 1).clamp(0, 364);
+      _getDays(from, to).clamp(0, 365);
 
   Widget _buildDashedLine(bool isDark) {
     return LayoutBuilder(

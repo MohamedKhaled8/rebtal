@@ -10,6 +10,7 @@ class CustomInputField extends StatefulWidget {
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final AutovalidateMode autovalidateMode;
 
   const CustomInputField({
     super.key,
@@ -20,6 +21,7 @@ class CustomInputField extends StatefulWidget {
     this.keyboardType,
     this.suffixIcon,
     this.validator,
+    this.autovalidateMode = AutovalidateMode.disabled,
   });
 
   @override
@@ -78,94 +80,141 @@ class _CustomInputFieldState extends State<CustomInputField> {
     final isDark = DynamicThemeManager.isDarkMode(context);
     final hasError = _errorText != null;
 
+    final baseColor = isDark ? ColorsManager.darkSurface1E1E1E : Colors.white;
+    final accentColor = isDark ? ColorsManager.skyBlue38BDF8 : ColorsManager.blue2563EB;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: 56,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          height: 60,
           decoration: BoxDecoration(
-            color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
-            borderRadius: BorderRadius.circular(14),
+            color: isFocused 
+                ? (isDark ? Colors.white.withOpacity(0.03) : Colors.white)
+                : baseColor,
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: hasError
                   ? ColorsManager.red
                   : isFocused
-                      ? (isDark
-                          ? ColorsManager.bookingsAccentPrimary
-                          : ColorsManager.blue2563EB)
+                      ? accentColor
                       : (isDark
-                          ? ColorsManager.white.withOpacity(0.1)
-                          : ColorsManager.grey300),
-              width: (isFocused || hasError) ? 2 : 1,
+                          ? Colors.white.withOpacity(0.12)
+                          : ColorsManager.greyE5E7EB),
+              width: isFocused ? 1.8 : 1.2,
             ),
+            boxShadow: [
+              if (isFocused && !hasError)
+                BoxShadow(
+                  color: accentColor.withOpacity(0.12),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              if (hasError)
+                BoxShadow(
+                  color: ColorsManager.red.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+            ],
           ),
           child: Row(
             children: [
-              const SizedBox(width: 16),
-              Icon(
-                widget.icon,
-                size: 20,
-                color: hasError
-                    ? ColorsManager.red
-                    : isFocused
-                        ? (isDark
-                            ? ColorsManager.bookingsAccentPrimary
-                            : ColorsManager.blue2563EB)
-                        : (isDark ? ColorsManager.white70 : ColorsManager.grey700),
+              const SizedBox(width: 18),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isFocused 
+                      ? accentColor.withOpacity(0.1) 
+                      : (isDark ? Colors.white.withOpacity(0.05) : ColorsManager.greyF3F4F6),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: 18,
+                  color: hasError
+                      ? ColorsManager.red
+                      : isFocused
+                          ? accentColor
+                          : (isDark ? Colors.white54 : ColorsManager.grey6B7280),
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: TextFormField(
                   controller: widget.controller,
                   focusNode: _focusNode,
                   obscureText: widget.obscureText,
                   keyboardType: widget.keyboardType,
+                  autovalidateMode: widget.autovalidateMode,
                   validator: (value) {
                     final error = widget.validator?.call(value);
-                    setState(() => _errorText = error);
+                    if (error != _errorText) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        setState(() => _errorText = error);
+                      });
+                    }
                     return error;
                   },
-                  textInputAction:
-                      widget.keyboardType == TextInputType.emailAddress ||
-                          widget.keyboardType == TextInputType.phone ||
-                          widget.keyboardType == TextInputType.name
-                      ? TextInputAction.next
-                      : TextInputAction.done,
+                  textInputAction: widget.keyboardType == TextInputType.visiblePassword
+                      ? TextInputAction.done
+                      : TextInputAction.next,
                   onFieldSubmitted: (_) {
-                    if (widget.keyboardType != null &&
-                        widget.keyboardType != TextInputType.visiblePassword) {
-                      FocusScope.of(context).nextFocus();
-                    } else {
+                    if (widget.keyboardType == TextInputType.visiblePassword) {
                       FocusScope.of(context).unfocus();
+                    } else {
+                      FocusScope.of(context).nextFocus();
                     }
                   },
                   style: TextStyle(
                     fontSize: 15,
-                    color: isDark
-                        ? ColorsManager.white
-                        : ColorsManager.chaletTextPrimaryLight,
-                    fontWeight: FontWeight.w400,
+                    color: isDark ? Colors.white : ColorsManager.grey1F2937,
+                    fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     hintText: widget.label,
                     hintStyle: TextStyle(
-                      color: isDark
-                          ? ColorsManager.white.withOpacity(0.4)
-                          : ColorsManager.grey400,
-                      fontSize: 15,
+                      color: isDark ? Colors.white38 : ColorsManager.grey400,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w400,
                     ),
                     border: InputBorder.none,
                     errorStyle: const TextStyle(height: 0, fontSize: 0),
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
                     isDense: true,
                   ),
                 ),
               ),
               if (widget.suffixIcon != null) widget.suffixIcon!,
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
             ],
           ),
         ),
+        if (hasError) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: ColorsManager.red, size: 14),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _errorText!,
+                    style: const TextStyle(
+                      color: ColorsManager.red,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }

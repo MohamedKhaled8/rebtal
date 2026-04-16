@@ -109,35 +109,6 @@ class AuthCubit extends Cubit<AuthState> {
         final user = UserModel.fromMap(doc.data() as Map<String, dynamic>);
         debugPrint('🔥 AuthCubit: User role: ${user.role}');
 
-        // ✅ Skip email verification for admin
-        final isAdmin = user.role.toLowerCase().trim() == 'admin';
-
-        // ✅ Check if email is verified (skip for admin)
-        if (!isAdmin) {
-          try {
-            await firebaseUser.reload().timeout(const Duration(seconds: 5));
-          } catch (e) {
-            debugPrint('⚠️ Network timeout during user reload: $e');
-            // Proceed with existing data if reload fails
-          }
-
-          // Only redirect to verification if user just registered
-          // Don't force verification on every app restart
-          final isJustRegistered = getIt<CacheHelper>().getDataString(
-            key: 'justRegistered',
-          );
-
-          if (!firebaseUser.emailVerified && isJustRegistered == 'true') {
-            // ⚠️ User just registered but not verified -> Redirect to verification
-            debugPrint('⚠️ User not verified, redirecting to verification');
-            emit(AuthRegistrationSuccess(user: user, phoneNumber: ''));
-            return;
-          }
-
-          // Clear the flag after first check
-          await getIt<CacheHelper>().removeData(key: 'justRegistered');
-        }
-
         // ✅ Save role locally
         await getIt<CacheHelper>().saveData(key: 'userRole', value: user.role);
         // Keep OneSignal user alias synced for targeted pushes by userId.

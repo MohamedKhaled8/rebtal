@@ -77,7 +77,9 @@ class AdminPaymentsHeader extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
+                        color: isDark
+                            ? ColorsManager.white
+                            : ColorsManager.chaletTextPrimaryLight,
                         height: 1.2,
                       ),
                     ),
@@ -86,7 +88,9 @@ class AdminPaymentsHeader extends StatelessWidget {
                       context.tr('admin_payments_review'),
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
+                        color: isDark
+                            ? ColorsManager.white70
+                            : ColorsManager.grey600,
                         height: 1.3,
                       ),
                     ),
@@ -110,7 +114,9 @@ class AdminPaymentsHeader extends StatelessWidget {
             child: TextField(
               controller: searchController,
               style: TextStyle(
-                color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
+                color: isDark
+                    ? ColorsManager.white
+                    : ColorsManager.chaletTextPrimaryLight,
                 fontSize: 16,
                 height: 1.4,
               ),
@@ -126,7 +132,9 @@ class AdminPaymentsHeader extends StatelessWidget {
                   child: Icon(
                     Icons.search_rounded,
                     size: 24,
-                    color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
+                    color: isDark
+                        ? ColorsManager.white70
+                        : ColorsManager.grey600,
                   ),
                 ),
                 suffixIcon: searchQuery.isNotEmpty
@@ -141,25 +149,33 @@ class AdminPaymentsHeader extends StatelessWidget {
                             child: Icon(
                               Icons.clear_rounded,
                               size: 20,
-                              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
+                              color: isDark
+                                  ? ColorsManager.white70
+                                  : ColorsManager.grey600,
                             ),
                           ),
                         ),
                       )
                     : null,
                 filled: true,
-                fillColor: isDark ? ColorsManager.darkGrey252540 : ColorsManager.white,
+                fillColor: isDark
+                    ? ColorsManager.darkGrey252540
+                    : ColorsManager.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide(
-                    color: isDark ? ColorsManager.white.withOpacity(0.1) : ColorsManager.grey200,
+                    color: isDark
+                        ? ColorsManager.white.withOpacity(0.1)
+                        : ColorsManager.grey200,
                     width: 1.5,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide(
-                    color: isDark ? ColorsManager.white.withOpacity(0.1) : ColorsManager.grey200,
+                    color: isDark
+                        ? ColorsManager.white.withOpacity(0.1)
+                        : ColorsManager.grey200,
                     width: 1.5,
                   ),
                 ),
@@ -170,7 +186,10 @@ class AdminPaymentsHeader extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
               ),
             ),
           ),
@@ -179,13 +198,33 @@ class AdminPaymentsHeader extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip(context, context.tr('admin_all'), 'all', Icons.dashboard_outlined),
+                _buildFilterChip(
+                  context,
+                  context.tr('admin_all'),
+                  'all',
+                  Icons.dashboard_outlined,
+                ),
                 const SizedBox(width: 12),
-                _buildFilterChip(context, context.tr('admin_pending_review'), 'pending', Icons.access_time_rounded),
+                _buildFilterChip(
+                  context,
+                  context.tr('admin_pending_review'),
+                  'pending',
+                  Icons.access_time_rounded,
+                ),
                 const SizedBox(width: 12),
-                _buildFilterChip(context, context.tr('booking_status_confirmed'), 'approved', Icons.check_circle_outline_rounded),
+                _buildFilterChip(
+                  context,
+                  context.tr('booking_status_confirmed'),
+                  'approved',
+                  Icons.check_circle_outline_rounded,
+                ),
                 const SizedBox(width: 12),
-                _buildFilterChip(context, context.tr('booking_status_rejected'), 'rejected', Icons.cancel_outlined),
+                _buildFilterChip(
+                  context,
+                  context.tr('booking_status_rejected'),
+                  'rejected',
+                  Icons.cancel_outlined,
+                ),
               ],
             ),
           ),
@@ -208,7 +247,9 @@ class AdminPaymentsHeader extends StatelessWidget {
       avatar: Icon(
         icon,
         size: 18,
-        color: isSelected ? ColorsManager.white : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
+        color: isSelected
+            ? ColorsManager.white
+            : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
       ),
       label: Text(label),
       selected: isSelected,
@@ -221,19 +262,25 @@ class AdminPaymentsHeader extends StatelessWidget {
           onFilterChanged(value);
         }
       },
-      backgroundColor: isDark ? ColorsManager.darkBlue1A1A2E : ColorsManager.white,
+      backgroundColor: isDark
+          ? ColorsManager.darkBlue1A1A2E
+          : ColorsManager.white,
       selectedColor: activeColor,
       labelStyle: TextStyle(
-        color: isSelected ? ColorsManager.white : (isDark ? ColorsManager.white70 : ColorsManager.chaletTextPrimaryLight),
+        color: isSelected
+            ? ColorsManager.white
+            : (isDark
+                  ? ColorsManager.white70
+                  : ColorsManager.chaletTextPrimaryLight),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         fontSize: 14,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       side: BorderSide(
-        color: isSelected ? ColorsManager.transparent : (isDark ? ColorsManager.white10 : ColorsManager.grey300),
+        color: isSelected
+            ? ColorsManager.transparent
+            : (isDark ? ColorsManager.white10 : ColorsManager.grey300),
       ),
     );
   }

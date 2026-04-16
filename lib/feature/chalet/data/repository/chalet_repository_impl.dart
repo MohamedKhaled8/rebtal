@@ -21,12 +21,14 @@ class ChaletRepositoryImpl implements BaseChaletRepository {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final from = (data['from'] as Timestamp?)?.toDate();
-        final to = (data['to'] as Timestamp?)?.toDate();
+        final from = _parseBookingDate(data['from']);
+        final to = _parseBookingDate(data['to']);
 
         if (from != null && to != null) {
-          DateTime current = from;
-          while (current.isBefore(to) || current.isAtSameMomentAs(to)) {
+          // Treat [from, to) as occupied nights (checkout day is exclusive).
+          var current = DateTime(from.year, from.month, from.day);
+          final endDay = DateTime(to.year, to.month, to.day);
+          while (current.isBefore(endDay)) {
             bookedDates.add(current);
             current = current.add(const Duration(days: 1));
           }
@@ -40,6 +42,16 @@ class ChaletRepositoryImpl implements BaseChaletRepository {
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
+  }
+
+  static DateTime? _parseBookingDate(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 
   @override

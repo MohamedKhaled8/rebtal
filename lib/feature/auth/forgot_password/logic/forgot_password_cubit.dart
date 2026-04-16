@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/feature/auth/repository/auth_repository.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 part 'forgot_password_state.dart';
 
@@ -13,7 +14,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   Future<void> sendResetLink(BuildContext context) async {
     if (emailController.text.trim().isEmpty) {
-      SnackBarHelper.showError(context, 'يرجى إدخال البريد الإلكتروني');
+      SnackBarHelper.showError(context, context.tr('auth_email_required'));
       return;
     }
 
@@ -25,13 +26,13 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     result.fold(
       (failure) {
         emit(ForgotPasswordInitial());
-        SnackBarHelper.showError(context, failure.message);
+        SnackBarHelper.showError(context, context.tr(failure.message));
       },
       (_) {
         emit(ForgotPasswordSuccess());
         SnackBarHelper.showSuccess(
           context,
-          'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح ✅',
+          context.tr('auth_forgot_password_link_sent'),
         );
         // العودة لصفحة تسجيل الدخول
         Navigator.of(context).pop();

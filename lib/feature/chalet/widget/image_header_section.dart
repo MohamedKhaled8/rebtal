@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +5,6 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -219,7 +217,8 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                   physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     return Hero(
-                      tag: 'chalet_image_header_$index',
+                      // Include chalet id to avoid Hero collisions between different chalets.
+                      tag: 'chalet_image_header_${widget.docId}_$index',
                       child: AppImageHelper(
                         path: images[index],
                         fit: BoxFit.cover,

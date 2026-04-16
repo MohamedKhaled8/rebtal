@@ -12,12 +12,6 @@ import 'package:rebtal/core/utils/localization/static_translation.dart';
 // Top-level function for background message handling
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Handling background message: ${message.messageId}');
-  debugPrint('Title: ${message.notification?.title}');
-  debugPrint('Body: ${message.notification?.body}');
-  debugPrint('Data: ${message.data}');
-
-  // If the message is a data message (no notification payload) or we want to force show it
   if (message.notification == null && message.data.isNotEmpty) {
     final localNotificationService = LocalNotificationService();
     await localNotificationService.initialize();
@@ -53,9 +47,7 @@ class NotificationService {
           if (low.startsWith('ar')) return 'ar';
         }
       }
-    } catch (e) {
-      debugPrint('notification locale fallback: $e');
-    }
+    } catch (e) {}
     return 'ar';
   }
 
@@ -77,12 +69,9 @@ class NotificationService {
 
       // Get FCM token
       _fcmToken = await _firebaseMessaging.getToken();
-      debugPrint('FCM Token: $_fcmToken');
 
-      // Listen to token refresh
       _firebaseMessaging.onTokenRefresh.listen((newToken) {
         _fcmToken = newToken;
-        debugPrint('FCM Token refreshed: $newToken');
       });
 
       // Handle foreground messages
@@ -99,11 +88,7 @@ class NotificationService {
       if (initialMessage != null) {
         _handleMessageOpenedApp(initialMessage);
       }
-
-      debugPrint('Notification service initialized successfully');
-    } catch (e) {
-      debugPrint('Error initializing notification service: $e');
-    }
+    } catch (e) {}
   }
 
   /// Request notification permission
@@ -119,19 +104,14 @@ class NotificationService {
         sound: true,
       );
 
-      debugPrint('Notification permission: ${settings.authorizationStatus}');
       return settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional;
     } catch (e) {
-      debugPrint('Error requesting permission: $e');
       return false;
     }
   }
 
-  /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('Foreground message received: ${message.messageId}');
-
     final notification = message.notification;
     if (notification != null) {
       _localNotificationService.showNotification(
@@ -143,17 +123,7 @@ class NotificationService {
     }
   }
 
-  /// Handle notification tap
-  void _handleMessageOpenedApp(RemoteMessage message) {
-    debugPrint('Notification tapped: ${message.messageId}');
-    debugPrint('Data: ${message.data}');
-
-    // TODO: Navigate to appropriate screen based on notification type
-    final notificationType = message.data['type'];
-    final relatedId = message.data['relatedId'];
-
-    debugPrint('Type: $notificationType, Related ID: $relatedId');
-  }
+  void _handleMessageOpenedApp(RemoteMessage message) {}
 
   /// Save FCM token to Firestore
   Future<void> saveFCMToken(String userId) async {
@@ -171,11 +141,7 @@ class NotificationService {
             'createdAt': FieldValue.serverTimestamp(),
             'lastUsed': FieldValue.serverTimestamp(),
           });
-
-      debugPrint('FCM token saved for user: $userId');
-    } catch (e) {
-      debugPrint('Error saving FCM token: $e');
-    }
+    } catch (e) {}
   }
 
   /// Delete FCM token from Firestore
@@ -189,31 +155,21 @@ class NotificationService {
           .collection('fcmTokens')
           .doc(_fcmToken)
           .delete();
-
-      debugPrint('FCM token deleted for user: $userId');
-    } catch (e) {
-      debugPrint('Error deleting FCM token: $e');
-    }
+    } catch (e) {}
   }
 
   /// Subscribe to topic
   Future<void> subscribeToTopic(String topic) async {
     try {
       await _firebaseMessaging.subscribeToTopic(topic);
-      debugPrint('Subscribed to topic: $topic');
-    } catch (e) {
-      debugPrint('Error subscribing to topic: $e');
-    }
+    } catch (e) {}
   }
 
   /// Unsubscribe from topic
   Future<void> unsubscribeFromTopic(String topic) async {
     try {
       await _firebaseMessaging.unsubscribeFromTopic(topic);
-      debugPrint('Unsubscribed from topic: $topic');
-    } catch (e) {
-      debugPrint('Error unsubscribing from topic: $e');
-    }
+    } catch (e) {}
   }
 
   /// Send in-app notification (creates a document in Firestore)
@@ -306,13 +262,7 @@ class NotificationService {
           if (data != null) ...data,
         },
       );
-
-      debugPrint(
-        'Notification sent to user: $userId (In-App + Local + OneSignal)',
-      );
-    } catch (e) {
-      debugPrint('Error sending notification: $e');
-    }
+    } catch (e) {}
   }
 
   /// Send push notification to specific user via FCM tokens
@@ -344,12 +294,6 @@ class NotificationService {
         relatedId: relatedId,
         data: data,
       );
-
-      // Note: Actual FCM push requires a backend server to send messages
-      // This would typically be done via Cloud Functions or your backend
-      debugPrint('Push notification queued for user: $userId');
-    } catch (e) {
-      debugPrint('Error sending push notification: $e');
-    }
+    } catch (e) {}
   }
 }

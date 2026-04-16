@@ -7,21 +7,56 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/core/utils/constant/popular_destinations.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
+import 'package:rebtal/feature/owner/domain/repository/base_owner_repository.dart';
 import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 import 'package:rebtal/core/utils/services/local_notification_service.dart';
 
+int? _intFromFirestore(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is num) return v.round();
+  final s = v.toString().trim();
+  final d = double.tryParse(s);
+  if (d != null) return d.round();
+  return int.tryParse(s);
+}
+
+bool _amenityFlagFromMap(
+  Map<String, dynamic> m,
+  List<String> amenityKeys,
+  String key,
+) {
+  if (m[key] == true) return true;
+  if (amenityKeys.contains(key)) return true;
+  final short = key.startsWith('has')
+      ? key.substring(3).toLowerCase()
+      : key.toLowerCase();
+  for (final raw in amenityKeys) {
+    final a = raw.toString();
+    if (a == key) return true;
+    if (a.toLowerCase() == short) return true;
+  }
+  return false;
+}
+
 class OwnerCubit extends Cubit<OwnerState> {
   final AddChaletUseCase addChaletUseCase;
   final GetOwnerChaletsUseCase getOwnerChaletsUseCase;
+  final BaseOwnerRepository ownerRepository;
   final ImagePicker _imagePicker = ImagePicker();
   final Dio _dio = Dio();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  String? _editingChaletId;
+  Map<String, dynamic>? _editSource;
+  String? _preserveBookingAvailability;
+
   OwnerCubit({
     required this.addChaletUseCase,
     required this.getOwnerChaletsUseCase,
+    required this.ownerRepository,
   }) : super(OwnerState.initial()) {
     // Optionally load chalets on init if we have user ID available
     // But usually fetchChalets is called with ID.
@@ -160,25 +195,29 @@ class OwnerCubit extends Cubit<OwnerState> {
     );
   }
 
-  /// Select / clear a popular destination.
-  /// This also keeps the `features` list in sync so home filters can work.
-  void selectPopularDestination(String? destinationName) {
+  /// Select / clear a popular destination (by [destinationKey] from [PopularDestinations]).
+  /// Keeps `features` in sync with Arabic destination name for filters.
+  void selectPopularDestination(String? destinationKey) {
     final currentDraft = state.draft;
     final popularNames = PopularDestinations.namesAr;
 
-    // Remove any previous popular destination labels from features
     final cleanedFeatures = currentDraft.features
         .where((f) => !popularNames.contains(f))
         .toList();
 
-    if (destinationName != null && destinationName.isNotEmpty) {
-      cleanedFeatures.add(destinationName);
+    String? resolvedKey;
+    if (destinationKey != null && destinationKey.isNotEmpty) {
+      final dest = PopularDestinations.getByKey(destinationKey);
+      if (dest != null) {
+        resolvedKey = dest.key;
+        cleanedFeatures.add(dest.nameAr);
+      }
     }
 
     emit(
       state.copyWith(
         draft: currentDraft.copyWith(
-          popularDestination: destinationName,
+          popularDestination: resolvedKey,
           features: cleanedFeatures,
         ),
       ),
@@ -211,6 +250,9 @@ class OwnerCubit extends Cubit<OwnerState> {
   // ==========================================
 
   void resetForm() {
+    _editingChaletId = null;
+    _editSource = null;
+    _preserveBookingAvailability = null;
     emit(
       state.copyWith(
         draft: ChaletDraft.initial(),
@@ -219,6 +261,136 @@ class OwnerCubit extends Cubit<OwnerState> {
         isFormSuccess: false,
       ),
     );
+  }
+
+  DateTime? _parseFirestoreDate(dynamic v) {
+    if (v == null) return null;
+    if (v is Timestamp) return v.toDate();
+    if (v is String) return DateTime.tryParse(v);
+    return null;
+  }
+
+  /// Firestore expects `available` | `unavailable` (see [BookingAvailability]).
+  String _normalizeBookingAvailability(String? raw) {
+    final v = (raw ?? 'available').toLowerCase().trim();
+    return v == 'unavailable' ? 'unavailable' : 'available';
+  }
+
+  /// Hydrate the add/edit draft from an existing Firestore map (owner edit flow).
+  void loadChaletDataForEdit(Map<String, dynamic> m, String docId) {
+    _editingChaletId = docId;
+    _editSource = Map<String, dynamic>.from(m);
+    _preserveBookingAvailability =
+        m['bookingAvailability']?.toString() ?? 'available';
+
+    final amenities = List<String>.from(
+      (m['amenities'] as List?)?.map((e) => e.toString()) ?? const [],
+    );
+    final features = List<String>.from(m['features'] ?? []);
+
+    String? popularKey;
+    for (final d in PopularDestinations.all) {
+      if (features.contains(d.nameAr)) {
+        popularKey = d.key;
+        break;
+      }
+    }
+
+    final priceRaw = m['price'];
+    final priceStr = priceRaw == null
+        ? ''
+        : (priceRaw is num ? priceRaw.toString() : priceRaw.toString());
+
+    final lat = m['latitude'] ?? m['lat'];
+    final lon = m['longitude'] ?? m['lon'];
+
+    emit(
+      state.copyWith(
+        draft: ChaletDraft(
+          uploadedImages: const [],
+          existingImageUrls: List<String>.from(m['images'] ?? []),
+          selectedLocation: m['location']?.toString() ?? '',
+          isAvailable: m['isAvailable'] ?? true,
+          hasWifi: _amenityFlagFromMap(m, amenities, 'hasWifi'),
+          hasPool: _amenityFlagFromMap(m, amenities, 'hasPool'),
+          hasAirConditioning: _amenityFlagFromMap(
+            m,
+            amenities,
+            'hasAirConditioning',
+          ),
+          hasParking: _amenityFlagFromMap(m, amenities, 'hasParking'),
+          hasGarden: _amenityFlagFromMap(m, amenities, 'hasGarden'),
+          hasBBQ: _amenityFlagFromMap(m, amenities, 'hasBBQ'),
+          hasBeachView: _amenityFlagFromMap(m, amenities, 'hasBeachView'),
+          hasHousekeeping: _amenityFlagFromMap(m, amenities, 'hasHousekeeping'),
+          hasPetsAllowed: _amenityFlagFromMap(m, amenities, 'hasPetsAllowed'),
+          hasGym: _amenityFlagFromMap(m, amenities, 'hasGym'),
+          hasKitchen: _amenityFlagFromMap(m, amenities, 'hasKitchen'),
+          hasTV: _amenityFlagFromMap(m, amenities, 'hasTV'),
+          status: m['status']?.toString() ?? 'approved',
+          phoneNumber: m['phoneNumber']?.toString(),
+          email: m['email']?.toString(),
+          chaletName: m['chaletName']?.toString(),
+          description: m['description']?.toString(),
+          merchantName: m['merchantName']?.toString(),
+          price: priceStr,
+          chaletArea: m['chaletArea']?.toString(),
+          bedrooms: _intFromFirestore(m['bedrooms']),
+          bathrooms: _intFromFirestore(m['bathrooms']),
+          availableFrom: _parseFirestoreDate(m['availableFrom']),
+          availableTo: _parseFirestoreDate(m['availableTo']),
+          latitude: lat is num ? lat.toDouble() : double.tryParse('$lat'),
+          longitude: lon is num ? lon.toDouble() : double.tryParse('$lon'),
+          childrenCount: _intFromFirestore(m['childrenCount']),
+          discountEnabled: m['discountEnabled'] ?? false,
+          discountType: m['discountType']?.toString(),
+          discountValue: m['discountValue']?.toString(),
+          features: features,
+          dayUseEnabled: m['dayUseEnabled'] ?? false,
+          popularDestination: popularKey,
+        ),
+        isFormSubmitting: false,
+        formError: null,
+        isFormSuccess: false,
+      ),
+    );
+  }
+
+  void removeExistingImageUrl(int index) {
+    final list = List<String>.from(state.draft.existingImageUrls);
+    if (index >= 0 && index < list.length) {
+      list.removeAt(index);
+      emit(
+        state.copyWith(draft: state.draft.copyWith(existingImageUrls: list)),
+      );
+    }
+  }
+
+  /// Merge saved fields into the in-memory chalet list so UI updates immediately
+  /// (before the Firestore snapshot round-trips).
+  void patchChaletInListAfterSave(String docId, Map<String, dynamic> updates) {
+    final cleaned = Map<String, dynamic>.from(updates);
+    cleaned.removeWhere((k, v) => v is FieldValue);
+    final list = state.chalets.map((c) {
+      if (c is Map && c['id']?.toString() == docId) {
+        final m = Map<String, dynamic>.from(c);
+        cleaned.forEach((k, v) {
+          m[k] = v;
+        });
+        return m;
+      }
+      return c;
+    }).toList();
+    emit(state.copyWith(chalets: list));
+  }
+
+  /// Delete listing from Firestore and refresh owner list.
+  Future<bool> deleteChaletAsOwner(String docId, String ownerId) async {
+    final result = await ownerRepository.deleteChalet(docId);
+    return result.fold((_) => false, (_) {
+      fetchChalets(ownerId);
+      return true;
+    });
   }
 
   void initializeFormWithUserData({
@@ -705,6 +877,253 @@ class OwnerCubit extends Cubit<OwnerState> {
           ),
         );
         fetchChalets(ownerId); // Refresh list
+      },
+    );
+  }
+
+  /// Update an existing approved listing (same fields as add flow).
+  Future<void> submitChaletEdit(String ownerId, String ownerName) async {
+    final docId = _editingChaletId;
+    if (docId == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: 'خطأ في حفظ التعديل',
+        ),
+      );
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        isFormSubmitting: true,
+        formError: null,
+        isFormSuccess: false,
+      ),
+    );
+
+    if (state.draft.chaletName == null || state.draft.chaletName!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "اسم الشاليه مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.description == null || state.draft.description!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "وصف الشاليه مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.price.isEmpty ||
+        double.tryParse(state.draft.price) == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "السعر مطلوب ويجب أن يكون رقماً صحيحاً",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.selectedLocation.isEmpty) {
+      emit(state.copyWith(isFormSubmitting: false, formError: "الموقع مطلوب"));
+      return;
+    }
+
+    if (state.draft.bedrooms == null || state.draft.bedrooms! <= 0) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "عدد غرف النوم مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.bathrooms == null || state.draft.bathrooms! <= 0) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "عدد الحمامات مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.existingImageUrls.isEmpty &&
+        state.draft.uploadedImages.isEmpty) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "يجب إضافة صورة واحدة على الأقل",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.availableFrom == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "تاريخ البداية مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.availableTo == null) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "تاريخ النهاية مطلوب",
+        ),
+      );
+      return;
+    }
+
+    if (state.draft.phoneNumber == null || state.draft.phoneNumber!.isEmpty) {
+      emit(
+        state.copyWith(isFormSubmitting: false, formError: "رقم الهاتف مطلوب"),
+      );
+      return;
+    }
+
+    if (state.draft.email == null || state.draft.email!.isEmpty) {
+      emit(
+        state.copyWith(
+          isFormSubmitting: false,
+          formError: "البريد الإلكتروني مطلوب",
+        ),
+      );
+      return;
+    }
+
+    final uploadedUrls = <String>[];
+    for (final file in state.draft.uploadedImages) {
+      final up = await ownerRepository.uploadChaletImage(file);
+      final ok = up.fold(
+        (f) {
+          emit(state.copyWith(isFormSubmitting: false, formError: f.message));
+          return false;
+        },
+        (url) {
+          uploadedUrls.add(url);
+          return true;
+        },
+      );
+      if (!ok) return;
+    }
+
+    final allImages = [...state.draft.existingImageUrls, ...uploadedUrls];
+
+    final amenitiesList = <String>[];
+    if (state.draft.hasWifi) amenitiesList.add('hasWifi');
+    if (state.draft.hasPool) amenitiesList.add('hasPool');
+    if (state.draft.hasAirConditioning) {
+      amenitiesList.add('hasAirConditioning');
+    }
+    if (state.draft.hasParking) amenitiesList.add('hasParking');
+    if (state.draft.hasGarden) amenitiesList.add('hasGarden');
+    if (state.draft.hasBBQ) amenitiesList.add('hasBBQ');
+    if (state.draft.hasBeachView) amenitiesList.add('hasBeachView');
+    if (state.draft.hasHousekeeping) amenitiesList.add('hasHousekeeping');
+    if (state.draft.hasPetsAllowed) amenitiesList.add('hasPetsAllowed');
+    if (state.draft.hasGym) amenitiesList.add('hasGym');
+    if (state.draft.hasKitchen) amenitiesList.add('hasKitchen');
+    if (state.draft.hasTV) amenitiesList.add('hasTV');
+
+    final name = state.draft.chaletName!.trim();
+    final loc = state.draft.selectedLocation.trim();
+    final desc = (state.draft.description ?? '').trim();
+    final phone = state.draft.phoneNumber!.trim();
+    final email = state.draft.email!.trim();
+
+    final data = <String, dynamic>{
+      'chaletName': name,
+      'location': loc,
+      'description': desc,
+      'images': allImages,
+      'price': double.tryParse(state.draft.price.trim()) ?? 0.0,
+      'bedrooms': state.draft.bedrooms ?? 0,
+      'bathrooms': state.draft.bathrooms ?? 0,
+      'amenities': amenitiesList,
+      'hasWifi': state.draft.hasWifi,
+      'hasPool': state.draft.hasPool,
+      'hasAirConditioning': state.draft.hasAirConditioning,
+      'hasParking': state.draft.hasParking,
+      'hasGarden': state.draft.hasGarden,
+      'hasBBQ': state.draft.hasBBQ,
+      'hasBeachView': state.draft.hasBeachView,
+      'hasHousekeeping': state.draft.hasHousekeeping,
+      'hasPetsAllowed': state.draft.hasPetsAllowed,
+      'hasGym': state.draft.hasGym,
+      'hasKitchen': state.draft.hasKitchen,
+      'hasTV': state.draft.hasTV,
+      'phoneNumber': phone,
+      'email': email,
+      'merchantName': (state.draft.merchantName ?? ownerName).trim(),
+      'ownerName': ownerName.trim(),
+      'isAvailable': state.draft.isAvailable,
+      'bookingAvailability': _normalizeBookingAvailability(
+        _preserveBookingAvailability,
+      ),
+      'availableFrom': state.draft.availableFrom!.toIso8601String(),
+      'availableTo': state.draft.availableTo!.toIso8601String(),
+      'discountEnabled': state.draft.discountEnabled,
+      'features': state.draft.features,
+      'dayUseEnabled': state.draft.dayUseEnabled,
+      'status': 'approved',
+      'updatedAt': FieldValue.serverTimestamp(),
+      'isVisible': _editSource?['isVisible'] ?? true,
+    };
+
+    if (state.draft.chaletArea != null &&
+        state.draft.chaletArea!.trim().isNotEmpty) {
+      data['chaletArea'] = state.draft.chaletArea!.trim();
+    }
+    if (state.draft.childrenCount != null) {
+      data['childrenCount'] = state.draft.childrenCount;
+    }
+    if (state.draft.discountType != null) {
+      data['discountType'] = state.draft.discountType;
+    }
+    if (state.draft.discountValue != null) {
+      data['discountValue'] = state.draft.discountValue;
+    }
+    if (state.draft.latitude != null) {
+      data['latitude'] = state.draft.latitude;
+      data['lat'] = state.draft.latitude;
+    }
+    if (state.draft.longitude != null) {
+      data['longitude'] = state.draft.longitude;
+      data['lon'] = state.draft.longitude;
+    }
+
+    final result = await ownerRepository.updateChaletFields(docId, data);
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(isFormSubmitting: false, formError: failure.message),
+      ),
+      (_) {
+        final forList = Map<String, dynamic>.from(data);
+        forList.removeWhere((k, v) => v is FieldValue);
+        patchChaletInListAfterSave(docId, forList);
+
+        _editingChaletId = null;
+        _editSource = null;
+        _preserveBookingAvailability = null;
+        emit(
+          state.copyWith(
+            isFormSubmitting: false,
+            isFormSuccess: true,
+            draft: ChaletDraft.initial(),
+            formError: null,
+          ),
+        );
+        fetchChalets(ownerId);
       },
     );
   }

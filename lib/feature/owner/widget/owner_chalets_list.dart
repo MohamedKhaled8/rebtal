@@ -35,8 +35,12 @@ class OwnerChaletsList extends StatelessWidget {
     return BlocBuilder<AppCubit, AppState>(
       buildWhen: (previous, current) {
         if (current is AppAuthenticated && previous is AppAuthenticated) {
-          return current.ownerChalets != previous.ownerChalets ||
-              current.isOwnerChaletsLoading != previous.isOwnerChaletsLoading;
+          // Do not use deep list equality: `!=` can miss updates when references
+          // differ but maps still compare equal momentarily; always rebuild on
+          // new list identity, loading flag, or locale.
+          return !identical(current.ownerChalets, previous.ownerChalets) ||
+              current.isOwnerChaletsLoading != previous.isOwnerChaletsLoading ||
+              current.locale != previous.locale;
         }
         return true;
       },
@@ -145,6 +149,9 @@ class OwnerChaletsList extends StatelessWidget {
                                 milliseconds: 100 * (firstIndex % 5),
                               ),
                               child: OwnerChaletCard(
+                                key: ValueKey(
+                                  _chaletToMap(filtered[firstIndex])['id'] ?? '',
+                                ),
                                 chaletData: _chaletToMap(filtered[firstIndex]),
                                 docId:
                                     _chaletToMap(filtered[firstIndex])['id'] ??
@@ -179,6 +186,10 @@ class OwnerChaletsList extends StatelessWidget {
                                   milliseconds: 100 * (secondIndex % 5),
                                 ),
                                 child: OwnerChaletCard(
+                                  key: ValueKey(
+                                    _chaletToMap(filtered[secondIndex])['id'] ??
+                                        '',
+                                  ),
                                   chaletData: _chaletToMap(
                                     filtered[secondIndex],
                                   ),
@@ -234,6 +245,7 @@ class OwnerChaletsList extends StatelessWidget {
                         milliseconds: 100 * (i % 5),
                       ), // Staggered delay
                       child: OwnerChaletCard(
+                        key: ValueKey(id),
                         chaletData: data,
                         docId: id,
                         margin: EdgeInsets.only(

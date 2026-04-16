@@ -41,10 +41,7 @@ class StaticTranslation {
     final lang = languageCode ?? 'ar';
     final primary = lang == 'ar' ? _ar : _en;
     final fallback = lang == 'ar' ? _en : _ar;
-    String s = primary?[key] ?? fallback?[key] ?? key;
-    if (s.isEmpty) {
-      s = key;
-    }
+    String s = primary?[key] ?? fallback?[key] ?? '';
     if (params != null) {
       for (final e in params.entries) {
         s = s.replaceAll('{${e.key}}', e.value?.toString() ?? '');

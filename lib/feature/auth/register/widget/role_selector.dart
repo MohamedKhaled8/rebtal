@@ -16,17 +16,6 @@ class RoleSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.tr('auth_i_am'),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isDark
-                ? ColorsManager.white
-                : ColorsManager.chaletTextPrimaryLight,
-          ),
-        ),
-        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
@@ -35,19 +24,19 @@ class RoleSelector extends StatelessWidget {
                 label: context.tr('auth_role_user'),
                 value: 'user',
                 isSelected: selectedRole == 'user',
-                color: ColorsManager.skyBlue0EA5E9,
+                color: ColorsManager.blue2563EB,
                 onTap: () => onChanged?.call('user'),
                 isDark: isDark,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
               child: _RoleCard(
                 icon: Icons.home_work_rounded,
                 label: context.tr('auth_role_owner'),
                 value: 'owner',
                 isSelected: selectedRole == 'owner',
-                color: ColorsManager.chaletActionDarkBlue,
+                color: ColorsManager.blue2563EB,
                 onTap: () => onChanged?.call('owner'),
                 isDark: isDark,
               ),
@@ -80,48 +69,100 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = isDark ? ColorsManager.skyBlue38BDF8 : ColorsManager.blue2563EB;
+    
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? color.withOpacity(isDark ? 0.15 : 0.1)
-              : (isDark
-                    ? ColorsManager.darkSurface1E1E1E
-                    : ColorsManager.white),
-          borderRadius: BorderRadius.circular(14),
+              ? activeColor.withOpacity(isDark ? 0.08 : 0.05)
+              : (isDark ? ColorsManager.darkSurface1E1E1E : Colors.white),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? color
-                : (isDark
-                      ? ColorsManager.white.withOpacity(0.1)
-                      : ColorsManager.grey300),
-            width: isSelected ? 2 : 1,
+                ? activeColor
+                : (isDark ? Colors.white.withOpacity(0.12) : ColorsManager.greyE5E7EB),
+            width: isSelected ? 2 : 1.2,
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: isSelected
-                  ? color
-                  : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                color: isSelected
-                    ? color
-                    : (isDark ? ColorsManager.white70 : ColorsManager.grey600),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: activeColor.withOpacity(isDark ? 0.2 : 0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 6),
               ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected 
+                        ? activeColor.withOpacity(0.12)
+                        : (isDark ? Colors.white.withOpacity(0.05) : ColorsManager.greyF3F4F6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: isSelected
+                        ? activeColor
+                        : (isDark ? Colors.white54 : ColorsManager.grey6B7280),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected
+                        ? (isDark ? Colors.white : activeColor)
+                        : (isDark ? Colors.white60 : ColorsManager.grey6B7280),
+                  ),
+                ),
+              ],
             ),
+            if (isSelected)
+              Positioned(
+                top: -30,
+                right: -22,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 400),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: activeColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                            width: 2.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),

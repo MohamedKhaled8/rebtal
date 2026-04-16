@@ -7,8 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// OneSignal: يقرأ من `.env` إن وُجد؛ وإلا يستخدم القيم الافتراضية لمشروعك
 /// (للتشغيل الفوري). للإنتاج الأفضل: إرسال Push من السيرفر فقط.
 class OneSignalService {
-  static const String _defaultAppId =
-      '4f2b6648-33f3-4d34-a324-81347e1fb020';
+  static const String _defaultAppId = '4f2b6648-33f3-4d34-a324-81347e1fb020';
 
   /// لا تُضمّن REST API Key داخل التطبيق (يُعتبر سر). استخدم `.env` محلياً فقط،
   /// وفي الإنتاج أرسل الإشعارات من السيرفر/Cloud Functions.
@@ -33,36 +32,24 @@ class OneSignalService {
   Future<void> initialize() async {
     try {
       if (_appId == 'YOUR_ONESIGNAL_APP_ID') {
-        debugPrint('⚠️ OneSignal App ID is missing!');
         return;
       }
 
-      OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
       OneSignal.initialize(_appId);
       await OneSignal.Notifications.requestPermission(true);
-
-      debugPrint('✅ OneSignal initialized successfully');
-    } catch (e) {
-      debugPrint('❌ Error initializing OneSignal: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> login(String userId) async {
     try {
       OneSignal.login(userId);
-      debugPrint('✅ OneSignal login: $userId');
-    } catch (e) {
-      debugPrint('❌ Error logging in to OneSignal: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> logout() async {
     try {
       OneSignal.logout();
-      debugPrint('✅ OneSignal logout');
-    } catch (e) {
-      debugPrint('❌ Error logging out from OneSignal: $e');
-    }
+    } catch (e) {}
   }
 
   /// يرسل عبر OneSignal REST (مفتاح من `.env` أو الافتراضي في الكود).
@@ -74,9 +61,6 @@ class OneSignalService {
   }) async {
     final key = _restApiKey;
     if (key.isEmpty) {
-      debugPrint(
-        '⚠️ OneSignal REST API Key missing. Send notifications from your server instead.',
-      );
       return false;
     }
     try {
@@ -102,14 +86,11 @@ class OneSignalService {
       );
 
       if (response.statusCode == 200) {
-        debugPrint('✅ Notification sent successfully to $targetUserId');
         return true;
       } else {
-        debugPrint('❌ Failed to send notification: ${response.body}');
         return false;
       }
     } catch (e) {
-      debugPrint('❌ Error sending notification: $e');
       return false;
     }
   }

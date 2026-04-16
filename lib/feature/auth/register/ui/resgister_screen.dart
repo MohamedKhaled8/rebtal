@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
@@ -6,19 +7,42 @@ import 'package:rebtal/core/utils/helper/helper_image.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
+import 'package:rebtal/feature/auth/register/widget/custom_input_field.dart';
 import 'package:rebtal/feature/auth/register/widget/login_link_widget.dart';
 import 'package:rebtal/feature/auth/register/widget/role_selector.dart';
 import 'package:rebtal/feature/auth/widget/auth_wanderly_scaffold.dart';
 import 'package:rebtal/feature/auth/widget/wanderly_fields.dart';
+import 'package:rebtal/core/utils/validators/auth_validator.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  bool _showProfileImageError = false;
+  bool _showIdCardError = false;
+  bool _submittedOnce = false;
+
+  String _trSafe(BuildContext context, String key, String fallback) {
+    final value = context.tr(key);
+    return value == key ? fallback : value;
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<RegisterCubit, RegisterState>(
-      listenWhen: (previous, current) =>
-          previous.runtimeType != current.runtimeType,
+      listenWhen: (previous, current) {
+        // Ensure we always surface feedback for validation / errors,
+        // even if the runtimeType stays the same between attempts.
+        return current is RegisterFailure ||
+            current is RegisterValidationError ||
+            current is RegisterOfflineWarning ||
+            current is RegisterSuccess;
+      },
       listener: (context, state) {
         context.read<RegisterCubit>().handleRegisterState(context, state);
       },
@@ -35,88 +59,189 @@ class RegisterScreen extends StatelessWidget {
             title: context.tr('auth_create_account'),
             subtitle: context.tr('auth_create_account_desc'),
             maxWidth: 560,
-            form: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _AvatarPicker(
-                  isDark: isDark,
-                  hasImage: cubit.profileImage != null,
-                  onTap: () async {
-                    final image = await HelperImage().pickImageFile(context);
-                    if (image != null && context.mounted) {
-                      cubit.setProfileImage(image);
-                    }
-                  },
-                ),
-                const SizedBox(height: 12),
-                WanderlyField(
-                  controller: cubit.nameController,
-                  label: context.tr('auth_full_name'),
-                  hint: context.tr('auth_enter_full_name'),
-                  keyboardType: TextInputType.name,
-                ),
-                const SizedBox(height: 10),
-                WanderlyField(
-                  controller: cubit.emailController,
-                  label: context.tr('auth_email'),
-                  hint: context.tr('auth_enter_email'),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 10),
-                WanderlyField(
-                  controller: cubit.phoneController,
-                  label: context.tr('auth_phone'),
-                  hint: context.tr('auth_enter_phone'),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 10),
-                WanderlyField(
-                  controller: cubit.passwordController,
-                  label: context.tr('auth_password'),
-                  hint: context.tr('auth_enter_password'),
-                  obscureText: cubit.obscurePassword,
-                  suffix: IconButton(
-                    onPressed: cubit.togglePasswordVisibility,
-                    icon: Icon(
-                      cubit.obscurePassword
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      color: isDark
-                          ? Colors.white54
-                          : ColorsManager.grey6B7280,
-                      size: 20,
-                    ),
+            form: Form(
+              key: cubit.formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _AvatarPicker(
+                    isDark: isDark,
+                    image: cubit.profileImage,
+                    hasError: _showProfileImageError && cubit.profileImage == null,
+                    onTap: () async {
+                      final image = await HelperImage().pickImageFile(context);
+                      if (image != null && context.mounted) {
+                        cubit.setProfileImage(image);
+                        setState(() => _showProfileImageError = false);
+                      }
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
-                _UploadRow(
-                  isDark: isDark,
-                  onTap: () async {
-                    final image = await HelperImage().pickImageFile(context);
-                    if (image != null && context.mounted) {
-                      cubit.setIdCardImage(image);
-                    }
-                  },
-                  label: cubit.idCardImage == null
-                      ? context.tr('auth_upload_id_card')
-                      : context.tr('auth_id_card_uploaded'),
-                ),
-                const SizedBox(height: 12),
-                RoleSelector(
-                  selectedRole: cubit.selectedRole,
-                  onChanged: cubit.setRole,
-                ),
-                const SizedBox(height: 14),
-                WanderlyPrimaryButton(
-                  label: context.tr('auth_create_account'),
-                  primaryColor: ColorsManager.blue2563EB,
-                  isLoading: isLoading,
-                  onPressed: () {
-                    FocusScope.of(context).unfocus();
-                    cubit.register();
-                  },
-                ),
-              ],
+                  if (_showProfileImageError && cubit.profileImage == null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _trSafe(
+                        context,
+                        'auth_profile_image_required',
+                        'يرجى إضافة الصورة الشخصية',
+                      ),
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  
+                  // —— Personal Info Section ——
+                  _buildSectionTitle(context, 'المعلومات الشخصية', Icons.person_rounded, isDark),
+                  const SizedBox(height: 12),
+                  CustomInputField(
+                    controller: cubit.nameController,
+                    label: context.tr('auth_full_name'),
+                    icon: Icons.person_outline_rounded,
+                    keyboardType: TextInputType.name,
+                    autovalidateMode: _submittedOnce
+                        ? AutovalidateMode.always
+                        : AutovalidateMode.disabled,
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (v.isEmpty) return context.tr('auth_name_required');
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  CustomInputField(
+                    controller: cubit.emailController,
+                    label: context.tr('auth_email'),
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: _submittedOnce
+                        ? AutovalidateMode.always
+                        : AutovalidateMode.disabled,
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (v.isEmpty) return context.tr('auth_email_required');
+                      final errorKey = AuthValidator.validateEmail(v);
+                      if (errorKey == null) return null;
+                      return _trSafe(context, errorKey, 'يرجى إدخال بريد إلكتروني صحيح');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  CustomInputField(
+                    controller: cubit.phoneController,
+                    label: context.tr('auth_phone'),
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    autovalidateMode: _submittedOnce
+                        ? AutovalidateMode.always
+                        : AutovalidateMode.disabled,
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (v.isEmpty) return _trSafe(context, 'auth_phone_required', 'يرجى إدخال رقم الهاتف');
+                      final errorKey = AuthValidator.validatePhone(v);
+                      if (errorKey == null) return null;
+                      return _trSafe(context, errorKey, 'يرجى إدخال رقم الهاتف');
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // —— Security Section ——
+                  _buildSectionTitle(context, 'الأمان والتحقق', Icons.security_rounded, isDark),
+                  const SizedBox(height: 12),
+                  CustomInputField(
+                    controller: cubit.passwordController,
+                    label: context.tr('auth_password'),
+                    icon: Icons.lock_outline_rounded,
+                    obscureText: cubit.obscurePassword,
+                    keyboardType: TextInputType.visiblePassword,
+                    autovalidateMode: _submittedOnce
+                        ? AutovalidateMode.always
+                        : AutovalidateMode.disabled,
+                    suffixIcon: IconButton(
+                      onPressed: cubit.togglePasswordVisibility,
+                      icon: Icon(
+                        cubit.obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: isDark ? Colors.white54 : ColorsManager.grey6B7280,
+                        size: 20,
+                      ),
+                    ),
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (v.isEmpty) return context.tr('auth_password_required');
+                      if (v.length < 6) return _trSafe(context, 'auth_password_too_short', 'كلمة المرور يجب ألا تقل عن 6 أحرف');
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _IdCardSelector(
+                    isDark: isDark,
+                    image: cubit.idCardImage,
+                    hasError: _showIdCardError && cubit.idCardImage == null,
+                    onTap: () async {
+                      final image = await HelperImage().pickImageFile(context);
+                      if (image != null && context.mounted) {
+                        cubit.setIdCardImage(image);
+                        setState(() => _showIdCardError = false);
+                      }
+                    },
+                  ),
+                  if (_showIdCardError && cubit.idCardImage == null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      _trSafe(
+                        context,
+                        'auth_id_card_required',
+                        'يرجى رفع صورة البطاقة الشخصية',
+                      ),
+                      style: const TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+
+                  // —— Role Selection ——
+                  _buildSectionTitle(context, 'نوع الحساب', Icons.supervised_user_circle_rounded, isDark),
+                  const SizedBox(height: 12),
+                  RoleSelector(
+                    selectedRole: cubit.selectedRole,
+                    onChanged: cubit.setRole,
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  WanderlyPrimaryButton(
+                    label: context.tr('auth_create_account'),
+                    primaryColor: ColorsManager.blue2563EB,
+                    isLoading: isLoading,
+                    onPressed: () {
+                      FocusScope.of(context).unfocus();
+                      if (!_submittedOnce) setState(() => _submittedOnce = true);
+                      final isValid = cubit.formKey.currentState?.validate() ?? false;
+                      final missingProfile = cubit.profileImage == null;
+                      final missingIdCard = cubit.idCardImage == null;
+
+                      setState(() {
+                        _showProfileImageError = missingProfile;
+                        _showIdCardError = missingIdCard;
+                      });
+
+                      if (!isValid) {
+                        SnackBarHelper.showWarning(context, context.tr('auth_fill_empty_fields'));
+                        return;
+                      }
+                      if (missingProfile || missingIdCard) return;
+                      cubit.register();
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
             footer: LoginLinkWidget(isDark: isDark),
           );
@@ -124,78 +249,126 @@ class RegisterScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSectionTitle(BuildContext context, String title, IconData icon, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: isDark ? ColorsManager.skyBlue38BDF8.withOpacity(0.1) : ColorsManager.blue2563EB.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 14,
+            color: isDark ? ColorsManager.skyBlue38BDF8 : ColorsManager.blue2563EB,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white70 : ColorsManager.grey1F2937,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  isDark ? Colors.white.withOpacity(0.1) : ColorsManager.greyE5E7EB,
+                  isDark ? Colors.transparent : Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _AvatarPicker extends StatelessWidget {
   const _AvatarPicker({
     required this.isDark,
-    required this.hasImage,
+    this.image,
+    required this.hasError,
     required this.onTap,
   });
 
   final bool isDark;
-  final bool hasImage;
+  final File? image;
+  final bool hasError;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final ring = hasImage
-        ? ColorsManager.blue2563EB
-        : (isDark ? Colors.white54 : ColorsManager.grey6B7280);
     return Center(
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        child: SizedBox(
-          width: 74,
-          height: 74,
+        child: Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: hasError ? ColorsManager.red : ColorsManager.blue2563EB.withOpacity(0.4),
+              width: hasError ? 2.5 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.45 : 0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
           child: Stack(
             children: [
               Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+                child: ClipOval(
+                  child: Container(
                     color: isDark
                         ? ColorsManager.darkSurface1E1E1E
                         : ColorsManager.blueEFF6FF,
-                    border: Border.all(
-                      color: ColorsManager.blue2563EB.withOpacity(
-                        isDark ? 0.45 : 0.2,
-                      ),
-                    ),
-                  ),
-                  child: Icon(
-                    hasImage
-                        ? Icons.check_circle_rounded
-                        : Icons.person_outline_rounded,
-                    color: ring,
-                    size: 34,
+                    child: image != null
+                        ? Image.file(
+                            image!,
+                            fit: BoxFit.cover,
+                          )
+                        : Icon(
+                            Icons.person_outline_rounded,
+                            color: isDark ? Colors.white54 : ColorsManager.blue2563EB.withOpacity(0.7),
+                            size: 44,
+                          ),
                   ),
                 ),
               ),
               Positioned(
-                right: 2,
-                bottom: 2,
+                right: 0,
+                bottom: 0,
                 child: Container(
-                  width: 24,
-                  height: 24,
+                  width: 30,
+                  height: 30,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? ColorsManager.darkSurface1E1E1E
-                        : Colors.white,
+                    color: ColorsManager.blue2563EB,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isDark
-                          ? Colors.white24
-                          : ColorsManager.greyE5E7EB,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                      width: 2.5,
                     ),
                   ),
-                  child: Icon(
-                    Icons.edit_rounded,
-                    size: 14,
-                    color: isDark
-                        ? ColorsManager.skyBlue38BDF8
-                        : ColorsManager.blue2563EB,
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 15,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -207,56 +380,148 @@ class _AvatarPicker extends StatelessWidget {
   }
 }
 
-class _UploadRow extends StatelessWidget {
-  const _UploadRow({
+class _IdCardSelector extends StatelessWidget {
+  const _IdCardSelector({
     required this.isDark,
+    required this.hasError,
     required this.onTap,
-    required this.label,
+    this.image,
   });
 
   final bool isDark;
+  final bool hasError;
   final VoidCallback onTap;
-  final String label;
+  final File? image;
 
   @override
   Widget build(BuildContext context) {
-    final border =
-        isDark ? Colors.white.withOpacity(0.12) : ColorsManager.greyE5E7EB;
-    final fill =
-        isDark ? ColorsManager.darkBackground121212 : ColorsManager.greyF9FAFB;
-    final text = isDark ? Colors.white70 : ColorsManager.grey6B7280;
-    final accent =
-        isDark ? ColorsManager.skyBlue38BDF8 : ColorsManager.blue2563EB;
+    final hasImage = image != null;
+    final borderColor = hasError
+        ? ColorsManager.red
+        : (isDark ? Colors.white.withOpacity(0.15) : ColorsManager.greyE5E7EB);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        height: 48,
+        constraints: const BoxConstraints(minHeight: 120),
         decoration: BoxDecoration(
-          color: fill,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: border),
+          color: isDark ? ColorsManager.darkSurface1E1E1E : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: hasError ? ColorsManager.red : borderColor,
+            width: hasError ? 2 : 1.2,
+          ),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
           children: [
-            Icon(Icons.badge_outlined, color: text),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: text,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12.5,
+            if (hasImage)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.15,
+                  child: Image.file(
+                    image!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (hasImage) ...[
+                      const Icon(Icons.check_circle_rounded, color: Colors.green, size: 32),
+                      const SizedBox(height: 8),
+                      Text(
+                        context.tr('auth_id_card_uploaded'),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : ColorsManager.grey1F2937,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'انقر لتغيير الصورة',
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : ColorsManager.grey6B7280,
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ] else ...[
+                      Icon(
+                        Icons.badge_outlined,
+                        color: isDark ? Colors.white54 : ColorsManager.grey6B7280,
+                        size: 32,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        context.tr('auth_upload_id_card'),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : ColorsManager.grey1F2937,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'يرجى اختيار صورة واضحة للبطاقة',
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : ColorsManager.grey6B7280,
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),
-            Icon(Icons.edit_rounded, color: accent),
+            if (hasImage)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                      )
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Image.file(
+                      image!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 }
+

@@ -198,6 +198,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                     children: [
                       Expanded(
                         child: PublicChaletCard(
+                          key: ValueKey(filtered[firstIndex].id),
                           chaletData: filtered[firstIndex].data(),
                           docId: filtered[firstIndex].id,
                           margin: EdgeInsets.only(
@@ -224,6 +225,7 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
                       if (secondIndex < countToShow)
                         Expanded(
                           child: PublicChaletCard(
+                            key: ValueKey(filtered[secondIndex].id),
                             chaletData: filtered[secondIndex].data(),
                             docId: filtered[secondIndex].id,
                             margin: EdgeInsets.only(
@@ -306,7 +308,11 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
               final doc = filtered[i];
               final data = doc.data();
               return RepaintBoundary(
-                child: PublicChaletCard(chaletData: data, docId: doc.id),
+                child: PublicChaletCard(
+                  key: ValueKey(doc.id),
+                  chaletData: data,
+                  docId: doc.id,
+                ),
               );
             }
             if (hasMore && i == countToShow) {

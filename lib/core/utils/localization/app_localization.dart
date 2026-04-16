@@ -13,18 +13,45 @@ class AppLocalizations {
 
   static LocalizationsDelegate<AppLocalizations> delegate =
       const _AppLocalizationsDelegate();
+
+  /// Loaded locale (e.g. ar).
   late Map<String, String> jsonStrings;
-  Future loadLangJson() async {
-    String string = await rootBundle.loadString(
+
+  /// English strings used when a key is missing in the active locale.
+  static Map<String, String>? _englishStrings;
+
+  Future<void> loadLangJson() async {
+    final string = await rootBundle.loadString(
       'assets/localization/${local!.languageCode}.json',
     );
-    Map<String, dynamic> jsons = json.decode(string);
+    final jsons = json.decode(string) as Map<String, dynamic>;
     jsonStrings = jsons.map((key, value) {
       return MapEntry(key, value.toString());
     });
+
+    _englishStrings ??= await _loadBundleMap('en');
   }
 
-  String translate(String key) => jsonStrings[key] ?? key;
+  static Future<Map<String, String>> _loadBundleMap(String languageCode) async {
+    final raw = await rootBundle.loadString(
+      'assets/localization/$languageCode.json',
+    );
+    final decoded = json.decode(raw) as Map<String, dynamic>;
+    return decoded.map((k, v) => MapEntry(k, v.toString()));
+  }
+
+  /// Never returns [key] — missing keys fall back to English, then empty.
+  String translate(String key) {
+    final primary = jsonStrings[key];
+    if (primary != null && primary.isNotEmpty) {
+      return primary;
+    }
+    final en = _englishStrings?[key];
+    if (en != null && en.isNotEmpty) {
+      return en;
+    }
+    return '';
+  }
 }
 
 class _AppLocalizationsDelegate

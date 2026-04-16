@@ -155,20 +155,23 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   void selectDates(DateTime start, DateTime end) {
     if (end.isBefore(start)) end = start;
 
-    final days = end.difference(start).inDays.clamp(0, 365);
-    final nights = (days - 1).clamp(0, 364);
+    final spanDays = end.difference(start).inDays.clamp(0, 365);
+    // ليالي الإقامة = عدد أيام الفترة بين الوصول والمغادرة (يوم المغادرة غير محسوب كإقامة ليلية)
+    // مثال: 20 → 24 = 4 ليالٍ (وليس 3).
+    final nights = spanDays.clamp(0, 365);
+    final inclusiveStayDays = spanDays + 1;
 
     // If it's Day Use, we charge for at least 1 day even if nights is 0
     final double total = state.isDayUse
-        ? state.nightlyPrice * (days == 0 ? 1 : days)
+        ? state.nightlyPrice * (spanDays == 0 ? 1 : spanDays)
         : state.nightlyPrice * nights;
 
     emit(
       state.copyWith(
         startDate: start,
         endDate: end,
-        days: days,
-        nights: nights,
+        days: inclusiveStayDays,
+        nights: state.isDayUse ? (spanDays == 0 ? 1 : spanDays) : nights,
         totalAmount: total,
         errorMessage: null,
       ),
@@ -254,16 +257,24 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
 
       await docRef.set(booking.toMap());
 
-      // Send Notification
+      // Send Notification (مفاتيح ترجمة + بارامترات لتفادي {userName} ولغة المالك)
       try {
         await NotificationService().sendNotification(
           userId: booking.ownerId,
-          title: 'طلب حجز جديد 📩',
-          body:
-              'لديك طلب حجز جديد لشاليه ${booking.chaletName} من ${booking.userName}. يرجى المراجعة والموافقة.',
+          titleKey: 'notifications_booking_request_title',
+          bodyKey: 'notifications_booking_request_body',
+          bodyParams: {
+            'chaletName': booking.chaletName,
+            'userName': booking.userName,
+          },
           type: NotificationType.bookingRequest,
           relatedId: booking.id,
-          data: {'bookingId': booking.id, 'chaletId': booking.chaletId},
+          data: {
+            'bookingId': booking.id,
+            'chaletId': booking.chaletId,
+            'chaletName': booking.chaletName,
+            'userName': booking.userName,
+          },
         );
       } catch (e) {
         debugPrint('Notification error: $e');

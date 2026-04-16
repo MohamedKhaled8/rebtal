@@ -198,7 +198,7 @@ class LoginCubit extends Cubit<LoginState> {
       _isDialogShowing = true;
       _showErrorDialog(
         context,
-        state.error,
+        context.tr(state.error),
         isRetryable: state.isRetryable,
         onRetry: state.isRetryable
             ? () {
@@ -209,11 +209,11 @@ class LoginCubit extends Cubit<LoginState> {
       );
     } else if (state is LoginValidationError) {
       _isDialogShowing = true;
-      SnackBarHelper.showWarning(context, state.message);
+      SnackBarHelper.showWarning(context, context.tr(state.message));
       _isDialogShowing = false;
     } else if (state is LoginOfflineWarning) {
       _isDialogShowing = true;
-      _showOfflineWarning(context, state.message).then((_) {
+      _showOfflineWarning(context, context.tr(state.message)).then((_) {
         _isDialogShowing = false;
       });
     } else if (state is LoginSuccess) {

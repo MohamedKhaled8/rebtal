@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
@@ -6,14 +7,18 @@ import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 
 class ModernImageUploadSection extends StatelessWidget {
   final List<File> images;
+  final List<String> networkImageUrls;
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
+  final ValueChanged<int>? onRemoveNetwork;
 
   const ModernImageUploadSection({
     super.key,
     required this.images,
+    this.networkImageUrls = const [],
     required this.onAdd,
     required this.onRemove,
+    this.onRemoveNetwork,
   });
 
   @override
@@ -93,7 +98,7 @@ class ModernImageUploadSection extends StatelessWidget {
                   ],
                 ),
               ),
-              if (images.isNotEmpty)
+              if (images.isNotEmpty || networkImageUrls.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -121,7 +126,7 @@ class ModernImageUploadSection extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${images.length}',
+                        '${networkImageUrls.length + images.length}',
                         style: const TextStyle(
                           color: ColorsManager.mainBlue,
                           fontSize: 13,
@@ -136,8 +141,8 @@ class ModernImageUploadSection extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Images Grid
-          if (images.isNotEmpty) ...[
+          // Images Grid (existing URLs + new files)
+          if (images.isNotEmpty || networkImageUrls.isNotEmpty) ...[
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -147,12 +152,25 @@ class ModernImageUploadSection extends StatelessWidget {
                 mainAxisSpacing: 12,
                 childAspectRatio: 1,
               ),
-              itemCount: images.length,
+              itemCount: networkImageUrls.length + images.length,
               itemBuilder: (context, index) {
+                final n = networkImageUrls.length;
+                if (index < n) {
+                  return _NetworkImageCard(
+                    url: networkImageUrls[index],
+                    index: index,
+                    onRemove: onRemoveNetwork != null
+                        ? () => onRemoveNetwork!(index)
+                        : null,
+                    isDark: isDark,
+                    isFirst: index == 0,
+                  );
+                }
+                final fi = index - n;
                 return _ImageCard(
-                  image: images[index],
-                  index: index,
-                  onRemove: () => onRemove(index),
+                  image: images[fi],
+                  index: fi,
+                  onRemove: () => onRemove(fi),
                   isDark: isDark,
                   isFirst: index == 0,
                 );
@@ -203,7 +221,9 @@ class ModernImageUploadSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    images.isEmpty ? context.tr('owner_add_first_photo') : context.tr('owner_add_more_photos'),
+                    (images.isEmpty && networkImageUrls.isEmpty)
+                        ? context.tr('owner_add_first_photo')
+                        : context.tr('owner_add_more_photos'),
                     style: TextStyle(
                       color: isDark ? ColorsManager.white : ColorsManager.black,
                       fontSize: 15,
@@ -226,6 +246,143 @@ class ModernImageUploadSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _NetworkImageCard extends StatelessWidget {
+  final String url;
+  final int index;
+  final VoidCallback? onRemove;
+  final bool isDark;
+  final bool isFirst;
+
+  const _NetworkImageCard({
+    required this.url,
+    required this.index,
+    required this.onRemove,
+    required this.isDark,
+    required this.isFirst,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isFirst
+                  ? ColorsManager.blue2563EB
+                  : (isDark ? ColorsManager.grey800 : ColorsManager.grey300),
+              width: isFirst ? 2 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isFirst
+                    ? ColorsManager.blue2563EB.withOpacity(0.3)
+                    : ColorsManager.black.withOpacity(0.1),
+                blurRadius: isFirst ? 12 : 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              placeholder: (_, __) => Container(
+                color: isDark
+                    ? ColorsManager.grey800
+                    : ColorsManager.grey200,
+                child: const Center(
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                color: ColorsManager.grey700,
+                child: const Icon(Icons.broken_image_outlined),
+              ),
+            ),
+          ),
+        ),
+        if (isFirst)
+          Positioned(
+            top: 6,
+            left: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    ColorsManager.blue2563EB,
+                    ColorsManager.purple764BA2,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorsManager.black.withOpacity(0.3),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.star_rounded,
+                    color: ColorsManager.white,
+                    size: 12,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    context.tr('owner_image_cover'),
+                    style: const TextStyle(
+                      color: ColorsManager.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (onRemove != null)
+          Positioned(
+            top: 6,
+            right: 6,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: ColorsManager.red,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorsManager.black.withOpacity(0.3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  color: ColorsManager.white,
+                  size: 14,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

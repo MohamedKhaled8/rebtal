@@ -15,9 +15,15 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<LoginCubit, LoginState>(
-      listenWhen: (previous, current) =>
-          previous.runtimeType != current.runtimeType &&
-          previous is! LoginSuccess,
+      listenWhen: (previous, current) {
+        // Always surface feedback for these states.
+        // This prevents "button seems stuck" when runtimeType stays the same
+        // but the error message changes on retry.
+        return current is LoginFailure ||
+            current is LoginValidationError ||
+            current is LoginOfflineWarning ||
+            current is LoginSuccess;
+      },
       listener: (context, state) {
         context.read<LoginCubit>().handleLoginState(context, state);
       },

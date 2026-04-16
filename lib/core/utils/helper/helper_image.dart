@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -184,8 +185,6 @@ class HelperImage {
       }
 
       SnackBarHelper.showError(context, errorMessage);
-
-      print('Image picker error: $e');
     }
   }
 
@@ -364,9 +363,7 @@ class HelperImage {
             data: {'chaletId': docRef.id, 'ownerId': ownerId},
           );
         }
-      } catch (e) {
-        debugPrint('Error sending admin notification: $e');
-      }
+      } catch (e) {}
 
       Navigator.of(context).pop(true);
     } catch (e) {
@@ -381,9 +378,17 @@ class HelperImage {
         "https://api.cloudinary.com/v1_1/$_cloudName/image/upload",
       );
 
+      // Force unique asset per upload to prevent Cloudinary overwriting,
+      // which causes old chalets to suddenly show new uploaded images.
+      final uniquePublicId =
+          'rebtal_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1 << 32)}';
+
       final request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = _uploadPreset
         ..fields['api_key'] = _apiKey
+        ..fields['public_id'] = uniquePublicId
+        ..fields['overwrite'] = 'false'
+        ..fields['unique_filename'] = 'true'
         ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
 
       final response = await request.send();
@@ -393,14 +398,11 @@ class HelperImage {
         final jsonResp = jsonDecode(respStr);
         return jsonResp['secure_url'];
       } else {
-        final respStr = await response.stream.bytesToString();
-        print("🌐 Cloudinary error body: $respStr");
         throw Exception(
           "Cloudinary upload failed with status: ${response.statusCode}",
         );
       }
     } catch (e) {
-      print("🌐 Cloudinary upload error: $e");
       rethrow;
     }
   }
