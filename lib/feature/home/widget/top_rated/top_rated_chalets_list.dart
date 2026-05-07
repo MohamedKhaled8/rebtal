@@ -50,10 +50,7 @@ class _TopRatedChaletCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String image =
-        (data['images'] is List && (data['images'] as List).isNotEmpty)
-        ? data['images'][0]
-        : (data['profileImage'] ?? '');
+    final String image = resolveChaletCoverImageUrl(data);
     final String name = data['chaletName'] ?? 'Unnamed';
     final String location = data['location'] ?? 'Unknown';
 
@@ -93,7 +90,11 @@ class _TopRatedChaletCard extends StatelessWidget {
             children: [
               // 1. Background Image
               Positioned.fill(
-                child: AppImageHelper(path: image, fit: BoxFit.cover),
+                child: AppImageHelper(
+                  path: image,
+                  fit: BoxFit.cover,
+                  cacheScope: docId,
+                ),
               ),
 
               // 2. Gradient Overlay for Text Readability

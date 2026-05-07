@@ -9,6 +9,7 @@ import 'package:rebtal/feature/admin/presentation/pages/full_screen_image_galler
 import 'package:rebtal/feature/chalet/domain/usecases/get_chalet_booked_dates_usecase.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/toggle_booking_availability_usecase.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/update_chalet_status_usecase.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 
 part 'chalet_detail_state.dart';
 
@@ -31,13 +32,33 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     return _pageController!;
   }
 
+  List<DateTime>? _parseBookedDatesField(Map<String, dynamic> data) {
+    final bookingDates = data['bookedDates'];
+    if (bookingDates == null || bookingDates is! List) return null;
+    return bookingDates.map((e) {
+      if (e is Timestamp) return e.toDate();
+      if (e is String) return DateTime.tryParse(e) ?? DateTime.now();
+      return DateTime.now();
+    }).toList();
+  }
+
   Future<void> initialize(
     Map<String, dynamic> requestData, {
     String? docId,
   }) async {
+    // Paint immediately from the snapshot (no grey "empty" header while server
+    // round-trips). Server merge may refine URLs/order afterward.
+    if (!isClosed) {
+      emit(
+        ChaletDetailLoaded(
+          images: collectChaletImageUrls(requestData),
+          bookedDates: _parseBookedDatesField(requestData),
+        ),
+      );
+      _startAutoPlay();
+    }
+
     // Prefer loading the latest chalet data by Firestore docId.
-    // This avoids showing wrong/stale images when requestData is incomplete
-    // or reused across list items/favorites.
     Map<String, dynamic> effectiveData = requestData;
     if (docId != null && docId.isNotEmpty) {
       try {
@@ -55,21 +76,19 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     }
 
     final images = _extractImagesFromRequestData(effectiveData);
-    final bookingDates = requestData['bookedDates'];
-    List<DateTime>? initialDates;
-
-    if (bookingDates != null && bookingDates is List) {
-      initialDates = bookingDates.map((e) {
-        if (e is Timestamp) return e.toDate();
-        if (e is String) return DateTime.tryParse(e) ?? DateTime.now();
-        return DateTime.now();
-      }).toList();
-    }
+    final initialDates = _parseBookedDatesField(effectiveData);
 
     if (isClosed) return;
 
     emit(ChaletDetailLoaded(images: images, bookedDates: initialDates));
     _startAutoPlay();
+
+    final c = _pageController;
+    if (c != null && c.hasClients && images.isNotEmpty) {
+      try {
+        c.jumpToPage(0);
+      } catch (_) {}
+    }
 
     // Fetch latest bookings
     final chaletId = docId ?? effectiveData['id'] ?? effectiveData['chaletId'];
@@ -116,19 +135,7 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   List<String> _extractImagesFromRequestData(Map<String, dynamic> data) {
-    final List<String> images = [];
-
-    if (data['images'] != null && data['images'] is List) {
-      images.addAll((data['images'] as List).map((e) => e.toString()));
-    }
-    if (data['image'] != null) {
-      images.add(data['image'].toString());
-    }
-    if (data['imageUrl'] != null) {
-      images.add(data['imageUrl'].toString());
-    }
-
-    return images;
+    return collectChaletImageUrls(data);
   }
 
   void _startAutoPlay() {
@@ -226,24 +233,7 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   List<String> extractImages(Map<String, dynamic> requestData) {
-    final List<String> result = [];
-    final dynamic imagesField = requestData['images'];
-    final dynamic profileField = requestData['profileImage'];
-
-    if (imagesField is List) {
-      result.addAll(imagesField.whereType<String>().where((s) => s.isNotEmpty));
-    } else if (imagesField is String && imagesField.isNotEmpty) {
-      result.add(imagesField);
-    }
-
-    if (profileField is String && profileField.isNotEmpty) {
-      if (!result.contains(profileField)) result.insert(0, profileField);
-    } else if (profileField is List) {
-      result.addAll(
-        profileField.whereType<String>().where((s) => s.isNotEmpty),
-      );
-    }
-    return result;
+    return collectChaletImageUrls(requestData);
   }
 
   void openFullScreen(

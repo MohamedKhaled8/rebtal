@@ -479,6 +479,7 @@ class ChaletDetailPage extends StatelessWidget {
                                           ChaletGalleryStrip(
                                             images: images,
                                             isDark: isDark,
+                                            cacheScope: docId,
                                           ),
                                         ],
                                       ),

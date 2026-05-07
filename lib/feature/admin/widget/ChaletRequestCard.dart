@@ -24,8 +24,16 @@ class ChaletRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chaletName = requestData['chaletName'] ?? 'Unnamed Chalet';
-    final location = requestData['location'] ?? 'Unknown Location';
+    final rawName = requestData['chaletName'];
+    final chaletName =
+        (rawName != null && rawName.toString().trim().isNotEmpty)
+        ? rawName.toString()
+        : 'Unnamed Chalet';
+    final rawLoc = requestData['location'];
+    final location =
+        (rawLoc != null && rawLoc.toString().trim().isNotEmpty)
+        ? rawLoc.toString()
+        : 'Unknown Location';
     final price = requestData['price']?.toString() ?? 'N/A';
     final bedrooms = requestData['bedrooms']?.toString() ?? 'N/A';
     final bathrooms = requestData['bathrooms']?.toString() ?? 'N/A';
@@ -46,11 +54,7 @@ class ChaletRequestCard extends StatelessWidget {
     print('   - bookingAvailability: $bookingAvailability');
     print('   - status: ${requestData['status']}');
 
-    // final city = requestData['city'] ?? 'Unknown City';
-    final image =
-        (requestData['images'] is List && requestData['images'].isNotEmpty)
-        ? requestData['images'][0]
-        : (requestData['profileImage']);
+    final coverImageUrl = resolveChaletCoverImageUrl(requestData);
 
     return InkWell(
       borderRadius: BorderRadius.circular(20),
@@ -84,9 +88,17 @@ class ChaletRequestCard extends StatelessWidget {
             // ====== Image Section ======
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15.sp),
-                  child: AppImageHelper(path: image, fit: BoxFit.cover),
+                SizedBox(
+                  height: 200.sp,
+                  width: double.infinity,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15.sp),
+                    child: AppImageHelper(
+                      path: coverImageUrl,
+                      fit: BoxFit.cover,
+                      cacheScope: docId,
+                    ),
+                  ),
                 ),
 
                 // City Tag

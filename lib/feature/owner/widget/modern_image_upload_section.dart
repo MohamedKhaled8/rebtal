@@ -85,16 +85,6 @@ class ModernImageUploadSection extends StatelessWidget {
                             : ColorsManager.black,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      context.tr('owner_add_3_photos_hint'),
-                      style: TextStyle(
-                        color: isDark
-                            ? ColorsManager.grey400
-                            : ColorsManager.grey600,
-                        fontSize: 12,
-                      ),
-                    ),
                   ],
                 ),
               ),

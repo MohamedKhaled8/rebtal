@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -15,12 +12,10 @@ import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/helper/cloudinary_upload_helper.dart';
 
 // ======================= HelperImage =======================
 class HelperImage {
-  static const String _cloudName = "dwobtaa6a";
-  static const String _apiKey = "249478428416757";
-  static const String _uploadPreset = "Mmkkkkk";
   final ImagePicker _imagePicker = ImagePicker();
 
   Future<void> addSampleImages(BuildContext context) async {
@@ -199,27 +194,11 @@ class HelperImage {
         cameraStatus = await Permission.camera.request();
       }
       return cameraStatus.isGranted;
-    } else {
-      if (Platform.isAndroid) {
-        PermissionStatus storageStatus = await Permission.storage.status;
-        if (storageStatus.isDenied) {
-          storageStatus = await Permission.storage.request();
-        }
-        if (storageStatus.isGranted) return true;
-
-        PermissionStatus photosStatus = await Permission.photos.status;
-        if (photosStatus.isDenied) {
-          photosStatus = await Permission.photos.request();
-        }
-        return photosStatus.isGranted;
-      } else {
-        PermissionStatus photosStatus = await Permission.photos.status;
-        if (photosStatus.isDenied) {
-          photosStatus = await Permission.photos.request();
-        }
-        return photosStatus.isGranted;
-      }
     }
+    // Gallery: image_picker uses Android's built-in photo picker (Intent-based)
+    // which does NOT require READ_MEDIA_IMAGES or storage permissions.
+    // No manual permission request needed for gallery selection.
+    return true;
   }
 
   Future<void> submitForm(
@@ -372,39 +351,8 @@ class HelperImage {
     }
   }
 
-  Future<String> uploadToCloudinary(File imageFile) async {
-    try {
-      final uri = Uri.parse(
-        "https://api.cloudinary.com/v1_1/$_cloudName/image/upload",
-      );
-
-      // Force unique asset per upload to prevent Cloudinary overwriting,
-      // which causes old chalets to suddenly show new uploaded images.
-      final uniquePublicId =
-          'rebtal_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1 << 32)}';
-
-      final request = http.MultipartRequest('POST', uri)
-        ..fields['upload_preset'] = _uploadPreset
-        ..fields['api_key'] = _apiKey
-        ..fields['public_id'] = uniquePublicId
-        ..fields['overwrite'] = 'false'
-        ..fields['unique_filename'] = 'true'
-        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        final respStr = await response.stream.bytesToString();
-        final jsonResp = jsonDecode(respStr);
-        return jsonResp['secure_url'];
-      } else {
-        throw Exception(
-          "Cloudinary upload failed with status: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      rethrow;
-    }
+  Future<String> uploadToCloudinary(File imageFile) {
+    return CloudinaryUploadHelper.uploadImage(imageFile);
   }
 
   List<String> _getAmenitiesList(dynamic data) {

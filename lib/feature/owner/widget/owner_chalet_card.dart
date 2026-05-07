@@ -101,6 +101,7 @@ class OwnerChaletCard extends StatelessWidget {
                     child: AppImageHelper(
                       path: images.first,
                       fit: BoxFit.cover,
+                      cacheScope: docId,
                     ),
                   ),
                   Positioned(

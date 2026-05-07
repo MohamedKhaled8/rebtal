@@ -22,6 +22,10 @@ class NetworkImageHelper extends StatelessWidget {
   final Widget? placeholder;
   final Widget? errorWidget;
 
+  /// e.g. Firestore `docId` — keeps CachedNetworkImage identity unique per chalet
+  /// so the same URL on two listings cannot briefly show the wrong bitmap.
+  final String? cacheScope;
+
   const NetworkImageHelper({
     super.key,
     required this.imageUrl,
@@ -30,12 +34,14 @@ class NetworkImageHelper extends StatelessWidget {
     this.height = 200.0,
     this.placeholder,
     this.errorWidget,
+    this.cacheScope,
   });
 
   @override
   Widget build(BuildContext context) {
+    final scope = cacheScope ?? '';
     return CachedNetworkImage(
-      key: ValueKey(imageUrl),
+      key: ValueKey('$scope|$imageUrl'),
       imageUrl: imageUrl,
       cacheManager: _SharedImageCacheManager.instance,
       width: width,
@@ -49,7 +55,8 @@ class NetworkImageHelper extends StatelessWidget {
       useOldImageOnUrlChange: false,
       filterQuality: FilterQuality.low,
       placeholder: (context, url) =>
-          placeholder ?? const Center(child: CircularProgressIndicator()),
+          placeholder ??
+          const ColoredBox(color: Colors.transparent),
       errorWidget: (context, url, error) {
         if (kDebugMode) {
           debugPrint('❌ Image failed to load: $url | error=$error');

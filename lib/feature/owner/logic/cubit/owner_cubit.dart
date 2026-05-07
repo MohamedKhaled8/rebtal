@@ -276,6 +276,17 @@ class OwnerCubit extends Cubit<OwnerState> {
     return v == 'unavailable' ? 'unavailable' : 'available';
   }
 
+  /// Keeps [pending] (and [rejected] → pending resubmission) after save; only
+  /// listings that were already [approved] stay approved.
+  String _statusForEditSave() {
+    final raw = _editSource?['status']?.toString().toLowerCase().trim() ?? '';
+    if (raw == 'approved') return 'approved';
+    if (raw == 'pending') return 'pending';
+    if (raw == 'rejected') return 'pending';
+    if (raw.isNotEmpty) return raw;
+    return 'approved';
+  }
+
   /// Hydrate the add/edit draft from an existing Firestore map (owner edit flow).
   void loadChaletDataForEdit(Map<String, dynamic> m, String docId) {
     _editingChaletId = docId;
@@ -287,6 +298,16 @@ class OwnerCubit extends Cubit<OwnerState> {
       (m['amenities'] as List?)?.map((e) => e.toString()) ?? const [],
     );
     final features = List<String>.from(m['features'] ?? []);
+
+    final List<String> sanitizedImageUrls = [];
+    final rawImages = m['images'];
+    if (rawImages is List) {
+      for (final e in rawImages) {
+        if (e == null) continue;
+        final s = e.toString().trim();
+        if (s.isNotEmpty && s != 'null') sanitizedImageUrls.add(s);
+      }
+    }
 
     String? popularKey;
     for (final d in PopularDestinations.all) {
@@ -308,7 +329,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       state.copyWith(
         draft: ChaletDraft(
           uploadedImages: const [],
-          existingImageUrls: List<String>.from(m['images'] ?? []),
+          existingImageUrls: sanitizedImageUrls,
           selectedLocation: m['location']?.toString() ?? '',
           isAvailable: m['isAvailable'] ?? true,
           hasWifi: _amenityFlagFromMap(m, amenities, 'hasWifi'),
@@ -609,8 +630,9 @@ class OwnerCubit extends Cubit<OwnerState> {
     if (source == ImageSource.camera) {
       return await Permission.camera.request().isGranted;
     }
-    return await Permission.photos.request().isGranted ||
-        await Permission.storage.request().isGranted;
+    // Gallery: image_picker uses Android's built-in photo picker (Intent-based)
+    // which does NOT require READ_MEDIA_IMAGES or storage permissions.
+    return true;
   }
 
   // ==========================================
@@ -1074,7 +1096,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       'discountEnabled': state.draft.discountEnabled,
       'features': state.draft.features,
       'dayUseEnabled': state.draft.dayUseEnabled,
-      'status': 'approved',
+      'status': _statusForEditSave(),
       'updatedAt': FieldValue.serverTimestamp(),
       'isVisible': _editSource?['isVisible'] ?? true,
     };

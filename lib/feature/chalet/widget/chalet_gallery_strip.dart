@@ -7,11 +7,13 @@ import 'package:responsive_screen_master/responsive_screen_master.dart';
 class ChaletGalleryStrip extends StatelessWidget {
   final List<String> images;
   final bool isDark;
+  final String cacheScope;
 
   const ChaletGalleryStrip({
     super.key,
     required this.images,
     required this.isDark,
+    required this.cacheScope,
   });
 
   @override
@@ -71,6 +73,7 @@ class ChaletGalleryStrip extends StatelessWidget {
                 child: AppImageHelper(
                   path: images[index],
                   fit: BoxFit.cover,
+                  cacheScope: cacheScope,
                 ),
               ),
             ),

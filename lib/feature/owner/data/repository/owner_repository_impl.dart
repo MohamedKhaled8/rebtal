@@ -1,104 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-import 'package:http/http.dart' as http;
 import 'package:rebtal/core/utils/error/failure.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 import 'package:rebtal/feature/owner/domain/repository/base_owner_repository.dart';
 import 'package:rebtal/feature/owner/data/model/chalet_model.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/helper/cloudinary_upload_helper.dart';
 
 class OwnerRepositoryImpl implements BaseOwnerRepository {
   final FirebaseFirestore _firestore;
 
-  // Cloudinary configuration
-  static const String _cloudName = "dwobtaa6a";
-  static const String _apiKey = "249478428416757";
-  static const String _uploadPreset = "Mmkkkkk";
-
   OwnerRepositoryImpl({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
-
-  /// Upload image to Cloudinary with retry logic for network errors
-  Future<String> _uploadToCloudinary(
-    File imageFile, {
-    int maxRetries = 2,
-  }) async {
-    for (int attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        final uri = Uri.parse(
-          "https://api.cloudinary.com/v1_1/$_cloudName/image/upload",
-        );
-
-        // Ensure each uploaded image gets a unique public_id to prevent overwrite.
-        final uniquePublicId =
-            'rebtal_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(1 << 32)}';
-
-        final request = http.MultipartRequest('POST', uri)
-          ..fields['upload_preset'] = _uploadPreset
-          ..fields['api_key'] = _apiKey
-          ..fields['public_id'] = uniquePublicId
-          ..fields['overwrite'] = 'false'
-          ..fields['unique_filename'] = 'true'
-          ..files.add(
-            await http.MultipartFile.fromPath('file', imageFile.path),
-          );
-
-        // Add timeout for connection
-        final response = await request.send().timeout(
-          const Duration(seconds: 30),
-          onTimeout: () {
-            throw TimeoutException(
-              'Connection timeout - please check your internet connection',
-            );
-          },
-        );
-
-        if (response.statusCode == 200) {
-          final respStr = await response.stream.bytesToString();
-          final jsonResp = jsonDecode(respStr);
-          return jsonResp['secure_url'];
-        } else {
-          throw Exception(
-            "Cloudinary upload failed with status: ${response.statusCode}",
-          );
-        }
-      } on SocketException catch (_) {
-        if (attempt == maxRetries) {
-          throw Exception(
-            'فشل الاتصال بالإنترنت. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
-          );
-        }
-        await Future.delayed(Duration(seconds: attempt * 2));
-      } on TimeoutException catch (_) {
-        if (attempt == maxRetries) {
-          throw Exception(
-            'انتهت مهلة الاتصال. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
-          );
-        }
-        await Future.delayed(Duration(seconds: attempt * 2));
-      } catch (e) {
-        if (attempt == maxRetries) {
-          final errorStr = e.toString().toLowerCase();
-          if (errorStr.contains('socket') ||
-              errorStr.contains('network') ||
-              errorStr.contains('host lookup') ||
-              errorStr.contains('connection')) {
-            throw Exception(
-              'فشل الاتصال بالإنترنت. يرجى التحقق من الاتصال والمحاولة مرة أخرى.',
-            );
-          }
-          rethrow;
-        }
-        await Future.delayed(Duration(seconds: attempt * 2));
-      }
-    }
-    throw Exception('Failed to upload after $maxRetries attempts');
-  }
 
   @override
   Future<Either<Failure, String>> addChalet({
@@ -131,18 +47,21 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
       // 2. Upload Profile Image to Cloudinary (if exists)
       if (profileImage != null) {
         try {
-          profileImageUrl = await _uploadToCloudinary(profileImage);
-        } catch (e) {}
+          profileImageUrl = await CloudinaryUploadHelper.uploadImage(
+            profileImage,
+          );
+        } catch (e) {
+          profileImageUrl = null;
+        }
       }
 
-      // 3. Upload Gallery Images to Cloudinary - مع معالجة أخطاء أفضل
+      // 3. Upload Gallery Images to Cloudinary
       int failCount = 0;
 
-      // Upload images with individual error handling
       final uploadResults = await Future.wait(
         images.map((img) async {
           try {
-            final url = await _uploadToCloudinary(img);
+            final url = await CloudinaryUploadHelper.uploadImage(img);
             return url;
           } catch (e) {
             failCount++;
@@ -154,15 +73,26 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
 
       imageUrls.addAll(uploadResults.whereType<String>());
 
-      // Build final images list (even if empty - we'll save the chalet anyway)
       final List<String> allImages = [...imageUrls];
 
-      // Add profile image as first image if available
       if (profileImageUrl != null) {
         allImages.insert(0, profileImageUrl);
       }
 
-      // 4. Create Model - حفظ البيانات حتى لو لم ترفع أي صورة
+      // User picked files in the app — do not save a listing with zero URLs
+      // (silent Cloudinary failures used to produce empty `images` in Firestore).
+      final bool userExpectedPhotos =
+          images.isNotEmpty || profileImage != null;
+      if (userExpectedPhotos && allImages.isEmpty) {
+        return Left(
+          ServerFailure(
+            'فشل رفع الصور (Cloudinary). تحقق من الإنترنت، أو من إعدادات '
+            'الرفع في لوحة Cloudinary، ثم أعد المحاولة. لم يُحفظ الشاليه.',
+          ),
+        );
+      }
+
+      // 4. Create Model
       final ChaletModel newChalet = ChaletModel(
         id: chaletId,
         chaletName: chalet.chaletName,
@@ -375,7 +305,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
   @override
   Future<Either<Failure, String>> uploadChaletImage(File image) async {
     try {
-      final url = await _uploadToCloudinary(image);
+      final url = await CloudinaryUploadHelper.uploadImage(image);
       return Right(url);
     } catch (e) {
       return Left(ServerFailure(e.toString()));

@@ -7,10 +7,9 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'dart:ui' as ui;
-import 'package:gal/gal.dart';
 
 class InvoiceService {
   /// Modern SnackBar at Top
@@ -89,96 +88,14 @@ class InvoiceService {
     });
   }
 
-  /// Request storage permission with settings redirect
-  static Future<bool> _requestPermission(BuildContext context) async {
-    if (Platform.isAndroid) {
-      // For Android 13+ (API 33+), use manageExternalStorage
-      var status = await Permission.manageExternalStorage.status;
-
-      if (status.isGranted) {
-        return true;
-      }
-
-      // Request permission
-      status = await Permission.manageExternalStorage.request();
-
-      if (status.isGranted) {
-        return true;
-      }
-
-      // If denied, show dialog to open settings
-      if (status.isDenied || status.isPermanentlyDenied) {
-        final shouldOpenSettings = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.orange,
-                  size: 28,
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'إذن التخزين مطلوب',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              'لحفظ الفاتورة، يجب السماح بالوصول للتخزين.\n\nسيتم فتح الإعدادات لتفعيل الإذن.',
-              style: TextStyle(fontSize: 15, height: 1.5),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('إلغاء'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => Navigator.pop(ctx, true),
-                icon: const Icon(Icons.settings),
-                label: const Text('فتح الإعدادات'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldOpenSettings == true) {
-          // Open app settings
-          await openAppSettings();
-
-          // Wait a bit for user to return
-          await Future.delayed(const Duration(milliseconds: 500));
-
-          // Check permission again after returning from settings
-          final newStatus = await Permission.manageExternalStorage.status;
-          return newStatus.isGranted;
-        }
-      }
-
-      return false;
+  /// Get app-private temp directory (NO permissions needed)
+  static Future<Directory> _getAppTempDir() async {
+    final dir = await getTemporaryDirectory();
+    final invoiceDir = Directory('${dir.path}/invoices');
+    if (!await invoiceDir.exists()) {
+      await invoiceDir.create(recursive: true);
     }
-    return true; // iOS doesn't need permission
-  }
-
-  /// Get Downloads directory
-  static Future<Directory> _getDownloadsDir() async {
-    if (Platform.isAndroid) {
-      return Directory('/storage/emulated/0/Download');
-    }
-    return await getApplicationDocumentsDirectory();
+    return invoiceDir;
   }
 
   /// Show dialog to choose between PDF or Image
@@ -326,37 +243,31 @@ class InvoiceService {
     }
   }
 
-  /// Save as PDF
+  /// Save as PDF — saves to app-private dir then shares via system share sheet
   static Future<void> saveAsPdf(
     BuildContext context,
     GlobalKey repaintKey,
     Booking booking,
   ) async {
     try {
-      if (!await _requestPermission(context)) {
-        if (context.mounted) {
-          _showModernSnackBar(
-            context,
-            message: 'يرجى السماح بالوصول للتخزين',
-            icon: Icons.warning_amber_rounded,
-            color: Colors.orange,
-          );
-        }
-        return;
-      }
-
       final pdf = await _generatePdf(repaintKey, booking);
-      final output = await _getDownloadsDir();
+      final output = await _getAppTempDir();
       final fileName = 'فاتورة_${booking.id.substring(0, 8)}.pdf';
       final file = File('${output.path}/$fileName');
       await file.writeAsBytes(await pdf.save());
 
       debugPrint('✅ PDF saved: ${file.path}');
 
+      // Use share_plus to let the user save/share the file
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'فاتورة حجز Rebtal',
+      );
+
       if (context.mounted) {
         _showModernSnackBar(
           context,
-          message: 'تم حفظ PDF في مجلد التنزيلات ✓',
+          message: 'تم تجهيز ملف PDF بنجاح ✓',
           icon: Icons.check_circle_rounded,
           color: Colors.green,
         );
@@ -374,25 +285,13 @@ class InvoiceService {
     }
   }
 
-  /// Save as Image
+  /// Save as Image — saves to app-private dir then shares via system share sheet
   static Future<void> saveAsImage(
     BuildContext context,
     GlobalKey repaintKey,
     Booking booking,
   ) async {
     try {
-      if (!await _requestPermission(context)) {
-        if (context.mounted) {
-          _showModernSnackBar(
-            context,
-            message: 'يرجى السماح بالوصول للتخزين',
-            icon: Icons.warning_amber_rounded,
-            color: Colors.orange,
-          );
-        }
-        return;
-      }
-
       // Show loading indicator
       if (context.mounted) {
         _showModernSnackBar(
@@ -407,27 +306,30 @@ class InvoiceService {
           repaintKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
 
-      // Use lower pixelRatio for faster processing if speed is critical,
-      // but 3.0 is good for quality. Let's keep 3.0.
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.png,
       );
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
+      final output = await _getAppTempDir();
       final fileName =
-          'invoice_${booking.id.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}';
+          'invoice_${booking.id.substring(0, 8)}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File('${output.path}/$fileName');
+      await file.writeAsBytes(pngBytes);
 
-      // Save to Gallery using Gal
-      // Gal handles permissions and saving automatically
-      await Gal.putImageBytes(pngBytes, name: fileName);
+      debugPrint('✅ Image saved: ${file.path}');
 
-      debugPrint('✅ Image saved to gallery');
+      // Use share_plus to let the user save/share the file
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'فاتورة حجز Rebtal',
+      );
 
       if (context.mounted) {
         _showModernSnackBar(
           context,
-          message: 'تم حفظ الصورة في المعرض بنجاح ✓',
+          message: 'تم تجهيز الصورة بنجاح ✓',
           icon: Icons.check_circle_rounded,
           color: Colors.green,
         );

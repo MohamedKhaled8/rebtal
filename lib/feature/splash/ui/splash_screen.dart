@@ -10,6 +10,7 @@ import 'package:rebtal/core/utils/helper/cash_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/onboarding/data/repository/onboarding_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -100,10 +101,34 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('🔥 SplashScreen: Max wait timer fired');
       if (!mounted || _hasNavigated) return;
       if (_pendingAuthState == null) {
+        // Firebase session may exist while AuthCubit is still loading Firestore.
+        if (FirebaseAuth.instance.currentUser != null) {
+          debugPrint(
+            '🔥 SplashScreen: currentUser present, extending wait for AuthCubit',
+          );
+          _maxWaitTimer?.cancel();
+          _maxWaitTimer = Timer(const Duration(seconds: 30), () async {
+            if (!mounted || _hasNavigated) return;
+            if (_pendingAuthState != null) return;
+            if (FirebaseAuth.instance.currentUser != null) {
+              try {
+                await context.read<AppCubit>().authCubit.reloadUserData();
+              } catch (_) {}
+              await Future<void>.delayed(const Duration(seconds: 3));
+            }
+            if (!mounted || _hasNavigated) return;
+            if (_pendingAuthState == null) {
+              debugPrint(
+                '🔥 SplashScreen: Still no auth state after extended wait',
+              );
+              _navigateToOnboardingOrLogin();
+            }
+          });
+          return;
+        }
         debugPrint(
           '🔥 SplashScreen: No auth state after timeout, going to login',
         );
-        _hasNavigated = true;
         _navigateToOnboardingOrLogin();
       }
     });

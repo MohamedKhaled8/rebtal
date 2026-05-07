@@ -35,6 +35,20 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
   String? _userId;
   PageController? _pageController;
 
+  bool _isDayUseUnavailableToday(Map<String, dynamic> data) {
+    final bool dayUseEnabled = data['dayUseEnabled'] == true;
+    if (!dayUseEnabled) return false;
+    final status = data['dayUseBookingAvailability']?.toString();
+    final bookedAt = data['dayUseBookedAt']?.toString();
+    if (status != 'unavailable' || bookedAt == null || bookedAt.isEmpty) {
+      return false;
+    }
+    final now = DateTime.now();
+    final todayKey =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    return bookedAt == todayKey;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -43,7 +57,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
       _userId = user?.uid;
       _checkInitialFavoriteStatus();
     } catch (_) {}
-    final images = _collectChaletImages(widget.chaletData);
+    final images = collectChaletImageUrls(widget.chaletData);
     if (images.length > 1) {
       _pageController = PageController();
     }
@@ -98,11 +112,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           'chaletId': widget.docId,
           'name': widget.chaletData['chaletName'] ?? 'Unnamed Chalet',
           'location': widget.chaletData['location'] ?? '',
-          'image':
-              (widget.chaletData['images'] is List &&
-                  widget.chaletData['images'].isNotEmpty)
-              ? widget.chaletData['images'][0]
-              : (widget.chaletData['profileImage'] ?? ''),
+          'image': resolveChaletCoverImageUrl(widget.chaletData),
           'price': widget.chaletData['price'],
           'createdAt': FieldValue.serverTimestamp(),
           'chaletData': widget.chaletData,
@@ -123,33 +133,6 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     }
   }
 
-  List<String> _collectChaletImages(Map<String, dynamic> data) {
-    final List<dynamic>? imgs = data['images'] as List<dynamic>?;
-    final List<String> result = [];
-
-    // Add profile image first if available
-    final String? profile = data['profileImage']?.toString();
-    if (profile != null && profile.isNotEmpty) {
-      result.add(profile);
-    }
-
-    if (imgs != null) {
-      for (final e in imgs) {
-        if (e == null) continue;
-        final s = e.toString();
-        if (s.isNotEmpty && s != profile) {
-          result.add(s);
-        }
-      }
-    }
-
-    if (result.isEmpty) {
-      result.add('https://via.placeholder.com/400x300?text=No+Image');
-    }
-
-    return result;
-  }
-
   @override
   Widget build(BuildContext context) {
     final chaletName =
@@ -157,8 +140,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
     final location =
         widget.chaletData['location'] ?? context.tr('home_location_unknown');
 
-    final images = _collectChaletImages(widget.chaletData);
+    final rawImages = collectChaletImageUrls(widget.chaletData);
+    final images = rawImages.isEmpty ? const [''] : rawImages;
     final isDark = DynamicThemeManager.isDarkMode(context);
+    final dayUseUnavailable = _isDayUseUnavailableToday(widget.chaletData);
 
     return RepaintBoundary(
       child: Container(
@@ -232,12 +217,17 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                       ),
                       width: double.infinity,
                       child: PageView.builder(
+                        key: ValueKey<String>('pub_chalet_pv_${widget.docId}'),
                         controller: _pageController,
                         itemCount: images.length,
                         itemBuilder: (context, index) {
                           return AppImageHelper(
+                            key: ValueKey(
+                              'pub_chalet_img_${widget.docId}_${images[index]}_$index',
+                            ),
                             path: images[index],
                             fit: BoxFit.cover,
+                            cacheScope: widget.docId,
                           );
                         },
                       ),
@@ -260,6 +250,30 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (dayUseUnavailable)
+                              Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.55),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.25),
+                                  ),
+                                ),
+                                child: Text(
+                                  context.tr('chalet_unavailable'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ),
                             if (_isNewChalet())
                               Container(
                                 margin: const EdgeInsets.only(right: 8),

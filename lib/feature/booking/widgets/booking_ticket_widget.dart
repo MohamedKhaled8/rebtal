@@ -173,12 +173,12 @@ class BookingTicketWidget extends StatelessWidget {
               ),
               _buildDetailRow(
                 context.tr('booking_days_count'),
-                '${_getDays(booking.from, booking.to)}',
+                '${_getDays(booking)}',
                 isDark,
               ),
               _buildDetailRow(
                 context.tr('booking_nights_count'),
-                '${_getNights(booking.from, booking.to)}',
+                '${_getNights(booking)}',
                 isDark,
               ),
               if (booking.childrenCount != null)
@@ -240,10 +240,15 @@ class BookingTicketWidget extends StatelessWidget {
     );
   }
 
-  static int _getDays(DateTime from, DateTime to) =>
-      to.difference(from).inDays.clamp(0, 365);
-  static int _getNights(DateTime from, DateTime to) =>
-      _getDays(from, to).clamp(0, 365);
+  static int _getDays(Booking booking) {
+    if (booking.isDayUse) return 1;
+    return booking.to.difference(booking.from).inDays.clamp(0, 365);
+  }
+
+  static int _getNights(Booking booking) {
+    if (booking.isDayUse) return 1;
+    return _getDays(booking).clamp(0, 365);
+  }
 
   Widget _buildDashedLine(bool isDark) {
     return LayoutBuilder(

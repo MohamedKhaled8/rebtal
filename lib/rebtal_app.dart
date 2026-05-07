@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/theme/app_theme.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:rebtal/core/utils/localization/app_localization.dart';
+import 'package:rebtal/core/utils/widgets/force_update_gate.dart';
 
 class RebtalApp extends StatelessWidget {
   final AppRouter appRouter;
@@ -46,7 +47,9 @@ class RebtalApp extends StatelessWidget {
                     textDirection: isRTL
                         ? TextDirection.rtl
                         : TextDirection.ltr,
-                    child: child ?? const SizedBox.shrink(),
+                    child: ForceUpdateGate(
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   );
                 },
                 scaffoldMessengerKey: SnackBarHelper.messengerKey,

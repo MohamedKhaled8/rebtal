@@ -74,8 +74,9 @@ class DayUsePage extends StatelessWidget {
                   Text(
                     context.tr('chalet_no_day_use'),
                     style: TextStyle(
-                      color:
-                          isDark ? ColorsManager.white70 : ColorsManager.grey700,
+                      color: isDark
+                          ? ColorsManager.white70
+                          : ColorsManager.grey700,
                       fontSize: stv(
                         context: context,
                         mobile: 18.spScaled,
@@ -165,43 +166,41 @@ class DayUsePage extends StatelessWidget {
       docId: chaletDoc.id,
       margin: EdgeInsets.only(
         bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
-        left:
-            isLeft == null
-                ? stv(
-                  context: context,
-                  mobile: 16.sw,
-                  tablet: 24.sw,
-                  desktop: 32.sw,
-                )
-                : (isLeft
-                    ? stv(
+        left: isLeft == null
+            ? stv(
+                context: context,
+                mobile: 16.sw,
+                tablet: 24.sw,
+                desktop: 32.sw,
+              )
+            : (isLeft
+                  ? stv(
                       context: context,
                       mobile: 16.sw,
                       tablet: 24.sw,
                       desktop: 32.sw,
                     )
-                    : stv(
+                  : stv(
                       context: context,
                       mobile: 12.sw,
                       tablet: 16.sw,
                       desktop: 20.sw,
                     )),
-        right:
-            isLeft == null
-                ? stv(
-                  context: context,
-                  mobile: 16.sw,
-                  tablet: 24.sw,
-                  desktop: 32.sw,
-                )
-                : (isLeft
-                    ? stv(
+        right: isLeft == null
+            ? stv(
+                context: context,
+                mobile: 16.sw,
+                tablet: 24.sw,
+                desktop: 32.sw,
+              )
+            : (isLeft
+                  ? stv(
                       context: context,
                       mobile: 12.sw,
                       tablet: 16.sw,
                       desktop: 20.sw,
                     )
-                    : stv(
+                  : stv(
                       context: context,
                       mobile: 16.sw,
                       tablet: 24.sw,

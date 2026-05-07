@@ -22,18 +22,22 @@ class OwnerButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusRaw = (requestData['status'] ?? '').toString().toLowerCase();
     final isApproved = statusRaw == 'approved';
+    // Owner can refine listing while awaiting admin (same edit screen as approved).
+    final canEdit = isApproved || statusRaw == 'pending';
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
       child: Column(
         children: [
           _BookingToggleButton(requestData: requestData, docId: docId),
-          if (isApproved) ...[
+          if (canEdit) ...[
             const SizedBox(height: 12),
             _OwnerEditChaletButton(
               docId: docId,
               requestData: requestData,
             ),
+          ],
+          if (isApproved) ...[
             const SizedBox(height: 12),
             _OwnerDeleteChaletButton(docId: docId, requestData: requestData),
           ],

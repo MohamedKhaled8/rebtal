@@ -181,12 +181,16 @@ class AdminCubit extends Cubit<AdminState> {
     required String proofDocId,
     required String bookingId,
   }) async {
-    final bookingRef =
-        FirebaseFirestore.instance.collection('bookings').doc(bookingId);
+    final bookingRef = FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(bookingId);
     final bookingSnap = await bookingRef.get();
     final before = bookingSnap.data();
     final guestUserId = before?['userId']?.toString();
     final chaletName = before?['chaletName']?.toString() ?? '';
+    final chaletId = before?['chaletId']?.toString() ?? '';
+    final isDayUse = before?['isDayUse'] == true ||
+        before?['bookingType']?.toString() == 'day_use';
 
     await updatePaymentProofStatusUseCase(proofDocId, 'approved');
     await bookingRef.update({
@@ -194,6 +198,19 @@ class AdminCubit extends Cubit<AdminState> {
       'adminConfirmedPaymentAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    // Day-use should become unavailable ONLY after admin confirms payment.
+    // Keep the unavailability scoped to the day-use flow so it doesn't affect
+    // normal multi-day booking availability.
+    if (isDayUse && chaletId.isNotEmpty) {
+      final now = DateTime.now();
+      final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      await FirebaseFirestore.instance.collection('chalets').doc(chaletId).set({
+        'dayUseBookingAvailability': 'unavailable',
+        'dayUseBookedAt': todayKey,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
 
     if (guestUserId != null && guestUserId.isNotEmpty) {
       await NotificationService().sendNotification(
@@ -203,10 +220,7 @@ class AdminCubit extends Cubit<AdminState> {
         bodyParams: {'chaletName': chaletName},
         type: NotificationType.paymentConfirmed,
         relatedId: bookingId,
-        data: {
-          'bookingId': bookingId,
-          'chaletName': chaletName,
-        },
+        data: {'bookingId': bookingId, 'chaletName': chaletName},
       );
     }
   }
@@ -217,17 +231,33 @@ class AdminCubit extends Cubit<AdminState> {
     required String bookingId,
     String? reason,
   }) async {
-    await updatePaymentProofStatusUseCase(proofDocId, 'rejected');
-    await FirebaseFirestore.instance
+    // Read booking to allow day-use availability reset.
+    final bookingRef = FirebaseFirestore.instance
         .collection('bookings')
-        .doc(bookingId)
-        .update({
+        .doc(bookingId);
+    final bookingSnap = await bookingRef.get();
+    final data = bookingSnap.data();
+    final chaletId = data?['chaletId']?.toString() ?? '';
+    final isDayUse =
+        data?['isDayUse'] == true || data?['bookingType']?.toString() == 'day_use';
+
+    await updatePaymentProofStatusUseCase(proofDocId, 'rejected');
+    await bookingRef.update({
           'status': 'awaitingPayment',
           'paymentProofUrl': null,
           'paymentProofUploadedAt': null,
           if (reason != null && reason.isNotEmpty) 'adminPaymentNotes': reason,
           'updatedAt': FieldValue.serverTimestamp(),
         });
+
+    // If payment proof is rejected, keep day-use available (no blocking).
+    if (isDayUse && chaletId.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('chalets').doc(chaletId).set({
+        'dayUseBookingAvailability': 'available',
+        'dayUseBookedAt': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
   }
 
   Future<void> updateStatus(

@@ -97,10 +97,11 @@ class AutomatedOfferCard extends StatelessWidget {
             children: [
               // Full Background Image
               AppImageHelper(
-                path: imageUrl,
+                path: imageUrl.toString(),
                 height: double.infinity,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                cacheScope: docId,
               ),
 
               // Gradient Overlay for Text Readability

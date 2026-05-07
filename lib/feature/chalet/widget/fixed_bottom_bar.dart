@@ -198,8 +198,25 @@ class FixedBottomBar extends StatelessWidget {
                       // Reserve Now Button (Standard)
                       Builder(
                         builder: (context) {
+                          // Availability for normal bookings is controlled via `bookingAvailability`.
+                          // For day-use, we scope the "unavailable" flag to admin-confirmed payments only.
+                          final bool dayUseEnabled =
+                              requestData['dayUseEnabled'] == true;
+                          final String? dayUseBookedAt =
+                              requestData['dayUseBookedAt']?.toString();
+                          final String? dayUseStatus =
+                              requestData['dayUseBookingAvailability']
+                                  ?.toString();
+
+                          final now = DateTime.now();
+                          final todayKey =
+                              '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
                           final status = requestData['bookingAvailability'];
-                          final isAvailable = status != 'unavailable';
+                          final isAvailable = dayUseEnabled
+                              ? !(dayUseStatus == 'unavailable' &&
+                                  dayUseBookedAt == todayKey)
+                              : status != 'unavailable';
 
                           return SizedBox(
                             width: 140,

@@ -389,7 +389,7 @@
   "owner_discount_hint": "قم بتفعيل هذا الخيار لإضافة خصم على السعر",
   "owner_discount_type": "نوع الخصم",
   "owner_day_use_feature": "خصائص الحجز (Day Use)",
-  "owner_enable_day_use": "تفعيل خاصية Day Use",
+  "owner_enable_day_use": "تفعيل حجز اليوم الواحد",
   "owner_day_use_hint": "السماح للمستخدمين بحجز الشاليه لقضاء اليوم فقط بدون مبيت",
   "owner_select_date": "اختر التاريخ",
   "owner_booking_number": "رقم الحجز",

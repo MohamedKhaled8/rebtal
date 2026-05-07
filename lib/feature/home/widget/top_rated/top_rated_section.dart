@@ -149,7 +149,8 @@ class TopRatedSection extends StatelessWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(24.sp),
                                 child: AppImageHelper(
-                                  path: imageUrl,
+                                  path: imageUrl.toString(),
+                                  cacheScope: docId,
                                   height: otv(
                                     context: context,
                                     portrait: stv(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 
 /// Helper class for booking-related utilities
@@ -45,32 +46,13 @@ class OwnerHelper {
     return bookings.toList();
   }
 
-  /// Collect images from chalet data Map
+  /// Collect images from chalet data Map (same rules as admin/detail screens).
   static List<String> collectChaletImages(Map<String, dynamic> data) {
-    final List<dynamic>? imgs = data['images'] as List<dynamic>?;
-    final List<String> result = [];
-
-    final String? profile = data['profileImage']?.toString();
-    if (profile != null && profile.isNotEmpty) {
-      result.add(profile);
+    final urls = collectChaletImageUrls(data);
+    if (urls.isEmpty) {
+      return const [''];
     }
-
-    if (imgs != null) {
-      for (final e in imgs) {
-        if (e == null) continue;
-        final s = e.toString();
-        if (s.isNotEmpty && s != profile) {
-          result.add(s);
-        }
-        if (result.length >= 5) break;
-      }
-    }
-
-    if (result.isEmpty) {
-      result.add('https://via.placeholder.com/400x300?text=No+Image');
-    }
-
-    return result;
+    return urls.length > 5 ? urls.sublist(0, 5) : urls;
   }
 
   /// Calculate discounted price string

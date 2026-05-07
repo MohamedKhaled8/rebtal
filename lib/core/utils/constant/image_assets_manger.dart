@@ -13,8 +13,6 @@ abstract class ImageAssetsManger {
   static const String cover = "$rootImagesJpg/cover.jpg";
   // static const String mrmohamedmostafa = "$rootImagesJpg/mrmohamedmostafa.jpg";
 
-  static const String errorImage = "$rootImagesJpg/error_image.jpg";
-
   ///json
   static const String rootImagesJson = "assets/images/json";
 

@@ -45,7 +45,9 @@ class AuthCubit extends Cubit<AuthState> {
     return 'guest';
   }
 
-  static const Duration _authGracePeriod = Duration(seconds: 3);
+  /// Release/cold-start can emit a transient `null` user before persistence
+  /// restores; keep this comfortably above typical slow devices + disk I/O.
+  static const Duration _authGracePeriod = Duration(seconds: 15);
   Timer? _authGraceTimer;
 
   /// Initialize authentication by listening to auth state changes
@@ -94,7 +96,7 @@ class AuthCubit extends Cubit<AuthState> {
               .collection(col)
               .doc(firebaseUser.uid)
               .get()
-              .timeout(const Duration(seconds: 5));
+              .timeout(const Duration(seconds: 20));
           return d.exists ? d : null;
         } catch (e) {
           return null;

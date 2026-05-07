@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:share_plus/share_plus.dart';
@@ -122,11 +121,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
           'chaletId': widget.docId, // Use explicit docId
           'name': widget.hotelName,
           'location': widget.location,
-          'image':
-              (widget.requestData['images'] is List &&
-                  widget.requestData['images'].isNotEmpty)
-              ? widget.requestData['images'][0]
-              : (widget.requestData['profileImage'] ?? ''),
+          'image': resolveChaletCoverImageUrl(widget.requestData),
           'price': widget.requestData['price'],
           'createdAt': FieldValue.serverTimestamp(),
           'chaletData': widget.requestData,
@@ -186,10 +181,12 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
         final images = data.images;
 
         if (images.isEmpty) {
-          return Container(
-            height: 300, // Roughly 40% height visually
+          return SizedBox(
+            height: 300,
             width: double.infinity,
-            color: ColorsManager.chaletGrey200,
+            child: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
           );
         }
 
@@ -211,6 +208,7 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                   );
                 },
                 child: PageView.builder(
+                  key: ValueKey<String>('chalet_header_pv_${widget.docId}'),
                   controller: cubit.pageController,
                   itemCount: images.length,
                   onPageChanged: cubit.onPageChanged,
@@ -220,8 +218,12 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                       // Include chalet id to avoid Hero collisions between different chalets.
                       tag: 'chalet_image_header_${widget.docId}_$index',
                       child: AppImageHelper(
+                        key: ValueKey(
+                          'chalet_header_img_${widget.docId}_${images[index]}_$index',
+                        ),
                         path: images[index],
                         fit: BoxFit.cover,
+                        cacheScope: widget.docId,
                       ),
                     );
                   },

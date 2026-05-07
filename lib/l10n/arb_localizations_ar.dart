@@ -1249,7 +1249,7 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get owner_day_use_feature => 'خصائص الحجز (Day Use)';
 
   @override
-  String get owner_enable_day_use => 'تفعيل خاصية Day Use';
+  String get owner_enable_day_use => 'تفعيل حجز اليوم الواحد';
 
   @override
   String get owner_day_use_hint =>

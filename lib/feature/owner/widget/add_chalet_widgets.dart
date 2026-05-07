@@ -133,49 +133,323 @@ class PopularDestinationAnimatedDropdown extends StatefulWidget {
 
 class _PopularDestinationAnimatedDropdownState
     extends State<PopularDestinationAnimatedDropdown> {
-  bool _expanded = false;
-
   String _headerLabel(BuildContext context) {
     if (widget.selectedKey == null) {
       return context.tr('owner_is_from_popular_destination');
     }
-    return PopularDestinations.getByKey(widget.selectedKey!)
-            ?.getLocalizedName(context) ??
+    return PopularDestinations.getByKey(
+          widget.selectedKey!,
+        )?.getLocalizedName(context) ??
         context.tr('owner_is_from_popular_destination');
+  }
+
+  Future<void> _openDestinationSheet(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final isDark = widget.isDark;
+    final searchController = TextEditingController();
+    String query = '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final results = PopularDestinations.all.where((d) {
+              if (query.trim().isEmpty) return true;
+              final q = query.trim().toLowerCase();
+              return d.nameAr.toLowerCase().contains(q) ||
+                  d.nameEn.toLowerCase().contains(q);
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(sheetContext).size.height * 0.72,
+              decoration: BoxDecoration(
+                color: isDark ? ColorsManager.darkBlue1A1A2E : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.22),
+                    blurRadius: 24,
+                    offset: const Offset(0, -8),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 48,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? ColorsManager.grey600
+                          : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'اختيار اشهر الوجهات',
+                            style: TextStyle(
+                              color: isDark
+                                  ? ColorsManager.white
+                                  : ColorsManager.black87,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        if (widget.selectedKey != null)
+                          TextButton.icon(
+                            onPressed: () {
+                              widget.onChanged(null);
+                              Navigator.pop(sheetContext);
+                            },
+                            icon: const Icon(Icons.close_rounded, size: 16),
+                            label: Text(
+                              context.tr('owner_clear_popular_destination'),
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor: ColorsManager.orangeF59E0B,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (v) => setSheetState(() => query = v),
+                      decoration: InputDecoration(
+                        hintText: 'ابحث عن وجهة...',
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        filled: true,
+                        fillColor: isDark
+                            ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
+                            : Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                      itemCount: results.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (ctx, i) {
+                        final d = results[i];
+                        final selected = widget.selectedKey == d.key;
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: 1),
+                          duration: Duration(milliseconds: 160 + (i * 35)),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, t, child) {
+                            return Opacity(
+                              opacity: t,
+                              child: Transform.translate(
+                                offset: Offset(0, 8 * (1 - t)),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Material(
+                            color: selected
+                                ? ColorsManager.orangeF59E0B.withOpacity(0.12)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(14),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(14),
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                widget.onChanged(d.key);
+                                Navigator.pop(sheetContext);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                child: Row(
+                                  children: [
+                                    AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 220,
+                                      ),
+                                      width: 46,
+                                      height: 46,
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? ColorsManager.orangeF59E0B
+                                                  .withOpacity(0.18)
+                                            : (isDark
+                                                  ? ColorsManager.darkBlue2A2E4B
+                                                        .withOpacity(0.75)
+                                                  : Colors.grey.shade100),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        selected
+                                            ? Icons.place_rounded
+                                            : Icons.location_on_outlined,
+                                        color: ColorsManager.orangeF59E0B,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            d.getLocalizedName(context),
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? ColorsManager.white
+                                                  : ColorsManager.black87,
+                                              fontSize: 15,
+                                              fontWeight: selected
+                                                  ? FontWeight.w800
+                                                  : FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'اضغط للاختيار',
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? ColorsManager.grey400
+                                                  : ColorsManager.grey600,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 220,
+                                      ),
+                                      width: 26,
+                                      height: 26,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: selected
+                                            ? ColorsManager.orangeF59E0B
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: selected
+                                              ? ColorsManager.orangeF59E0B
+                                              : (isDark
+                                                    ? ColorsManager.grey600
+                                                    : Colors.grey.shade400),
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.check_rounded,
+                                        size: 16,
+                                        color: selected
+                                            ? Colors.white
+                                            : Colors.transparent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
+    final hasSelection = widget.selectedKey != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: isDark
+                ? ColorsManager.darkBlue2A2E4B.withOpacity(0.35)
+                : ColorsManager.orangeF59E0B.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isDark
+                  ? ColorsManager.grey800.withOpacity(0.3)
+                  : ColorsManager.orangeF59E0B.withOpacity(0.25),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.tr('owner_is_from_popular_destination'),
+                style: TextStyle(
+                  color: isDark ? ColorsManager.white : ColorsManager.black87,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'اختيار الوجهة يساعد في تحسين ظهور الشاليه للمستخدمين.',
+                style: TextStyle(
+                  color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
         Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() => _expanded = !_expanded);
-            },
+            onTap: () => _openDestinationSheet(context),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: isDark
                     ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
                     : ColorsManager.grey50,
                 border: Border.all(
-                  color: _expanded
+                  color: hasSelection
                       ? ColorsManager.orangeF59E0B.withOpacity(0.65)
                       : (isDark
-                          ? ColorsManager.grey800.withOpacity(0.3)
-                          : ColorsManager.grey300),
-                  width: _expanded ? 1.5 : 1,
+                            ? ColorsManager.grey800.withOpacity(0.3)
+                            : ColorsManager.grey300),
+                  width: hasSelection ? 1.5 : 1,
                 ),
-                boxShadow: _expanded
+                boxShadow: hasSelection
                     ? [
                         BoxShadow(
                           color: ColorsManager.orangeF59E0B.withOpacity(0.14),
@@ -187,201 +461,77 @@ class _PopularDestinationAnimatedDropdownState
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.map_rounded,
-                    color: ColorsManager.orangeF59E0B,
-                    size: 22,
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: ColorsManager.orangeF59E0B.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: const Icon(
+                      Icons.map_rounded,
+                      color: ColorsManager.orangeF59E0B,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      _headerLabel(context),
-                      style: TextStyle(
-                        color: isDark
-                            ? ColorsManager.white
-                            : ColorsManager.black87,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          hasSelection
+                              ? 'الوجهة المختارة'
+                              : 'اختيار وجهة مشهورة',
+                          style: TextStyle(
+                            color: isDark
+                                ? ColorsManager.grey400
+                                : ColorsManager.grey600,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _headerLabel(context),
+                          style: TextStyle(
+                            color: isDark
+                                ? ColorsManager.white
+                                : ColorsManager.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: ColorsManager.orangeF59E0B,
-                      size: 26,
+                  if (hasSelection)
+                    IconButton(
+                      constraints: const BoxConstraints(
+                        minHeight: 24,
+                        minWidth: 24,
+                      ),
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        widget.onChanged(null);
+                      },
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: ColorsManager.orangeF59E0B,
+                        size: 20,
+                      ),
                     ),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: ColorsManager.orangeF59E0B,
+                    size: 26,
                   ),
                 ],
               ),
             ),
-          ),
-        ),
-        ClipRect(
-          child: AnimatedSize(
-            duration: const Duration(milliseconds: 320),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Container(
-                      height: 260,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? ColorsManager.darkBlue1A1A2E
-                            : ColorsManager.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? ColorsManager.grey800.withOpacity(0.35)
-                              : ColorsManager.grey300,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (widget.selectedKey != null)
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  widget.onChanged(null);
-                                  setState(() => _expanded = false);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 12,
-                                  ),
-                                  child: Text(
-                                    context.tr(
-                                      'owner_clear_popular_destination',
-                                    ),
-                                    style: const TextStyle(
-                                      color: ColorsManager.orangeF59E0B,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (widget.selectedKey != null)
-                            Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: Colors.grey.withOpacity(0.2),
-                            ),
-                          Expanded(
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              itemCount: PopularDestinations.all.length,
-                              separatorBuilder: (_, __) => Divider(
-                                height: 1,
-                                color: Colors.grey.withOpacity(0.1),
-                              ),
-                              itemBuilder: (context, i) {
-                                final d = PopularDestinations.all[i];
-                                final selected = widget.selectedKey == d.key;
-                                return TweenAnimationBuilder<double>(
-                                  tween: Tween(begin: 0, end: 1),
-                                  duration: Duration(
-                                    milliseconds: 180 + (i * 28).clamp(0, 220),
-                                  ),
-                                  curve: Curves.easeOutCubic,
-                                  builder: (context, t, child) {
-                                    return Opacity(
-                                      opacity: t,
-                                      child: Transform.translate(
-                                        offset: Offset(0, 6 * (1 - t)),
-                                        child: child,
-                                      ),
-                                    );
-                                  },
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        widget.onChanged(d.key);
-                                        setState(() => _expanded = false);
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 10,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              child: Image.network(
-                                                d.imageUrl,
-                                                width: 48,
-                                                height: 48,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) =>
-                                                    Container(
-                                                  width: 48,
-                                                  height: 48,
-                                                  color: Colors.grey.shade700,
-                                                  child: const Icon(
-                                                    Icons.place_outlined,
-                                                    color: Colors.white70,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(
-                                                d.getLocalizedName(context),
-                                                style: TextStyle(
-                                                  fontWeight: selected
-                                                      ? FontWeight.w700
-                                                      : FontWeight.w500,
-                                                  color: isDark
-                                                      ? ColorsManager.white
-                                                      : ColorsManager.black87,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                            if (selected)
-                                              const Icon(
-                                                Icons.check_circle_rounded,
-                                                color: ColorsManager
-                                                    .orangeF59E0B,
-                                                size: 22,
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
           ),
         ),
       ],
