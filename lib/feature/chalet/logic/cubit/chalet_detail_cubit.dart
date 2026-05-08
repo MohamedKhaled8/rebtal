@@ -20,6 +20,7 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
 
   PageController? _pageController;
   Timer? _autoPlayTimer;
+  static const bool _enableAutoPlay = false;
 
   ChaletDetailCubit({
     required this.getChaletBookedDatesUseCase,
@@ -65,7 +66,7 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
         final snap = await FirebaseFirestore.instance
             .collection('chalets')
             .doc(docId)
-            .get(const GetOptions(source: Source.server));
+            .get(const GetOptions(source: Source.serverAndCache));
         final data = snap.data();
         if (data != null) {
           effectiveData = {...requestData, ...data, 'id': docId};
@@ -139,6 +140,10 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   void _startAutoPlay() {
+    if (!_enableAutoPlay) {
+      _autoPlayTimer?.cancel();
+      return;
+    }
     _autoPlayTimer?.cancel();
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (isClosed) return;

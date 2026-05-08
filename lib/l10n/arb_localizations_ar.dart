@@ -225,7 +225,7 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get booking_refund_reason => 'يرجى توضيح سبب إلغاء الحجز...';
 
   @override
-  String get chalet_day_use => 'شاليهات داي يوز';
+  String get chalet_day_use => 'حجز اليوم الواحد (داي يوز)';
 
   @override
   String get chalet_offers => 'عروض إعادة البيع';
@@ -1471,7 +1471,8 @@ class ArbLocalizationsAr extends ArbLocalizations {
       'أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور';
 
   @override
-  String get chalet_no_day_use => 'لا توجد شاليهات داي يوز حالياً';
+  String get chalet_no_day_use =>
+      'لا توجد أماكن متاحة لحجز اليوم الواحد حالياً';
 
   @override
   String get chalet_no_offers => 'لا توجد عروض';

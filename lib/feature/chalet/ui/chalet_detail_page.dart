@@ -90,9 +90,6 @@ class ChaletDetailPage extends StatelessWidget {
             return BlocBuilder<AppCubit, AppState>(
               buildWhen: (prev, next) {
                 if (prev.locale != next.locale) return true;
-                if (prev is AppAuthenticated && next is AppAuthenticated) {
-                  return !identical(prev.ownerChalets, next.ownerChalets);
-                }
                 return prev.runtimeType != next.runtimeType;
               },
               builder: (context, appState) {

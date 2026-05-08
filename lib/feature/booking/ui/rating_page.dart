@@ -127,15 +127,35 @@ class _RatingPageState extends State<RatingPage> {
 
       if (widget.isOwnerRating) {
         ratingData['ownerId'] = widget.booking.ownerId;
-        await FirebaseFirestore.instance
+        final existing = await FirebaseFirestore.instance
             .collection('user_ratings')
-            .add(ratingData);
+            .where('bookingId', isEqualTo: widget.booking.id)
+            .where('userId', isEqualTo: widget.booking.userId)
+            .limit(1)
+            .get();
+        if (existing.docs.isNotEmpty) {
+          await existing.docs.first.reference.update(ratingData);
+        } else {
+          await FirebaseFirestore.instance.collection('user_ratings').add(ratingData);
+        }
       } else {
         ratingData['chaletId'] = widget.booking.chaletId;
         ratingData['userId'] = widget.booking.userId;
-        await FirebaseFirestore.instance
+        final existing = await FirebaseFirestore.instance
             .collection('chalet_ratings')
-            .add(ratingData);
+            .where('bookingId', isEqualTo: widget.booking.id)
+            .where('userId', isEqualTo: widget.booking.userId)
+            .limit(1)
+            .get();
+        if (existing.docs.isNotEmpty) {
+          await existing.docs.first.reference.update(ratingData);
+        } else {
+          await FirebaseFirestore.instance.collection('chalet_ratings').add(ratingData);
+          await _updateChaletRatingAggregate(
+            chaletId: widget.booking.chaletId,
+            newRating: _rating,
+          );
+        }
       }
 
       if (mounted) {
@@ -150,6 +170,29 @@ class _RatingPageState extends State<RatingPage> {
         SnackBarHelper.showError(context, '${context.tr('booking_error_msg')} $e');
       }
     }
+  }
+
+  Future<void> _updateChaletRatingAggregate({
+    required String chaletId,
+    required double newRating,
+  }) async {
+    final chaletRef = FirebaseFirestore.instance.collection('chalets').doc(chaletId);
+    await FirebaseFirestore.instance.runTransaction((txn) async {
+      final snap = await txn.get(chaletRef);
+      if (!snap.exists) return;
+      final data = snap.data() ?? {};
+      final num count = (data['ratingCount'] ?? 0);
+      final num sum = (data['ratingSum'] ?? 0);
+      final newCount = count.toDouble() + 1;
+      final newSum = sum.toDouble() + newRating;
+      final avg = newSum / newCount;
+      txn.update(chaletRef, {
+        'ratingCount': newCount,
+        'ratingSum': newSum,
+        'rating': double.parse(avg.toStringAsFixed(2)),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
   @override

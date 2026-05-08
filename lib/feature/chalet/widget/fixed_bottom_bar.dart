@@ -242,7 +242,12 @@ class FixedBottomBar extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                disabledBackgroundColor: Colors.grey[300],
+                                disabledBackgroundColor: isDark
+                                    ? const Color(0xFF2B2B2B)
+                                    : const Color(0xFFE5E7EB),
+                                disabledForegroundColor: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF4B5563),
                               ),
                               child: Text(
                                 isAvailable

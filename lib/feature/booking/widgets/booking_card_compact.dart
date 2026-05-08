@@ -9,6 +9,7 @@ import 'package:rebtal/feature/booking/ui/cancellation_details_page.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -556,39 +557,65 @@ class BookingCardCompact extends StatelessWidget {
       );
     }
 
-    if (isCompleted) {
-      return SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => RatingPage(booking: booking)),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2563EB),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.star_rounded, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                context.tr('booking_rate_chalet_btn'),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+    if (isCompleted || isConfirmed) {
+      final now = DateTime.now();
+      final bookingEnd = DateTime(
+        booking.to.year,
+        booking.to.month,
+        booking.to.day,
+        23,
+        59,
+        59,
+      );
+      final stayEnded = now.isAfter(bookingEnd);
+      if (!stayEnded) {
+        return const SizedBox.shrink();
+      }
+      return FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('chalet_ratings')
+            .where('bookingId', isEqualTo: booking.id)
+            .where('userId', isEqualTo: booking.userId)
+            .limit(1)
+            .get(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const SizedBox.shrink();
+          final alreadyRated = snapshot.data!.docs.isNotEmpty;
+          if (alreadyRated) return const SizedBox.shrink();
+          return SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => RatingPage(booking: booking)),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
-            ],
-          ),
-        ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.star_rounded, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    context.tr('booking_rate_chalet_btn'),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
 

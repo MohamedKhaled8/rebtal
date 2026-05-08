@@ -226,7 +226,7 @@ class ArbLocalizationsEn extends ArbLocalizations {
       'Please explain the reason for cancelling the booking...';
 
   @override
-  String get chalet_day_use => 'Day Use Chalets';
+  String get chalet_day_use => 'Daily Booking (Day Use)';
 
   @override
   String get chalet_offers => 'Resale Offers';

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 class FullScreenImageGallery extends StatefulWidget {
   final List<String> images;
@@ -19,16 +21,24 @@ class FullScreenImageGallery extends StatefulWidget {
 class _FullScreenImageGalleryState extends State<FullScreenImageGallery> {
   late PageController _pageController;
   late int _currentIndex;
+  late final List<PhotoViewController> _photoControllers;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+    _photoControllers = List.generate(
+      widget.images.length,
+      (_) => PhotoViewController(),
+    );
   }
 
   @override
   void dispose() {
+    for (final controller in _photoControllers) {
+      controller.dispose();
+    }
     _pageController.dispose();
     super.dispose();
   }
@@ -46,21 +56,33 @@ class _FullScreenImageGalleryState extends State<FullScreenImageGallery> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          PageView.builder(
-            controller: _pageController,
+          PhotoViewGallery.builder(
+            pageController: _pageController,
             itemCount: widget.images.length,
+            scrollPhysics: const BouncingScrollPhysics(),
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
             onPageChanged: (index) {
               setState(() {
                 _currentIndex = index;
               });
             },
-            itemBuilder: (context, index) {
-              return InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 3.0,
-                child: Center(
-                  child: Hero(
-                    tag: 'image_${widget.images[index]}_$index',
+            builder: (context, index) {
+              return PhotoViewGalleryPageOptions.customChild(
+                controller: _photoControllers[index],
+                minScale: PhotoViewComputedScale.contained,
+                initialScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 4.0,
+                heroAttributes: PhotoViewHeroAttributes(
+                  tag: 'image_${widget.images[index]}_$index',
+                ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onDoubleTap: () {
+                    final controller = _photoControllers[index];
+                    final current = controller.scale ?? 1.0;
+                    controller.scale = current > 1.2 ? 1.0 : 2.5;
+                  },
+                  child: Center(
                     child: AppImageHelper(
                       path: widget.images[index],
                       fit: BoxFit.contain,

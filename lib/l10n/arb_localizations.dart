@@ -533,7 +533,7 @@ abstract class ArbLocalizations {
   /// No description provided for @chalet_day_use.
   ///
   /// In en, this message translates to:
-  /// **'Day Use Chalets'**
+  /// **'Daily Booking (Day Use)'**
   String get chalet_day_use;
 
   /// No description provided for @chalet_offers.

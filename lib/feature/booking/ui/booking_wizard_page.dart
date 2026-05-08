@@ -139,9 +139,13 @@ class _BookingWizardViewState extends State<BookingWizardView> {
             PremiumLoadingOverlay.dismiss(context);
             // Play Celebration
             _confettiController.play();
-
-            // Show Rating Sheet directly
-            if (mounted) _showRatingSheet(context);
+            if (mounted) {
+              SnackBarHelper.showSuccess(
+                context,
+                context.tr('booking_sent_to_owner'),
+              );
+              Navigator.of(context).pop();
+            }
           } else if (state.status == BookingWizardStatus.failure) {
             PremiumLoadingOverlay.dismiss(context);
           }
