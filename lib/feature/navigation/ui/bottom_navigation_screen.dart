@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
-import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/auth/cubit/auth_cubit.dart';
 import 'package:rebtal/feature/home/ui/home_screen.dart';
 import 'package:rebtal/feature/owner/ui/owner_chalets_page.dart';
 import 'package:rebtal/feature/owner/ui/owner_bookings_page.dart';
@@ -30,7 +31,6 @@ class BottomNavigationScreen extends StatefulWidget {
 class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   String? _cachedRole;
   List<Widget>? _screens;
-  List<NavItem>? _navItems;
 
   @override
   void initState() {
@@ -38,13 +38,12 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
     bottomNavIndex.value = 0;
   }
 
-  void _buildScreensForRole(BuildContext context, String role) {
-    final t = (String k) => context.tr(k);
+  void _buildScreensForRole(String role) {
     if (role == _cachedRole && _screens != null) {
-      _navItems = _buildNavItemsForRole(role, t);
       return;
     }
     _cachedRole = role;
+
     if (role == 'admin') {
       _screens = const [
         HomeScreen(),
@@ -54,7 +53,6 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         AdminDashboard(),
         ProfilePage(),
       ];
-      _navItems = _buildNavItemsForRole('admin', t);
     } else if (role == 'owner') {
       _screens = const [
         OwnerChaletsPage(),
@@ -63,7 +61,6 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         OwnerCancellationsPage(),
         ProfilePage(),
       ];
-      _navItems = _buildNavItemsForRole('owner', t);
     } else {
       _screens = const [
         HomeScreen(),
@@ -73,7 +70,6 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         UserBookingsPage(),
         ProfilePage(),
       ];
-      _navItems = _buildNavItemsForRole('user', t);
     }
   }
 
@@ -115,6 +111,10 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   Widget build(BuildContext context) {
     final appCubit = context.read<AppCubit>();
     final authCubit = appCubit.authCubit;
+    final isDark = DynamicThemeManager.isDarkMode(context);
+    final shellBg = isDark
+        ? ColorsManager.black
+        : ColorsManager.chaletBackgroundLight;
 
     return BlocBuilder<AuthCubit, AuthState>(
       bloc: authCubit,
@@ -122,7 +122,8 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         if (previous.runtimeType != current.runtimeType) return true;
         if (previous is AuthSuccess && current is AuthSuccess) {
           return previous.user.uid != current.user.uid ||
-              previous.user.role != current.user.role;
+              previous.user.role != current.user.role ||
+              previous.uiRevision != current.uiRevision;
         }
         return true;
       },
@@ -132,37 +133,36 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             : authCubit.getCurrentUser();
 
         if (currentUser == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: shellBg,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         final role = authCubit.getCurrentRole();
-        _buildScreensForRole(context, role);
+        _buildScreensForRole(role);
         final screens = _screens!;
-        final bottomNavItems = _navItems!;
+        final bottomNavItems = _buildNavItemsForRole(role, context.tr);
 
         return ValueListenableBuilder<int>(
           valueListenable: bottomNavIndex,
           builder: (context, currentIndex, _) {
-            final int maxIndex = screens.length - 1;
-            // Ensure index is valid for the current screen list
-            final int safeIndex = currentIndex.clamp(0, maxIndex);
+            final maxIndex = screens.length - 1;
+            final safeIndex = currentIndex.clamp(0, maxIndex);
 
-            // If the current index is out of bounds (e.g. switching from User->Owner while on index 4),
-            // safeIndex will be 2. We should update the notifier.
             if (safeIndex != currentIndex) {
-              // Schedule the update to avoid build conflicts
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                bottomNavIndex.value = safeIndex;
+                if (bottomNavIndex.value != safeIndex) {
+                  bottomNavIndex.value = safeIndex;
+                }
               });
             }
 
             return PopScope(
               canPop: false,
-              onPopInvoked: (didPop) {
+              onPopInvokedWithResult: (didPop, _) {
                 if (didPop) return;
-                if (currentIndex != 0) {
+                if (safeIndex != 0) {
                   bottomNavIndex.value = 0;
                 } else {
                   SystemNavigator.pop();
@@ -170,8 +170,12 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
               },
               child: Scaffold(
                 resizeToAvoidBottomInset: false,
-                backgroundColor: Colors.transparent,
-                body: IndexedStack(index: safeIndex, children: screens),
+                backgroundColor: shellBg,
+                body: IndexedStack(
+                  index: safeIndex,
+                  sizing: StackFit.expand,
+                  children: screens,
+                ),
                 bottomNavigationBar: _SimpleNavBar(
                   items: bottomNavItems,
                   currentIndex: safeIndex,
@@ -218,7 +222,6 @@ class _SimpleNavBar extends StatelessWidget {
         ? Colors.white.withValues(alpha: 0.1)
         : Colors.black.withValues(alpha: 0.08);
 
-    /// لون خلفية المؤشر (مش بقعة متدرجة — سطح هادي زي Material 3 الرسمي).
     final indicatorSurface = isDark
         ? const Color(0xFF1E293B)
         : const Color(0xFFE2E8F0);

@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
@@ -184,7 +185,7 @@ class _ChaletFormContent extends StatelessWidget {
               // Images Section
               ImageUploadSection(
                 images: draft.uploadedImages,
-                onAdd: () => HelperImage().addSampleImages(context),
+                onAdd: () => getIt<HelperImageContract>().addSampleImages(context),
                 onRemove: (index) => ownerCubit.removeChaletImage(index),
               ),
               SizedBox(height: 20.sh),
@@ -205,7 +206,8 @@ class _ChaletFormContent extends StatelessWidget {
                 onPopularDestinationChanged:
                     ownerCubit.selectPopularDestination,
                 onPickLocation: () async {
-                  final selected = await Navigator.push(
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  final selected = await Navigator.push<Object?>(
                     context,
                     MaterialPageRoute(
                       builder: (_) => FlutterGoogleMapLocationPicker(
@@ -213,6 +215,7 @@ class _ChaletFormContent extends StatelessWidget {
                       ),
                     ),
                   );
+                  FocusManager.instance.primaryFocus?.unfocus();
                   if (selected is Map) {
                     final addr = selected['address'] as String?;
                     final lat = selected['lat'] as double?;
@@ -267,6 +270,7 @@ class _ChaletFormContent extends StatelessWidget {
                 availableFrom: draft.availableFrom,
                 availableTo: draft.availableTo,
                 onSelectFrom: () async {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   final now = DateTime.now();
                   final picked = await showDatePicker(
                     context: context,
@@ -274,10 +278,13 @@ class _ChaletFormContent extends StatelessWidget {
                     firstDate: now,
                     lastDate: DateTime(now.year + 2),
                   );
-                  if (picked != null)
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  if (picked != null) {
                     ownerCubit.selectAvailableFromDate(picked);
+                  }
                 },
                 onSelectTo: () async {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   final now = DateTime.now();
                   final picked = await showDatePicker(
                     context: context,
@@ -286,7 +293,10 @@ class _ChaletFormContent extends StatelessWidget {
                     firstDate: draft.availableFrom ?? now,
                     lastDate: DateTime(now.year + 2),
                   );
-                  if (picked != null) ownerCubit.selectAvailableToDate(picked);
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  if (picked != null) {
+                    ownerCubit.selectAvailableToDate(picked);
+                  }
                 },
               ),
               SizedBox(height: 20.sh),

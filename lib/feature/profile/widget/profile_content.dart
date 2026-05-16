@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/theme/cubit/theme_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -14,7 +16,8 @@ import 'package:rebtal/feature/profile/ui/refund_policy_page.dart';
 import 'package:rebtal/feature/profile/ui/personal_info_page.dart';
 import 'package:rebtal/feature/localization/logic/locale_cubit.dart';
 import 'package:rebtal/feature/localization/ui/language_selection_page.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -68,7 +71,8 @@ class ProfileContent extends StatelessWidget {
                 child: Column(
                   children: [
                     GestureDetector(
-                      onTap: () => HelperImage().addProfilePicture(context),
+                      onTap: () => getIt<HelperImageContract>()
+                          .addProfilePicture(context),
                       child: Stack(
                         alignment: Alignment.bottomRight,
                         children: [
@@ -367,7 +371,10 @@ class ProfileContent extends StatelessWidget {
                 BlocBuilder<AppCubit, AppState>(
                   buildWhen: (p, c) => p.themeMode != c.themeMode,
                   builder: (context, appState) {
-                    final isDarkMode = appState.themeMode == ThemeMode.dark;
+                    final isDarkMode = isEffectivelyDarkMode(
+                      appState.themeMode,
+                      MediaQuery.platformBrightnessOf(context),
+                    );
                     return ListTile(
                       leading: Icon(
                         Icons.dark_mode_outlined,
@@ -381,9 +388,15 @@ class ProfileContent extends StatelessWidget {
                           color: textColor,
                         ),
                       ),
-                      trailing: _ThemeAnimatedSwitch(
-                        isDarkMode: isDarkMode,
-                        onToggle: (_) => context.read<AppCubit>().toggleTheme(),
+                      trailing: CupertinoSwitch(
+                        value: isDarkMode,
+                        onChanged: (_) {
+                          context.read<AppCubit>().toggleTheme(
+                            platformBrightness:
+                                MediaQuery.platformBrightnessOf(context),
+                          );
+                        },
+                        activeColor: CupertinoColors.activeBlue,
                       ),
                     );
                   },
@@ -579,134 +592,5 @@ class ProfileContent extends StatelessWidget {
       ),
       onTap: onTap,
     );
-  }
-}
-
-class _ThemeAnimatedSwitch extends StatefulWidget {
-  final bool isDarkMode;
-  final Function(bool) onToggle;
-
-  const _ThemeAnimatedSwitch({
-    Key? key,
-    required this.isDarkMode,
-    required this.onToggle,
-  }) : super(key: key);
-
-  @override
-  State<_ThemeAnimatedSwitch> createState() => _ThemeAnimatedSwitchState();
-}
-
-class _ThemeAnimatedSwitchState extends State<_ThemeAnimatedSwitch>
-    with TickerProviderStateMixin {
-  final GlobalKey _switchKey = GlobalKey();
-  bool _isAnimating = false;
-
-  void _handleThemeSwitch(bool value) async {
-    if (_isAnimating) return;
-    
-    final RenderBox? renderBox =
-        _switchKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      if (mounted) {
-        setState(() {
-          _isAnimating = true;
-        });
-      }
-      final size = renderBox.size;
-      final position = renderBox.localToGlobal(Offset.zero);
-      final offset = Offset(position.dx + size.width / 2, position.dy + size.height / 2);
-
-      _showThemeTransitionOverlay(context, offset, value);
-    } else {
-      widget.onToggle(value);
-    }
-  }
-
-  void _showThemeTransitionOverlay(BuildContext context, Offset center, bool isDark) {
-    OverlayState? overlayState = Overlay.of(context);
-    OverlayEntry? entry;
-    
-    final size = MediaQuery.of(context).size;
-    final maxRadius = size.longestSide * 1.5;
-
-    final animationController = AnimationController(
-      vsync: this, 
-      duration: const Duration(milliseconds: 600)
-    );
-
-    final animation = Tween<double>(begin: 0, end: maxRadius).animate(
-      CurvedAnimation(parent: animationController, curve: Curves.easeInOut),
-    );
-
-    // Call the original toggle slightly after the animation starts so it happens behind the growing circle
-    Future.delayed(const Duration(milliseconds: 300), () {
-      widget.onToggle(isDark);
-    });
-
-    entry = OverlayEntry(
-      builder: (context) {
-        return Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: animationController,
-              builder: (context, child) {
-                // Fade out near the end
-                final opacity = (1.0 - (animationController.value - 0.7) / 0.3).clamp(0.0, 1.0);
-                return Opacity(
-                  opacity: opacity,
-                  child: ClipPath(
-                    clipper: _CircularClipper(center, animation.value),
-                    child: Container(
-                      color: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-
-    overlayState.insert(entry);
-    animationController.forward().then((_) {
-      entry?.remove();
-      animationController.dispose();
-      if (mounted) {
-        setState(() {
-          _isAnimating = false;
-        });
-      } else {
-        _isAnimating = false;
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Switch(
-      key: _switchKey,
-      value: widget.isDarkMode,
-      onChanged: _handleThemeSwitch,
-      activeColor: Colors.blue,
-      activeTrackColor: Colors.blue.withOpacity(0.5),
-    );
-  }
-}
-
-class _CircularClipper extends CustomClipper<Path> {
-  final Offset center;
-  final double radius;
-
-  _CircularClipper(this.center, this.radius);
-
-  @override
-  Path getClip(Size size) {
-    return Path()..addOval(Rect.fromCircle(center: center, radius: radius));
-  }
-
-  @override
-  bool shouldReclip(covariant _CircularClipper oldClipper) {
-    return center != oldClipper.center || radius != oldClipper.radius;
   }
 }

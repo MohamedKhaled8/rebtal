@@ -21,7 +21,6 @@ import 'package:rebtal/feature/chalet/widget/property_features_card.dart';
 import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
 import 'package:rebtal/feature/chalet/widget/show_more_button.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 /// Prefer fresh data from [AppAuthenticated.ownerChalets] after edit; else snapshot passed in.
@@ -90,6 +89,7 @@ class ChaletDetailPage extends StatelessWidget {
             return BlocBuilder<AppCubit, AppState>(
               buildWhen: (prev, next) {
                 if (prev.locale != next.locale) return true;
+                if (prev.themeMode != next.themeMode) return true;
                 return prev.runtimeType != next.runtimeType;
               },
               builder: (context, appState) {
@@ -175,12 +175,7 @@ class ChaletDetailPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   // A. Title Section
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -247,7 +242,6 @@ class ChaletDetailPage extends StatelessWidget {
                                         ],
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -257,13 +251,7 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // B. Stats Row
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 200),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: ChaletStatsRow(
                                         isDark: isDark,
                                         textColor: textColor,
@@ -272,7 +260,6 @@ class ChaletDetailPage extends StatelessWidget {
                                             .toString(),
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -280,14 +267,11 @@ class ChaletDetailPage extends StatelessWidget {
                                       landscape: 12.sh,
                                     ),
                                   ),
-                                  FadeIn(
-                                    delay: const Duration(milliseconds: 400),
-                                    child: Divider(
+                                  Divider(
                                       height: 1,
                                       color: isDark
                                           ? Colors.white24
                                           : const Color(0xFFDDDDDD),
-                                    ),
                                   ),
                                   SizedBox(
                                     height: otv(
@@ -298,18 +282,11 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // C. Host Section
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 400),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: OwnerInformationCard(
                                         requestData: displayData,
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -317,14 +294,11 @@ class ChaletDetailPage extends StatelessWidget {
                                       landscape: 12.sh,
                                     ),
                                   ),
-                                  FadeIn(
-                                    delay: const Duration(milliseconds: 600),
-                                    child: Divider(
+                                  Divider(
                                       height: 1,
                                       color: isDark
                                           ? Colors.white24
                                           : const Color(0xFFDDDDDD),
-                                    ),
                                   ),
                                   SizedBox(
                                     height: otv(
@@ -335,19 +309,12 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // D. Highlights (Property Features)
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 600),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: PropertyFeaturesCard(
                                         requestData: displayData,
                                         isDark: isDark,
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -355,14 +322,11 @@ class ChaletDetailPage extends StatelessWidget {
                                       landscape: 12.sh,
                                     ),
                                   ),
-                                  FadeIn(
-                                    delay: const Duration(milliseconds: 800),
-                                    child: Divider(
+                                  Divider(
                                       height: 1,
                                       color: isDark
                                           ? Colors.white24
                                           : const Color(0xFFDDDDDD),
-                                    ),
                                   ),
                                   SizedBox(
                                     height: otv(
@@ -373,13 +337,7 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // F. Description
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 800),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -429,7 +387,6 @@ class ChaletDetailPage extends StatelessWidget {
                                         ],
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -437,25 +394,16 @@ class ChaletDetailPage extends StatelessWidget {
                                       landscape: 12.sh,
                                     ),
                                   ),
-                                  FadeIn(
-                                    delay: const Duration(milliseconds: 1000),
-                                    child: Divider(
+                                  Divider(
                                       height: 1,
                                       color: isDark
                                           ? Colors.white24
                                           : const Color(0xFFDDDDDD),
-                                    ),
                                   ),
                                   verticalSpace(5),
 
                                   // G. Gallery Strip
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 1000),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -481,7 +429,6 @@ class ChaletDetailPage extends StatelessWidget {
                                         ],
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -489,14 +436,11 @@ class ChaletDetailPage extends StatelessWidget {
                                       landscape: 12.sh,
                                     ),
                                   ),
-                                  FadeIn(
-                                    delay: const Duration(milliseconds: 1200),
-                                    child: Divider(
+                                  Divider(
                                       height: 1,
                                       color: isDark
                                           ? Colors.white24
                                           : const Color(0xFFDDDDDD),
-                                    ),
                                   ),
                                   SizedBox(
                                     height: otv(
@@ -507,13 +451,7 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // H. Amenities (Map)
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 1200),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: LocationMapCard(
                                         location: location,
                                         latitude:
@@ -537,7 +475,6 @@ class ChaletDetailPage extends StatelessWidget {
                                             : null,
                                       ),
                                     ),
-                                  ),
                                   SizedBox(
                                     height: otv(
                                       context: context,
@@ -547,20 +484,13 @@ class ChaletDetailPage extends StatelessWidget {
                                   ),
 
                                   // Reviews
-                                  FadeInUp(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    delay: const Duration(milliseconds: 1400),
-                                    curve: Curves.easeOutQuart,
-                                    child: RepaintBoundary(
+                                  RepaintBoundary(
                                       child: ReviewsSection(
                                         chaletId: docId,
                                         isDark: isDark,
                                         requestData: displayData,
                                       ),
                                     ),
-                                  ),
 
                                   // Booking Dates (Start/End)
                                   if (displayData['availableFrom'] != null &&
@@ -572,14 +502,11 @@ class ChaletDetailPage extends StatelessWidget {
                                         landscape: 12.sh,
                                       ),
                                     ),
-                                    FadeIn(
-                                      delay: const Duration(milliseconds: 1500),
-                                      child: Divider(
+                                    Divider(
                                         height: 1,
                                         color: isDark
                                             ? Colors.white24
                                             : const Color(0xFFDDDDDD),
-                                      ),
                                     ),
                                     SizedBox(
                                       height: otv(
@@ -588,30 +515,16 @@ class ChaletDetailPage extends StatelessWidget {
                                         landscape: 12.sh,
                                       ),
                                     ),
-                                    FadeInUp(
-                                      duration: const Duration(
-                                        milliseconds: 1000,
-                                      ),
-                                      delay: const Duration(milliseconds: 1500),
-                                      curve: Curves.easeOutQuart,
-                                      child: RepaintBoundary(
+                                    RepaintBoundary(
                                         child: BookingDatesDisplay(
                                           requestData: displayData,
                                           isDark: isDark,
                                         ),
-                                      ),
-                                    ),
-                                  ],
+                                      )],
 
                                   // Admin Sections
                                   if (role == 'admin') ...[
-                                    FadeInUp(
-                                      duration: const Duration(
-                                        milliseconds: 1000,
-                                      ),
-                                      delay: const Duration(milliseconds: 1600),
-                                      curve: Curves.easeOutQuart,
-                                      child: Column(
+                                    Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
@@ -686,19 +599,11 @@ class ChaletDetailPage extends StatelessWidget {
                                             requestData: displayData,
                                           ),
                                         ],
-                                      ),
-                                    ),
-                                  ],
+                                      )],
 
                                   // Owner Sections
                                   if (role == 'owner') ...[
-                                    FadeInUp(
-                                      duration: const Duration(
-                                        milliseconds: 1000,
-                                      ),
-                                      delay: const Duration(milliseconds: 1600),
-                                      curve: Curves.easeOutQuart,
-                                      child: Column(
+                                    Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
@@ -728,9 +633,7 @@ class ChaletDetailPage extends StatelessWidget {
                                             requestData: displayData,
                                           ),
                                         ],
-                                      ),
-                                    ),
-                                  ],
+                                      )],
                                 ],
                               ),
                             ),

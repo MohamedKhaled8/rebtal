@@ -97,9 +97,28 @@ class AdminPaymentCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Text(context.tr('admin_order_id_label'), style: TextStyle(fontSize: 12, color: isDark ? ColorsManager.white70 : ColorsManager.grey600)),
+                              Flexible(
+                                child: Text(
+                                  context.tr('admin_order_id_label'),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               const SizedBox(width: 4),
-                              Text('#$shortId', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: ColorsManager.chaletAccent)),
+                              Flexible(
+                                child: Text(
+                                  '#$shortId',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: ColorsManager.chaletAccent,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ],
                           ),
                         ],

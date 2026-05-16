@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
@@ -49,15 +49,12 @@ class OwnerChaletsList extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state.isOwnerChaletsLoading) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-            ),
-          );
-        }
-
         final List<dynamic> allChalets = state.ownerChalets;
+
+        // Block loading overlay only on real cold fetch — keep cached rows visible while reconnecting.
+        if (state.isOwnerChaletsLoading && allChalets.isEmpty) {
+          return _OwnerChaletsLoadingSkeleton(isDark: isDark);
+        }
         final docs = allChalets.where((chalet) {
           // Convert ChaletEntity/ChaletModel to Map
           final Map<String, dynamic> map = _chaletToMap(chalet);
@@ -143,18 +140,49 @@ class OwnerChaletsList extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: FadeInUp(
-                              duration: const Duration(milliseconds: 500),
-                              delay: Duration(
-                                milliseconds: 100 * (firstIndex % 5),
+                            child: OwnerChaletCard(
+                              key: ValueKey(
+                                _chaletToMap(filtered[firstIndex])['id'] ?? '',
                               ),
+                              chaletData: _chaletToMap(filtered[firstIndex]),
+                              docId:
+                                  _chaletToMap(filtered[firstIndex])['id'] ??
+                                  '',
+                              margin: EdgeInsets.only(
+                                bottom: otv(
+                                  context: context,
+                                  portrait: 24.sh,
+                                  landscape: 12.sh,
+                                ),
+                                left: stv(
+                                  context: context,
+                                  mobile: 16.sw,
+                                  tablet: 24.sw,
+                                  desktop: 32.sw,
+                                ),
+                                right: stv(
+                                  context: context,
+                                  mobile: 16.sw,
+                                  tablet: 20.sw,
+                                  desktop: 24.sw,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (secondIndex < filtered.length)
+                            Expanded(
                               child: OwnerChaletCard(
                                 key: ValueKey(
-                                  _chaletToMap(filtered[firstIndex])['id'] ?? '',
+                                  _chaletToMap(filtered[secondIndex])['id'] ??
+                                      '',
                                 ),
-                                chaletData: _chaletToMap(filtered[firstIndex]),
+                                chaletData: _chaletToMap(
+                                  filtered[secondIndex],
+                                ),
                                 docId:
-                                    _chaletToMap(filtered[firstIndex])['id'] ??
+                                    _chaletToMap(
+                                      filtered[secondIndex],
+                                    )['id'] ??
                                     '',
                                 margin: EdgeInsets.only(
                                   bottom: otv(
@@ -165,57 +193,14 @@ class OwnerChaletsList extends StatelessWidget {
                                   left: stv(
                                     context: context,
                                     mobile: 16.sw,
-                                    tablet: 24.sw,
-                                    desktop: 32.sw,
+                                    tablet: 20.sw,
+                                    desktop: 24.sw,
                                   ),
                                   right: stv(
                                     context: context,
                                     mobile: 16.sw,
-                                    tablet: 20.sw,
-                                    desktop: 24.sw,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (secondIndex < filtered.length)
-                            Expanded(
-                              child: FadeInUp(
-                                duration: const Duration(milliseconds: 500),
-                                delay: Duration(
-                                  milliseconds: 100 * (secondIndex % 5),
-                                ),
-                                child: OwnerChaletCard(
-                                  key: ValueKey(
-                                    _chaletToMap(filtered[secondIndex])['id'] ??
-                                        '',
-                                  ),
-                                  chaletData: _chaletToMap(
-                                    filtered[secondIndex],
-                                  ),
-                                  docId:
-                                      _chaletToMap(
-                                        filtered[secondIndex],
-                                      )['id'] ??
-                                      '',
-                                  margin: EdgeInsets.only(
-                                    bottom: otv(
-                                      context: context,
-                                      portrait: 24.sh,
-                                      landscape: 12.sh,
-                                    ),
-                                    left: stv(
-                                      context: context,
-                                      mobile: 16.sw,
-                                      tablet: 20.sw,
-                                      desktop: 24.sw,
-                                    ),
-                                    right: stv(
-                                      context: context,
-                                      mobile: 16.sw,
-                                      tablet: 24.sw,
-                                      desktop: 32.sw,
-                                    ),
+                                    tablet: 24.sw,
+                                    desktop: 32.sw,
                                   ),
                                 ),
                               ),
@@ -239,29 +224,23 @@ class OwnerChaletsList extends StatelessWidget {
 
                     final String id = data['id'] ?? '';
 
-                    return FadeInUp(
-                      duration: const Duration(milliseconds: 500),
-                      delay: Duration(
-                        milliseconds: 100 * (i % 5),
-                      ), // Staggered delay
-                      child: OwnerChaletCard(
-                        key: ValueKey(id),
-                        chaletData: data,
-                        docId: id,
-                        margin: EdgeInsets.only(
-                          bottom: 16.sh,
-                          left: stv(
-                            context: context,
-                            mobile: 0.sw,
-                            tablet: 8.sw,
-                            desktop: 16.sw,
-                          ),
-                          right: stv(
-                            context: context,
-                            mobile: 0.sw,
-                            tablet: 8.sw,
-                            desktop: 16.sw,
-                          ),
+                    return OwnerChaletCard(
+                      key: ValueKey(id),
+                      chaletData: data,
+                      docId: id,
+                      margin: EdgeInsets.only(
+                        bottom: 16.sh,
+                        left: stv(
+                          context: context,
+                          mobile: 0.sw,
+                          tablet: 8.sw,
+                          desktop: 16.sw,
+                        ),
+                        right: stv(
+                          context: context,
+                          mobile: 0.sw,
+                          tablet: 8.sw,
+                          desktop: 16.sw,
                         ),
                       ),
                     );
@@ -275,8 +254,7 @@ class OwnerChaletsList extends StatelessWidget {
     );
   }
 
-  /// Convert ChaletEntity/ChaletModel to Map<String, dynamic>
-  /// Includes all additional fields from Firestore (merchantName, email, phoneNumber, etc.)
+  /// Converts owner listing entities/models into maps for filtering and cards.
   Map<String, dynamic> _chaletToMap(dynamic chalet) {
     if (chalet is Map<String, dynamic>) {
       return chalet;
@@ -345,3 +323,44 @@ class OwnerChaletsList extends StatelessWidget {
     }
   }
 }
+
+/// Lightweight placeholders while Firestore loads — avoids N× animate_do per card.
+class _OwnerChaletsLoadingSkeleton extends StatelessWidget {
+  const _OwnerChaletsLoadingSkeleton({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final baseColor =
+        isDark ? const Color(0xFF2A2A2E) : Colors.grey.shade300;
+    final highlightColor =
+        isDark ? const Color(0xFF3D3D44) : Colors.grey.shade100;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 12.sh),
+      child: Column(
+        children: List.generate(5, (i) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 14.sh),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16.sp),
+              child: Shimmer.fromColors(
+                baseColor: baseColor,
+                highlightColor: highlightColor,
+                period: const Duration(milliseconds: 1200),
+                child: Container(
+                  height: 128.sh,
+                  width: width,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+

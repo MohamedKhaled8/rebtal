@@ -21,6 +21,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   final BaseAuthRepository authRepository;
+
+  /// Bumped when owner toggles UI mode so listeners see a distinct [AuthSuccess].
+  int _authUiRevision = 0;
+
+  void _emitAuthSuccess(UserModel user) {
+    emit(AuthSuccess(user, uiRevision: _authUiRevision));
+  }
   StreamSubscription<User?>? _authStateSubscription;
 
   String? currentViewRole;
@@ -132,7 +139,7 @@ class AuthCubit extends Cubit<AuthState> {
         }
 
         debugPrint('🔥 AuthCubit: Emitting AuthSuccess');
-        emit(AuthSuccess(user));
+        _emitAuthSuccess(user);
       } else {
         debugPrint('🔥 AuthCubit: No user doc found in Firestore');
         emit(AuthUnauthenticated());
@@ -175,7 +182,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// Toggles the view mode for Owners between 'owner' and 'user'
-  void toggleViewMode() async {
+  void toggleViewMode() {
     if (state is AuthSuccess) {
       final user = (state as AuthSuccess).user;
       final actualRole = user.role.toLowerCase().trim();
@@ -188,15 +195,15 @@ class AuthCubit extends Cubit<AuthState> {
           currentViewRole = 'owner';
         }
 
-        // ✅ Save the new view mode to local storage
-        await getIt<CacheHelper>().saveData(
-          key: 'currentViewRole',
-          value: currentViewRole!,
-        );
-        debugPrint('💾 Saved view mode: $currentViewRole');
+        _authUiRevision++;
+        _emitAuthSuccess(user);
 
-        // Emit success again to trigger UI rebuilds in listeners
-        emit(AuthSuccess(user));
+        unawaited(
+          getIt<CacheHelper>().saveData(
+            key: 'currentViewRole',
+            value: currentViewRole!,
+          ),
+        );
       }
     }
   }
@@ -243,7 +250,7 @@ class AuthCubit extends Cubit<AuthState> {
             value: user.role,
           );
 
-          emit(AuthSuccess(user));
+          _emitAuthSuccess(user);
         }
       } catch (e) {
         debugPrint('Error reloading user data: $e');
@@ -310,7 +317,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       result.fold(
         (failure) => emit(AuthFailure(failure.message)),
-        (updatedUser) => emit(AuthSuccess(updatedUser)),
+        (updatedUser) => _emitAuthSuccess(updatedUser),
       );
     }
   }

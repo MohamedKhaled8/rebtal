@@ -230,19 +230,10 @@ class OwnerCubit extends Cubit<OwnerState> {
 
   void selectAvailableFromDate(DateTime date) {
     emit(state.copyWith(draft: state.draft.copyWith(availableFrom: date)));
-    // Auto-scroll to bedrooms/bathrooms section after date selection
-    _scrollToBedroomsSection();
   }
 
   void selectAvailableToDate(DateTime date) {
     emit(state.copyWith(draft: state.draft.copyWith(availableTo: date)));
-    // Auto-scroll to bedrooms/bathrooms section after date selection
-    _scrollToBedroomsSection();
-  }
-
-  void _scrollToBedroomsSection() {
-    // This will be used to scroll to the bedrooms section
-    // Implementation will be in the UI layer
   }
 
   // ==========================================
@@ -641,10 +632,15 @@ class OwnerCubit extends Cubit<OwnerState> {
 
   StreamSubscription? _chaletsSubscription;
 
+  /// Streams Firestore chalets for [ownerId]. Only emits [OwnerStatus.loading]
+  /// when there is no cached list yet — avoids wiping UI after auth/UI revisions
+  /// or silent reconnects when switching tabs / owner↔user view mode.
   Future<void> fetchChalets(String ownerId) async {
-    emit(state.copyWith(status: OwnerStatus.loading));
+    final bool hasCachedList = state.chalets.isNotEmpty;
+    if (!hasCachedList) {
+      emit(state.copyWith(status: OwnerStatus.loading));
+    }
 
-    // Cancel any existing subscription
     await _chaletsSubscription?.cancel();
 
     _chaletsSubscription = getOwnerChaletsUseCase
@@ -715,6 +711,8 @@ class OwnerCubit extends Cubit<OwnerState> {
   }
 
   Future<void> submitChalet(String ownerId, String ownerName) async {
+    if (state.isFormSubmitting) return;
+
     emit(
       state.copyWith(
         isFormSubmitting: true,
@@ -915,6 +913,8 @@ class OwnerCubit extends Cubit<OwnerState> {
       );
       return;
     }
+
+    if (state.isFormSubmitting) return;
 
     emit(
       state.copyWith(

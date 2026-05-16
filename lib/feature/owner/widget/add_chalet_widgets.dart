@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/constant/popular_destinations.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/owner/widget/owner_synced_text_field.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 // ==========================================
@@ -88,9 +89,9 @@ class ChaletDetailsSection extends StatelessWidget {
       child: Column(
         children: [
           _ModernTextField(
-            key: const ValueKey('chalet_name'),
+            fieldId: 'legacy_chalet_name',
             isDark: isDark,
-            initialValue: initialName,
+            draftText: initialName ?? '',
             label: context.tr('owner_chalet_name'),
             icon: Icons.villa_rounded,
             hint: context.tr('owner_enter_chalet_name'),
@@ -98,9 +99,9 @@ class ChaletDetailsSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _ModernTextField(
-            key: const ValueKey('chalet_desc'),
+            fieldId: 'legacy_chalet_desc',
             isDark: isDark,
-            initialValue: initialDescription,
+            draftText: initialDescription ?? '',
             label: context.tr('owner_description'),
             icon: Icons.description_rounded,
             hint: context.tr('booking_write_notes'),
@@ -212,6 +213,9 @@ class _PopularDestinationAnimatedDropdownState
                             onPressed: () {
                               widget.onChanged(null);
                               Navigator.pop(sheetContext);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                              });
                             },
                             icon: const Icon(Icons.close_rounded, size: 16),
                             label: Text(
@@ -276,6 +280,9 @@ class _PopularDestinationAnimatedDropdownState
                                 HapticFeedback.selectionClick();
                                 widget.onChanged(d.key);
                                 Navigator.pop(sheetContext);
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                });
                               },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -517,6 +524,7 @@ class _PopularDestinationAnimatedDropdownState
                       onPressed: () {
                         HapticFeedback.selectionClick();
                         widget.onChanged(null);
+                        FocusManager.instance.primaryFocus?.unfocus();
                       },
                       icon: const Icon(
                         Icons.close_rounded,
@@ -671,9 +679,9 @@ class PropertyDetailsSection extends StatelessWidget {
       child: Column(
         children: [
           _ModernTextField(
-            key: const ValueKey('chalet_price'),
+            fieldId: 'legacy_price',
             isDark: isDark,
-            initialValue: initialPrice,
+            draftText: initialPrice ?? '',
             label: context.tr('owner_price_per_night'),
             icon: Icons.payments_rounded,
             hint: '0',
@@ -682,9 +690,9 @@ class PropertyDetailsSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _ModernTextField(
-            key: const ValueKey('chalet_area'),
+            fieldId: 'legacy_area',
             isDark: isDark,
-            initialValue: initialArea,
+            draftText: initialArea ?? '',
             label: context.tr('owner_area_m2'),
             icon: Icons.square_foot_rounded,
             hint: '0',
@@ -696,9 +704,9 @@ class PropertyDetailsSection extends StatelessWidget {
             children: [
               Expanded(
                 child: _ModernTextField(
-                  key: const ValueKey('chalet_bedrooms'),
+                  fieldId: 'legacy_bedrooms',
                   isDark: isDark,
-                  initialValue: initialBedrooms,
+                  draftText: initialBedrooms ?? '',
                   label: context.tr('home_bedrooms'),
                   icon: Icons.bed_rounded,
                   hint: '0',
@@ -709,9 +717,9 @@ class PropertyDetailsSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _ModernTextField(
-                  key: const ValueKey('chalet_bathrooms'),
+                  fieldId: 'legacy_bathrooms',
                   isDark: isDark,
-                  initialValue: initialBathrooms,
+                  draftText: initialBathrooms ?? '',
                   label: context.tr('home_bathrooms'),
                   icon: Icons.bathtub_rounded,
                   hint: '0',
@@ -1108,8 +1116,9 @@ class DiscountSection extends StatelessWidget {
             const SizedBox(height: 20),
             // Row 3: Discount Value Input
             _ModernTextField(
+              fieldId: 'legacy_discount_value',
               isDark: isDark,
-              initialValue: discountValue,
+              draftText: discountValue ?? '',
               label: discountType == 'percentage'
                   ? context.tr('owner_enter_discount_percentage')
                   : context.tr('owner_enter_discount_fixed'),
@@ -1370,8 +1379,9 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _ModernTextField extends StatelessWidget {
+  final String fieldId;
   final bool isDark;
-  final String? initialValue;
+  final String draftText;
   final String label;
   final IconData icon;
   final String? hint;
@@ -1381,8 +1391,9 @@ class _ModernTextField extends StatelessWidget {
 
   const _ModernTextField({
     super.key,
+    required this.fieldId,
     required this.isDark,
-    this.initialValue,
+    required this.draftText,
     required this.label,
     required this.icon,
     this.hint,
@@ -1393,59 +1404,19 @@ class _ModernTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      initialValue: initialValue,
+    return OwnerSyncedTextField(
+      key: ValueKey<String>('owner_sync_legacy_$fieldId'),
+      fieldId: fieldId,
+      draftText: draftText,
+      labelText: label,
+      hintText: hint ?? '',
+      icon: icon,
+      isDark: isDark,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      onChanged: onChanged,
-      style: TextStyle(
-        color: isDark ? ColorsManager.white : ColorsManager.black,
-        fontSize: 14,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: TextStyle(
-          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-          fontSize: 13,
-        ),
-        hintStyle: TextStyle(
-          color: isDark ? ColorsManager.grey600 : ColorsManager.grey400,
-          fontSize: 13,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-          size: 20,
-        ),
-        filled: true,
-        fillColor: isDark
-            ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
-            : ColorsManager.grey50,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: isDark
-                ? ColorsManager.grey800.withOpacity(0.3)
-                : ColorsManager.grey300,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: ColorsManager.blue2563EB,
-            width: 2,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
+      textInputAction:
+          maxLines > 1 ? TextInputAction.newline : TextInputAction.next,
+      onChanged: onChanged ?? (_) {},
     );
   }
 }

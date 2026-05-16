@@ -29,6 +29,13 @@ import 'package:rebtal/feature/home/data/datasources/home_remote_data_source.dar
 import 'package:rebtal/feature/home/data/repositories/home_repository_impl.dart';
 import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
 import 'package:rebtal/feature/home/domain/usecases/watch_discounted_chalets_usecase.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_actions.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
+import 'package:rebtal/core/utils/helper/image_clean/image_contracts.dart';
+import 'package:rebtal/core/utils/helper/image_clean/image_gateways.dart';
+import 'package:rebtal/core/utils/helper/image_clean/image_repository_contracts.dart';
+import 'package:rebtal/core/utils/helper/image_clean/image_use_cases.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -125,6 +132,57 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<WatchDiscountedChaletsUseCase>(
     () => WatchDiscountedChaletsUseCase(getIt<BaseHomeRepository>()),
+  );
+
+  // Image Helper contracts and use cases
+  getIt.registerLazySingleton<ImagePickerGateway>(() => DefaultImagePickerGateway());
+  getIt.registerLazySingleton<PermissionService>(() => DefaultPermissionService());
+  getIt.registerLazySingleton<ImageUploadGateway>(
+    () => CloudinaryImageUploadGateway(),
+  );
+  getIt.registerLazySingleton<ProfileRepository>(() => FirebaseProfileRepository());
+  getIt.registerLazySingleton<ChaletRepository>(() => FirebaseChaletRepository());
+  getIt.registerLazySingleton<AdminNotificationGateway>(
+    () => FirebaseAdminNotificationGateway(),
+  );
+  getIt.registerLazySingleton<ImageHelperDependencies>(
+    () => ImageHelperDependencies(
+      imagePickerGateway: getIt<ImagePickerGateway>(),
+      permissionService: getIt<PermissionService>(),
+      imageUploadGateway: getIt<ImageUploadGateway>(),
+      profileRepository: getIt<ProfileRepository>(),
+      chaletRepository: getIt<ChaletRepository>(),
+      adminNotificationGateway: getIt<AdminNotificationGateway>(),
+    ),
+  );
+  getIt.registerLazySingleton<ProfileImageUseCase>(
+    () => ProfileImageUseCase(dependencies: getIt<ImageHelperDependencies>()),
+  );
+  getIt.registerLazySingleton<ChaletSubmissionUseCase>(
+    () => ChaletSubmissionUseCase(dependencies: getIt<ImageHelperDependencies>()),
+  );
+  getIt.registerLazySingleton<ChaletDraftValidator>(
+    () => const ChaletDraftValidator(),
+  );
+  getIt.registerLazySingleton<ChaletAmenitiesExtractor>(
+    () => const ChaletAmenitiesExtractor(),
+  );
+  getIt.registerLazySingleton<ChaletImageSelectionAction>(
+    () => const ChaletImageSelectionAction(),
+  );
+  getIt.registerLazySingleton<PickImageErrorResolver>(
+    () => const PickImageErrorResolver(),
+  );
+  getIt.registerLazySingleton<HelperImageContract>(
+    () => HelperImage(
+      dependencies: getIt<ImageHelperDependencies>(),
+      profileImageUseCase: getIt<ProfileImageUseCase>(),
+      chaletSubmissionUseCase: getIt<ChaletSubmissionUseCase>(),
+      draftValidator: getIt<ChaletDraftValidator>(),
+      amenitiesExtractor: getIt<ChaletAmenitiesExtractor>(),
+      chaletImageSelectionAction: getIt<ChaletImageSelectionAction>(),
+      pickImageErrorResolver: getIt<PickImageErrorResolver>(),
+    ),
   );
 
   // ============================================================

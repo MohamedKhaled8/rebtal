@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/model/user_model.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -169,7 +170,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                     0,
                     Center(
                       child: GestureDetector(
-                        onTap: () => HelperImage().addProfilePicture(context),
+                        onTap: () => getIt<HelperImageContract>()
+                            .addProfilePicture(context),
                         child: Stack(
                           children: [
                             Container(

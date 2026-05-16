@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,14 +30,22 @@ class ThemeCubit extends Cubit<ThemeState> {
   static const String _themeKey = 'theme_mode';
   static const String _colorKey = 'primary_color';
 
-  /// Loads the saved theme and color from SharedPreferences
-  void _loadTheme() async {
+  /// Ignores stale [_loadTheme] results after the user changes theme.
+  int _userThemeRevision = 0;
+
+  /// Loads the saved theme and color from SharedPreferences.
+  Future<void> _loadTheme() async {
+    final revisionAtStart = _userThemeRevision;
     final prefs = await SharedPreferences.getInstance();
+    if (revisionAtStart != _userThemeRevision) return;
+
     final savedThemeIndex = prefs.getInt(_themeKey);
     final savedColorValue = prefs.getInt(_colorKey);
 
     ThemeMode mode = ThemeMode.system;
-    if (savedThemeIndex != null) {
+    if (savedThemeIndex != null &&
+        savedThemeIndex >= 0 &&
+        savedThemeIndex < ThemeMode.values.length) {
       mode = ThemeMode.values[savedThemeIndex];
     }
 
@@ -44,21 +54,21 @@ class ThemeCubit extends Cubit<ThemeState> {
       color = Color(savedColorValue);
     }
 
+    if (revisionAtStart != _userThemeRevision) return;
     emit(ThemeState(mode, primaryColor: color));
   }
 
-  /// Changes the theme and saves the selection
+  /// Changes the theme and saves the selection.
   void changeTheme(ThemeMode themeMode) {
-    // Emit immediately for fast UI response
+    _userThemeRevision++;
     emit(state.copyWith(themeMode: themeMode));
-    // Save to SharedPreferences in the background
     Future.microtask(() async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_themeKey, themeMode.index);
     });
   }
 
-  /// Changes the primary color and saves the selection
+  /// Changes the primary color and saves the selection.
   void changeColor(Color color) {
     emit(state.copyWith(primaryColor: color));
     Future.microtask(() async {
@@ -67,14 +77,24 @@ class ThemeCubit extends Cubit<ThemeState> {
     });
   }
 
-  /// Toggles between light and dark mode with fast response
-  void toggleTheme() {
-    final ThemeMode newMode;
-    if (state.themeMode == ThemeMode.dark) {
-      newMode = ThemeMode.light;
-    } else {
-      newMode = ThemeMode.dark;
-    }
-    changeTheme(newMode);
+  /// Toggles between light and dark using the effective brightness (handles [ThemeMode.system]).
+  void toggleTheme({Brightness? platformBrightness}) {
+    final brightness =
+        platformBrightness ?? PlatformDispatcher.instance.platformBrightness;
+    final isEffectivelyDark = switch (state.themeMode) {
+      ThemeMode.dark => true,
+      ThemeMode.light => false,
+      ThemeMode.system => brightness == Brightness.dark,
+    };
+    changeTheme(isEffectivelyDark ? ThemeMode.light : ThemeMode.dark);
   }
+}
+
+/// Resolves whether dark UI should be shown for [themeMode].
+bool isEffectivelyDarkMode(ThemeMode themeMode, Brightness platformBrightness) {
+  return switch (themeMode) {
+    ThemeMode.dark => true,
+    ThemeMode.light => false,
+    ThemeMode.system => platformBrightness == Brightness.dark,
+  };
 }

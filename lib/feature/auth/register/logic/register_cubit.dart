@@ -9,7 +9,7 @@ import 'package:rebtal/core/utils/model/user_model.dart';
 
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/services/device_info_service.dart';
 import 'package:rebtal/feature/auth/domain/usecases/register_usecase.dart';
@@ -133,7 +133,9 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     if (profileImage != null) {
       try {
-        profileImageUrl = await HelperImage().uploadToCloudinary(profileImage!);
+        profileImageUrl = await getIt<HelperImageContract>().uploadToCloudinary(
+          profileImage!,
+        );
       } catch (e) {
         emit(RegisterFailure("فشل رفع الصورة الشخصية: $e"));
         return;
@@ -141,7 +143,9 @@ class RegisterCubit extends Cubit<RegisterState> {
     }
 
     try {
-      idCardUrl = await HelperImage().uploadToCloudinary(idCardImage!);
+      idCardUrl = await getIt<HelperImageContract>().uploadToCloudinary(
+        idCardImage!,
+      );
     } catch (e) {
       emit(RegisterFailure("فشل رفع صورة البطاقة: $e"));
       return;

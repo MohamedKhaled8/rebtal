@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,7 +31,7 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  /// Prefer recipient profile [preferredLanguage] / [locale]; default Arabic.
+  /// Prefer recipient profile [preferredLanguage] / [locale]; otherwise app locale from prefs.
   Future<String> _languageForNotificationRecipient(String userId) async {
     if (userId.isEmpty) return await StaticTranslation.currentLanguageCode();
     try {
@@ -48,7 +49,7 @@ class NotificationService {
         }
       }
     } catch (e) {}
-    return 'ar';
+    return await StaticTranslation.currentLanguageCode();
   }
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -239,13 +240,19 @@ class NotificationService {
           .collection('notifications')
           .add(notification.toFirestore());
 
-      // Show local notification immediately for visual feedback
-      await _localNotificationService.showNotification(
-        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: resolvedTitle,
-        body: resolvedBody,
-        payload: relatedId,
-      );
+      // Only show a tray notification on the recipient's device. Showing here
+      // would fire on the sender's phone and can duplicate OneSignal pushes.
+      final senderUid = FirebaseAuth.instance.currentUser?.uid;
+      if (senderUid != null &&
+          senderUid.isNotEmpty &&
+          senderUid == userId) {
+        await _localNotificationService.showNotification(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          title: resolvedTitle,
+          body: resolvedBody,
+          payload: relatedId,
+        );
+      }
 
       // Send push directly from app via OneSignal (no Cloud Functions required).
       await OneSignalService().sendNotification(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -11,7 +12,8 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
 import 'package:rebtal/feature/owner/widget/modern_image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/modern_amenities_section.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/feature/owner/widget/owner_synced_text_field.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -29,24 +31,28 @@ class AddChaletScreen extends StatefulWidget {
 }
 
 class _AddChaletScreenState extends State<AddChaletScreen> {
-  /// Bumped once after edit draft hydrates so [TextFormField] `initialValue` rebuilds.
+  /// Bumped once after edit draft hydrates so form subtree rebuilds from cubit.
   int _formRebuildGeneration = 0;
   bool _didRebuildFormAfterEditLoad = false;
+  bool _didInitializeForm = false;
+
+  void _initializeForm(OwnerCubit cubit) {
+    if (widget._isEditMode) {
+      cubit.loadChaletDataForEdit(
+        widget.initialChaletData!,
+        widget.editDocId!,
+      );
+    } else {
+      cubit.resetForm();
+    }
+  }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cubit = context.read<AppCubit>().ownerCubit;
-      if (widget._isEditMode) {
-        cubit.loadChaletDataForEdit(
-          widget.initialChaletData!,
-          widget.editDocId!,
-        );
-      } else {
-        cubit.resetForm();
-      }
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitializeForm) return;
+    _didInitializeForm = true;
+    _initializeForm(context.read<AppCubit>().ownerCubit);
   }
 
   @override
@@ -190,23 +196,8 @@ class _AddChaletContent extends StatelessWidget {
 
   final OwnerCubit ownerCubit;
 
-  void _scrollToSection(BuildContext context, String sectionKey) {
-    // Find the scrollable widget and access its scroll controller
-    final scrollable = context.findAncestorWidgetOfExactType<Scrollable>();
-    if (scrollable != null) {
-      // Delay to allow the UI to update first
-      Future.delayed(const Duration(milliseconds: 300), () {
-        // Use a different approach - find the ScrollController via the context
-        final scrollController = PrimaryScrollController.of(context);
-        if (scrollController.hasClients) {
-          scrollController.animateTo(
-            800.0, // Approximate position of bedrooms section
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
-    }
+  static void _releasePrimaryFocus() {
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   @override
@@ -215,6 +206,11 @@ class _AddChaletContent extends StatelessWidget {
 
     return BlocBuilder<OwnerCubit, OwnerState>(
       bloc: ownerCubit,
+      buildWhen: (previous, current) =>
+          previous.draft != current.draft ||
+          previous.isFormSubmitting != current.isFormSubmitting ||
+          previous.isLocationLoading != current.isLocationLoading ||
+          previous.locationResults != current.locationResults,
       builder: (context, state) {
         final draft = state.draft;
 
@@ -251,7 +247,7 @@ class _AddChaletContent extends StatelessWidget {
         ModernImageUploadSection(
           images: draft.uploadedImages,
           networkImageUrls: draft.existingImageUrls,
-          onAdd: () => HelperImage().addSampleImages(context),
+          onAdd: () => getIt<HelperImageContract>().addSampleImages(context),
           onRemove: (index) => ownerCubit.removeChaletImage(index),
           onRemoveNetwork: draft.existingImageUrls.isEmpty
               ? null
@@ -269,7 +265,8 @@ class _AddChaletContent extends StatelessWidget {
             children: [
               _buildModernTextField(
                 isDark: isDark,
-                initialValue: draft.chaletName,
+                fieldId: 'chaletName',
+                draftText: draft.chaletName ?? '',
                 label: context.tr('owner_chalet_name'),
                 hint: context.tr('owner_chalet_name_hint'),
                 icon: Icons.villa_rounded,
@@ -278,7 +275,8 @@ class _AddChaletContent extends StatelessWidget {
               SizedBox(height: 16.sh),
               _buildModernTextField(
                 isDark: isDark,
-                initialValue: draft.description,
+                fieldId: 'description',
+                draftText: draft.description ?? '',
                 label: context.tr('owner_description'),
                 hint: context.tr('owner_description_hint'),
                 icon: Icons.description_rounded,
@@ -296,7 +294,8 @@ class _AddChaletContent extends StatelessWidget {
           selectedPopularDestination: draft.popularDestination,
           onPopularDestinationChanged: ownerCubit.selectPopularDestination,
           onPickLocation: () async {
-            final selected = await Navigator.push(
+            _releasePrimaryFocus();
+            final selected = await Navigator.push<Object?>(
               context,
               MaterialPageRoute(
                 builder: (_) => FlutterGoogleMapLocationPicker(
@@ -304,6 +303,7 @@ class _AddChaletContent extends StatelessWidget {
                 ),
               ),
             );
+            _releasePrimaryFocus();
             if (selected is Map) {
               final addr = selected['address'] as String?;
               final lat = selected['lat'] as double?;
@@ -330,7 +330,8 @@ class _AddChaletContent extends StatelessWidget {
             children: [
               _buildModernTextField(
                 isDark: isDark,
-                initialValue: draft.price,
+                fieldId: 'price',
+                draftText: draft.price,
                 label: context.tr('owner_price_per_night'),
                 hint: context.tr('owner_price_hint_zero'),
                 icon: Icons.payments_rounded,
@@ -343,7 +344,8 @@ class _AddChaletContent extends StatelessWidget {
                   Expanded(
                     child: _buildModernTextField(
                       isDark: isDark,
-                      initialValue: draft.bedrooms?.toString() ?? '',
+                      fieldId: 'bedrooms',
+                      draftText: draft.bedrooms?.toString() ?? '',
                       label: context.tr('home_bedrooms'),
                       hint: context.tr('owner_count_hint'),
                       icon: Icons.bed_rounded,
@@ -358,7 +360,8 @@ class _AddChaletContent extends StatelessWidget {
                   Expanded(
                     child: _buildModernTextField(
                       isDark: isDark,
-                      initialValue: draft.bathrooms?.toString() ?? '',
+                      fieldId: 'bathrooms',
+                      draftText: draft.bathrooms?.toString() ?? '',
                       label: context.tr('home_bathrooms'),
                       hint: context.tr('owner_count_hint'),
                       icon: Icons.bathtub_rounded,
@@ -374,7 +377,8 @@ class _AddChaletContent extends StatelessWidget {
               SizedBox(height: 16.sh),
               _buildModernTextField(
                 isDark: isDark,
-                initialValue: draft.chaletArea ?? '',
+                fieldId: 'area',
+                draftText: draft.chaletArea ?? '',
                 label: context.tr('owner_area_m2'),
                 hint: context.tr('owner_count_hint'),
                 icon: Icons.straighten_rounded,
@@ -398,6 +402,7 @@ class _AddChaletContent extends StatelessWidget {
           availableFrom: draft.availableFrom,
           availableTo: draft.availableTo,
           onSelectFrom: () async {
+            _releasePrimaryFocus();
             final now = DateTime.now();
             final picked = await showDatePicker(
               context: context,
@@ -405,13 +410,13 @@ class _AddChaletContent extends StatelessWidget {
               firstDate: now,
               lastDate: DateTime(now.year + 2),
             );
+            _releasePrimaryFocus();
             if (picked != null) {
               ownerCubit.selectAvailableFromDate(picked);
-              // Auto-scroll to bedrooms section after date selection
-              _scrollToSection(context, 'bedrooms');
             }
           },
           onSelectTo: () async {
+            _releasePrimaryFocus();
             final now = DateTime.now();
             final picked = await showDatePicker(
               context: context,
@@ -419,240 +424,11 @@ class _AddChaletContent extends StatelessWidget {
               firstDate: draft.availableFrom ?? now,
               lastDate: DateTime(now.year + 2),
             );
+            _releasePrimaryFocus();
             if (picked != null) {
               ownerCubit.selectAvailableToDate(picked);
-              // Auto-scroll to bedrooms section after date selection
-              _scrollToSection(context, 'bedrooms');
             }
           },
-        ),
-        SizedBox(height: 20.sh),
-
-        // Amenities Section
-        ModernAmenitiesSection(
-          selectedAmenities: {
-            'hasWifi': draft.hasWifi,
-            'hasPool': draft.hasPool,
-            'hasAirConditioning': draft.hasAirConditioning,
-            'hasParking': draft.hasParking,
-            'hasGarden': draft.hasGarden,
-            'hasBBQ': draft.hasBBQ,
-            'hasBeachView': draft.hasBeachView,
-            'hasHousekeeping': draft.hasHousekeeping,
-            'hasPetsAllowed': draft.hasPetsAllowed,
-            'hasGym': draft.hasGym,
-            'hasKitchen': draft.hasKitchen,
-            'hasTV': draft.hasTV,
-          },
-          onAmenityChanged: ownerCubit.updateAmenity,
-        ),
-        SizedBox(height: 80.sh), // Space for bottom button
-      ],
-    );
-  }
-
-  Widget _buildLeftColumn(
-    BuildContext context,
-    bool isDark,
-    OwnerCubit ownerCubit,
-    dynamic draft,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Progress Indicator
-        _buildProgressIndicator(context, isDark),
-        SizedBox(height: 24.sh),
-
-        // Image Section
-        ModernImageUploadSection(
-          images: draft.uploadedImages,
-          networkImageUrls: draft.existingImageUrls,
-          onAdd: () => HelperImage().addSampleImages(context),
-          onRemove: (index) => ownerCubit.removeChaletImage(index),
-          onRemoveNetwork: draft.existingImageUrls.isEmpty
-              ? null
-              : (i) => ownerCubit.removeExistingImageUrl(i),
-        ),
-        SizedBox(height: 24.sh),
-
-        // Basic Info Card
-        _buildSectionCard(
-          isDark: isDark,
-          title: context.tr('owner_section_basic_info'),
-          icon: Icons.info_outline_rounded,
-          iconColor: ColorsManager.blue2563EB,
-          child: Column(
-            children: [
-              _buildModernTextField(
-                isDark: isDark,
-                initialValue: draft.chaletName,
-                label: context.tr('owner_chalet_name'),
-                hint: context.tr('owner_chalet_name_hint'),
-                icon: Icons.villa_rounded,
-                onChanged: ownerCubit.updateChaletName,
-              ),
-              SizedBox(height: 16.sh),
-              _buildModernTextField(
-                isDark: isDark,
-                initialValue: draft.description,
-                label: context.tr('owner_description'),
-                hint: context.tr('owner_description_hint'),
-                icon: Icons.description_rounded,
-                maxLines: 4,
-                onChanged: ownerCubit.updateDescription,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 20.sh),
-
-        // Location Section
-        LocationSection(
-          address: draft.selectedLocation,
-          selectedPopularDestination: draft.popularDestination,
-          onPopularDestinationChanged: ownerCubit.selectPopularDestination,
-          onPickLocation: () async {
-            final selected = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => FlutterGoogleMapLocationPicker(
-                  initialAddress: draft.selectedLocation,
-                ),
-              ),
-            );
-            if (selected is Map) {
-              final addr = selected['address'] as String?;
-              final lat = selected['lat'] as double?;
-              final lon = selected['lon'] as double?;
-              if (addr != null) {
-                ownerCubit.updateGeo(
-                  lat: lat ?? 0,
-                  lon: lon ?? 0,
-                  address: addr,
-                );
-              }
-            }
-          },
-        ),
-        SizedBox(height: 20.sh),
-
-        // Availability Section
-        AvailabilitySection(
-          availableFrom: draft.availableFrom,
-          availableTo: draft.availableTo,
-          onSelectFrom: () async {
-            final now = DateTime.now();
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: draft.availableFrom ?? now,
-              firstDate: now,
-              lastDate: DateTime(now.year + 2),
-            );
-            if (picked != null) {
-              ownerCubit.selectAvailableFromDate(picked);
-              // Auto-scroll to bedrooms section after date selection
-              _scrollToSection(context, 'bedrooms');
-            }
-          },
-          onSelectTo: () async {
-            final now = DateTime.now();
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: draft.availableTo ?? (draft.availableFrom ?? now),
-              firstDate: draft.availableFrom ?? now,
-              lastDate: DateTime(now.year + 2),
-            );
-            if (picked != null) {
-              ownerCubit.selectAvailableToDate(picked);
-              // Auto-scroll to bedrooms section after date selection
-              _scrollToSection(context, 'bedrooms');
-            }
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRightColumn(
-    BuildContext context,
-    bool isDark,
-    OwnerCubit ownerCubit,
-    dynamic draft,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Pricing & Details Card
-        _buildSectionCard(
-          isDark: isDark,
-          title: context.tr('owner_pricing_and_details'),
-          icon: Icons.attach_money_rounded,
-          iconColor: ColorsManager.green3DDC84,
-          child: Column(
-            children: [
-              _buildModernTextField(
-                isDark: isDark,
-                initialValue: draft.price,
-                label: context.tr('owner_price_per_night'),
-                hint: context.tr('owner_price_hint_zero'),
-                icon: Icons.payments_rounded,
-                keyboardType: TextInputType.number,
-                onChanged: ownerCubit.updatePrice,
-              ),
-              SizedBox(height: 16.sh),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildModernTextField(
-                      isDark: isDark,
-                      initialValue: draft.bedrooms?.toString() ?? '',
-                      label: context.tr('home_bedrooms'),
-                      hint: context.tr('owner_count_hint'),
-                      icon: Icons.bed_rounded,
-                      keyboardType: TextInputType.number,
-                      onChanged: (val) {
-                        final num = int.tryParse(val);
-                        if (num != null) ownerCubit.updateBedrooms(num);
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 12.sw),
-                  Expanded(
-                    child: _buildModernTextField(
-                      isDark: isDark,
-                      initialValue: draft.bathrooms?.toString() ?? '',
-                      label: context.tr('home_bathrooms'),
-                      hint: context.tr('owner_count_hint'),
-                      icon: Icons.bathtub_rounded,
-                      keyboardType: TextInputType.number,
-                      onChanged: (val) {
-                        final num = int.tryParse(val);
-                        if (num != null) ownerCubit.updateBathrooms(num);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.sh),
-              _buildModernTextField(
-                isDark: isDark,
-                initialValue: draft.chaletArea ?? '',
-                label: context.tr('owner_area_m2'),
-                hint: context.tr('owner_count_hint'),
-                icon: Icons.straighten_rounded,
-                keyboardType: TextInputType.number,
-                onChanged: ownerCubit.updateChaletArea,
-              ),
-              SizedBox(height: 16.sh),
-              _buildDayUseToggle(
-                context,
-                isDark,
-                draft.dayUseEnabled,
-                ownerCubit,
-              ),
-            ],
-          ),
         ),
         SizedBox(height: 20.sh),
 
@@ -808,64 +584,29 @@ class _AddChaletContent extends StatelessWidget {
 
   Widget _buildModernTextField({
     required bool isDark,
-    String? initialValue,
+    required String fieldId,
+    required String draftText,
     required String label,
     required String hint,
     required IconData icon,
     int maxLines = 1,
     TextInputType? keyboardType,
-    required Function(String) onChanged,
+    required ValueChanged<String> onChanged,
   }) {
-    return TextFormField(
-      initialValue: initialValue,
+    return OwnerSyncedTextField(
+      key: ValueKey<String>('owner_sync_$fieldId'),
+      fieldId: fieldId,
+      draftText: draftText,
+      labelText: label,
+      hintText: hint,
+      icon: icon,
+      isDark: isDark,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      textInputAction: maxLines > 1
+          ? TextInputAction.newline
+          : TextInputAction.next,
       onChanged: onChanged,
-      style: TextStyle(
-        color: isDark ? ColorsManager.white : ColorsManager.black,
-        fontSize: 15.sp,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: TextStyle(
-          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-          fontSize: 14.sp,
-        ),
-        hintStyle: TextStyle(
-          color: isDark ? ColorsManager.grey600 : ColorsManager.grey400,
-          fontSize: 14.sp,
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-          size: 22,
-        ),
-        filled: true,
-        fillColor: isDark
-            ? ColorsManager.darkBlue2A2E4B.withOpacity(0.5)
-            : ColorsManager.grey50,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.sp),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.sp),
-          borderSide: BorderSide(
-            color: isDark
-                ? ColorsManager.grey800.withOpacity(0.3)
-                : ColorsManager.grey300,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14.sp),
-          borderSide: BorderSide(color: ColorsManager.blue2563EB, width: 2),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.sw,
-          vertical: 16.sh,
-        ),
-      ),
     );
   }
 

@@ -177,13 +177,22 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         // إرسال إشعارات للأدمن
         try {
           final adminsSnapshot = await _firestore.collection('Admin').get();
+          final adminIds = adminsSnapshot.docs.map((d) => d.id).toSet();
+          final merchantTrimmed = merchantName?.trim();
+          final displayName =
+              (merchantTrimmed != null && merchantTrimmed.isNotEmpty)
+                  ? merchantTrimmed
+                  : chalet.ownerName;
 
-          for (var adminDoc in adminsSnapshot.docs) {
+          for (final adminId in adminIds) {
             await NotificationService().sendNotification(
-              userId: adminDoc.id,
-              title: 'شاليه جديد قيد المراجعة',
-              body:
-                  'قام ${chalet.ownerName} برفع شاليه جديد (${chalet.chaletName}) وهو بانتظار موافقتك.',
+              userId: adminId,
+              titleKey: 'notif_new_chalet_review',
+              bodyKey: 'notif_new_chalet_body',
+              bodyParams: {
+                'name': displayName,
+                'chalet': chalet.chaletName,
+              },
               type: NotificationType.chaletSubmission,
               relatedId: chaletId,
               data: {

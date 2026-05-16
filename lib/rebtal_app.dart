@@ -19,6 +19,10 @@ class RebtalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // ✅ SINGLE BlocProvider - provides AppCubit which coordinates all app state
     return BlocBuilder<AppCubit, AppState>(
+      buildWhen: (previous, current) =>
+          previous.themeMode != current.themeMode ||
+          previous.primaryColor != current.primaryColor ||
+          previous.locale != current.locale,
       builder: (context, appState) {
         final isRTL = appState.locale.languageCode == 'ar';
         return Directionality(
@@ -61,6 +65,8 @@ class RebtalApp extends StatelessWidget {
                   primaryColor: appState.primaryColor,
                 ),
                 themeMode: appState.themeMode,
+                themeAnimationDuration: Duration.zero,
+                themeAnimationCurve: Curves.linear,
                 // Use splash for all platforms - it checks auth and navigates to home/login accordingly
                 initialRoute: Routes.splashScreen,
                 onGenerateRoute: appRouter.generateRoute,

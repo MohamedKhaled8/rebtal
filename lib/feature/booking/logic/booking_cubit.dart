@@ -15,11 +15,24 @@ class BookingCubit extends Cubit<BookingState> {
   BookingCubit() : super(const BookingState(bookings: [], isLoading: false));
 
   StreamSubscription? _bookingsSubscription;
+  String? _activeBookingsScope;
 
   // ✅ تحميل حجوزات المالك فقط
   Future<void> loadOwnerBookings(String ownerId) async {
+    final scope = 'owner:$ownerId';
+    if (_activeBookingsScope == scope && _bookingsSubscription != null) {
+      return;
+    }
+    _activeBookingsScope = scope;
+
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true, bookings: []));
+    final showLoading = state.bookings.isEmpty;
+    emit(
+      state.copyWith(
+        isLoading: showLoading,
+        bookings: showLoading ? [] : state.bookings,
+      ),
+    );
 
     final query = FirebaseFirestore.instance
         .collection('bookings')
@@ -46,8 +59,20 @@ class BookingCubit extends Cubit<BookingState> {
 
   // ✅ تحميل حجوزات المستخدم فقط
   Future<void> loadUserBookings(String userId) async {
+    final scope = 'user:$userId';
+    if (_activeBookingsScope == scope && _bookingsSubscription != null) {
+      return;
+    }
+    _activeBookingsScope = scope;
+
     await _bookingsSubscription?.cancel();
-    emit(state.copyWith(isLoading: true, bookings: []));
+    final showLoading = state.bookings.isEmpty;
+    emit(
+      state.copyWith(
+        isLoading: showLoading,
+        bookings: showLoading ? [] : state.bookings,
+      ),
+    );
 
     final query = FirebaseFirestore.instance
         .collection('bookings')

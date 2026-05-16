@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/maps/osm_tile_support.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
@@ -102,54 +103,94 @@ class _ResolvedLatLngMapState extends State<_ResolvedLatLngMap> {
         if (center == null) {
           return widget.placeholder;
         }
-        return _InteractiveOsmMap(center: center);
+        return _InteractiveOsmMap(
+          center: center,
+          offlineHint: context.tr('chalet_map_tiles_unavailable'),
+        );
       },
     );
   }
 }
 
 /// Real map tiles (OpenStreetMap) with pan/zoom — same stack as owner location picker.
-class _InteractiveOsmMap extends StatelessWidget {
-  const _InteractiveOsmMap({required this.center});
+class _InteractiveOsmMap extends StatefulWidget {
+  const _InteractiveOsmMap({required this.center, required this.offlineHint});
 
   final LatLng center;
+  final String offlineHint;
+
+  @override
+  State<_InteractiveOsmMap> createState() => _InteractiveOsmMapState();
+}
+
+class _InteractiveOsmMapState extends State<_InteractiveOsmMap> {
+  bool _tileLoadFailed = false;
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      options: MapOptions(
-        initialCenter: center,
-        initialZoom: 15,
-        minZoom: 3,
-        maxZoom: 19,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.rebtal.app',
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              width: 48,
-              height: 48,
-              point: center,
-              child: Icon(
-                Icons.location_on_rounded,
-                size: 44,
-                color: Colors.redAccent.shade400,
-                shadows: const [
-                  Shadow(
-                    blurRadius: 6,
-                    color: Colors.black45,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+    return FutureBuilder<bool>(
+      future: canReachOpenStreetMapTiles(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.data != true || _tileLoadFailed) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                widget.offlineHint,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                textAlign: TextAlign.center,
               ),
             ),
+          );
+        }
+
+        return FlutterMap(
+          options: MapOptions(
+            initialCenter: widget.center,
+            initialZoom: 15,
+            minZoom: 3,
+            maxZoom: 19,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.rebtal.app',
+              errorImage: kOsmTileErrorImage,
+              errorTileCallback: (_, error, stackTrace) {
+                if (!mounted || _tileLoadFailed) return;
+                setState(() {
+                  _tileLoadFailed = true;
+                });
+              },
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  width: 48,
+                  height: 48,
+                  point: widget.center,
+                  child: Icon(
+                    Icons.location_on_rounded,
+                    size: 44,
+                    color: Colors.redAccent.shade400,
+                    shadows: const [
+                      Shadow(
+                        blurRadius: 6,
+                        color: Colors.black45,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

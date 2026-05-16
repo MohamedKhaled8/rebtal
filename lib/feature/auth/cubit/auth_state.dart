@@ -12,7 +12,11 @@ class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final UserModel user;
-  AuthSuccess(this.user);
+
+  /// Increments when owner toggles guest/owner UI so [BlocBuilder] can rebuild.
+  final int uiRevision;
+
+  AuthSuccess(this.user, {this.uiRevision = 0});
 }
 
 class AuthRegistrationSuccess extends AuthState {

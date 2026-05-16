@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/core/utils/maps/osm_tile_support.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
@@ -41,10 +42,19 @@ class InlineLocationPicker extends StatelessWidget {
                     },
                   ),
                   children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.rebtal.app',
+                    FutureBuilder<bool>(
+                      future: canReachOpenStreetMapTiles(),
+                      builder: (context, snapshot) {
+                        if (snapshot.data == false) {
+                          return const SizedBox.shrink();
+                        }
+                        return TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.rebtal.app',
+                          errorImage: kOsmTileErrorImage,
+                        );
+                      },
                     ),
                     MarkerLayer(
                       markers: [

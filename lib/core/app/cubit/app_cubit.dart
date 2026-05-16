@@ -54,6 +54,8 @@ class AppCubit extends Cubit<AppState> {
   }
 
   Locale _savedLocale = const Locale('ar');
+  String? _lastUserDataLoadKey;
+  String? _notificationsListenerUid;
 
   Future<void> _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
@@ -122,8 +124,16 @@ class AppCubit extends Cubit<AppState> {
         ),
       );
 
-      // Load user-specific data
-      _loadUserData(user);
+      final viewRole = _authCubit.getCurrentRole();
+      final dataKey = '${user.uid}:$viewRole';
+      if (_lastUserDataLoadKey != dataKey) {
+        _lastUserDataLoadKey = dataKey;
+        _loadUserData(user, viewRole);
+      }
+      if (_notificationsListenerUid != user.uid) {
+        _notificationsListenerUid = user.uid;
+        _notificationCubit.listenToNotifications(user.uid);
+      }
     } else if (authState is AuthUnauthenticated || authState is AuthInitial) {
       emit(
         AppUnauthenticated(
@@ -159,6 +169,15 @@ class AppCubit extends Cubit<AppState> {
         currentState.copyWith(
           themeMode: themeState.themeMode,
           primaryColor: themeState.primaryColor,
+        ),
+      );
+    } else if (currentState is AppError) {
+      emit(
+        AppError(
+          message: currentState.message,
+          themeMode: themeState.themeMode,
+          primaryColor: themeState.primaryColor,
+          locale: currentState.locale,
         ),
       );
     }
@@ -214,20 +233,16 @@ class AppCubit extends Cubit<AppState> {
     return 0;
   }
 
-  /// Load user-specific data after authentication
-  void _loadUserData(UserModel user) {
-    final role = _authCubit.getCurrentRole();
-
-    if (role == 'owner') {
+  /// Load streams for the active view role (user / owner / admin).
+  void _loadUserData(UserModel user, String viewRole) {
+    if (viewRole == 'owner') {
       _bookingCubit.loadOwnerBookings(user.uid);
       _ownerCubit.fetchChalets(user.uid);
-    } else if (role == 'user') {
+    } else if (viewRole == 'user') {
       _bookingCubit.loadUserBookings(user.uid);
-    } else if (role == 'admin') {
+    } else if (viewRole == 'admin') {
       _bookingCubit.loadBookings();
     }
-
-    _notificationCubit.listenToNotifications(user.uid);
   }
 
   // ==================== PUBLIC ACTIONS (FACADE) ====================
@@ -257,7 +272,8 @@ class AppCubit extends Cubit<AppState> {
   );
 
   // --- Theme ---
-  void toggleTheme() => _themeCubit.toggleTheme();
+  void toggleTheme({Brightness? platformBrightness}) =>
+      _themeCubit.toggleTheme(platformBrightness: platformBrightness);
   void changeTheme(ThemeMode mode) => _themeCubit.changeTheme(mode);
   void changePrimaryColor(Color color) => _themeCubit.changeColor(color);
 

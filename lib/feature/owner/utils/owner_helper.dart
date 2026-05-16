@@ -22,21 +22,20 @@ class OwnerHelper {
     }
   }
 
-  /// Sort bookings by priority and date
+  /// Sort bookings with most recent activity first, then by workflow priority.
   static List<Booking> sortBookings(List<Booking> bookings) {
     final sorted = List<Booking>.from(bookings);
     sorted.sort((a, b) {
+      final ta =
+          a.updatedAt ?? a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final tb =
+          b.updatedAt ?? b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final byRecent = tb.compareTo(ta);
+      if (byRecent != 0) return byRecent;
+
       final priorityA = getBookingPriority(a.status);
       final priorityB = getBookingPriority(b.status);
-
-      if (priorityA != priorityB) {
-        return priorityA.compareTo(priorityB);
-      }
-
-      // If same priority, sort by createdAt (newest first)
-      final dateA = a.createdAt ?? DateTime(2000);
-      final dateB = b.createdAt ?? DateTime(2000);
-      return dateB.compareTo(dateA); // Descending order
+      return priorityA.compareTo(priorityB);
     });
     return sorted;
   }

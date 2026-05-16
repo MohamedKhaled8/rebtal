@@ -168,10 +168,11 @@ class _UserBookingsPageState extends State<UserBookingsPage>
               b.status == BookingStatus.completed,
         )
         .toList();
+    // Newest activity first (last booked / approved / status change).
     filtered.sort((a, b) {
-      final da = a.from;
-      final db = b.from;
-      return da.compareTo(db);
+      final ta = a.updatedAt ?? a.createdAt ?? a.from;
+      final tb = b.updatedAt ?? b.createdAt ?? b.from;
+      return tb.compareTo(ta);
     });
     return filtered;
   }

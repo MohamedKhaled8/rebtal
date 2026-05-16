@@ -2237,7 +2237,7 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get owner_add_3_photos_hint => 'أضف صور عالية الجودة على الأقل';
 
   @override
-  String get owner_add_first_photo => 'أضف صورتك الأولى';
+  String get owner_add_first_photo => 'أضف صور الشاليه الخاص بك';
 
   @override
   String get owner_add_more_photos => 'أضف المزيد من الصور';

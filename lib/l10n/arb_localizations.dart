@@ -4463,7 +4463,7 @@ abstract class ArbLocalizations {
   /// No description provided for @owner_add_first_photo.
   ///
   /// In en, this message translates to:
-  /// **'Add your first photo'**
+  /// **'Add photos of your chalet'**
   String get owner_add_first_photo;
 
   /// No description provided for @owner_add_more_photos.

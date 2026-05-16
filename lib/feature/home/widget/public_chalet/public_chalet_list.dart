@@ -20,12 +20,16 @@ class PublicChaletsList extends StatefulWidget {
   final String? emptySubtitle;
   final String? selectedCategory;
 
+  /// When true, list is embedded in a parent [CustomScrollView] (no nested scroll).
+  final bool shrinkWrap;
+
   const PublicChaletsList({
     super.key,
     this.emptyIcon,
     this.emptyTitle,
     this.emptySubtitle,
     this.selectedCategory,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -78,6 +82,10 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
     setState(() => _displayLimit += _increment);
   }
 
+  ScrollPhysics get _listPhysics => widget.shrinkWrap
+      ? const NeverScrollableScrollPhysics()
+      : const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics());
+
   bool _showTwoColumns(BuildContext context) {
     return otv(
       context: context,
@@ -126,9 +134,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
         });
         if (filtered.isEmpty) {
           return ListView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
+            shrinkWrap: widget.shrinkWrap,
+            physics: _listPhysics,
             padding: EdgeInsets.symmetric(vertical: 20.sh),
             children: [
               SizedBox(
@@ -183,9 +190,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
           final itemCount = rowCount + extra;
 
           return ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
+            shrinkWrap: widget.shrinkWrap,
+            physics: _listPhysics,
             padding: EdgeInsets.only(bottom: 20.sh),
             itemCount: itemCount,
             itemBuilder: (context, i) {
@@ -298,9 +304,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
         final itemCount = countToShow + (hasMore ? 1 : 0) + 1;
 
         return ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
+          shrinkWrap: widget.shrinkWrap,
+          physics: _listPhysics,
           padding: EdgeInsets.only(bottom: 20.sh),
           itemCount: itemCount,
           itemBuilder: (context, i) {
@@ -361,9 +366,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
     final showTwoColumns = _showTwoColumns(context);
     if (showTwoColumns) {
       return ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
+        shrinkWrap: widget.shrinkWrap,
+        physics: _listPhysics,
         padding: EdgeInsets.symmetric(vertical: 16.sh),
         itemCount: 2,
         itemBuilder: (context, i) => Row(
@@ -391,9 +395,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
       );
     }
     return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(
-        parent: BouncingScrollPhysics(),
-      ),
+      shrinkWrap: widget.shrinkWrap,
+      physics: _listPhysics,
       padding: EdgeInsets.symmetric(vertical: 16.sh),
       itemCount: 3,
       itemBuilder: (context, i) => const PublicChaletCardShimmer(),
@@ -414,9 +417,8 @@ class _PublicChaletsListState extends State<PublicChaletsList> {
 
     if (_streamError != null) {
       return ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
+        shrinkWrap: widget.shrinkWrap,
+        physics: _listPhysics,
         children: [
           SizedBox(
             height: 280.sh,

@@ -2,8 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/export_routes.dart';
+import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/core/utils/helper/helper_image.dart';
+import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/auth/register/logic/register_cubit.dart';
@@ -69,7 +70,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     image: cubit.profileImage,
                     hasError: _showProfileImageError && cubit.profileImage == null,
                     onTap: () async {
-                      final image = await HelperImage().pickImageFile(context);
+                      final image = await getIt<HelperImageContract>()
+                          .pickImageFile(context);
                       if (image != null && context.mounted) {
                         cubit.setProfileImage(image);
                         setState(() => _showProfileImageError = false);
@@ -182,7 +184,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     image: cubit.idCardImage,
                     hasError: _showIdCardError && cubit.idCardImage == null,
                     onTap: () async {
-                      final image = await HelperImage().pickImageFile(context);
+                      final image = await getIt<HelperImageContract>()
+                          .pickImageFile(context);
                       if (image != null && context.mounted) {
                         cubit.setIdCardImage(image);
                         setState(() => _showIdCardError = false);
