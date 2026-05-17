@@ -1,5 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/feature/home/data/datasources/home_remote_data_source.dart';
+import 'package:rebtal/feature/home/data/mappers/home_chalet_mapper.dart';
+import 'package:rebtal/feature/home/domain/entities/home_chalet_entity.dart';
 import 'package:rebtal/feature/home/domain/repositories/base_home_repository.dart';
 
 class HomeRepositoryImpl implements BaseHomeRepository {
@@ -8,13 +9,24 @@ class HomeRepositoryImpl implements BaseHomeRepository {
   HomeRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets() {
-    return remoteDataSource.watchPublicChalets();
+  Stream<List<HomeChaletEntity>> watchPublicChalets() {
+    return remoteDataSource
+        .watchPublicChalets()
+        .map(HomeChaletMapper.fromSnapshot);
   }
 
   @override
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchDiscountedChalets() {
-    return remoteDataSource.watchDiscountedChalets();
+  Stream<List<HomeChaletEntity>> watchDiscountedChalets() {
+    return remoteDataSource
+        .watchDiscountedChalets()
+        .map(HomeChaletMapper.fromSnapshot);
+  }
+
+  @override
+  Stream<List<HomeChaletEntity>> watchApprovedChalets() {
+    return remoteDataSource
+        .watchApprovedChalets()
+        .map(HomeChaletMapper.fromSnapshot);
   }
 }
 

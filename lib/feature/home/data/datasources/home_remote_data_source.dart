@@ -5,11 +5,13 @@ abstract class HomeRemoteDataSource {
   Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets();
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchDiscountedChalets();
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchApprovedChalets();
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   HomeRemoteDataSourceImpl({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -33,6 +35,18 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         .where('status', isEqualTo: 'approved')
         .where('discountEnabled', isEqualTo: true)
         .limit(10)
+        .withConverter<Map<String, dynamic>>(
+          fromFirestore: (snap, _) => snap.data() ?? <String, dynamic>{},
+          toFirestore: (data, _) => data,
+        )
+        .snapshots();
+  }
+
+  @override
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchApprovedChalets() {
+    return _firestore
+        .collection('chalets')
+        .where('status', isEqualTo: 'approved')
         .withConverter<Map<String, dynamic>>(
           fromFirestore: (snap, _) => snap.data() ?? <String, dynamic>{},
           toFirestore: (data, _) => data,

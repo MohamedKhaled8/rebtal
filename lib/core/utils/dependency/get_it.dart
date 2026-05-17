@@ -29,6 +29,9 @@ import 'package:rebtal/feature/home/data/datasources/home_remote_data_source.dar
 import 'package:rebtal/feature/home/data/repositories/home_repository_impl.dart';
 import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
 import 'package:rebtal/feature/home/domain/usecases/watch_discounted_chalets_usecase.dart';
+import 'package:rebtal/feature/home/data/datasources/home_favorites_data_source.dart';
+import 'package:rebtal/feature/home/domain/usecases/watch_approved_chalets_usecase.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
 import 'package:rebtal/core/utils/helper/image_clean/helper_image.dart';
 import 'package:rebtal/core/utils/helper/image_clean/helper_image_actions.dart';
 import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
@@ -85,6 +88,9 @@ Future<void> setupGetIt() async {
   getIt.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(),
   );
+  getIt.registerLazySingleton<HomeFavoritesDataSource>(
+    () => HomeFavoritesDataSourceImpl(),
+  );
   getIt.registerLazySingleton<BaseHomeRepository>(
     () => HomeRepositoryImpl(remoteDataSource: getIt<HomeRemoteDataSource>()),
   );
@@ -132,6 +138,18 @@ Future<void> setupGetIt() async {
   );
   getIt.registerLazySingleton<WatchDiscountedChaletsUseCase>(
     () => WatchDiscountedChaletsUseCase(getIt<BaseHomeRepository>()),
+  );
+  getIt.registerLazySingleton<WatchApprovedChaletsUseCase>(
+    () => WatchApprovedChaletsUseCase(getIt<BaseHomeRepository>()),
+  );
+
+  getIt.registerLazySingleton<HomeCubit>(
+    () => HomeCubit(
+      watchPublicChalets: getIt<WatchPublicChaletsUseCase>(),
+      watchDiscountedChalets: getIt<WatchDiscountedChaletsUseCase>(),
+      watchApprovedChalets: getIt<WatchApprovedChaletsUseCase>(),
+      favoritesDataSource: getIt<HomeFavoritesDataSource>(),
+    ),
   );
 
   // Image Helper contracts and use cases

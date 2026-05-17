@@ -1,203 +1,35 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:rebtal/core/utils/helper/app_image_helper.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rebtal/feature/home/domain/entities/home_chalet_entity.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_state.dart';
+import 'package:rebtal/feature/home/logic/helpers/top_rated_chalets_helper.dart';
+import 'package:rebtal/feature/home/widget/top_rated/top_rated_chalet_card.dart';
 
 class TopRatedChaletsList extends StatelessWidget {
   const TopRatedChaletsList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220, // Limit height for horizontal scroll
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('chalets')
-            .where('status', isEqualTo: 'approved')
-            .where('isVisible', isEqualTo: true)
-            .limit(3) // Reduced from 5 to 3 for better performance
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError || !snapshot.hasData) {
-            return const SizedBox.shrink(); // Hide if error or no data
-          }
+    return BlocSelector<HomeCubit, HomeState, List<HomeChaletEntity>>(
+      selector: (state) =>
+          TopRatedChaletsHelper.topRatedPreview(state.publicChalets),
+      builder: (context, preview) {
+        if (preview.isEmpty) return const SizedBox.shrink();
 
-          final docs = snapshot.data!.docs;
-          if (docs.isEmpty) return const SizedBox.shrink();
-
-          return ListView.builder(
+        return SizedBox(
+          height: 220,
+          child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: docs.length,
+            itemCount: preview.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-              return _TopRatedChaletCard(data: data, docId: docs[index].id);
+              return TopRatedChaletCard(entity: preview[index]);
             },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _TopRatedChaletCard extends StatelessWidget {
-  final Map<String, dynamic> data;
-  final String docId;
-
-  const _TopRatedChaletCard({required this.data, required this.docId});
-
-  @override
-  Widget build(BuildContext context) {
-    final String image = resolveChaletCoverImageUrl(data);
-    final String name = data['chaletName'] ?? 'Unnamed';
-    final String location = data['location'] ?? 'Unknown';
-
-    // Mock Rating (or fetch real if available in future)
-    const String rating = "4.9";
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChaletDetailPage(
-              requestData: data,
-              docId: docId,
-              status: 'approved',
-            ),
           ),
         );
       },
-      child: Container(
-        width: 160, // Fixed width card
-        margin: const EdgeInsets.only(right: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          // Clean shadow
-          boxShadow: [
-            BoxShadow(
-              color: ColorsManager.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            children: [
-              // 1. Background Image
-              Positioned.fill(
-                child: AppImageHelper(
-                  path: image,
-                  fit: BoxFit.cover,
-                  cacheScope: docId,
-                ),
-              ),
-
-              // 2. Gradient Overlay for Text Readability
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        ColorsManager.transparent,
-                        ColorsManager.black.withOpacity(0.2),
-                        ColorsManager.black.withOpacity(0.8),
-                      ],
-                      stops: const [0.5, 0.7, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // 3. Rating Badge (Top Right)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        color: Color(0xFFFFD700),
-                        size: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 4. Content (Bottom)
-              Positioned(
-                bottom: 12,
-                left: 10,
-                right: 10,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.white70,
-                          size: 10,
-                        ),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            location,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

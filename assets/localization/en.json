@@ -98,6 +98,8 @@
   "home_location_unknown": "Location not specified",
   "home_special_offer": "Special Offer",
   "home_popular_destinations": "Most Requested Destinations",
+  "home_explore_destinations": "Explore Destinations",
+  "home_show_all": "Show All",
   "booking_range_invalid_booked": "This range includes booked dates. Choose dates that don't overlap the red days.",
   "booking_select_dates": "Select Booking Period",
   "booking_select_start_end": "Select start and end dates",

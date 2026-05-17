@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/feature/home/domain/entities/home_chalet_entity.dart';
 
 abstract class BaseHomeRepository {
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets();
+  Stream<List<HomeChaletEntity>> watchPublicChalets();
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchDiscountedChalets();
+  Stream<List<HomeChaletEntity>> watchDiscountedChalets();
+
+  Stream<List<HomeChaletEntity>> watchApprovedChalets();
 }
-

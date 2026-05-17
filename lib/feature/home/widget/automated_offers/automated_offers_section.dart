@@ -1,11 +1,10 @@
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
-import 'package:rebtal/core/utils/dependency/get_it.dart';
-import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
-import 'package:rebtal/feature/home/domain/usecases/watch_discounted_chalets_usecase.dart';
+import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_state.dart';
 import 'package:rebtal/feature/home/widget/automated_offers/automated_offer_card.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -14,16 +13,14 @@ class AutomatedOffersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = DynamicThemeManager.isDarkMode(context);
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: getIt<WatchDiscountedChaletsUseCase>()(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        if (!state.showDiscountedSection) {
           return const SizedBox.shrink();
         }
 
-        final docs = snapshot.data!.docs;
+        final isDark = DynamicThemeManager.isDarkMode(context);
+        final offers = state.discountedOffers;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +58,7 @@ class AutomatedOffersSection extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${docs.length} ${context.tr('home_offers_available')}',
+                    '${offers.length} ${context.tr('home_offers_available')}',
                     style: TextStyle(
                       color: ColorsManager.primaryColor,
                       fontSize: stv(
@@ -95,13 +92,12 @@ class AutomatedOffersSection extends StatelessWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 5.w),
-                itemCount: docs.length,
+                itemCount: offers.length,
                 itemBuilder: (context, index) {
-                  final data = docs[index].data();
-                  final docId = docs[index].id;
+                  final offer = offers[index];
                   return AutomatedOfferCard(
-                    data: data,
-                    docId: docId,
+                    data: offer.data,
+                    docId: offer.id,
                     isDark: isDark,
                   );
                 },

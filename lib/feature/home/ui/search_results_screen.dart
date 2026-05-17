@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/home/ui/home_bloc_scope.dart';
 import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_list.dart';
 
 class SearchResultsScreen extends StatelessWidget {
@@ -29,10 +30,12 @@ class SearchResultsScreen extends StatelessWidget {
           color: isDark ? Colors.white : Colors.black,
         ),
       ),
-      body: PublicChaletsList(
-        emptyIcon: Icons.search_off_rounded,
-        emptyTitle: context.tr('home_no_results'),
-        emptySubtitle: context.tr('home_try_other_search'),
+      body: HomeBlocScope(
+        child: PublicChaletsList(
+          emptyIcon: Icons.search_off_rounded,
+          emptyTitle: context.tr('home_no_results'),
+          emptySubtitle: context.tr('home_try_other_search'),
+        ),
       ),
     );
   }

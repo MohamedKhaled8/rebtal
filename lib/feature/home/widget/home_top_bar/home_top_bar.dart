@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/feature/home/widget/home_top_bar/waving_hand_icon.dart';
 import 'package:rebtal/feature/notifications/ui/notifications_page.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -106,7 +107,7 @@ class HomeTopBar extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 4.sw),
-                          const _WavingHand(),
+                          const WavingHandIcon(),
                         ],
                       ),
                       Text(
@@ -229,50 +230,3 @@ class HomeTopBar extends StatelessWidget {
   }
 }
 
-class _WavingHand extends StatefulWidget {
-  const _WavingHand();
-
-  @override
-  State<_WavingHand> createState() => _WavingHandState();
-}
-
-class _WavingHandState extends State<_WavingHand>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RotationTransition(
-      turns: Tween(
-        begin: -0.1,
-        end: 0.1,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
-      child: Text(
-        '👋',
-        style: TextStyle(
-          fontSize: stv(
-            context: context,
-            mobile: 16.spScaled,
-            tablet: 18.spScaled,
-            desktop: 20.spScaled,
-          ),
-        ),
-      ),
-    );
-  }
-}

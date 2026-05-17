@@ -42,6 +42,8 @@
   "home_location_unknown": "الموقع غير محدد",
   "home_special_offer": "عرض خاص",
   "home_popular_destinations": "أكثر الوجهات طلباً",
+  "home_explore_destinations": "استكشف الوجهات",
+  "home_show_all": "عرض الكل",
   "booking_select_dates": "اختر فترة الحجز",
   "booking_select_start_end": "حدد تاريخ البداية والنهاية",
   "booking_from_date": "من تاريخ",

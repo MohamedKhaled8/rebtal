@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:rebtal/feature/home/widget/clean_search_bar_trigger/clean_search_bar_trigger.dart';
-import 'package:rebtal/feature/home/widget/explore_chalet/explore_chalet_home.dart';
-import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_list.dart';
-import 'package:rebtal/feature/home/widget/home_top_bar/home_top_bar.dart';
-import 'package:rebtal/feature/home/widget/home_promo_banners/home_promo_banners.dart';
-import 'package:rebtal/feature/home/widget/automated_offers/automated_offers_section.dart';
-import 'package:rebtal/feature/home/widget/popular_destinations/popular_destinations_section.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
+import 'package:rebtal/feature/home/widget/location_areas/location_areas_section.dart';
+import 'package:rebtal/feature/home/widget/top_rated/top_rated_section.dart';
+import 'package:rebtal/feature/home/ui/home_bloc_scope.dart';
+import 'package:rebtal/feature/home/widget/automated_offers/automated_offers_section.dart';
+import 'package:rebtal/feature/home/widget/clean_search_bar_trigger/clean_search_bar_trigger.dart';
+import 'package:rebtal/feature/home/widget/explore_chalet/explore_chalet_home.dart';
+import 'package:rebtal/feature/home/widget/home_promo_banners/home_promo_banners.dart';
+import 'package:rebtal/feature/home/widget/home_top_bar/home_top_bar.dart';
+import 'package:rebtal/feature/home/widget/popular_destinations/popular_destinations_section.dart';
+import 'package:rebtal/feature/home/widget/public_chalet/public_chalet_list.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return const HomeBlocScope(child: HomePageContent());
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class HomePageContent extends StatelessWidget {
+  const HomePageContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     return Scaffold(
@@ -34,8 +37,7 @@ class _HomeScreenState extends State<HomeScreen>
           : ColorsManager.chaletBackgroundLight,
       body: RefreshIndicator(
         onRefresh: () async {
-          await Future<void>.delayed(const Duration(milliseconds: 800));
-          if (mounted) setState(() {});
+          await context.read<HomeCubit>().refresh();
         },
         color: const Color(0xFF2563EB),
         backgroundColor: isDark ? ColorsManager.darkGrey252540 : Colors.white,

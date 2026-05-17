@@ -1,22 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/app/cubit/app_cubit.dart';
-
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
+import 'package:rebtal/feature/home/logic/helpers/chalet_card_display_helper.dart';
+import 'package:rebtal/feature/home/widget/public_chalet/chalet_favorite_button.dart';
+import 'package:rebtal/feature/home/widget/public_chalet/chalet_image_carousel.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
-class PublicChaletCard extends StatefulWidget {
-  final Map<String, dynamic> chaletData;
-  final String docId;
-  final VoidCallback? onDetailsPressed;
-  final Widget? badge;
-  final EdgeInsetsGeometry? margin;
-
+class PublicChaletCard extends StatelessWidget {
   const PublicChaletCard({
     super.key,
     required this.chaletData,
@@ -26,129 +19,58 @@ class PublicChaletCard extends StatefulWidget {
     this.margin,
   });
 
+  final Map<String, dynamic> chaletData;
+  final String docId;
+  final VoidCallback? onDetailsPressed;
+  final Widget? badge;
+  final EdgeInsetsGeometry? margin;
+
   @override
-  State<PublicChaletCard> createState() => _PublicChaletCardState();
+  Widget build(BuildContext context) {
+    return PublicChaletCardBody(
+      chaletData: chaletData,
+      docId: docId,
+      onDetailsPressed: onDetailsPressed,
+      badge: badge,
+      margin: margin,
+    );
+  }
 }
 
-class _PublicChaletCardState extends State<PublicChaletCard> {
-  bool _isFavorite = false;
-  String? _userId;
-  PageController? _pageController;
+class PublicChaletCardBody extends StatelessWidget {
+  const PublicChaletCardBody({
+    super.key,
+    required this.chaletData,
+    required this.docId,
+    this.onDetailsPressed,
+    this.badge,
+    this.margin,
+  });
 
-  bool _isDayUseUnavailableToday(Map<String, dynamic> data) {
-    final bool dayUseEnabled = data['dayUseEnabled'] == true;
-    if (!dayUseEnabled) return false;
-    final status = data['dayUseBookingAvailability']?.toString();
-    final bookedAt = data['dayUseBookedAt']?.toString();
-    if (status != 'unavailable' || bookedAt == null || bookedAt.isEmpty) {
-      return false;
-    }
-    final now = DateTime.now();
-    final todayKey =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-    return bookedAt == todayKey;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    try {
-      final user = context.read<AppCubit>().authCubit.getCurrentUser();
-      _userId = user?.uid;
-      _checkInitialFavoriteStatus();
-    } catch (_) {}
-    final images = collectChaletImageUrls(widget.chaletData);
-    if (images.length > 1) {
-      _pageController = PageController();
-    }
-  }
-
-  Future<void> _checkInitialFavoriteStatus() async {
-    if (_userId == null) return;
-    try {
-      final favDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('favorites')
-          .doc(widget.docId)
-          .get();
-      if (mounted && favDoc.exists) {
-        setState(() {
-          _isFavorite = true;
-        });
-      }
-    } catch (_) {}
-  }
-
-  @override
-  void dispose() {
-    _pageController?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _toggleFavorite() async {
-    if (_userId == null) return;
-
-    final wasFavorite = _isFavorite;
-
-    // 1. Optimistic Update
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
-
-    try {
-      final favRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(_userId)
-          .collection('favorites')
-          .doc(widget.docId);
-
-      if (wasFavorite) {
-        // Was favorite, now removing
-        await favRef.delete();
-      } else {
-        // Was not favorite, now adding
-        await favRef.set({
-          'chaletId': widget.docId,
-          'name': widget.chaletData['chaletName'] ?? 'Unnamed Chalet',
-          'location': widget.chaletData['location'] ?? '',
-          'image': resolveChaletCoverImageUrl(widget.chaletData),
-          'price': widget.chaletData['price'],
-          'createdAt': FieldValue.serverTimestamp(),
-          'chaletData': widget.chaletData,
-        });
-      }
-    } catch (e) {
-      // 2. Rollback on failure
-      if (mounted) {
-        setState(() {
-          _isFavorite = wasFavorite;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${context.tr('favorites_update_error')}: $e'),
-          ),
-        );
-      }
-    }
-  }
+  final Map<String, dynamic> chaletData;
+  final String docId;
+  final VoidCallback? onDetailsPressed;
+  final Widget? badge;
+  final EdgeInsetsGeometry? margin;
 
   @override
   Widget build(BuildContext context) {
     final chaletName =
-        widget.chaletData['chaletName'] ?? context.tr('home_chalet_no_name');
+        chaletData['chaletName'] ?? context.tr('home_chalet_no_name');
     final location =
-        widget.chaletData['location'] ?? context.tr('home_location_unknown');
-
-    final rawImages = collectChaletImageUrls(widget.chaletData);
+        chaletData['location'] ?? context.tr('home_location_unknown');
+    final rawImages = collectChaletImageUrls(chaletData);
     final images = rawImages.isEmpty ? const [''] : rawImages;
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final dayUseUnavailable = _isDayUseUnavailableToday(widget.chaletData);
+    final dayUseUnavailable =
+        ChaletCardDisplayHelper.isDayUseUnavailableToday(chaletData);
+    final hasDiscount = ChaletCardDisplayHelper.hasDiscount(chaletData);
+    final isNew = ChaletCardDisplayHelper.isNewChalet(chaletData);
 
     return RepaintBoundary(
       child: Container(
         margin:
-            widget.margin ??
+            margin ??
             EdgeInsets.only(
               bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
               left: stv(
@@ -176,65 +98,31 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
           ],
         ),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChaletDetailPage(
-                  requestData: widget.chaletData,
-                  docId: widget.docId,
-                  status: 'approved',
-                ),
-              ),
-            );
-          },
+          onTap: onDetailsPressed ??
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChaletDetailPage(
+                      requestData: chaletData,
+                      docId: docId,
+                      status: 'approved',
+                    ),
+                  ),
+                );
+              },
           borderRadius: BorderRadius.circular(12.sp),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Image & Overlay
               Stack(
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12.sp),
                     ),
-                    child: SizedBox(
-                      height: otv(
-                        context: context,
-                        portrait: stv(
-                          context: context,
-                          mobile: 230.sh,
-                          tablet: 235.sh,
-                          desktop: 245.sh,
-                        ),
-                        landscape: stv(
-                          context: context,
-                          mobile: 330.sh,
-                          tablet: 350.sh,
-                          desktop: 400.sh,
-                        ),
-                      ),
-                      width: double.infinity,
-                      child: PageView.builder(
-                        key: ValueKey<String>('pub_chalet_pv_${widget.docId}'),
-                        controller: _pageController,
-                        itemCount: images.length,
-                        itemBuilder: (context, index) {
-                          return AppImageHelper(
-                            key: ValueKey(
-                              'pub_chalet_img_${widget.docId}_${images[index]}_$index',
-                            ),
-                            path: images[index],
-                            fit: BoxFit.cover,
-                            cacheScope: widget.docId,
-                          );
-                        },
-                      ),
-                    ),
+                    child: ChaletImageCarousel(docId: docId, images: images),
                   ),
-
-                  // Top Badges
                   Positioned(
                     top: 20,
                     left: 12,
@@ -243,7 +131,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         RatingDisplayWidget(
-                          chaletId: widget.docId,
+                          chaletId: docId,
                           isDark: false,
                           isBadge: true,
                         ),
@@ -251,97 +139,23 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (dayUseUnavailable)
-                              Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.55),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.25),
-                                  ),
-                                ),
-                                child: Text(
-                                  context.tr('chalet_unavailable'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
+                              PublicChaletDayUseBadge(
+                                label: context.tr('chalet_unavailable'),
                               ),
-                            if (_isNewChalet())
-                              Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  context.tr('common_new_badge'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
+                            if (isNew)
+                              PublicChaletNewBadge(
+                                label: context.tr('common_new_badge'),
                               ),
-                            GestureDetector(
-                              onTap: _toggleFavorite,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.35),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  transitionBuilder:
-                                      (
-                                        Widget child,
-                                        Animation<double> animation,
-                                      ) {
-                                        return ScaleTransition(
-                                          scale: animation,
-                                          child: child,
-                                        );
-                                      },
-                                  child: Icon(
-                                    _isFavorite
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    key: ValueKey<bool>(_isFavorite),
-                                    color: _isFavorite
-                                        ? Colors.redAccent
-                                        : Colors.white,
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
+                            ChaletFavoriteButton(
+                              chaletId: docId,
+                              chaletData: chaletData,
                             ),
                           ],
                         ),
                       ],
                     ),
                   ),
-
-                  // Discount Badge if applicable
-                  if (_hasDiscount())
+                  if (hasDiscount)
                     Positioned(
                       bottom: 12,
                       right: 12,
@@ -366,8 +180,6 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                     ),
                 ],
               ),
-
-              // 2. Info Content
               Padding(
                 padding: EdgeInsets.all(
                   stv(
@@ -408,7 +220,10 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                             desktop: 16.sw,
                           ),
                         ),
-                        _buildPriceSection(context, isDark),
+                        PublicChaletPriceSection(
+                          chaletData: chaletData,
+                          isDark: isDark,
+                        ),
                       ],
                     ),
                     SizedBox(
@@ -463,47 +278,7 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
                         landscape: 6.sh,
                       ),
                     ),
-
-                    // Stats
-                    Row(
-                      children: [
-                        _buildStat(
-                          context,
-                          Icons.bed_outlined,
-                          '${widget.chaletData['bedrooms'] ?? 0} ${context.tr('common_beds_short')}',
-                          isDark,
-                        ),
-                        SizedBox(
-                          width: stv(
-                            context: context,
-                            mobile: 16.sw,
-                            tablet: 24.sw,
-                            desktop: 32.sw,
-                          ),
-                        ),
-                        _buildStat(
-                          context,
-                          Icons.bathtub_outlined,
-                          '${widget.chaletData['bathrooms'] ?? 0} ${context.tr('common_baths_short')}',
-                          isDark,
-                        ),
-                        SizedBox(
-                          width: stv(
-                            context: context,
-                            mobile: 16.sw,
-                            tablet: 24.sw,
-                            desktop: 32.sw,
-                          ),
-                        ),
-                        if (widget.chaletData['chaletArea'] != null)
-                          _buildStat(
-                            context,
-                            Icons.square_foot_outlined,
-                            '${widget.chaletData['chaletArea']} ${context.tr('common_m2')}',
-                            isDark,
-                          ),
-                      ],
-                    ),
+                    PublicChaletStatsRow(chaletData: chaletData, isDark: isDark),
                   ],
                 ),
               ),
@@ -513,13 +288,135 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
       ),
     );
   }
+}
 
-  Widget _buildStat(
-    BuildContext context,
-    IconData icon,
-    String label,
-    bool isDark,
-  ) {
+class PublicChaletDayUseBadge extends StatelessWidget {
+  const PublicChaletDayUseBadge({super.key, required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.25)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class PublicChaletNewBadge extends StatelessWidget {
+  const PublicChaletNewBadge({super.key, required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2563EB),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class PublicChaletStatsRow extends StatelessWidget {
+  const PublicChaletStatsRow({
+    super.key,
+    required this.chaletData,
+    required this.isDark,
+  });
+
+  final Map<String, dynamic> chaletData;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        PublicChaletStatItem(
+          icon: Icons.bed_outlined,
+          label:
+              '${chaletData['bedrooms'] ?? 0} ${context.tr('common_beds_short')}',
+          isDark: isDark,
+        ),
+        SizedBox(
+          width: stv(
+            context: context,
+            mobile: 16.sw,
+            tablet: 24.sw,
+            desktop: 32.sw,
+          ),
+        ),
+        PublicChaletStatItem(
+          icon: Icons.bathtub_outlined,
+          label:
+              '${chaletData['bathrooms'] ?? 0} ${context.tr('common_baths_short')}',
+          isDark: isDark,
+        ),
+        if (chaletData['chaletArea'] != null) ...[
+          SizedBox(
+            width: stv(
+              context: context,
+              mobile: 16.sw,
+              tablet: 24.sw,
+              desktop: 32.sw,
+            ),
+          ),
+          PublicChaletStatItem(
+            icon: Icons.square_foot_outlined,
+            label:
+                '${chaletData['chaletArea']} ${context.tr('common_m2')}',
+            isDark: isDark,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class PublicChaletStatItem extends StatelessWidget {
+  const PublicChaletStatItem({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.isDark,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Icon(
@@ -556,11 +453,24 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
       ],
     );
   }
+}
 
-  Widget _buildPriceSection(BuildContext context, bool isDark) {
-    final price = widget.chaletData['price'];
-    final discounted = _calculateDiscountedPrice();
-    final hasDisc = _hasDiscount();
+class PublicChaletPriceSection extends StatelessWidget {
+  const PublicChaletPriceSection({
+    super.key,
+    required this.chaletData,
+    required this.isDark,
+  });
+
+  final Map<String, dynamic> chaletData;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final price = chaletData['price'];
+    final hasDisc = ChaletCardDisplayHelper.hasDiscount(chaletData);
+    final discounted =
+        ChaletCardDisplayHelper.calculateDiscountedPrice(chaletData);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -625,61 +535,5 @@ class _PublicChaletCardState extends State<PublicChaletCard> {
         ),
       ],
     );
-  }
-
-  bool _isNewChalet() {
-    final createdAt = widget.chaletData['createdAt'];
-    if (createdAt == null) return false;
-
-    DateTime? date;
-    if (createdAt is Timestamp) {
-      date = createdAt.toDate();
-    } else if (createdAt is String) {
-      date = DateTime.tryParse(createdAt);
-    }
-
-    if (date == null) return false;
-
-    final difference = DateTime.now().difference(date);
-    return difference.inHours <= 48;
-  }
-
-  bool _hasDiscount() {
-    final discountEnabled = widget.chaletData['discountEnabled'] ?? false;
-    final discountValue = widget.chaletData['discountValue'];
-    return discountEnabled == true &&
-        discountValue != null &&
-        discountValue.toString().isNotEmpty;
-  }
-
-  String _calculateDiscountedPrice() {
-    final price = widget.chaletData['price'];
-    final discountType = widget.chaletData['discountType'];
-    final discountValue = widget.chaletData['discountValue'];
-
-    if (!_hasDiscount() || price == null) return price?.toString() ?? '0';
-
-    final originalPrice = (price is num)
-        ? price.toDouble()
-        : double.tryParse(price.toString().replaceAll(RegExp('[^0-9.]'), '')) ??
-              0.0;
-
-    final value = (discountValue is num)
-        ? discountValue.toDouble()
-        : double.tryParse(
-                discountValue.toString().replaceAll(RegExp('[^0-9.]'), ''),
-              ) ??
-              0.0;
-
-    double discountedPrice = originalPrice;
-
-    if (discountType == 'percentage') {
-      discountedPrice = originalPrice - (originalPrice * (value / 100));
-    } else {
-      discountedPrice = originalPrice - value;
-    }
-
-    if (discountedPrice < 0) discountedPrice = 0;
-    return discountedPrice.toStringAsFixed(0);
   }
 }

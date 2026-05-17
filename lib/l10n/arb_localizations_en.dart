@@ -138,6 +138,12 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String get home_popular_destinations => 'Most Requested Destinations';
 
   @override
+  String get home_explore_destinations => 'Explore Destinations';
+
+  @override
+  String get home_show_all => 'Show All';
+
+  @override
   String get booking_select_dates => 'Select Booking Period';
 
   @override

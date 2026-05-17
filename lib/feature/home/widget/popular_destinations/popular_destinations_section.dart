@@ -1,11 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/popular_destinations.dart';
-import 'package:rebtal/core/utils/dependency/get_it.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
-import 'package:rebtal/feature/home/domain/usecases/watch_public_chalets_usecase.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_state.dart';
+import 'package:rebtal/feature/home/logic/helpers/popular_destinations_resolver.dart';
 import 'package:rebtal/feature/home/ui/destination_chalets_screen.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -14,39 +15,15 @@ class PopularDestinationsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = DynamicThemeManager.isDarkMode(context);
-    final watchPublicChalets = getIt<WatchPublicChaletsUseCase>();
-
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: watchPublicChalets(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+    return BlocSelector<HomeCubit, HomeState, List<PopularDestination>>(
+      selector: (state) =>
+          PopularDestinationsResolver.resolve(state.publicChalets),
+      builder: (context, destinations) {
+        if (destinations.isEmpty) {
           return const SizedBox.shrink();
         }
 
-        final docs = snapshot.data!.docs;
-        final popularNames = PopularDestinations.namesAr.toSet();
-        final Set<String> usedDestinations = {};
-
-        for (final doc in docs) {
-          final data = doc.data();
-          final features = data['features'] as List<dynamic>?;
-          if (features == null) continue;
-          for (final f in features) {
-            final name = f.toString();
-            if (popularNames.contains(name)) {
-              usedDestinations.add(name);
-            }
-          }
-        }
-
-        if (usedDestinations.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        final usedDestinationModels = PopularDestinations.all
-            .where((d) => usedDestinations.contains(d.nameAr))
-            .toList();
+        final isDark = DynamicThemeManager.isDarkMode(context);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,74 +49,12 @@ class PopularDestinationsSection extends StatelessWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 5.w),
-                itemCount: usedDestinationModels.length,
+                itemCount: destinations.length,
                 itemBuilder: (context, index) {
-                  final destination = usedDestinationModels[index];
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DestinationChaletsScreen(
-                              destinationName: destination.getLocalizedName(
-                                context,
-                              ),
-                              destinationArabicName: destination.nameAr,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white24
-                                    : Colors.black.withOpacity(0.08),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(
-                                    isDark ? 0.3 : 0.1,
-                                  ),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: AppImageHelper(
-                                path: destination.imageUrl,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 70,
-                            child: Text(
-                              destination.getLocalizedName(context),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isDark ? Colors.white70 : Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  final destination = destinations[index];
+                  return PopularDestinationChip(
+                    destination: destination,
+                    isDark: isDark,
                   );
                 },
               ),
@@ -147,6 +62,82 @@ class PopularDestinationsSection extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class PopularDestinationChip extends StatelessWidget {
+  const PopularDestinationChip({
+    super.key,
+    required this.destination,
+    required this.isDark,
+  });
+
+  final PopularDestination destination;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DestinationChaletsScreen(
+                destinationName: destination.getLocalizedName(context),
+                destinationArabicName: destination.nameAr,
+              ),
+            ),
+          );
+        },
+        child: Column(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white24
+                      : Colors.black.withOpacity(0.08),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: AppImageHelper(
+                  path: destination.imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 70,
+              child: Text(
+                destination.getLocalizedName(context),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

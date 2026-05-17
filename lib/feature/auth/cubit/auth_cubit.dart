@@ -103,10 +103,19 @@ class AuthCubit extends Cubit<AuthState> {
               .collection(col)
               .doc(firebaseUser.uid)
               .get()
-              .timeout(const Duration(seconds: 20));
+              .timeout(const Duration(seconds: 4));
           return d.exists ? d : null;
         } catch (e) {
-          return null;
+          // If timeout or offline error, try fetching from cache
+          try {
+            final cacheDoc = await FirebaseFirestore.instance
+                .collection(col)
+                .doc(firebaseUser.uid)
+                .get(const GetOptions(source: Source.cache));
+            return cacheDoc.exists ? cacheDoc : null;
+          } catch (_) {
+            return null;
+          }
         }
       });
 

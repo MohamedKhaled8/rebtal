@@ -356,6 +356,18 @@ abstract class ArbLocalizations {
   /// **'Most Requested Destinations'**
   String get home_popular_destinations;
 
+  /// No description provided for @home_explore_destinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Destinations'**
+  String get home_explore_destinations;
+
+  /// No description provided for @home_show_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Show All'**
+  String get home_show_all;
+
   /// No description provided for @booking_select_dates.
   ///
   /// In en, this message translates to:

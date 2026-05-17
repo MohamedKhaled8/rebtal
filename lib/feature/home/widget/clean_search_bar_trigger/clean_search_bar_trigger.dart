@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
 import 'package:rebtal/feature/home/widget/advanced_search/advanced_search_sheet.dart';
 import 'package:responsive_screen_master/extensions/orienation_type_value.dart';
 import 'package:responsive_screen_master/extensions/responsive_nums.dart';
@@ -28,7 +30,10 @@ class CleanSearchBarTrigger extends StatelessWidget {
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) => const AdvancedSearchSheet(),
+            builder: (sheetContext) => BlocProvider.value(
+              value: context.read<HomeCubit>(),
+              child: const AdvancedSearchSheet(),
+            ),
           );
         },
         child: Container(
