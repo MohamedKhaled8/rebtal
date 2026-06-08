@@ -163,9 +163,19 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('🔥 SplashScreen: Registration success, navigating to main screen');
       _hasNavigated = true;
       _navigateBasedOnRole();
+    } else if (_pendingAuthState is AuthOfflineWarning || 
+              (_pendingAuthState is AuthFailure && FirebaseAuth.instance.currentUser != null)) {
+      debugPrint('🔥 SplashScreen: Offline or Failure but user is logged in. Trying to let them in.');
+      final role = getIt<CacheHelper>().getDataString(key: 'userRole');
+      if (role != null && role.isNotEmpty) {
+        _hasNavigated = true;
+        _navigateBasedOnRole();
+      } else {
+        debugPrint('🔥 SplashScreen: No cached role, forcing login');
+        _navigateToOnboardingOrLogin();
+      }
     } else if (_pendingAuthState is AuthFailure ||
-        _pendingAuthState is AuthUnauthenticated ||
-        _pendingAuthState is AuthOfflineWarning) {
+        _pendingAuthState is AuthUnauthenticated) {
       debugPrint('🔥 SplashScreen: Navigating to login');
       _navigateToOnboardingOrLogin();
     }

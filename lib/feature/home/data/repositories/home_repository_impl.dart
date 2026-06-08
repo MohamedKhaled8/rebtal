@@ -9,9 +9,9 @@ class HomeRepositoryImpl implements BaseHomeRepository {
   HomeRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Stream<List<HomeChaletEntity>> watchPublicChalets() {
+  Stream<List<HomeChaletEntity>> watchPublicChalets({int? limit}) {
     return remoteDataSource
-        .watchPublicChalets()
+        .watchPublicChalets(limit: limit)
         .map(HomeChaletMapper.fromSnapshot);
   }
 

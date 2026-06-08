@@ -6,8 +6,8 @@ class WatchPublicChaletsUseCase {
 
   WatchPublicChaletsUseCase(this.repository);
 
-  Stream<List<HomeChaletEntity>> call() {
-    return repository.watchPublicChalets();
+  Stream<List<HomeChaletEntity>> call({int? limit}) {
+    return repository.watchPublicChalets(limit: limit);
   }
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 
 class RequestDetailsCard extends StatelessWidget {
@@ -52,9 +53,9 @@ class RequestDetailsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Request Details',
-                style: TextStyle(
+              Text(
+                context.tr('admin_request_details').isEmpty ? 'تفاصيل الطلب' : context.tr('admin_request_details'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: ColorsManager.grey1F2937,
@@ -80,9 +81,9 @@ class RequestDetailsCard extends StatelessWidget {
                       size: 18,
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Request ID: ',
-                      style: TextStyle(
+                    Text(
+                      context.tr('admin_request_id').isEmpty ? 'رقم الطلب: ' : context.tr('admin_request_id'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: ColorsManager.grey374151,
                         fontSize: 15,
@@ -108,9 +109,9 @@ class RequestDetailsCard extends StatelessWidget {
                       size: 18,
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Submitted: ',
-                      style: TextStyle(
+                    Text(
+                      context.tr('admin_submitted').isEmpty ? 'تاريخ التقديم: ' : context.tr('admin_submitted'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: ColorsManager.grey374151,
                         fontSize: 15,
@@ -136,9 +137,9 @@ class RequestDetailsCard extends StatelessWidget {
                       size: 18,
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Updated: ',
-                      style: TextStyle(
+                    Text(
+                      context.tr('admin_updated').isEmpty ? 'تاريخ التحديث: ' : context.tr('admin_updated'),
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: ColorsManager.grey374151,
                         fontSize: 15,

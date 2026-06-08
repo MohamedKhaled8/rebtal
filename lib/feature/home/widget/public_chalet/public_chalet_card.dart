@@ -3,6 +3,7 @@ import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
+import 'package:rebtal/core/utils/widgets/glass_badge.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/feature/home/logic/helpers/chalet_card_display_helper.dart';
 import 'package:rebtal/feature/home/widget/public_chalet/chalet_favorite_button.dart';
@@ -62,8 +63,9 @@ class PublicChaletCardBody extends StatelessWidget {
     final rawImages = collectChaletImageUrls(chaletData);
     final images = rawImages.isEmpty ? const [''] : rawImages;
     final isDark = DynamicThemeManager.isDarkMode(context);
-    final dayUseUnavailable =
-        ChaletCardDisplayHelper.isDayUseUnavailableToday(chaletData);
+    final dayUseUnavailable = ChaletCardDisplayHelper.isDayUseUnavailableToday(
+      chaletData,
+    );
     final hasDiscount = ChaletCardDisplayHelper.hasDiscount(chaletData);
     final isNew = ChaletCardDisplayHelper.isNewChalet(chaletData);
 
@@ -98,7 +100,8 @@ class PublicChaletCardBody extends StatelessWidget {
           ],
         ),
         child: InkWell(
-          onTap: onDetailsPressed ??
+          onTap:
+              onDetailsPressed ??
               () {
                 Navigator.push(
                   context,
@@ -159,15 +162,16 @@ class PublicChaletCardBody extends StatelessWidget {
                     Positioned(
                       bottom: 12,
                       right: 12,
-                      child: Container(
+                      child: GlassBadge(
+                        backgroundColor: const Color(
+                          0xFF2563EB,
+                        ).withOpacity(0.75),
+                        borderColor: Colors.white.withOpacity(0.4),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 4,
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        borderRadius: 8,
                         child: Text(
                           context.tr('home_special_offer'),
                           style: const TextStyle(
@@ -243,7 +247,7 @@ class PublicChaletCardBody extends StatelessWidget {
                             tablet: 16.spScaled,
                             desktop: 18.spScaled,
                           ),
-                          color: isDark ? Colors.white54 : Colors.grey[600],
+                          color: isDark ? Colors.white70 : Colors.grey[600],
                         ),
                         SizedBox(
                           width: stv(
@@ -257,7 +261,7 @@ class PublicChaletCardBody extends StatelessWidget {
                           child: Text(
                             location,
                             style: TextStyle(
-                              color: isDark ? Colors.white54 : Colors.grey[600],
+                              color: isDark ? Colors.white70 : Colors.grey[600],
                               fontSize: stv(
                                 context: context,
                                 mobile: 12.spScaled,
@@ -278,7 +282,10 @@ class PublicChaletCardBody extends StatelessWidget {
                         landscape: 6.sh,
                       ),
                     ),
-                    PublicChaletStatsRow(chaletData: chaletData, isDark: isDark),
+                    PublicChaletStatsRow(
+                      chaletData: chaletData,
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
@@ -299,19 +306,15 @@ class PublicChaletDayUseBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.55),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.2,
+      child: GlassBadge(
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
     );
@@ -327,21 +330,18 @@ class PublicChaletNewBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2563EB),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
-        ],
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 9,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
+      child: GlassBadge(
+        backgroundColor: const Color(0xFF2563EB).withOpacity(0.75),
+        borderColor: Colors.white.withOpacity(0.4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
         ),
       ),
     );
@@ -393,8 +393,7 @@ class PublicChaletStatsRow extends StatelessWidget {
           ),
           PublicChaletStatItem(
             icon: Icons.square_foot_outlined,
-            label:
-                '${chaletData['chaletArea']} ${context.tr('common_m2')}',
+            label: '${chaletData['chaletArea']} ${context.tr('common_m2')}',
             isDark: isDark,
           ),
         ],
@@ -427,7 +426,7 @@ class PublicChaletStatItem extends StatelessWidget {
             tablet: 16.spScaled,
             desktop: 18.spScaled,
           ),
-          color: isDark ? Colors.white38 : Colors.black45,
+          color: isDark ? Colors.white70 : Colors.grey[600], // Changed from black45 for better contrast in light mode too
         ),
         SizedBox(
           width: stv(
@@ -446,7 +445,7 @@ class PublicChaletStatItem extends StatelessWidget {
               tablet: 13.spScaled,
               desktop: 15.spScaled,
             ),
-            color: isDark ? Colors.white38 : Colors.black45,
+            color: isDark ? Colors.white70 : Colors.grey[600],
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -469,8 +468,9 @@ class PublicChaletPriceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final price = chaletData['price'];
     final hasDisc = ChaletCardDisplayHelper.hasDiscount(chaletData);
-    final discounted =
-        ChaletCardDisplayHelper.calculateDiscountedPrice(chaletData);
+    final discounted = ChaletCardDisplayHelper.calculateDiscountedPrice(
+      chaletData,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -485,7 +485,7 @@ class PublicChaletPriceSection extends StatelessWidget {
                 tablet: 17.spScaled,
                 desktop: 19.spScaled,
               ),
-              color: isDark ? Colors.white54 : Colors.grey[700],
+              color: isDark ? Colors.white70 : Colors.grey[700],
               fontWeight: FontWeight.w900,
               decoration: TextDecoration.lineThrough,
               decorationColor: Colors.red.withOpacity(0.5),
@@ -527,7 +527,7 @@ class PublicChaletPriceSection extends StatelessWidget {
                   tablet: 12.spScaled,
                   desktop: 14.spScaled,
                 ),
-                color: isDark ? Colors.white54 : Colors.grey[600],
+                color: isDark ? Colors.white70 : Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
             ),

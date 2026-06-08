@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
 import 'package:rebtal/feature/home/logic/cubit/home_state.dart';
 import 'package:rebtal/core/utils/dependency/get_it.dart';
+import 'package:rebtal/core/utils/widgets/glass_badge.dart';
 
 class ChaletFavoriteButton extends StatefulWidget {
   const ChaletFavoriteButton({
@@ -64,12 +65,11 @@ class ChaletFavoriteButtonState extends State<ChaletFavoriteButton> {
                   }
                 }
               : null,
-          child: Container(
+          child: GlassBadge(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.35),
-              shape: BoxShape.circle,
-            ),
+            borderRadius: 50,
+            backgroundColor: Colors.black.withOpacity(0.35),
+            borderColor: Colors.white.withOpacity(0.3),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               transitionBuilder: (child, animation) {

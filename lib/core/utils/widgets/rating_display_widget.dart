@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/widgets/glass_badge.dart';
 
 class RatingDisplayWidget extends StatelessWidget {
   final String chaletId;
@@ -42,16 +43,10 @@ class RatingDisplayWidget extends StatelessWidget {
         }
 
         if (isBadge) {
-          return Container(
+          return GlassBadge(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: ColorsManager.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: ColorsManager.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
+            backgroundColor: ColorsManager.black.withOpacity(0.4),
+            borderColor: ColorsManager.white.withOpacity(0.3),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

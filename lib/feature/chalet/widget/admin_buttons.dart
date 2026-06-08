@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
+import 'package:rebtal/core/utils/config/space.dart';
 
 class AdminButtons extends StatelessWidget {
   final String status;
@@ -32,76 +34,73 @@ class AdminButtons extends StatelessWidget {
         }
 
         return Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+          margin: EdgeInsets.fromLTRB(16.sp, 0, 16.sp, 40.sp),
           child: currentStatus == 'pending'
               ? Column(
                   children: [
                     if (state is ActionButtonsLoading)
                       const Center(child: CircularProgressIndicator())
                     else ...[
-                      SizedBox(
+                      // Approve Button
+                      Container(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => cubit.updateStatus(
-                            docId: docId,
-                            newStatus: 'approved',
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorsManager.chaletActionGreen,
-                            foregroundColor: ColorsManager.white,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            elevation: 0,
-                            shadowColor: ColorsManager.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.sp),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF10B981).withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () => cubit.updateStatus(docId: docId, newStatus: 'approved'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: EdgeInsets.symmetric(vertical: 16.sp),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.sp)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle_outline, size: 22),
-                              SizedBox(width: 12),
+                              Icon(Icons.check_circle_rounded, size: 24.sp, color: Colors.white),
+                              horizintalSpace(1),
                               Text(
-                                'Approve Request',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                context.tr('admin_approve').isEmpty ? 'قبول الطلب' : context.tr('admin_approve'),
+                                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      verticalSpace(1.5),
+                      // Reject Button
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                          onPressed: () => cubit.updateStatus(
-                            docId: docId,
-                            newStatus: 'rejected',
-                          ),
+                          onPressed: () => cubit.updateStatus(docId: docId, newStatus: 'rejected'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: ColorsManager.chaletActionRed,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            side: const BorderSide(
-                              color: ColorsManager.chaletActionRed,
-                              width: 2,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                            foregroundColor: const Color(0xFFEF4444),
+                            padding: EdgeInsets.symmetric(vertical: 16.sp),
+                            side: BorderSide(color: const Color(0xFFEF4444).withOpacity(0.5), width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.sp)),
+                            backgroundColor: const Color(0xFFFEF2F2),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.cancel_outlined, size: 22),
-                              SizedBox(width: 12),
+                              Icon(Icons.cancel_rounded, size: 24.sp),
+                              horizintalSpace(1),
                               Text(
-                                'Reject Request',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                context.tr('admin_reject').isEmpty ? 'رفض الطلب' : context.tr('admin_reject'),
+                                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -113,18 +112,17 @@ class AdminButtons extends StatelessWidget {
               : Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        ColorsManager.chaletActionBlue,
-                        ColorsManager.chaletActionDarkBlue,
-                      ],
+                    gradient: LinearGradient(
+                      colors: currentStatus == 'approved'
+                          ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                          : [const Color(0xFFEF4444), const Color(0xFFDC2626)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.sp),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorsManager.chaletActionBlue.withOpacity(0.3),
+                        color: (currentStatus == 'approved' ? const Color(0xFF10B981) : const Color(0xFFEF4444)).withOpacity(0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -132,39 +130,24 @@ class AdminButtons extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      SnackBarHelper.showWarning(
-                        context,
-                        'Request already processed',
-                      );
+                      SnackBarHelper.showWarning(context, context.tr('common_already_processed').isEmpty ? 'تم معالجة الطلب مسبقاً' : context.tr('common_already_processed'));
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorsManager.transparent,
-                      shadowColor: ColorsManager.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: EdgeInsets.symmetric(vertical: 16.sp),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.sp)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          currentStatus == 'approved'
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          size: 22,
-                          color: ColorsManager.white,
-                        ),
-                        const SizedBox(width: 12),
+                        Icon(currentStatus == 'approved' ? Icons.check_circle_rounded : Icons.cancel_rounded, size: 24.sp, color: Colors.white),
+                        horizintalSpace(1),
                         Text(
-                          currentStatus == 'approved'
-                              ? 'Request Approved'
-                              : 'Request Rejected',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: ColorsManager.white,
-                          ),
+                          currentStatus == 'approved' 
+                              ? (context.tr('admin_request_approved').isEmpty ? 'تم قبول الطلب' : context.tr('admin_request_approved'))
+                              : (context.tr('admin_request_rejected').isEmpty ? 'تم رفض الطلب' : context.tr('admin_request_rejected')),
+                          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
                     ),

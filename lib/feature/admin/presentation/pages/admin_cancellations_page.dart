@@ -7,6 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/core/utils/config/space.dart';
+import 'package:responsive_screen_master/responsive_screen_master.dart';
+import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AdminCancellationsPage extends StatelessWidget {
   const AdminCancellationsPage({super.key});
@@ -58,7 +62,7 @@ class AdminCancellationsPage extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(horizontal: 16.sw, vertical: 16.sh),
             itemCount: cancelledBookings.length,
             itemBuilder: (context, index) {
               return _AdminCancelledBookingCard(
@@ -89,71 +93,109 @@ class _AdminCancelledBookingCard extends StatelessWidget {
     final refundAmount = booking.refundAmount ?? 0.0;
     final ownerShare = originalAmount - refundAmount;
 
-    final currencyFormat = NumberFormat.currency(symbol: 'EGP', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(symbol: '', decimalDigits: 0);
     final dateFormat = DateFormat('yyyy-MM-dd');
 
+    final coverImageUrl = booking.chaletImage ?? '';
+    final location = booking.chaletLocation ?? 'Unknown Location';
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: EdgeInsets.only(bottom: 20.sh),
       decoration: BoxDecoration(
-        color: isDark ? ColorsManager.darkSurface1E1E1E : ColorsManager.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? const Color(0xFF0B0F0D) : Colors.white,
+        borderRadius: BorderRadius.circular(12.sp),
         boxShadow: [
           BoxShadow(
-            color: ColorsManager.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: ColorsManager.red.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: ColorsManager.red,
-                    shape: BoxShape.circle,
+          // Image Stack (matches user/owner view & ChaletRequestCard)
+          Stack(
+            children: [
+              SizedBox(
+                height: 200.sp,
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(12.sp),
                   ),
-                  child: const Icon(
-                    Icons.close_rounded,
-                    color: ColorsManager.white,
-                    size: 16,
+                  child: AppImageHelper(
+                    path: coverImageUrl,
+                    fit: BoxFit.cover,
+                    cacheScope: booking.id,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
-                  'تم الإلغاء',
-                  style: TextStyle(
-                    color: ColorsManager.red,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+              ),
+              Positioned(
+                top: 20,
+                left: 12,
+                right: 12,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Status Badge (Cancelled in red)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
+                      decoration: BoxDecoration(
+                        color: ColorsManager.red.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(8.sp),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            context.tr('booking_status_cancelled').isEmpty ? 'تم الإلغاء' : context.tr('booking_status_cancelled'),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Date tag
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.sp, vertical: 4.sp),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(8.sp),
+                      ),
+                      child: Text(
+                        dateFormat.format(cancelDate),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                Text(
-                  dateFormat.format(cancelDate),
-                  style: TextStyle(
-                    color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
+
+          // Content
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(12.sw),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Column(
@@ -162,91 +204,199 @@ class _AdminCancelledBookingCard extends StatelessWidget {
                           Text(
                             booking.chaletName,
                             style: TextStyle(
-                              fontSize: 18,
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          verticalSpace(0.5),
                           Text(
                             'المالك: ${booking.ownerName}',
                             style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? ColorsManager.white70 : ColorsManager.grey600,
+                              fontSize: 12.sp,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
                     ),
+                    horizintalSpace(2),
                     Text(
                       '#${booking.id.substring(0, 6)}',
                       style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? ColorsManager.white70 : ColorsManager.grey400,
+                        fontSize: 12.sp,
+                        color: isDark ? Colors.white70 : Colors.grey[400],
                         fontFamily: 'monospace',
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                const Divider(),
-                const SizedBox(height: 20),
+                verticalSpace(1.5),
+
+                // Location Row
                 Row(
                   children: [
-                    Expanded(child: _buildFinancialItem('المبلغ الأصلي', currencyFormat.format(originalAmount), isDark ? ColorsManager.white70 : ColorsManager.grey700, isDark ? ColorsManager.white : ColorsManager.black)),
-                    Expanded(child: _buildFinancialItem('المسترد للعميل', currencyFormat.format(refundAmount), ColorsManager.red.withOpacity(0.7), ColorsManager.red)),
-                    Expanded(child: _buildFinancialItem('حصة المالك', currencyFormat.format(ownerShare), ColorsManager.green.withOpacity(0.7), ColorsManager.green)),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 14.sp,
+                      color: isDark ? Colors.white70 : Colors.grey[600],
+                    ),
+                    horizintalSpace(1),
+                    Expanded(
+                      child: Text(
+                        location,
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.grey[600],
+                          fontSize: 12.sp,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                verticalSpace(2),
+                Divider(height: 1, thickness: 1, color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                verticalSpace(2),
+
+                // Financials Grid
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFinancialItem(
+                        'المبلغ الأصلي',
+                        '${currencyFormat.format(originalAmount)} ج.م',
+                        isDark ? ColorsManager.white70 : ColorsManager.grey700,
+                        isDark ? ColorsManager.white : ColorsManager.black,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFinancialItem(
+                        'المسترد للعميل',
+                        '${currencyFormat.format(refundAmount)} ج.م',
+                        ColorsManager.red.withOpacity(0.7),
+                        ColorsManager.red,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildFinancialItem(
+                        'حصة المالك',
+                        '${currencyFormat.format(ownerShare)} ج.م',
+                        ColorsManager.green.withOpacity(0.7),
+                        ColorsManager.green,
+                      ),
+                    ),
+                  ],
+                ),
+                verticalSpace(2),
+
+                // Details Box
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(12.sp),
                   decoration: BoxDecoration(
-                    color: isDark ? ColorsManager.white.withOpacity(0.05) : ColorsManager.grey50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: isDark ? ColorsManager.white10 : ColorsManager.grey200),
+                    color: isDark ? Colors.white.withOpacity(0.03) : ColorsManager.greyF9FAFB,
+                    borderRadius: BorderRadius.circular(12.sp),
+                    border: Border.all(color: isDark ? const Color(0xFF1E293B) : ColorsManager.greyE5E7EB),
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow(Icons.person_outline, 'العميل', '${booking.userName}\n${booking.userPhone ?? ""}', isDark),
-                      const SizedBox(height: 12),
-                      _buildDetailRow(Icons.calendar_today_outlined, 'تاريخ الحجز', '${dateFormat.format(booking.from)} - ${dateFormat.format(booking.to)}', isDark),
+                      _buildDetailRow(
+                        Icons.person_outline,
+                        'العميل',
+                        '${booking.userName}\n${booking.userPhone ?? ""}',
+                      ),
+                      verticalSpace(1.5),
+                      _buildDetailRow(
+                        Icons.calendar_today_outlined,
+                        'تاريخ الحجز',
+                        '${dateFormat.format(booking.from)} - ${dateFormat.format(booking.to)}',
+                      ),
                       if (booking.refundReason != null) ...[
-                        const SizedBox(height: 12),
-                        _buildDetailRow(Icons.info_outline, 'السبب/السياسة', booking.refundReason!, isDark, textColor: ColorsManager.orange),
+                        verticalSpace(1.5),
+                        _buildDetailRow(
+                          Icons.info_outline,
+                          'السبب/السياسة',
+                          booking.refundReason!,
+                          textColor: ColorsManager.orangeF59E0B,
+                        ),
                       ],
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                verticalSpace(2.5),
+
+                // Contact Action Buttons (matches chalet card premium feel)
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _contactUser(booking.userPhone),
-                        icon: const Icon(Icons.phone),
-                        label: const Text('العميل'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorsManager.primaryColor,
-                          foregroundColor: ColorsManager.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ColorsManager.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.sp),
+                          border: Border.all(color: ColorsManager.primaryColor.withOpacity(0.3)),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _contactUser(booking.userPhone),
+                            borderRadius: BorderRadius.circular(12.sp),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.sp),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.phone_outlined, size: 16, color: ColorsManager.primaryColor),
+                                  horizintalSpace(1.5),
+                                  Text(
+                                    'مراسلة العميل',
+                                    style: TextStyle(
+                                      color: ColorsManager.primaryColor,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    horizintalSpace(3),
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _contactUser(booking.ownerPhone),
-                        icon: const Icon(Icons.phone),
-                        label: const Text('المالك'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorsManager.orange,
-                          foregroundColor: ColorsManager.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ColorsManager.orangeF59E0B.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.sp),
+                          border: Border.all(color: ColorsManager.orangeF59E0B.withOpacity(0.3)),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _contactUser(booking.ownerPhone),
+                            borderRadius: BorderRadius.circular(12.sp),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10.sp),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.phone_outlined, size: 16, color: ColorsManager.orangeF59E0B),
+                                  horizintalSpace(1.5),
+                                  Text(
+                                    'مراسلة المالك',
+                                    style: TextStyle(
+                                      color: ColorsManager.orangeF59E0B,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -264,25 +414,34 @@ class _AdminCancelledBookingCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 11, color: labelColor)),
+        Text(label, style: TextStyle(fontSize: 11.sp, color: labelColor, fontWeight: FontWeight.w500)),
         const SizedBox(height: 4),
-        Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: valueColor)),
+        Text(value, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: valueColor)),
       ],
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value, bool isDark, {Color? textColor}) {
+  Widget _buildDetailRow(IconData icon, String label, String value, {Color? textColor}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: isDark ? ColorsManager.white70 : ColorsManager.grey400),
-        const SizedBox(width: 12),
+        Icon(icon, size: 16.sp, color: isDark ? Colors.white70 : Colors.grey[400]),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(fontSize: 11, color: isDark ? ColorsManager.white70 : ColorsManager.grey700)),
-              Text(value, style: TextStyle(fontSize: 14, color: textColor ?? (isDark ? ColorsManager.white : ColorsManager.chaletTextPrimaryLight), fontWeight: FontWeight.w500, height: 1.3)),
+              Text(label, style: TextStyle(fontSize: 11.sp, color: isDark ? Colors.white70 : Colors.grey[500])),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: textColor ?? (isDark ? Colors.white : ColorsManager.chaletTextPrimaryLight),
+                  fontWeight: FontWeight.w600,
+                  height: 1.3,
+                ),
+              ),
             ],
           ),
         ),

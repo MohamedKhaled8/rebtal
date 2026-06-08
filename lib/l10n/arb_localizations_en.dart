@@ -2869,4 +2869,52 @@ class ArbLocalizationsEn extends ArbLocalizations {
 
   @override
   String get owner_your_chalet => 'Your Chalet';
+
+  @override
+  String get admin_confirm_delete_chalet =>
+      'Are you sure you want to delete this chalet permanently?';
+
+  @override
+  String get admin_chalet_deleted_success => 'Chalet deleted successfully';
+
+  @override
+  String get common_confirm_delete => 'Confirm Delete';
+
+  @override
+  String get update_available => 'Update Available';
+
+  @override
+  String get update_required_desc =>
+      'A new version of the app is available and must be updated to continue.';
+
+  @override
+  String get current_version => 'Current version:';
+
+  @override
+  String get min_required_version => 'Min required version:';
+
+  @override
+  String get update_now => 'Update Now';
+
+  @override
+  String get admin_tab_updates => 'Updates';
+
+  @override
+  String get admin_app_updates => 'App Updates';
+
+  @override
+  String get admin_app_updates_desc =>
+      'Control force update settings for users';
+
+  @override
+  String get admin_force_update_enable => 'Enable Force Update';
+
+  @override
+  String get admin_min_build_number => 'Min Build Number';
+
+  @override
+  String get admin_android_url => 'Android Store URL';
+
+  @override
+  String get admin_ios_url => 'iOS Store URL';
 }

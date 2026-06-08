@@ -16,6 +16,7 @@ class AppImageHelper extends StatelessWidget {
   /// Pass Firestore doc id (or similar) for network images so list/detail cards
   /// never reuse another chalet's decoded image for the same URL slot.
   final String? cacheScope;
+  final int? memCacheWidth;
 
   const AppImageHelper({
     super.key,
@@ -27,6 +28,7 @@ class AppImageHelper extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.cacheScope,
+    this.memCacheWidth,
   });
 
   @override
@@ -56,6 +58,7 @@ class AppImageHelper extends StatelessWidget {
           placeholder: placeholder,
           errorWidget: errorWidget,
           cacheScope: cacheScope,
+          memCacheWidth: memCacheWidth,
         );
       case ImageType.lottie:
         return Lottie.asset(path, height: height, width: width, fit: fit);

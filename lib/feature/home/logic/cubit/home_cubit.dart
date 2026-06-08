@@ -46,23 +46,7 @@ class HomeCubit extends Cubit<HomeState> {
     if (_isWatching) return;
     _isWatching = true;
 
-    _publicSub = _watchPublicChalets().listen(
-      (chalets) {
-        _publicMemoryCache = chalets;
-        emit(
-          state.copyWith(
-            publicChalets: chalets,
-            publicWaitingFirst: false,
-            clearPublicError: true,
-          ),
-        );
-      },
-      onError: (Object error) {
-        emit(
-          state.copyWith(publicWaitingFirst: false, publicError: error),
-        );
-      },
-    );
+    _listenToPublicChalets(state.displayLimit);
 
     _discountedSub = _watchDiscountedChalets().listen(
       (offers) {
@@ -102,13 +86,31 @@ class HomeCubit extends Cubit<HomeState> {
     );
   }
 
-  void loadMorePublicChalets() {
-    emit(
-      state.copyWith(
-        displayLimit:
-            state.displayLimit + HomeChaletListHelper.loadMoreIncrement,
-      ),
+  void _listenToPublicChalets(int limit) {
+    _publicSub?.cancel();
+    _publicSub = _watchPublicChalets(limit: limit).listen(
+      (chalets) {
+        _publicMemoryCache = chalets;
+        emit(
+          state.copyWith(
+            publicChalets: chalets,
+            publicWaitingFirst: false,
+            clearPublicError: true,
+            displayLimit: limit,
+          ),
+        );
+      },
+      onError: (Object error) {
+        emit(
+          state.copyWith(publicWaitingFirst: false, publicError: error),
+        );
+      },
     );
+  }
+
+  void loadMorePublicChalets() {
+    final newLimit = state.displayLimit + HomeChaletListHelper.loadMoreIncrement;
+    _listenToPublicChalets(newLimit);
   }
 
   Future<void> refresh() async {

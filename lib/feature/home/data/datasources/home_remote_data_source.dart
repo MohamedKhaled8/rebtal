@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Public listing uses a simple compound `where` — no extra index for [createdAt].
 abstract class HomeRemoteDataSource {
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets();
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets({int? limit});
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchDiscountedChalets();
 
@@ -16,11 +16,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final FirebaseFirestore _firestore;
 
   @override
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets() {
-    return _firestore
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchPublicChalets({int? limit}) {
+    var query = _firestore
         .collection('chalets')
         .where('status', isEqualTo: 'approved')
-        .where('isVisible', isEqualTo: true)
+        .where('isVisible', isEqualTo: true);
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    return query
         .withConverter<Map<String, dynamic>>(
           fromFirestore: (snap, _) => snap.data() ?? <String, dynamic>{},
           toFirestore: (data, _) => data,

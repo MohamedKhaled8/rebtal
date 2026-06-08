@@ -65,6 +65,7 @@ class ChaletImageCarouselState extends State<ChaletImageCarousel> {
             path: widget.images[index],
             fit: BoxFit.cover,
             cacheScope: widget.docId,
+            memCacheWidth: 600,
           );
         },
       ),

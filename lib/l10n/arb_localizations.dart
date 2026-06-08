@@ -5587,6 +5587,96 @@ abstract class ArbLocalizations {
   /// In en, this message translates to:
   /// **'Your Chalet'**
   String get owner_your_chalet;
+
+  /// No description provided for @admin_confirm_delete_chalet.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this chalet permanently?'**
+  String get admin_confirm_delete_chalet;
+
+  /// No description provided for @admin_chalet_deleted_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Chalet deleted successfully'**
+  String get admin_chalet_deleted_success;
+
+  /// No description provided for @common_confirm_delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get common_confirm_delete;
+
+  /// No description provided for @update_available.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Available'**
+  String get update_available;
+
+  /// No description provided for @update_required_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of the app is available and must be updated to continue.'**
+  String get update_required_desc;
+
+  /// No description provided for @current_version.
+  ///
+  /// In en, this message translates to:
+  /// **'Current version:'**
+  String get current_version;
+
+  /// No description provided for @min_required_version.
+  ///
+  /// In en, this message translates to:
+  /// **'Min required version:'**
+  String get min_required_version;
+
+  /// No description provided for @update_now.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Now'**
+  String get update_now;
+
+  /// No description provided for @admin_tab_updates.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates'**
+  String get admin_tab_updates;
+
+  /// No description provided for @admin_app_updates.
+  ///
+  /// In en, this message translates to:
+  /// **'App Updates'**
+  String get admin_app_updates;
+
+  /// No description provided for @admin_app_updates_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Control force update settings for users'**
+  String get admin_app_updates_desc;
+
+  /// No description provided for @admin_force_update_enable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Force Update'**
+  String get admin_force_update_enable;
+
+  /// No description provided for @admin_min_build_number.
+  ///
+  /// In en, this message translates to:
+  /// **'Min Build Number'**
+  String get admin_min_build_number;
+
+  /// No description provided for @admin_android_url.
+  ///
+  /// In en, this message translates to:
+  /// **'Android Store URL'**
+  String get admin_android_url;
+
+  /// No description provided for @admin_ios_url.
+  ///
+  /// In en, this message translates to:
+  /// **'iOS Store URL'**
+  String get admin_ios_url;
 }
 
 class _ArbLocalizationsDelegate

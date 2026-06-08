@@ -95,6 +95,7 @@ class AuthCubit extends Cubit<AuthState> {
     );
     try {
       DocumentSnapshot? doc;
+      bool hadNetworkError = false;
 
       // 2. Parallelize Firestore lookups
       final futures = ["Users", "Owners", "Admin"].map((col) async {
@@ -103,9 +104,10 @@ class AuthCubit extends Cubit<AuthState> {
               .collection(col)
               .doc(firebaseUser.uid)
               .get()
-              .timeout(const Duration(seconds: 4));
+              .timeout(const Duration(seconds: 8)); // Increased timeout
           return d.exists ? d : null;
         } catch (e) {
+          hadNetworkError = true;
           // If timeout or offline error, try fetching from cache
           try {
             final cacheDoc = await FirebaseFirestore.instance
@@ -149,6 +151,9 @@ class AuthCubit extends Cubit<AuthState> {
 
         debugPrint('🔥 AuthCubit: Emitting AuthSuccess');
         _emitAuthSuccess(user);
+      } else if (hadNetworkError) {
+        debugPrint('🔥 AuthCubit: Network error prevented fetching user doc, treating as offline');
+        throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable', message: 'Network timeout while fetching user profile');
       } else {
         debugPrint('🔥 AuthCubit: No user doc found in Firestore');
         emit(AuthUnauthenticated());

@@ -25,6 +25,7 @@ class NetworkImageHelper extends StatelessWidget {
   /// e.g. Firestore `docId` — keeps CachedNetworkImage identity unique per chalet
   /// so the same URL on two listings cannot briefly show the wrong bitmap.
   final String? cacheScope;
+  final int? memCacheWidth;
 
   const NetworkImageHelper({
     super.key,
@@ -35,6 +36,7 @@ class NetworkImageHelper extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.cacheScope,
+    this.memCacheWidth,
   });
 
   @override
@@ -47,6 +49,7 @@ class NetworkImageHelper extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      memCacheWidth: memCacheWidth,
       fadeInDuration: const Duration(milliseconds: 120),
       fadeOutDuration: Duration.zero,
       placeholderFadeInDuration: Duration.zero,

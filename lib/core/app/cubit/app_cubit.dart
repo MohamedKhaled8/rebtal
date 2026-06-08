@@ -10,6 +10,7 @@ import 'package:rebtal/feature/notifications/logic/notification_cubit.dart';
 import 'package:rebtal/feature/notifications/logic/notification_state.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
+import 'package:rebtal/core/utils/network/network_cubit.dart';
 
 part 'app_state.dart';
 
@@ -22,6 +23,7 @@ class AppCubit extends Cubit<AppState> {
   final ThemeCubit _themeCubit;
   final NotificationCubit _notificationCubit;
   final OwnerCubit _ownerCubit;
+  final NetworkCubit _networkCubit;
 
   // Temporary Public Accessors for Migration
   AuthCubit get authCubit => _authCubit;
@@ -29,6 +31,7 @@ class AppCubit extends Cubit<AppState> {
   ThemeCubit get themeCubit => _themeCubit;
   NotificationCubit get notificationCubit => _notificationCubit;
   OwnerCubit get ownerCubit => _ownerCubit;
+  NetworkCubit get networkCubit => _networkCubit;
 
   /// Constructor Injection
   AppCubit({
@@ -37,11 +40,13 @@ class AppCubit extends Cubit<AppState> {
     required ThemeCubit themeCubit,
     required NotificationCubit notificationCubit,
     required OwnerCubit ownerCubit,
+    required NetworkCubit networkCubit,
   }) : _authCubit = authCubit,
        _bookingCubit = bookingCubit,
        _themeCubit = themeCubit,
        _notificationCubit = notificationCubit,
        _ownerCubit = ownerCubit,
+       _networkCubit = networkCubit,
        super(
          AppUnauthenticated(
            themeMode: ThemeMode.system,
@@ -316,6 +321,7 @@ class AppCubit extends Cubit<AppState> {
     _themeCubit.close();
     _notificationCubit.close();
     _ownerCubit.close();
+    _networkCubit.close();
     return super.close();
   }
 }

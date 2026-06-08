@@ -448,7 +448,9 @@ class ProfileContent extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      context.tr('profile_version'),
+                      context.read<AppCubit>().state.locale.languageCode == 'ar'
+                          ? 'الإصدار 2.0.0'
+                          : 'Version 2.0.0',
                       style: TextStyle(fontSize: 12, color: subColor),
                     ),
                     const SizedBox(height: 90),

@@ -39,6 +39,7 @@ import 'package:rebtal/core/utils/helper/image_clean/image_contracts.dart';
 import 'package:rebtal/core/utils/helper/image_clean/image_gateways.dart';
 import 'package:rebtal/core/utils/helper/image_clean/image_repository_contracts.dart';
 import 'package:rebtal/core/utils/helper/image_clean/image_use_cases.dart';
+import 'package:rebtal/core/utils/network/network_cubit.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -225,6 +226,8 @@ Future<void> setupGetIt() async {
     ),
   );
 
+  getIt.registerLazySingleton<NetworkCubit>(() => NetworkCubit());
+
   // Must be a factory: each chalet detail screen needs its own cubit + PageController.
   // Singleton caused wrong images/state to leak across different chalet opens.
   getIt.registerFactory<ChaletDetailCubit>(
@@ -247,6 +250,7 @@ Future<void> setupGetIt() async {
       themeCubit: getIt<ThemeCubit>(),
       notificationCubit: getIt<NotificationCubit>(),
       ownerCubit: getIt<OwnerCubit>(),
+      networkCubit: getIt<NetworkCubit>(),
     ),
   );
 }

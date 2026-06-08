@@ -2845,4 +2845,52 @@ class ArbLocalizationsAr extends ArbLocalizations {
 
   @override
   String get owner_your_chalet => 'شاليهك';
+
+  @override
+  String get admin_confirm_delete_chalet =>
+      'هل أنت متأكد من حذف هذا الشاليه نهائياً؟';
+
+  @override
+  String get admin_chalet_deleted_success => 'تم حذف الشاليه بنجاح';
+
+  @override
+  String get common_confirm_delete => 'تأكيد الحذف';
+
+  @override
+  String get update_available => 'تحديث متوفر';
+
+  @override
+  String get update_required_desc =>
+      'يوجد إصدار جديد للتطبيق ويجب تحديثه للمتابعة.';
+
+  @override
+  String get current_version => 'إصدارك الحالي:';
+
+  @override
+  String get min_required_version => 'الحد الأدنى المطلوب:';
+
+  @override
+  String get update_now => 'تحديث الآن';
+
+  @override
+  String get admin_tab_updates => 'التحديثات';
+
+  @override
+  String get admin_app_updates => 'إدارة التحديثات';
+
+  @override
+  String get admin_app_updates_desc =>
+      'تحكم في إجبار المستخدمين على تحديث التطبيق';
+
+  @override
+  String get admin_force_update_enable => 'تفعيل التحديث الإجباري';
+
+  @override
+  String get admin_min_build_number => 'رقم الإصدار الأدنى (Build Number)';
+
+  @override
+  String get admin_android_url => 'رابط متجر Android';
+
+  @override
+  String get admin_ios_url => 'رابط متجر iOS';
 }

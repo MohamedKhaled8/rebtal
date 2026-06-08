@@ -52,6 +52,6 @@ class HomeChaletListHelper {
     int displayLimit,
     bool isFiltering,
   ) {
-    return !isFiltering && filtered.length > displayLimit;
+    return !isFiltering && filtered.length >= displayLimit;
   }
 }

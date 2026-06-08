@@ -54,83 +54,71 @@ class AdminCubit extends Cubit<AdminState> {
   void startListeningToAll() {
     emit(AdminLoading());
 
-    if (_usersSub == null) {
-      _usersSub = getAdminStreamUseCase
-          .watchCollection('Users')
-          .listen(
-            (snapshot) {
-              _users = snapshot.docs;
-              _emitDataLoaded();
-            },
-            onError: (e) {
-              emit(AdminError('Error fetching Users: $e'));
-            },
-          );
-    }
+    _usersSub ??= getAdminStreamUseCase
+        .watchCollection('Users')
+        .listen(
+          (snapshot) {
+            _users = snapshot.docs;
+            _emitDataLoaded();
+          },
+          onError: (e) {
+            emit(AdminError('Error fetching Users: $e'));
+          },
+        );
 
-    if (_ownersSub == null) {
-      _ownersSub = getAdminStreamUseCase
-          .watchCollection('Owners')
-          .listen(
-            (snapshot) {
-              _owners = snapshot.docs;
-              _emitDataLoaded();
-            },
-            onError: (e) {
-              emit(AdminError('Error fetching Owners: $e'));
-            },
-          );
-    }
+    _ownersSub ??= getAdminStreamUseCase
+        .watchCollection('Owners')
+        .listen(
+          (snapshot) {
+            _owners = snapshot.docs;
+            _emitDataLoaded();
+          },
+          onError: (e) {
+            emit(AdminError('Error fetching Owners: $e'));
+          },
+        );
 
-    if (_adminsSub == null) {
-      _adminsSub = getAdminStreamUseCase
-          .watchCollection('Admin')
-          .listen(
-            (snapshot) {
-              _admins = snapshot.docs;
-              _emitDataLoaded();
-            },
-            onError: (e) {
-              emit(AdminError('Error fetching Admin: $e'));
-            },
-          );
-    }
+    _adminsSub ??= getAdminStreamUseCase
+        .watchCollection('Admin')
+        .listen(
+          (snapshot) {
+            _admins = snapshot.docs;
+            _emitDataLoaded();
+          },
+          onError: (e) {
+            emit(AdminError('Error fetching Admin: $e'));
+          },
+        );
 
-    if (_chaletsSub == null) {
-      _chaletsSub = getAdminStreamUseCase.watchChalets().listen(
-        (snapshot) {
-          _chalets = snapshot.docs;
-          _emitDataLoaded();
-        },
-        onError: (e) {
-          emit(AdminError('Error fetching chalets: $e'));
-        },
-      );
-    }
+    _chaletsSub ??= getAdminStreamUseCase.watchChalets().listen(
+      (snapshot) {
+        _chalets = snapshot.docs;
+        _emitDataLoaded();
+      },
+      onError: (e) {
+        emit(AdminError('Error fetching chalets: $e'));
+      },
+    );
 
-    if (_bookingsSub == null) {
-      _bookingsSub = getAdminStreamUseCase.watchBookings().listen(
-        (snapshot) {
-          _bookings = snapshot.docs;
-          _emitDataLoaded();
-        },
-        onError: (e) {
-          emit(AdminError('Error fetching bookings: $e'));
-        },
-      );
-    }
+    _bookingsSub ??= getAdminStreamUseCase.watchBookings().listen(
+      (snapshot) {
+        _bookings = snapshot.docs;
+        _emitDataLoaded();
+      },
+      onError: (e) {
+        emit(AdminError('Error fetching bookings: $e'));
+      },
+    );
 
-    if (_paymentsSub == null) {
-      _paymentsSub = getAdminStreamUseCase.watchPaymentProofs().listen(
-        (snapshot) {
-          _payments = snapshot.docs;
-          _emitDataLoaded();
-        },
-        onError: (e) {
-          emit(AdminError('Error fetching payments: $e'));
-        },
-      );
-    }
+    _paymentsSub ??= getAdminStreamUseCase.watchPaymentProofs().listen(
+      (snapshot) {
+        _payments = snapshot.docs;
+        _emitDataLoaded();
+      },
+      onError: (e) {
+        emit(AdminError('Error fetching payments: $e'));
+      },
+    );
   }
 
   void _emitDataLoaded() {
@@ -189,7 +177,8 @@ class AdminCubit extends Cubit<AdminState> {
     final guestUserId = before?['userId']?.toString();
     final chaletName = before?['chaletName']?.toString() ?? '';
     final chaletId = before?['chaletId']?.toString() ?? '';
-    final isDayUse = before?['isDayUse'] == true ||
+    final isDayUse =
+        before?['isDayUse'] == true ||
         before?['bookingType']?.toString() == 'day_use';
 
     await updatePaymentProofStatusUseCase(proofDocId, 'approved');
@@ -204,7 +193,8 @@ class AdminCubit extends Cubit<AdminState> {
     // normal multi-day booking availability.
     if (isDayUse && chaletId.isNotEmpty) {
       final now = DateTime.now();
-      final todayKey = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final todayKey =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
       await FirebaseFirestore.instance.collection('chalets').doc(chaletId).set({
         'dayUseBookingAvailability': 'unavailable',
         'dayUseBookedAt': todayKey,
@@ -239,16 +229,17 @@ class AdminCubit extends Cubit<AdminState> {
     final data = bookingSnap.data();
     final chaletId = data?['chaletId']?.toString() ?? '';
     final isDayUse =
-        data?['isDayUse'] == true || data?['bookingType']?.toString() == 'day_use';
+        data?['isDayUse'] == true ||
+        data?['bookingType']?.toString() == 'day_use';
 
     await updatePaymentProofStatusUseCase(proofDocId, 'rejected');
     await bookingRef.update({
-          'status': 'awaitingPayment',
-          'paymentProofUrl': null,
-          'paymentProofUploadedAt': null,
-          if (reason != null && reason.isNotEmpty) 'adminPaymentNotes': reason,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
+      'status': 'awaitingPayment',
+      'paymentProofUrl': null,
+      'paymentProofUploadedAt': null,
+      if (reason != null && reason.isNotEmpty) 'adminPaymentNotes': reason,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
 
     // If payment proof is rejected, keep day-use available (no blocking).
     if (isDayUse && chaletId.isNotEmpty) {
@@ -401,6 +392,52 @@ class AdminCubit extends Cubit<AdminState> {
       );
     }
     return result;
+  }
+
+  Future<void> toggleChaletVisibility(
+    String docId,
+    bool currentVisibility,
+  ) async {
+    try {
+      final newVisibility = !currentVisibility;
+      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
+        'isVisible': newVisibility,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      emit(AdminError('common_error: $e'));
+      rethrow;
+    }
+  }
+
+  Future<void> toggleChaletBookingAvailability(
+    String docId,
+    String currentAvailability,
+  ) async {
+    try {
+      final newAvailability = currentAvailability == 'available'
+          ? 'unavailable'
+          : 'available';
+      await FirebaseFirestore.instance.collection('chalets').doc(docId).update({
+        'bookingAvailability': newAvailability,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      emit(AdminError('common_error: $e'));
+      rethrow;
+    }
+  }
+
+  Future<void> deleteChalet(String docId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('chalets')
+          .doc(docId)
+          .delete();
+    } catch (e) {
+      emit(AdminError('common_error: $e'));
+      rethrow;
+    }
   }
 
   @override

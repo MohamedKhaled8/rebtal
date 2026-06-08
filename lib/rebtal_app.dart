@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/theme/app_theme.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:rebtal/core/utils/localization/app_localization.dart';
+import 'package:rebtal/core/utils/network/network_connectivity_wrapper.dart';
 import 'package:rebtal/core/utils/widgets/force_update_gate.dart';
 
 class RebtalApp extends StatelessWidget {
@@ -19,14 +20,14 @@ class RebtalApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // ✅ SINGLE BlocProvider - provides AppCubit which coordinates all app state
     return BlocBuilder<AppCubit, AppState>(
-      buildWhen: (previous, current) =>
-          previous.themeMode != current.themeMode ||
-          previous.primaryColor != current.primaryColor ||
-          previous.locale != current.locale,
-      builder: (context, appState) {
-        final isRTL = appState.locale.languageCode == 'ar';
-        return Directionality(
-          textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+        buildWhen: (previous, current) =>
+            previous.themeMode != current.themeMode ||
+            previous.primaryColor != current.primaryColor ||
+            previous.locale != current.locale,
+        builder: (context, appState) {
+          final isRTL = appState.locale.languageCode == 'ar';
+          return Directionality(
+            textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
           child: ResponsiveMaster(
             // Global Configuration
             config: const ResponsiveMasterConfig(
@@ -48,11 +49,11 @@ class RebtalApp extends StatelessWidget {
                 locale: appState.locale,
                 builder: (context, child) {
                   return Directionality(
-                    textDirection: isRTL
-                        ? TextDirection.rtl
-                        : TextDirection.ltr,
-                    child: ForceUpdateGate(
-                      child: child ?? const SizedBox.shrink(),
+                    textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+                    child: NetworkConnectivityWrapper(
+                      child: ForceUpdateGate(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     ),
                   );
                 },

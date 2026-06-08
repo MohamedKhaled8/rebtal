@@ -937,5 +937,20 @@
   "time_days_ago": "days ago",
   "time_yesterday": "yesterday",
   "time_weeks_ago": "weeks ago",
-  "owner_your_chalet": "Your Chalet"
+  "owner_your_chalet": "Your Chalet",
+  "admin_confirm_delete_chalet": "Are you sure you want to delete this chalet permanently?",
+  "admin_chalet_deleted_success": "Chalet deleted successfully",
+  "common_confirm_delete": "Confirm Delete",
+  "update_available": "Update Available",
+  "update_required_desc": "A new version of the app is available and must be updated to continue.",
+  "current_version": "Current version:",
+  "min_required_version": "Min required version:",
+  "update_now": "Update Now",
+  "admin_tab_updates": "Updates",
+  "admin_app_updates": "App Updates",
+  "admin_app_updates_desc": "Control force update settings for users",
+  "admin_force_update_enable": "Enable Force Update",
+  "admin_min_build_number": "Min Build Number",
+  "admin_android_url": "Android Store URL",
+  "admin_ios_url": "iOS Store URL"
 }

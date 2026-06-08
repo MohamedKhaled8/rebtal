@@ -105,7 +105,6 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
 
   Future<void> _proceedToConfirmation() async {
     setState(() => _isProcessing = true);
-    await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       setState(() => _isProcessing = false);
@@ -325,12 +324,16 @@ class _NewPaymentDetailsPageState extends State<NewPaymentDetailsPage> {
               color: isDark ? Colors.white70 : Colors.grey.shade600,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : Colors.black87,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
           ),
         ],

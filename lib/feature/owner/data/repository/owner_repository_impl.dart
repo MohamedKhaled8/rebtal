@@ -247,8 +247,19 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
               final bData = b.data() as Map<String, dynamic>?;
               if (aData == null || bData == null) return 0;
 
-              final aTime = aData['createdAt'] as Timestamp?;
-              final bTime = bData['createdAt'] as Timestamp?;
+              final aTimeRaw = aData['createdAt'];
+              final bTimeRaw = bData['createdAt'];
+              
+              DateTime? aTime;
+              if (aTimeRaw is Timestamp) {
+                aTime = aTimeRaw.toDate();
+              } else if (aTimeRaw is String) aTime = DateTime.tryParse(aTimeRaw);
+              
+              DateTime? bTime;
+              if (bTimeRaw is Timestamp) {
+                bTime = bTimeRaw.toDate();
+              } else if (bTimeRaw is String) bTime = DateTime.tryParse(bTimeRaw);
+
               if (aTime == null || bTime == null) return 0;
               return bTime.compareTo(aTime); // descending
             });
@@ -297,8 +308,23 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
               final aData = a.data();
               final bData = b.data();
 
-              final aTime = aData['createdAt'] as Timestamp?;
-              final bTime = bData['createdAt'] as Timestamp?;
+              final aTimeRaw = aData['createdAt'];
+              final bTimeRaw = bData['createdAt'];
+              
+              DateTime? aTime;
+              if (aTimeRaw is Timestamp) {
+                aTime = aTimeRaw.toDate();
+              } else if (aTimeRaw is String) {
+                aTime = DateTime.tryParse(aTimeRaw);
+              }
+              
+              DateTime? bTime;
+              if (bTimeRaw is Timestamp) {
+                bTime = bTimeRaw.toDate();
+              } else if (bTimeRaw is String) {
+                bTime = DateTime.tryParse(bTimeRaw);
+              }
+
               if (aTime == null || bTime == null) return 0;
               return bTime.compareTo(aTime); // descending
             });

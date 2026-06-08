@@ -22,18 +22,47 @@ class ExploreChaletHome extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            context.tr('home_explore_chalets'),
-            style: TextStyle(
-              fontSize: stv(
-                context: context,
-                mobile: 18.spScaled,
-                tablet: 22.spScaled,
-                desktop: 26.spScaled,
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: stv(
+                  context: context,
+                  mobile: 22.sh,
+                  tablet: 26.sh,
+                  desktop: 30.sh,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB),
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
-            ),
+              SizedBox(width: 8.sw),
+              Icon(
+                Icons.holiday_village_rounded,
+                color: const Color(0xFF2563EB),
+                size: stv(
+                  context: context,
+                  mobile: 22.spScaled,
+                  tablet: 26.spScaled,
+                  desktop: 30.spScaled,
+                ),
+              ),
+              SizedBox(width: 6.sw),
+              Text(
+                context.tr('home_explore_chalets'),
+                style: TextStyle(
+                  fontSize: stv(
+                    context: context,
+                    mobile: 18.spScaled,
+                    tablet: 22.spScaled,
+                    desktop: 26.spScaled,
+                  ),
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
           ),
           ValueListenableBuilder<SearchFilters>(
             valueListenable: HomeSearch.filters,
