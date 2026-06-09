@@ -25,7 +25,6 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   bool _showProfileImageError = false;
-  bool _showIdCardError = false;
   bool _submittedOnce = false;
 
   String _trSafe(BuildContext context, String key, String fallback) {
@@ -179,34 +178,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? ColorsManager.skyBlue38BDF8.withOpacity(0.12)
+                            : ColorsManager.blue2563EB.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        context.tr('auth_id_card_optional'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? ColorsManager.skyBlue38BDF8
+                              : ColorsManager.blue2563EB,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    context.tr('auth_id_card_optional_hint'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white54 : ColorsManager.grey6B7280,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   _IdCardSelector(
                     isDark: isDark,
                     image: cubit.idCardImage,
-                    hasError: _showIdCardError && cubit.idCardImage == null,
+                    hasError: false,
                     onTap: () async {
                       final image = await getIt<HelperImageContract>()
                           .pickImageFile(context);
                       if (image != null && context.mounted) {
                         cubit.setIdCardImage(image);
-                        setState(() => _showIdCardError = false);
                       }
                     },
                   ),
-                  if (_showIdCardError && cubit.idCardImage == null) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      _trSafe(
-                        context,
-                        'auth_id_card_required',
-                        'يرجى رفع صورة البطاقة الشخصية',
-                      ),
-                      style: const TextStyle(
-                        color: Color(0xFFEF4444),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 24),
 
                   // —— Role Selection ——
@@ -227,18 +245,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (!_submittedOnce) setState(() => _submittedOnce = true);
                       final isValid = cubit.formKey.currentState?.validate() ?? false;
                       final missingProfile = cubit.profileImage == null;
-                      final missingIdCard = cubit.idCardImage == null;
 
                       setState(() {
                         _showProfileImageError = missingProfile;
-                        _showIdCardError = missingIdCard;
                       });
 
                       if (!isValid) {
                         SnackBarHelper.showWarning(context, context.tr('auth_fill_empty_fields'));
                         return;
                       }
-                      if (missingProfile || missingIdCard) return;
+                      if (missingProfile) return;
                       cubit.register();
                     },
                   ),

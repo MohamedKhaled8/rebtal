@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/home/widget/home_top_bar/waving_hand_icon.dart';
@@ -143,6 +144,12 @@ class HomeTopBar extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () {
+                      if (AuthRestrictionHelper.isGuest(context)) {
+                        AuthRestrictionHelper.showGuestRegistrationPrompt(
+                          context,
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(

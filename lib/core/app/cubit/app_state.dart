@@ -1,7 +1,7 @@
 part of 'app_cubit.dart';
 
 /// Base class for all app states
-abstract class AppState {
+sealed class AppState {
   final ThemeMode themeMode;
   final Color primaryColor;
   final Locale locale;
@@ -11,6 +11,12 @@ abstract class AppState {
     required this.primaryColor,
     required this.locale,
   });
+
+  /// Polymorphic abstraction for theme updates
+  AppState copyWithTheme({ThemeMode? themeMode, Color? primaryColor});
+
+  /// Polymorphic abstraction for locale updates
+  AppState copyWithLocale(Locale locale);
 }
 
 /// Initial app state (loading)
@@ -21,6 +27,43 @@ class AppInitial extends AppState {
         primaryColor: const Color(0xFF6200EE),
         locale: const Locale('ar'),
       );
+
+  @override
+  AppInitial copyWithTheme({ThemeMode? themeMode, Color? primaryColor}) => this;
+
+  @override
+  AppInitial copyWithLocale(Locale locale) => this;
+}
+
+/// Guest browsing state (no account)
+class AppGuestBrowsing extends AppState {
+  const AppGuestBrowsing({
+    required super.themeMode,
+    required super.primaryColor,
+    required super.locale,
+  });
+
+  AppGuestBrowsing copyWith({
+    ThemeMode? themeMode,
+    Color? primaryColor,
+    Locale? locale,
+  }) {
+    return AppGuestBrowsing(
+      themeMode: themeMode ?? this.themeMode,
+      primaryColor: primaryColor ?? this.primaryColor,
+      locale: locale ?? this.locale,
+    );
+  }
+
+  @override
+  AppGuestBrowsing copyWithTheme({ThemeMode? themeMode, Color? primaryColor}) {
+    return copyWith(themeMode: themeMode, primaryColor: primaryColor);
+  }
+
+  @override
+  AppGuestBrowsing copyWithLocale(Locale locale) {
+    return copyWith(locale: locale);
+  }
 }
 
 /// Unauthenticated state
@@ -41,6 +84,16 @@ class AppUnauthenticated extends AppState {
       primaryColor: primaryColor ?? this.primaryColor,
       locale: locale ?? this.locale,
     );
+  }
+
+  @override
+  AppUnauthenticated copyWithTheme({ThemeMode? themeMode, Color? primaryColor}) {
+    return copyWith(themeMode: themeMode, primaryColor: primaryColor);
+  }
+
+  @override
+  AppUnauthenticated copyWithLocale(Locale locale) {
+    return copyWith(locale: locale);
   }
 }
 
@@ -93,6 +146,16 @@ class AppAuthenticated extends AppState {
       ownerFormData: ownerFormData ?? this.ownerFormData,
     );
   }
+
+  @override
+  AppAuthenticated copyWithTheme({ThemeMode? themeMode, Color? primaryColor}) {
+    return copyWith(themeMode: themeMode, primaryColor: primaryColor);
+  }
+
+  @override
+  AppAuthenticated copyWithLocale(Locale locale) {
+    return copyWith(locale: locale);
+  }
 }
 
 /// Error state
@@ -105,4 +168,24 @@ class AppError extends AppState {
     required super.primaryColor,
     required super.locale,
   });
+
+  @override
+  AppError copyWithTheme({ThemeMode? themeMode, Color? primaryColor}) {
+    return AppError(
+      message: message,
+      themeMode: themeMode ?? this.themeMode,
+      primaryColor: primaryColor ?? this.primaryColor,
+      locale: locale,
+    );
+  }
+
+  @override
+  AppError copyWithLocale(Locale locale) {
+    return AppError(
+      message: message,
+      themeMode: themeMode,
+      primaryColor: primaryColor,
+      locale: locale,
+    );
+  }
 }

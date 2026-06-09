@@ -11,7 +11,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class PersonalInfoPage extends StatefulWidget {
   final UserModel user;
-  const PersonalInfoPage({super.key, required this.user});
+  final bool scrollToIdCard;
+
+  const PersonalInfoPage({
+    super.key,
+    required this.user,
+    this.scrollToIdCard = false,
+  });
 
   @override
   State<PersonalInfoPage> createState() => _PersonalInfoPageState();
@@ -29,6 +35,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
   bool _isEditingProfile = false;
   bool _isChangingPassword = false;
   bool _isLoading = false;
+  bool _isUploadingIdCard = false;
+  final _idCardSectionKey = GlobalKey();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -44,10 +53,56 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) _controller.forward();
     });
+
+    if (widget.scrollToIdCard) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToIdCardSection();
+      });
+    }
+  }
+
+  void _scrollToIdCardSection() {
+    final context = _idCardSectionKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  Future<void> _uploadIdCard() async {
+    final appCubit = context.read<AppCubit>();
+    final image = await getIt<HelperImageContract>().pickImageFile(context);
+    if (image == null || !mounted) return;
+
+    setState(() => _isUploadingIdCard = true);
+    try {
+      final url = await getIt<HelperImageContract>().uploadToCloudinary(image);
+      if (!mounted) return;
+      await appCubit.updateIdCard(url);
+      if (mounted) {
+        SnackBarHelper.showSuccess(
+          context,
+          context.tr('identity_id_card_upload_success'),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarHelper.showError(
+          context,
+          '${context.tr('identity_id_card_upload_failed')} $e',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingIdCard = false);
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _controller.dispose();
     _nameController.dispose();
     _phoneController.dispose();
@@ -160,7 +215,11 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
           builder: (context, state) {
             final user = (state is AppAuthenticated) ? state.user : widget.user;
 
+            final hasIdCard =
+                user.idCardUrl != null && user.idCardUrl!.trim().isNotEmpty;
+
             return SingleChildScrollView(
+              controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,16 +461,30 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
 
                   const SizedBox(height: 32),
 
-                  const SizedBox(height: 32),
                   _buildAnimatedItem(
                     3,
+                    KeyedSubtree(
+                      key: _idCardSectionKey,
+                      child: _buildIdCardSection(
+                        isDark,
+                        primaryText,
+                        secondaryText,
+                        hasIdCard: hasIdCard,
+                        idCardUrl: user.idCardUrl,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+                  _buildAnimatedItem(
+                    4,
                     Divider(height: 1, color: dividerColor),
                   ),
                   const SizedBox(height: 32),
 
                   // Security Section
                   _buildAnimatedItem(
-                    4,
+                    5,
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
@@ -427,7 +500,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
 
                   if (_isChangingPassword)
                     _buildAnimatedItem(
-                      5,
+                      6,
                       Column(
                         children: [
                           _buildTextField(
@@ -513,7 +586,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                     )
                   else
                     _buildAnimatedItem(
-                      5,
+                      6,
                       _buildInfoRow(
                         isDark,
                         context.tr('auth_password'),
@@ -530,6 +603,111 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildIdCardSection(
+    bool isDark,
+    Color primaryText,
+    Color secondaryText, {
+    required bool hasIdCard,
+    String? idCardUrl,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('identity_id_card_section'),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: primaryText,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : const Color(0xFFE5E7EB),
+            ),
+          ),
+          child: Column(
+            children: [
+              if (hasIdCard && idCardUrl != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: idCardUrl,
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const SizedBox(
+                      height: 140,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.badge_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.tr('auth_id_card_uploaded'),
+                  style: TextStyle(
+                    color: primaryText,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ] else ...[
+                Icon(
+                  Icons.badge_outlined,
+                  size: 40,
+                  color: secondaryText,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.tr('identity_id_card_not_uploaded'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: secondaryText, fontSize: 14),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isUploadingIdCard ? null : _uploadIdCard,
+                  icon: _isUploadingIdCard
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.upload_file_rounded, size: 20),
+                  label: Text(
+                    hasIdCard
+                        ? context.tr('auth_id_card_uploaded')
+                        : context.tr('identity_upload_id_action'),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

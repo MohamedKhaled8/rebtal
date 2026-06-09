@@ -378,14 +378,6 @@ class _PaymentMethodSelectionPageState
             'إنستاباي',
             'دفع فوري عبر تطبيق إنستاباي',
           ),
-          const SizedBox(height: 12),
-          _buildMethodTile(
-            isDark,
-            PaymentMethod.cashOnArrival,
-            Icons.money,
-            'دفع عند الوصول',
-            'ادفع نقداً عند استلام الشاليه',
-          ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: _selectedMethod == null ? null : _nextStep,

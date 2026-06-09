@@ -14,7 +14,68 @@ import 'package:rebtal/core/utils/network/network_cubit.dart';
 
 part 'app_state.dart';
 
-class AppCubit extends Cubit<AppState> {
+// ============================================================
+// FACADE INTERFACES (SOLID - Interface Segregation Principle)
+// ============================================================
+
+abstract interface class AppThemeFacade {
+  void toggleTheme({Brightness? platformBrightness});
+  void changeTheme(ThemeMode mode);
+  void changePrimaryColor(Color color);
+}
+
+abstract interface class AppLocaleFacade {
+  Future<void> changeLocale(Locale locale);
+}
+
+abstract interface class AppAuthFacade {
+  UserModel? getCurrentUser();
+  String getCurrentRole();
+  void toggleViewMode();
+  Future<void> logout();
+  Future<void> reloadUserData();
+  Future<void> updateProfile({
+    required String name,
+    required String phone,
+    String? profileImageUrl,
+  });
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+  Future<void> updateIdCard(String idCardUrl);
+}
+
+abstract interface class AppOwnerFacade {
+  Future<void> fetchOwnerChalets();
+}
+
+abstract interface class AppBookingFacade {
+  void cancelBooking(String bookingId);
+}
+
+// ============================================================
+// ABSTRACT CUBIT (SOLID - Dependency Inversion Principle)
+// ============================================================
+
+abstract class AppCubit extends Cubit<AppState>
+    implements AppThemeFacade, AppLocaleFacade, AppAuthFacade, AppOwnerFacade, AppBookingFacade {
+  AppCubit(super.initialState);
+
+  /// Accessors for underlying feature cubits (Migration & Backward-Compatibility Layer)
+  AuthCubit get authCubit;
+  BookingCubit get bookingCubit;
+  ThemeCubit get themeCubit;
+  NotificationCubit get notificationCubit;
+  OwnerCubit get ownerCubit;
+  NetworkCubit get networkCubit;
+}
+
+// ============================================================
+// CONCRETE CUBIT IMPLEMENTATION
+// ============================================================
+
+class AppCubitImpl extends AppCubit {
   static const String _localeKey = 'app_locale';
 
   /// Feature Cubits - internal implementation details (Private)
@@ -25,16 +86,21 @@ class AppCubit extends Cubit<AppState> {
   final OwnerCubit _ownerCubit;
   final NetworkCubit _networkCubit;
 
-  // Temporary Public Accessors for Migration
+  @override
   AuthCubit get authCubit => _authCubit;
+  @override
   BookingCubit get bookingCubit => _bookingCubit;
+  @override
   ThemeCubit get themeCubit => _themeCubit;
+  @override
   NotificationCubit get notificationCubit => _notificationCubit;
+  @override
   OwnerCubit get ownerCubit => _ownerCubit;
+  @override
   NetworkCubit get networkCubit => _networkCubit;
 
   /// Constructor Injection
-  AppCubit({
+  AppCubitImpl({
     required AuthCubit authCubit,
     required BookingCubit bookingCubit,
     required ThemeCubit themeCubit,
@@ -75,12 +141,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   void _emitWithLocale(Locale locale) {
-    final current = state;
-    if (current is AppAuthenticated) {
-      emit(current.copyWith(locale: locale));
-    } else if (current is AppUnauthenticated) {
-      emit(current.copyWith(locale: locale));
-    }
+    emit(state.copyWithLocale(locale));
   }
 
   /// Setup cross-cubit listeners for coordination
@@ -105,97 +166,114 @@ class AppCubit extends Cubit<AppState> {
 
   /// Handle authentication state changes
   void _handleAuthStateChange(AuthState authState) {
-    if (authState is AuthSuccess) {
-      final user = authState.user;
-      final currentAppState = state is AppAuthenticated
-          ? (state as AppAuthenticated)
-          : null;
+    switch (authState) {
+      case AuthSuccess(:final user):
+        final currentAppState = state is AppAuthenticated
+            ? (state as AppAuthenticated)
+            : null;
 
-      // Update app state with authenticated user
-      emit(
-        AppAuthenticated(
-          user: user,
-          themeMode: _themeCubit.state.themeMode,
-          primaryColor: _themeCubit.state.primaryColor,
-          locale: _savedLocale,
-          unreadNotifications: _getUnreadNotificationCount(),
-          // Preserve existing data if available
-          bookings: currentAppState?.bookings ?? [],
-          isBookingsLoading: currentAppState?.isBookingsLoading ?? false,
-          ownerChalets: currentAppState?.ownerChalets ?? [],
-          isOwnerChaletsLoading:
-              currentAppState?.isOwnerChaletsLoading ?? false,
-          ownerFormData: currentAppState?.ownerFormData,
-        ),
-      );
+        // Always preserve existing owner chalets & bookings to avoid flicker.
+        final preservedChalets = currentAppState?.ownerChalets ?? [];
+        final preservedChaletsLoading =
+            currentAppState?.isOwnerChaletsLoading ?? false;
 
-      final viewRole = _authCubit.getCurrentRole();
-      final dataKey = '${user.uid}:$viewRole';
-      if (_lastUserDataLoadKey != dataKey) {
-        _lastUserDataLoadKey = dataKey;
-        _loadUserData(user, viewRole);
-      }
-      if (_notificationsListenerUid != user.uid) {
-        _notificationsListenerUid = user.uid;
-        _notificationCubit.listenToNotifications(user.uid);
-      }
-    } else if (authState is AuthUnauthenticated || authState is AuthInitial) {
-      emit(
-        AppUnauthenticated(
-          themeMode: _themeCubit.state.themeMode,
-          primaryColor: _themeCubit.state.primaryColor,
-          locale: _savedLocale,
-        ),
-      );
-    } else if (authState is AuthFailure) {
-      emit(
-        AppError(
-          message: authState.error,
-          themeMode: _themeCubit.state.themeMode,
-          primaryColor: _themeCubit.state.primaryColor,
-          locale: _savedLocale,
-        ),
-      );
+        // Update app state with authenticated user
+        emit(
+          AppAuthenticated(
+            user: user,
+            themeMode: _themeCubit.state.themeMode,
+            primaryColor: _themeCubit.state.primaryColor,
+            locale: _savedLocale,
+            unreadNotifications: _getUnreadNotificationCount(),
+            // Preserve existing data — never reset to empty mid-session.
+            bookings: currentAppState?.bookings ?? [],
+            isBookingsLoading: currentAppState?.isBookingsLoading ?? false,
+            ownerChalets: preservedChalets,
+            isOwnerChaletsLoading: preservedChaletsLoading,
+            ownerFormData: currentAppState?.ownerFormData,
+          ),
+        );
+
+        final viewRole = _authCubit.getCurrentRole();
+        final dataKey = '${user.uid}:$viewRole';
+        if (_lastUserDataLoadKey != dataKey) {
+          _lastUserDataLoadKey = dataKey;
+          _loadUserData(user, viewRole);
+        }
+        if (_notificationsListenerUid != user.uid) {
+          _notificationsListenerUid = user.uid;
+          _notificationCubit.listenToNotifications(user.uid);
+        }
+
+      case AuthGuest():
+        _lastUserDataLoadKey = null;
+        _notificationsListenerUid = null;
+        _ownerCubit.reset();
+        _bookingCubit.reset();
+        emit(
+          AppGuestBrowsing(
+            themeMode: _themeCubit.state.themeMode,
+            primaryColor: _themeCubit.state.primaryColor,
+            locale: _savedLocale,
+          ),
+        );
+
+      case AuthUnauthenticated() || AuthInitial():
+        _lastUserDataLoadKey = null;
+        _notificationsListenerUid = null;
+        _ownerCubit.reset();
+        _bookingCubit.reset();
+        emit(
+          AppUnauthenticated(
+            themeMode: _themeCubit.state.themeMode,
+            primaryColor: _themeCubit.state.primaryColor,
+            locale: _savedLocale,
+          ),
+        );
+
+      case AuthFailure(:final error):
+        _lastUserDataLoadKey = null;
+        _notificationsListenerUid = null;
+        _ownerCubit.reset();
+        _bookingCubit.reset();
+        emit(
+          AppError(
+            message: error,
+            themeMode: _themeCubit.state.themeMode,
+            primaryColor: _themeCubit.state.primaryColor,
+            locale: _savedLocale,
+          ),
+        );
+
+      // Other AuthState variants that do not trigger AppState changes:
+      case AuthLoading() ||
+           AuthRegistrationSuccess() ||
+           AuthValidationError() ||
+           AuthNavigate() ||
+           RoleChanged() ||
+           AuthOfflineWarning():
+        // These states are transient or handled locally within auth/routing,
+        // and do not change the global AppCubit state.
+        break;
     }
   }
 
   /// Handle theme state changes
   void _handleThemeStateChange(ThemeState themeState) {
-    final currentState = state;
-    if (currentState is AppAuthenticated) {
-      emit(
-        currentState.copyWith(
-          themeMode: themeState.themeMode,
-          primaryColor: themeState.primaryColor,
-        ),
-      );
-    } else if (currentState is AppUnauthenticated) {
-      emit(
-        currentState.copyWith(
-          themeMode: themeState.themeMode,
-          primaryColor: themeState.primaryColor,
-        ),
-      );
-    } else if (currentState is AppError) {
-      emit(
-        AppError(
-          message: currentState.message,
-          themeMode: themeState.themeMode,
-          primaryColor: themeState.primaryColor,
-          locale: currentState.locale,
-        ),
-      );
-    }
+    emit(
+      state.copyWithTheme(
+        themeMode: themeState.themeMode,
+        primaryColor: themeState.primaryColor,
+      ),
+    );
   }
 
   /// Handle notification state changes
   void _handleNotificationStateChange(NotificationState notificationState) {
-    final currentState = state;
-    if (currentState is AppAuthenticated &&
-        notificationState is NotificationLoaded) {
+    if (state case AppAuthenticated authenticated && NotificationLoaded(:final unreadCount)) {
       emit(
-        currentState.copyWith(
-          unreadNotifications: notificationState.unreadCount,
+        authenticated.copyWith(
+          unreadNotifications: unreadCount,
         ),
       );
     }
@@ -203,13 +281,22 @@ class AppCubit extends Cubit<AppState> {
 
   /// Handle owner/chalet state changes
   void _handleOwnerStateChange(OwnerState ownerState) {
-    final currentState = state;
-    if (currentState is AppAuthenticated) {
-      // New OwnerState is composite - contains both list and form draft
+    if (state case AppAuthenticated authenticated) {
+      // Avoid replacing a populated list with an empty one during
+      // transient loading states (e.g. subscription re-establishment).
+      final bool isLoading = ownerState.status == OwnerStatus.loading;
+      final List<dynamic> chaletsToUse =
+          (isLoading && ownerState.chalets.isEmpty && authenticated.ownerChalets.isNotEmpty)
+              ? authenticated.ownerChalets
+              : ownerState.chalets;
+
+      // Only show loading shimmer when there is genuinely no cached data.
+      final bool showLoading = isLoading && chaletsToUse.isEmpty;
+
       emit(
-        currentState.copyWith(
-          ownerChalets: ownerState.chalets,
-          isOwnerChaletsLoading: ownerState.status == OwnerStatus.loading,
+        authenticated.copyWith(
+          ownerChalets: chaletsToUse,
+          isOwnerChaletsLoading: showLoading,
           ownerFormData: ownerState.draft,
         ),
       );
@@ -218,10 +305,9 @@ class AppCubit extends Cubit<AppState> {
 
   /// Handle booking state changes
   void _handleBookingStateChange(BookingState bookingState) {
-    final currentState = state;
-    if (currentState is AppAuthenticated) {
+    if (state case AppAuthenticated authenticated) {
       emit(
-        currentState.copyWith(
+        authenticated.copyWith(
           bookings: bookingState.bookings,
           isBookingsLoading: bookingState.isLoading,
         ),
@@ -231,9 +317,8 @@ class AppCubit extends Cubit<AppState> {
 
   /// Get current unread notification count
   int _getUnreadNotificationCount() {
-    final notificationState = _notificationCubit.state;
-    if (notificationState is NotificationLoaded) {
-      return notificationState.unreadCount;
+    if (_notificationCubit.state case NotificationLoaded(:final unreadCount)) {
+      return unreadCount;
     }
     return 0;
   }
@@ -250,15 +335,20 @@ class AppCubit extends Cubit<AppState> {
     }
   }
 
-  // ==================== PUBLIC ACTIONS (FACADE) ====================
-  // Delegate UI actions to underlying private cubits
+  // ==================== PUBLIC ACTIONS (FACADE IMPLEMENTATIONS) ====================
 
   // --- Auth ---
+  @override
   UserModel? getCurrentUser() => _authCubit.getCurrentUser();
+  @override
   String getCurrentRole() => _authCubit.getCurrentRole();
+  @override
   void toggleViewMode() => _authCubit.toggleViewMode();
+  @override
   Future<void> logout() => _authCubit.logout();
+  @override
   Future<void> reloadUserData() => _authCubit.reloadUserData();
+  @override
   Future<void> updateProfile({
     required String name,
     required String phone,
@@ -268,6 +358,7 @@ class AppCubit extends Cubit<AppState> {
     phone: phone,
     profileImageUrl: profileImageUrl,
   );
+  @override
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -275,14 +366,21 @@ class AppCubit extends Cubit<AppState> {
     currentPassword: currentPassword,
     newPassword: newPassword,
   );
+  @override
+  Future<void> updateIdCard(String idCardUrl) =>
+      _authCubit.updateIdCard(idCardUrl);
 
   // --- Theme ---
+  @override
   void toggleTheme({Brightness? platformBrightness}) =>
       _themeCubit.toggleTheme(platformBrightness: platformBrightness);
+  @override
   void changeTheme(ThemeMode mode) => _themeCubit.changeTheme(mode);
+  @override
   void changePrimaryColor(Color color) => _themeCubit.changeColor(color);
 
   // --- Locale ---
+  @override
   Future<void> changeLocale(Locale locale) async {
     _savedLocale = locale;
     _emitWithLocale(locale);
@@ -292,6 +390,7 @@ class AppCubit extends Cubit<AppState> {
   }
 
   // --- Owner (Chalets) ---
+  @override
   Future<void> fetchOwnerChalets() {
     final user = getCurrentUser();
     if (user != null) {
@@ -300,16 +399,8 @@ class AppCubit extends Cubit<AppState> {
     return Future.value();
   }
 
-  // But we can expose getters for the *Instances* if absolutely necessary for internal routing,
-  // though we tried to keep them private.
-  // Actually, to make "BlocProvider.value(value: appCubit.ownerCubit)" work in the old code shown in previous diffs,
-  // we effectively broke that pattern.
-  //
-  // If the user wants `BlocSelector<AppCubit, AppState>`, they read from AppCubit.
-  // If they need to perform an action: `appCubit.addChalet(...)`.
-
   // --- Booking ---
-  // Expose booking actions if needed
+  @override
   void cancelBooking(String bookingId) =>
       _bookingCubit.cancelBooking(bookingId);
 

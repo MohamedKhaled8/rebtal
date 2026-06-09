@@ -32,8 +32,20 @@ class AuthCubit extends Cubit<AuthState> {
 
   String? currentViewRole;
 
+  bool get isGuestMode => state is AuthGuest;
+
+  void enterGuestMode() {
+    _authGraceTimer?.cancel();
+    currentViewRole = 'guest';
+    emit(AuthGuest());
+  }
+
   /// Returns the role that should be used for UI rendering
   String getCurrentRole() {
+    if (state is AuthGuest) {
+      return 'guest';
+    }
+
     if (currentViewRole != null) {
       return currentViewRole!;
     }
@@ -348,6 +360,22 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (_) => null, // Success handled by UI showing snackbar
+    );
+  }
+
+  Future<void> updateIdCard(String idCardUrl) async {
+    if (state is! AuthSuccess) return;
+
+    final user = (state as AuthSuccess).user;
+    final result = await authRepository.updateIdCard(
+      uid: user.uid,
+      role: user.role,
+      idCardUrl: idCardUrl,
+    );
+
+    result.fold(
+      (failure) => emit(AuthFailure(failure.message)),
+      (updatedUser) => _emitAuthSuccess(updatedUser),
     );
   }
 }

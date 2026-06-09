@@ -637,9 +637,14 @@ class OwnerCubit extends Cubit<OwnerState> {
   /// or silent reconnects when switching tabs / owner↔user view mode.
   Future<void> fetchChalets(String ownerId) async {
     final bool hasCachedList = state.chalets.isNotEmpty;
+
+    // Only show loading shimmer on first cold fetch (no cached data).
     if (!hasCachedList) {
       emit(state.copyWith(status: OwnerStatus.loading));
     }
+
+    // Preserve the current list while the new subscription establishes.
+    final List<dynamic> cachedChalets = List.from(state.chalets);
 
     await _chaletsSubscription?.cancel();
 
@@ -651,12 +656,23 @@ class OwnerCubit extends Cubit<OwnerState> {
             emit(state.copyWith(status: OwnerStatus.loaded, chalets: chalets));
           },
           onError: (error) {
-            emit(
-              state.copyWith(
-                status: OwnerStatus.error,
-                errorMessage: error.toString(),
-              ),
-            );
+            // On error, keep showing cached data if available instead of
+            // hiding everything with an error state.
+            if (cachedChalets.isNotEmpty) {
+              emit(
+                state.copyWith(
+                  status: OwnerStatus.loaded,
+                  chalets: cachedChalets,
+                ),
+              );
+            } else {
+              emit(
+                state.copyWith(
+                  status: OwnerStatus.error,
+                  errorMessage: error.toString(),
+                ),
+              );
+            }
           },
         );
   }
@@ -708,6 +724,10 @@ class OwnerCubit extends Cubit<OwnerState> {
   Future<void> close() {
     _chaletsSubscription?.cancel();
     return super.close();
+  }
+
+  void reset() {
+    emit(OwnerState.initial());
   }
 
   Future<void> submitChalet(String ownerId, String ownerName) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
@@ -39,7 +40,7 @@ class LoginScreen extends StatelessWidget {
             title: context.tr('auth_login'),
             subtitle: context.tr('auth_login_subtitle'),
             form: _LoginForm(cubit: cubit, isLoading: isLoading),
-            footer: const _SignUpLink(),
+            footer: const _LoginFooter(),
           );
         },
       ),
@@ -176,34 +177,55 @@ class _LoginFormState extends State<_LoginForm> {
   }
 }
 
-class _SignUpLink extends StatelessWidget {
-  const _SignUpLink();
+class _LoginFooter extends StatelessWidget {
+  const _LoginFooter();
 
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Text(
-          context.tr('auth_no_account'),
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? Colors.white70 : ColorsManager.grey6B7280,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              context.tr('auth_no_account'),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.white70 : ColorsManager.grey6B7280,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(Routes.registerScreen),
+              child: Text(
+                context.tr('auth_create_account'),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? ColorsManager.skyBlue38BDF8
+                      : ColorsManager.blue2563EB,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 6),
         TextButton(
-          onPressed: () =>
-              Navigator.of(context).pushNamed(Routes.registerScreen),
+          onPressed: () {
+            context.read<AppCubit>().authCubit.enterGuestMode();
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              Routes.bottomNavigationBarScreen,
+              (route) => false,
+            );
+          },
           child: Text(
-            context.tr('auth_create_account'),
+            context.tr('auth_continue_as_guest'),
             style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: isDark
-                  ? ColorsManager.skyBlue38BDF8
-                  : ColorsManager.blue2563EB,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              color: isDark ? Colors.white60 : ColorsManager.grey6B7280,
             ),
           ),
         ),

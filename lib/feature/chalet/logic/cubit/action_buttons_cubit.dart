@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/feature/booking/ui/booking_bridge_widget.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
@@ -122,9 +123,9 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
     required String docId,
     required Map<String, dynamic> requestData,
   }) {
-    final currentUser = context.read<AppCubit>().getCurrentUser();
+    if (!AuthRestrictionHelper.guardBooking(context)) return;
 
-    if (currentUser == null) return;
+    final currentUser = context.read<AppCubit>().getCurrentUser()!;
 
     final bookingAvailability =
         requestData['bookingAvailability'] ?? 'available';

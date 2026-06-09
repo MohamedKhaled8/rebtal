@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
+import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AuthEntryScreen extends StatefulWidget {
@@ -129,7 +131,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                             height: 44,
                             child: OutlinedButton(
                               onPressed: () => Navigator.of(context)
-                                  .pushNamed(Routes.loginScreen),
+                                  .pushNamed(Routes.registerScreen),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
                                   color: Colors.white.withOpacity(0.45),
@@ -143,6 +145,33 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                                 context.tr('auth_entry_continue'),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: TextButton(
+                              onPressed: () {
+                                context.read<AppCubit>().authCubit.enterGuestMode();
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  Routes.bottomNavigationBarScreen,
+                                  (route) => false,
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white.withOpacity(0.9),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                context.tr('auth_continue_as_guest'),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13.5,
                                 ),
                               ),
                             ),

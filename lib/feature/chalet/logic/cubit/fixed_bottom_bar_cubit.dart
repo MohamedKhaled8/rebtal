@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
@@ -320,12 +321,7 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     required Map<String, dynamic> requestData,
     required dynamic price,
   }) {
-    // Access AuthCubit through AppCubit
-    final appCubit = context.read<AppCubit>();
-    final authCubit = appCubit.authCubit;
-    final currentUser = authCubit.getCurrentUser();
-    if (currentUser == null) {
-      SnackBarHelper.showError(context, 'يرجى تسجيل الدخول أولاً');
+    if (!AuthRestrictionHelper.guardBooking(context)) {
       return;
     }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/home/logic/cubit/home_cubit.dart';
 import 'package:rebtal/feature/home/logic/cubit/home_state.dart';
@@ -52,6 +53,10 @@ class ChaletFavoriteButtonState extends State<ChaletFavoriteButton> {
         return GestureDetector(
           onTap: canToggle
               ? () async {
+                  if (AuthRestrictionHelper.isGuest(context)) {
+                    AuthRestrictionHelper.showGuestRegistrationPrompt(context);
+                    return;
+                  }
                   final success = await getIt<HomeCubit>().toggleChaletFavorite(
                         chaletId: widget.chaletId,
                         chaletData: widget.chaletData,
@@ -64,7 +69,11 @@ class ChaletFavoriteButtonState extends State<ChaletFavoriteButton> {
                     );
                   }
                 }
-              : null,
+              : AuthRestrictionHelper.isGuest(context)
+                  ? () => AuthRestrictionHelper.showGuestRegistrationPrompt(
+                        context,
+                      )
+                  : null,
           child: GlassBadge(
             padding: const EdgeInsets.all(8),
             borderRadius: 50,

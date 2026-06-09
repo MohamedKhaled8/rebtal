@@ -37,4 +37,10 @@ abstract class BaseAuthRepository {
     required String currentPassword,
     required String newPassword,
   });
+
+  Future<Either<Failure, UserModel>> updateIdCard({
+    required String uid,
+    required String role,
+    required String idCardUrl,
+  });
 }

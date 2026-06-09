@@ -8,6 +8,7 @@ import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/feature/booking/ui/cancellation_details_page.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -619,6 +620,37 @@ class BookingCardCompact extends StatelessWidget {
       );
     }
 
+    if (booking.status == BookingStatus.pending) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          onPressed: () => _showPendingCancelDialog(context, booking),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.redAccent.shade400,
+            side: BorderSide(color: Colors.redAccent.shade200),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.cancel_outlined, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                context.tr('booking_cancel_booking_btn'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (booking.status == BookingStatus.pendingOwnerApproval) {
       return SizedBox(
         width: double.infinity,
@@ -667,4 +699,42 @@ class BookingCardCompact extends StatelessWidget {
 
     return const SizedBox.shrink();
   }
+}
+
+void _showPendingCancelDialog(BuildContext context, Booking booking) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(dialogContext.tr('booking_cancel_dialog_title')),
+      content: Text(dialogContext.tr('booking_cancel_dialog_content')),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(dialogContext.tr('common_no')),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+            final appCubit = context.read<AppCubit>();
+            appCubit.bookingCubit.cancelBooking(booking.id);
+            if (!context.mounted) return;
+            final state = appCubit.state;
+            if (state is AppAuthenticated) {
+              appCubit.bookingCubit.loadUserBookings(state.user.uid);
+            }
+            SnackBarHelper.showSuccess(
+              context,
+              context.tr('booking_cancelled_msg'),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent.shade400,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(dialogContext.tr('common_yes')),
+        ),
+      ],
+    ),
+  );
 }

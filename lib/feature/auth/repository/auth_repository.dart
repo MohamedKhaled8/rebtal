@@ -308,6 +308,37 @@ class AuthRepository implements BaseAuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserModel>> updateIdCard({
+    required String uid,
+    required String role,
+    required String idCardUrl,
+  }) async {
+    try {
+      late String collectionName;
+      final normalizedRole = role.toLowerCase().trim();
+      if (normalizedRole == "user") {
+        collectionName = "Users";
+      } else if (normalizedRole == "owner") {
+        collectionName = "Owners";
+      } else if (normalizedRole == "admin") {
+        collectionName = "Admin";
+      } else {
+        collectionName = "Users";
+      }
+
+      await _firestore.collection(collectionName).doc(uid).update({
+        'idCardUrl': idCardUrl,
+      });
+
+      final doc = await _firestore.collection(collectionName).doc(uid).get();
+      return Right(UserModel.fromMap(doc.data() as Map<String, dynamic>));
+    } catch (e) {
+      FirebaseErrorHandler.logError(e, context: 'UpdateIdCard');
+      return Left(ServerFailure(FirebaseErrorHandler.getErrorMessage(e)));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> changePassword({
     required String currentPassword,
     required String newPassword,

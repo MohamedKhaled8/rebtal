@@ -2,11 +2,14 @@
 part of 'auth_cubit.dart';
 
 // ✅ Auth States
-abstract class AuthState {}
+sealed class AuthState {}
 
 class AuthInitial extends AuthState {}
 
 class AuthUnauthenticated extends AuthState {}
+
+/// Browsing the app without an account (guest mode).
+class AuthGuest extends AuthState {}
 
 class AuthLoading extends AuthState {}
 

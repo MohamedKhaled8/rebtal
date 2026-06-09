@@ -262,6 +262,11 @@ class BookingCubit extends Cubit<BookingState> {
     return super.close();
   }
 
+  void reset() {
+    _activeBookingsScope = null;
+    emit(const BookingState(bookings: [], isLoading: false));
+  }
+
   // ✅ إضافة حجز جديد
   void addBooking(Booking booking) {
     final currentBookings = List<Booking>.from(state.bookings);

@@ -189,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (!completed) {
       Navigator.pushReplacementNamed(context, Routes.travelOnboardingScreen);
     } else {
-      Navigator.pushReplacementNamed(context, Routes.loginScreen);
+      Navigator.pushReplacementNamed(context, Routes.authEntryScreen);
     }
   }
 

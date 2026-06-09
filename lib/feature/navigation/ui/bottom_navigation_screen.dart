@@ -15,6 +15,7 @@ import 'package:rebtal/feature/admin/presentation/pages/dashboard.dart';
 
 import 'package:rebtal/feature/profile/ui/profile_page.dart';
 import 'package:rebtal/feature/booking/ui/user_bookings_page.dart';
+import 'package:rebtal/feature/guest/ui/guest_sign_in_page.dart';
 
 import 'package:rebtal/feature/chalet/ui/offers_page.dart';
 import 'package:rebtal/feature/favorites/ui/favorites_page.dart';
@@ -61,6 +62,13 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         OwnerCancellationsPage(),
         ProfilePage(),
       ];
+    } else if (role == 'guest') {
+      _screens = const [
+        HomeScreen(),
+        OffersPage(),
+        DayUsePage(),
+        GuestSignInPage(),
+      ];
     } else {
       _screens = const [
         HomeScreen(),
@@ -95,6 +103,13 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           ),
           NavItem(icon: Icons.person, label: t('nav_profile')),
         ];
+      case 'guest':
+        return [
+          NavItem(icon: Icons.home, label: t('nav_home')),
+          NavItem(icon: Icons.local_offer, label: t('nav_offers')),
+          NavItem(icon: Icons.wb_sunny_rounded, label: t('nav_day_use')),
+          NavItem(icon: Icons.login_rounded, label: t('nav_sign_in')),
+        ];
       default:
         return [
           NavItem(icon: Icons.home, label: t('nav_home')),
@@ -128,11 +143,12 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         return true;
       },
       builder: (context, state) {
+        final isGuest = state is AuthGuest;
         final currentUser = (state is AuthSuccess)
             ? state.user
             : authCubit.getCurrentUser();
 
-        if (currentUser == null) {
+        if (currentUser == null && !isGuest) {
           return Scaffold(
             backgroundColor: shellBg,
             body: const Center(child: CircularProgressIndicator()),

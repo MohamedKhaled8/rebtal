@@ -121,11 +121,6 @@ class RegisterCubit extends Cubit<RegisterState> {
       return;
     }
 
-    if (idCardImage == null) {
-      emit(RegisterValidationError("auth_id_card_required"));
-      return;
-    }
-
     emit(RegisterLoading());
 
     String? profileImageUrl;
@@ -142,13 +137,15 @@ class RegisterCubit extends Cubit<RegisterState> {
       }
     }
 
-    try {
-      idCardUrl = await getIt<HelperImageContract>().uploadToCloudinary(
-        idCardImage!,
-      );
-    } catch (e) {
-      emit(RegisterFailure("فشل رفع صورة البطاقة: $e"));
-      return;
+    if (idCardImage != null) {
+      try {
+        idCardUrl = await getIt<HelperImageContract>().uploadToCloudinary(
+          idCardImage!,
+        );
+      } catch (e) {
+        emit(RegisterFailure("فشل رفع صورة البطاقة: $e"));
+        return;
+      }
     }
 
     final deviceTypeStr = await DeviceInfoService.getDeviceType();

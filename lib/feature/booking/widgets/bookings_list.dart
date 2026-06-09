@@ -11,6 +11,7 @@ import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/feature/booking/ui/rating_page.dart';
 import 'package:rebtal/feature/booking/ui/cancellation_details_page.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 class BookingsList extends StatelessWidget {
   final List<Booking> pendingBookings;
@@ -493,6 +494,35 @@ class BookingCard extends StatelessWidget {
                           ),
                         ),
                       ],
+                    )
+                  else if (booking.status == BookingStatus.pending)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.redAccent.shade400,
+                          side: BorderSide(color: Colors.redAccent.shade200),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () => _showPendingCancelDialog(context, booking),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.cancel_outlined, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              context.tr('booking_cancel_booking'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     )
                   else
                     SizedBox(
@@ -1075,4 +1105,42 @@ class _DetailItem extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showPendingCancelDialog(BuildContext context, Booking booking) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(dialogContext.tr('booking_cancel_dialog_title')),
+      content: Text(dialogContext.tr('booking_cancel_dialog_content')),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext),
+          child: Text(dialogContext.tr('common_no')),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(dialogContext);
+            final appCubit = context.read<AppCubit>();
+            appCubit.bookingCubit.cancelBooking(booking.id);
+            if (!context.mounted) return;
+            final state = appCubit.state;
+            if (state is AppAuthenticated) {
+              appCubit.bookingCubit.loadUserBookings(state.user.uid);
+            }
+            SnackBarHelper.showSuccess(
+              context,
+              context.tr('booking_cancelled_msg'),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent.shade400,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(dialogContext.tr('common_yes')),
+        ),
+      ],
+    ),
+  );
 }

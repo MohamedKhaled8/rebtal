@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/chalet_detail_cubit.dart';
 import 'package:share_plus/share_plus.dart';
@@ -77,10 +78,8 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
       } catch (_) {}
     }
 
-    if (_userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.tr('chalet_login_to_favorite'))),
-      );
+    if (_userId == null || AuthRestrictionHelper.isGuest(context)) {
+      AuthRestrictionHelper.showGuestRegistrationPrompt(context);
       return;
     }
 

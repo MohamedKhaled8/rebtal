@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
+import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/ui/owner_chalet_Add_screen.dart';
 import 'package:rebtal/feature/owner/widget/owner_chalets_list.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
+import 'package:rebtal/feature/navigation/ui/bottom_nav_controller.dart';
 
 class OwnerChaletsPage extends StatefulWidget {
   const OwnerChaletsPage({super.key});
@@ -17,11 +19,59 @@ class OwnerChaletsPage extends StatefulWidget {
 }
 
 class _OwnerChaletsPageState extends State<OwnerChaletsPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
 
   String _selectedStatus = '';
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350), // Snappy and instant
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.02), // subtle premium lift
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+
+    // Listen to bottom navigation changes to replay animation on tab switch
+    bottomNavIndex.addListener(_handleTabChange);
+
+    // Play initial animation if this is the active tab
+    if (bottomNavIndex.value == 0) {
+      _animationController.forward();
+    }
+  }
+
+  void _handleTabChange() {
+    if (!mounted) return;
+    if (bottomNavIndex.value == 0) {
+      _animationController.reset();
+      _animationController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    bottomNavIndex.removeListener(_handleTabChange);
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +87,17 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage>
 
     return Scaffold(
       backgroundColor: scaffoldBg,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<AppCubit>().fetchOwnerChalets();
-        },
-        color: primaryBlue,
-        backgroundColor: cardColor,
-        child: CustomScrollView(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              context.read<AppCubit>().fetchOwnerChalets();
+            },
+            color: primaryBlue,
+            backgroundColor: cardColor,
+            child: CustomScrollView(
               physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
               ),
@@ -298,9 +352,13 @@ class _OwnerChaletsPageState extends State<OwnerChaletsPage>
                 SliverToBoxAdapter(child: SizedBox(height: 100.sp)),
               ],
             ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          if (!AuthRestrictionHelper.guardOwnerAddChalet(context)) return;
+
           final ownerCubit = context.read<AppCubit>().ownerCubit;
           await Navigator.push<bool?>(
             context,

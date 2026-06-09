@@ -178,13 +178,6 @@ class _NewPaymentMethodPageState extends State<NewPaymentMethodPage> {
                           context.tr('payment_method_bank'),
                           Icons.account_balance_outlined,
                         ),
-                        const SizedBox(height: 12),
-                        _buildPaymentOption(
-                          isDark,
-                          PaymentMethod.cashOnArrival,
-                          context.tr('payment_method_cash_on_arrival'),
-                          Icons.payments_outlined,
-                        ),
                       ],
                     ),
                   ),

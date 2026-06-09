@@ -244,7 +244,7 @@ Future<void> setupGetIt() async {
   // ============================================================
 
   getIt.registerLazySingleton<AppCubit>(
-    () => AppCubit(
+    () => AppCubitImpl(
       authCubit: getIt<AuthCubit>(),
       bookingCubit: getIt<BookingCubit>(),
       themeCubit: getIt<ThemeCubit>(),
