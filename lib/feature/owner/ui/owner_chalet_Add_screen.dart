@@ -247,18 +247,6 @@ class _ChaletFormContent extends StatelessWidget {
               ),
               SizedBox(height: 20.sh),
 
-              // Discount Section
-              DiscountSection(
-                discountEnabled: draft.discountEnabled,
-                discountType: draft.discountType,
-                discountValue: draft.discountValue,
-                originalPrice: double.tryParse(draft.price) ?? 0,
-                onDiscountEnabledChanged: ownerCubit.updateDiscountEnabled,
-                onDiscountTypeChanged: ownerCubit.updateDiscountType,
-                onDiscountValueChanged: ownerCubit.updateDiscountValue,
-              ),
-              SizedBox(height: 20.sh),
-
               DayUseSection(
                 dayUseEnabled: draft.dayUseEnabled,
                 onDayUseChanged: ownerCubit.updateDayUseEnabled,

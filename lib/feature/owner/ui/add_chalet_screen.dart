@@ -31,9 +31,6 @@ class AddChaletScreen extends StatefulWidget {
 }
 
 class _AddChaletScreenState extends State<AddChaletScreen> {
-  /// Bumped once after edit draft hydrates so form subtree rebuilds from cubit.
-  int _formRebuildGeneration = 0;
-  bool _didRebuildFormAfterEditLoad = false;
   bool _didInitializeForm = false;
 
   void _initializeForm(OwnerCubit cubit) {
@@ -63,31 +60,6 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<OwnerCubit, OwnerState>(
-          bloc: ownerCubit,
-          listenWhen: (previous, current) {
-            if (!widget._isEditMode || _didRebuildFormAfterEditLoad) {
-              return false;
-            }
-            final d = current.draft;
-            final hasData =
-                (d.chaletName != null && d.chaletName!.trim().isNotEmpty) ||
-                d.existingImageUrls.isNotEmpty ||
-                d.selectedLocation.trim().isNotEmpty ||
-                d.price.trim().isNotEmpty ||
-                (d.description != null && d.description!.trim().isNotEmpty) ||
-                d.availableFrom != null ||
-                (d.bedrooms != null && d.bedrooms! > 0);
-            return hasData;
-          },
-          listener: (context, state) {
-            if (!mounted) return;
-            setState(() {
-              _didRebuildFormAfterEditLoad = true;
-              _formRebuildGeneration++;
-            });
-          },
-        ),
         BlocListener<OwnerCubit, OwnerState>(
           bloc: ownerCubit,
           listenWhen: (previous, current) =>
@@ -125,10 +97,7 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
             ? ColorsManager.darkBackground0A0E27
             : ColorsManager.lightBackgroundF8FAFF,
         appBar: _buildAppBar(context, isDark),
-        body: _AddChaletContent(
-          key: ValueKey<int>(_formRebuildGeneration),
-          ownerCubit: ownerCubit,
-        ),
+        body: _AddChaletContent(ownerCubit: ownerCubit),
         bottomNavigationBar: _SubmitButton(
           ownerCubit: ownerCubit,
           appCubit: appCubit,
@@ -191,42 +160,77 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
   }
 }
 
-class _AddChaletContent extends StatelessWidget {
-  const _AddChaletContent({super.key, required this.ownerCubit});
+class _AddChaletContent extends StatefulWidget {
+  const _AddChaletContent({required this.ownerCubit});
 
   final OwnerCubit ownerCubit;
 
+  @override
+  State<_AddChaletContent> createState() => _AddChaletContentState();
+}
+
+class _AddChaletContentState extends State<_AddChaletContent> {
+  late final ScrollController _scrollController;
+
   static void _releasePrimaryFocus() {
     FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  void _preserveScrollAfter(VoidCallback action) {
+    final offset = _scrollController.hasClients ? _scrollController.offset : null;
+    action();
+    if (offset == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      if (_scrollController.offset != offset) {
+        _scrollController.jumpTo(offset);
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    return BlocBuilder<OwnerCubit, OwnerState>(
-      bloc: ownerCubit,
-      buildWhen: (previous, current) =>
-          previous.draft != current.draft ||
-          previous.isFormSubmitting != current.isFormSubmitting ||
-          previous.isLocationLoading != current.isLocationLoading ||
-          previous.locationResults != current.locationResults,
-      builder: (context, state) {
-        final draft = state.draft;
-
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: stv(
-              context: context,
-              mobile: 20.sw,
-              tablet: 32.sw,
-              desktop: 48.sw,
-            ),
-            vertical: 20.sh,
-          ),
-          child: _buildSingleColumn(context, isDark, ownerCubit, draft),
-        );
-      },
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: EdgeInsets.symmetric(
+        horizontal: stv(
+          context: context,
+          mobile: 20.sw,
+          tablet: 32.sw,
+          desktop: 48.sw,
+        ),
+        vertical: 20.sh,
+      ),
+      child: BlocBuilder<OwnerCubit, OwnerState>(
+        bloc: widget.ownerCubit,
+        buildWhen: (previous, current) =>
+            previous.draft != current.draft ||
+            previous.isFormSubmitting != current.isFormSubmitting ||
+            previous.isLocationLoading != current.isLocationLoading ||
+            previous.locationResults != current.locationResults,
+        builder: (context, state) {
+          return _buildSingleColumn(
+            context,
+            isDark,
+            widget.ownerCubit,
+            state.draft,
+          );
+        },
+      ),
     );
   }
 
@@ -396,6 +400,24 @@ class _AddChaletContent extends StatelessWidget {
           ),
         ),
         SizedBox(height: 20.sh),
+
+        if (context.read<AppCubit>().getCurrentRole() == 'admin') ...[
+          DiscountSection(
+            discountEnabled: draft.discountEnabled,
+            discountType: draft.discountType,
+            discountValue: draft.discountValue,
+            originalPrice: double.tryParse(draft.price) ?? 0,
+            onDiscountEnabledChanged: (enabled) {
+              _releasePrimaryFocus();
+              _preserveScrollAfter(
+                () => ownerCubit.updateDiscountEnabled(enabled),
+              );
+            },
+            onDiscountTypeChanged: ownerCubit.updateDiscountType,
+            onDiscountValueChanged: ownerCubit.updateDiscountValue,
+          ),
+          SizedBox(height: 20.sh),
+        ],
 
         // Availability Section
         AvailabilitySection(

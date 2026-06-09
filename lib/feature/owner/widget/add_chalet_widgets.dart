@@ -929,26 +929,41 @@ class DiscountSection extends StatelessWidget {
       color: ColorsManager.redFF3B30,
       child: Column(
         children: [
-          SwitchListTile(
-            title: Text(
-              context.tr('owner_enable_discount'),
-              style: TextStyle(
-                color: isDark ? ColorsManager.white : ColorsManager.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('owner_enable_discount'),
+                      style: TextStyle(
+                        color:
+                            isDark ? ColorsManager.white : ColorsManager.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      context.tr('owner_enable_discount_hint'),
+                      style: TextStyle(
+                        color: isDark
+                            ? ColorsManager.grey400
+                            : ColorsManager.grey600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            subtitle: Text(
-              context.tr('owner_enable_discount_hint'),
-              style: TextStyle(
-                color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-                fontSize: 12,
+              Switch.adaptive(
+                value: isEnabled,
+                onChanged: onDiscountEnabledChanged,
+                activeColor: ColorsManager.redFF3B30,
               ),
-            ),
-            value: isEnabled,
-            activeColor: ColorsManager.redFF3B30,
-            onChanged: onDiscountEnabledChanged,
-            contentPadding: EdgeInsets.zero,
+            ],
           ),
           if (isEnabled) ...[
             const SizedBox(height: 20),
