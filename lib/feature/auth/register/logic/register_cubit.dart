@@ -29,6 +29,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   bool obscurePassword = true;
   String selectedRole = "user";
+  String? selectedOwnerType; // 'direct_owner' or 'broker'
 
   void togglePasswordVisibility() {
     obscurePassword = !obscurePassword;
@@ -37,7 +38,14 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   void setRole(String role) {
     selectedRole = role;
+    // Reset owner type when switching away from owner
+    if (role != 'owner') selectedOwnerType = null;
     emit(RegisterRoleChanged(role));
+  }
+
+  void setOwnerType(String ownerType) {
+    selectedOwnerType = ownerType;
+    emit(RegisterRoleChanged(selectedRole));
   }
 
   File? profileImage;
@@ -121,6 +129,12 @@ class RegisterCubit extends Cubit<RegisterState> {
       return;
     }
 
+    // Validate owner type when role is owner
+    if (selectedRole == 'owner' && (selectedOwnerType == null || selectedOwnerType!.isEmpty)) {
+      emit(RegisterValidationError("auth_owner_type_required"));
+      return;
+    }
+
     emit(RegisterLoading());
 
     String? profileImageUrl;
@@ -159,6 +173,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       profileImageUrl: profileImageUrl,
       idCardUrl: idCardUrl,
       deviceType: deviceTypeStr,
+      ownerType: role == 'owner' ? selectedOwnerType : null,
     );
 
     result.fold(

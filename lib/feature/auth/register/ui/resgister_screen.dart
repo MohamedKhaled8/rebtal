@@ -233,6 +233,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   RoleSelector(
                     selectedRole: cubit.selectedRole,
                     onChanged: cubit.setRole,
+                    selectedOwnerType: cubit.selectedOwnerType,
+                    onOwnerTypeChanged: cubit.setOwnerType,
                   ),
                   const SizedBox(height: 32),
                   

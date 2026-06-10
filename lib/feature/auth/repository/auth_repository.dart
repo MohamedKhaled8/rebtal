@@ -46,6 +46,7 @@ class AuthRepository implements BaseAuthRepository {
     String? profileImageUrl,
     String? idCardUrl,
     String? deviceType,
+    String? ownerType,
   }) async {
     try {
       final emailError = AuthValidator.validateEmail(email);
@@ -83,6 +84,7 @@ class AuthRepository implements BaseAuthRepository {
         profileImageUrl: profileImageUrl,
         idCardUrl: idCardUrl,
         deviceType: deviceType,
+        ownerType: normalizedRole == 'owner' ? ownerType : null,
       );
 
       // Save to Firestore immediately

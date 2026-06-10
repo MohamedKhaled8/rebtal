@@ -93,6 +93,18 @@ class ArbLocalizationsAr extends ArbLocalizations {
   String get auth_role_owner => 'مالك';
 
   @override
+  String get auth_owner_type_label => 'نوع المالك';
+
+  @override
+  String get auth_owner_type_direct => 'مالك مباشر';
+
+  @override
+  String get auth_owner_type_broker => 'وسيط';
+
+  @override
+  String get auth_owner_type_required => 'يرجى اختيار نوع المالك';
+
+  @override
   String get auth_camera => 'الكاميرا';
 
   @override

@@ -222,6 +222,19 @@ class UserCard extends StatelessWidget {
             _buildInfoRow(context, Icons.phone_outlined, phone, isDark),
             const SizedBox(height: 12),
             _buildInfoRow(context, Icons.fingerprint, uid, isDark),
+            if (role == 'owner' && userData['ownerType'] != null) ...[
+              const SizedBox(height: 12),
+              _buildInfoRow(
+                context,
+                Icons.account_circle_outlined,
+                userData['ownerType'] == 'direct_owner'
+                    ? context.tr('auth_owner_type_direct')
+                    : userData['ownerType'] == 'broker'
+                        ? context.tr('auth_owner_type_broker')
+                        : userData['ownerType'].toString(),
+                isDark,
+              ),
+            ],
             const SizedBox(height: 20),
             Row(
               children: [

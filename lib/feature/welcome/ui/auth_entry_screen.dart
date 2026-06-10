@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/Router/routes.dart';
-import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 
 class AuthEntryScreen extends StatefulWidget {
@@ -89,10 +87,12 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                           _Segmented(
                             left: context.tr('auth_login'),
                             right: context.tr('auth_create_account'),
-                            onLeft: () => Navigator.of(context)
-                                .pushNamed(Routes.loginScreen),
-                            onRight: () => Navigator.of(context)
-                                .pushNamed(Routes.registerScreen),
+                            onLeft: () => Navigator.of(
+                              context,
+                            ).pushNamed(Routes.loginScreen),
+                            onRight: () => Navigator.of(
+                              context,
+                            ).pushNamed(Routes.registerScreen),
                           ),
                           const SizedBox(height: 16),
                           Container(
@@ -120,7 +120,9 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                                 const SizedBox(height: 8),
                                 _BenefitRow(
                                   icon: Icons.support_agent_outlined,
-                                  text: context.tr('auth_entry_benefit_support'),
+                                  text: context.tr(
+                                    'auth_entry_benefit_support',
+                                  ),
                                 ),
                               ],
                             ),
@@ -130,8 +132,9 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                             width: double.infinity,
                             height: 44,
                             child: OutlinedButton(
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed(Routes.registerScreen),
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushNamed(Routes.registerScreen),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
                                   color: Colors.white.withOpacity(0.45),
@@ -145,33 +148,6 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                                 context.tr('auth_entry_continue'),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 44,
-                            child: TextButton(
-                              onPressed: () {
-                                context.read<AppCubit>().authCubit.enterGuestMode();
-                                Navigator.of(context).pushNamedAndRemoveUntil(
-                                  Routes.bottomNavigationBarScreen,
-                                  (route) => false,
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white.withOpacity(0.9),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                context.tr('auth_continue_as_guest'),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13.5,
                                 ),
                               ),
                             ),
@@ -196,9 +172,7 @@ class _Bg extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Image.asset(assetPath, fit: BoxFit.cover),
-    );
+    return SizedBox.expand(child: Image.asset(assetPath, fit: BoxFit.cover));
   }
 }
 
@@ -228,19 +202,11 @@ class _Segmented extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _SegBtn(
-              label: left,
-              onTap: onLeft,
-              filled: true,
-            ),
+            child: _SegBtn(label: left, onTap: onLeft, filled: true),
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: _SegBtn(
-              label: right,
-              onTap: onRight,
-              filled: false,
-            ),
+            child: _SegBtn(label: right, onTap: onRight, filled: false),
           ),
         ],
       ),
@@ -308,4 +274,3 @@ class _BenefitRow extends StatelessWidget {
     );
   }
 }
-

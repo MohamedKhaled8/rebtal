@@ -266,6 +266,30 @@ abstract class ArbLocalizations {
   /// **'Owner'**
   String get auth_role_owner;
 
+  /// No description provided for @auth_owner_type_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner Type'**
+  String get auth_owner_type_label;
+
+  /// No description provided for @auth_owner_type_direct.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct Owner'**
+  String get auth_owner_type_direct;
+
+  /// No description provided for @auth_owner_type_broker.
+  ///
+  /// In en, this message translates to:
+  /// **'Broker'**
+  String get auth_owner_type_broker;
+
+  /// No description provided for @auth_owner_type_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select owner type'**
+  String get auth_owner_type_required;
+
   /// No description provided for @auth_camera.
   ///
   /// In en, this message translates to:

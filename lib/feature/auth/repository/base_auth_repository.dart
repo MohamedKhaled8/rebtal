@@ -12,6 +12,7 @@ abstract class BaseAuthRepository {
     String? profileImageUrl,
     String? idCardUrl,
     String? deviceType,
+    String? ownerType,
   });
 
   Future<Either<Failure, UserModel>> login({

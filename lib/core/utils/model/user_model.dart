@@ -25,6 +25,9 @@ class UserModel {
   // Device type (brand + model + OS)
   final String? deviceType;
 
+  // Owner type: 'direct_owner' or 'broker' (only for owners)
+  final String? ownerType;
+
   const UserModel({
     required this.uid,
     required this.email,
@@ -41,6 +44,7 @@ class UserModel {
     this.profileImageUrl,
     this.idCardUrl,
     this.deviceType,
+    this.ownerType,
   });
 
   Map<String, dynamic> toMap() {
@@ -60,6 +64,7 @@ class UserModel {
       'profileImageUrl': profileImageUrl,
       'idCardUrl': idCardUrl,
       'deviceType': deviceType,
+      if (ownerType != null) 'ownerType': ownerType,
     };
   }
 
@@ -82,6 +87,7 @@ class UserModel {
       profileImageUrl: profile?.toString(),
       idCardUrl: map['idCardUrl'],
       deviceType: map['deviceType'],
+      ownerType: map['ownerType'],
     );
   }
 }

@@ -168,18 +168,16 @@ class AuthWanderlyScaffold extends StatelessWidget {
                       headerHeight: mobileHeaderH,
                       isDark: isDark,
                     ),
-                    SafeArea(
-                      child: SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: EdgeInsets.fromLTRB(
-                          18,
-                          mobileScrollTop,
-                          18,
-                          18 + viewInsets.bottom,
-                        ),
-                        child: Center(child: card),
+                    SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: EdgeInsets.fromLTRB(
+                        18,
+                        mobileScrollTop,
+                        18,
+                        18 + viewInsets.bottom + MediaQuery.paddingOf(context).bottom,
                       ),
+                      child: Center(child: card),
                     ),
                   ],
                 );

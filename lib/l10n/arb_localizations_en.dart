@@ -93,6 +93,18 @@ class ArbLocalizationsEn extends ArbLocalizations {
   String get auth_role_owner => 'Owner';
 
   @override
+  String get auth_owner_type_label => 'Owner Type';
+
+  @override
+  String get auth_owner_type_direct => 'Direct Owner';
+
+  @override
+  String get auth_owner_type_broker => 'Broker';
+
+  @override
+  String get auth_owner_type_required => 'Please select owner type';
+
+  @override
   String get auth_camera => 'Camera';
 
   @override

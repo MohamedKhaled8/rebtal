@@ -453,8 +453,20 @@ class _PersonalInfoPageState extends State<PersonalInfoPage>
                             context.tr('auth_phone'),
                             user.phone,
                             Icons.phone_iphone_rounded,
-                            isLast: true,
+                            isLast: !(user.role == 'owner' && user.ownerType != null),
                           ),
+                          if (user.role == 'owner' && user.ownerType != null)
+                            _buildInfoRow(
+                              isDark,
+                              context.tr('auth_owner_type_label'),
+                              user.ownerType == 'direct_owner'
+                                  ? context.tr('auth_owner_type_direct')
+                                  : user.ownerType == 'broker'
+                                      ? context.tr('auth_owner_type_broker')
+                                      : user.ownerType!,
+                              Icons.account_circle_outlined,
+                              isLast: true,
+                            ),
                         ],
                       ),
                     ),
