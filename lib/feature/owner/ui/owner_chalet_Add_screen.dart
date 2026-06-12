@@ -12,6 +12,7 @@ import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
+import 'package:rebtal/feature/owner/widget/pricing_periods_section.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -185,7 +186,8 @@ class _ChaletFormContent extends StatelessWidget {
               // Images Section
               ImageUploadSection(
                 images: draft.uploadedImages,
-                onAdd: () => getIt<HelperImageContract>().addSampleImages(context),
+                onAdd: () =>
+                    getIt<HelperImageContract>().addSampleImages(context),
                 onRemove: (index) => ownerCubit.removeChaletImage(index),
               ),
               SizedBox(height: 20.sh),
@@ -253,39 +255,14 @@ class _ChaletFormContent extends StatelessWidget {
               ),
               SizedBox(height: 20.sh),
 
-              // Availability Section
-              AvailabilitySection(
-                availableFrom: draft.availableFrom,
-                availableTo: draft.availableTo,
-                onSelectFrom: () async {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  final now = DateTime.now();
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: draft.availableFrom ?? now,
-                    firstDate: now,
-                    lastDate: DateTime(now.year + 2),
-                  );
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  if (picked != null) {
-                    ownerCubit.selectAvailableFromDate(picked);
-                  }
-                },
-                onSelectTo: () async {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  final now = DateTime.now();
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        draft.availableTo ?? (draft.availableFrom ?? now),
-                    firstDate: draft.availableFrom ?? now,
-                    lastDate: DateTime(now.year + 2),
-                  );
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  if (picked != null) {
-                    ownerCubit.selectAvailableToDate(picked);
-                  }
-                },
+              PricingPeriodsSection(
+                periods: draft.pricingPeriods,
+                onAdd: (from, to, price) => ownerCubit.addPricingPeriod(
+                  from: from,
+                  to: to,
+                  price: price,
+                ),
+                onRemove: ownerCubit.removePricingPeriod,
               ),
               SizedBox(height: 20.sh),
 

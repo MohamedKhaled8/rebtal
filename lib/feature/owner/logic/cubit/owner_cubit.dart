@@ -12,6 +12,8 @@ import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 import 'package:rebtal/core/utils/services/local_notification_service.dart';
+import 'package:rebtal/core/utils/model/pricing_period.dart';
+import 'package:rebtal/core/utils/services/chalet_pricing_service.dart';
 
 int? _intFromFirestore(dynamic v) {
   if (v == null) return null;
@@ -21,6 +23,38 @@ int? _intFromFirestore(dynamic v) {
   final d = double.tryParse(s);
   if (d != null) return d.round();
   return int.tryParse(s);
+}
+
+DateTime? _pricingPeriodDate(dynamic v) {
+  if (v == null) return null;
+  if (v is Timestamp) return v.toDate();
+  if (v is String) return DateTime.tryParse(v);
+  if (v is DateTime) return v;
+  return null;
+}
+
+List<PricingPeriod> _pricingPeriodsFromMap(Map<String, dynamic> m) {
+  final fromFirestore = PricingPeriod.listFromFirestore(m['pricingPeriods']);
+  if (fromFirestore.isNotEmpty) return fromFirestore;
+
+  final from = _pricingPeriodDate(m['availableFrom']);
+  final to = _pricingPeriodDate(m['availableTo']);
+  final priceRaw = m['price'];
+  final price = priceRaw is num
+      ? priceRaw.toDouble()
+      : double.tryParse(priceRaw?.toString() ?? '') ?? 0;
+
+  if (from != null && to != null && price > 0) {
+    return [
+      PricingPeriod(
+        id: 'legacy',
+        from: PricingPeriod.dateOnly(from),
+        to: PricingPeriod.dateOnly(to),
+        price: price,
+      ),
+    ];
+  }
+  return const [];
 }
 
 bool _amenityFlagFromMap(
@@ -182,6 +216,83 @@ class OwnerCubit extends Cubit<OwnerState> {
 
   void updateDayUseEnabled(bool enabled) =>
       emit(state.copyWith(draft: state.draft.copyWith(dayUseEnabled: enabled)));
+
+  bool addPricingPeriod({
+    required DateTime from,
+    required DateTime to,
+    required double price,
+  }) {
+    final normalizedFrom = PricingPeriod.dateOnly(from);
+    final normalizedTo = PricingPeriod.dateOnly(to);
+    if (normalizedTo.isBefore(normalizedFrom)) return false;
+    if (price <= 0) return false;
+
+    final newPeriod = PricingPeriod(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      from: normalizedFrom,
+      to: normalizedTo,
+      price: price,
+    );
+
+    for (final existing in state.draft.pricingPeriods) {
+      if (ChaletPricingService.periodsOverlap(existing, newPeriod)) {
+        return false;
+      }
+    }
+
+    final updated = [...state.draft.pricingPeriods, newPeriod]
+      ..sort((a, b) => a.from.compareTo(b.from));
+    _emitDraftWithSyncedPeriods(updated);
+    return true;
+  }
+
+  void removePricingPeriod(String id) {
+    final updated = state.draft.pricingPeriods
+        .where((p) => p.id != id)
+        .toList();
+    _emitDraftWithSyncedPeriods(updated);
+  }
+
+  void _emitDraftWithSyncedPeriods(List<PricingPeriod> periods) {
+    if (periods.isEmpty) {
+      emit(
+        state.copyWith(
+          draft: state.draft.copyWith(
+            pricingPeriods: const [],
+            availableFrom: null,
+            availableTo: null,
+          ),
+        ),
+      );
+      return;
+    }
+
+    final envelopeFrom = periods
+        .map((p) => p.from)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    final envelopeTo = periods
+        .map((p) => p.to)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
+    final minPrice = periods
+        .map((p) => p.price)
+        .reduce((a, b) => a < b ? a : b);
+
+    emit(
+      state.copyWith(
+        draft: state.draft.copyWith(
+          pricingPeriods: periods,
+          availableFrom: envelopeFrom,
+          availableTo: envelopeTo,
+          price: minPrice.toStringAsFixed(
+            minPrice.truncateToDouble() == minPrice ? 0 : 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _pricingPeriodsPayload() =>
+      state.draft.pricingPeriods.map((p) => p.toMap()).toList();
 
   void toggleFeature(String feature) {
     final currentFeatures = List<String>.from(state.draft.features);
@@ -360,6 +471,7 @@ class OwnerCubit extends Cubit<OwnerState> {
           features: features,
           dayUseEnabled: m['dayUseEnabled'] ?? false,
           popularDestination: popularKey,
+          pricingPeriods: _pricingPeriodsFromMap(m),
         ),
         isFormSubmitting: false,
         formError: null,
@@ -756,8 +868,9 @@ class OwnerCubit extends Cubit<OwnerState> {
       return;
     }
 
-    if (state.draft.price.isEmpty ||
-        double.tryParse(state.draft.price) == null) {
+    if (state.draft.pricingPeriods.isEmpty &&
+        (state.draft.price.isEmpty ||
+            double.tryParse(state.draft.price) == null)) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
@@ -803,21 +916,21 @@ class OwnerCubit extends Cubit<OwnerState> {
       return;
     }
 
-    if (state.draft.availableFrom == null) {
+    if (state.draft.pricingPeriods.isEmpty) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
-          formError: "تاريخ البداية مطلوب",
+          formError: "يجب إضافة فترة توفر واحدة على الأقل مع السعر",
         ),
       );
       return;
     }
 
-    if (state.draft.availableTo == null) {
+    if (state.draft.availableFrom == null || state.draft.availableTo == null) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
-          formError: "تاريخ النهاية مطلوب",
+          formError: "فترة التوفر غير مكتملة",
         ),
       );
       return;
@@ -901,6 +1014,7 @@ class OwnerCubit extends Cubit<OwnerState> {
         discountValue: state.draft.discountValue,
         features: state.draft.features,
         dayUseEnabled: state.draft.dayUseEnabled,
+        pricingPeriods: _pricingPeriodsPayload(),
       ),
     );
 
@@ -958,8 +1072,9 @@ class OwnerCubit extends Cubit<OwnerState> {
       return;
     }
 
-    if (state.draft.price.isEmpty ||
-        double.tryParse(state.draft.price) == null) {
+    if (state.draft.pricingPeriods.isEmpty &&
+        (state.draft.price.isEmpty ||
+            double.tryParse(state.draft.price) == null)) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
@@ -1005,21 +1120,21 @@ class OwnerCubit extends Cubit<OwnerState> {
       return;
     }
 
-    if (state.draft.availableFrom == null) {
+    if (state.draft.pricingPeriods.isEmpty) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
-          formError: "تاريخ البداية مطلوب",
+          formError: "يجب إضافة فترة توفر واحدة على الأقل مع السعر",
         ),
       );
       return;
     }
 
-    if (state.draft.availableTo == null) {
+    if (state.draft.availableFrom == null || state.draft.availableTo == null) {
       emit(
         state.copyWith(
           isFormSubmitting: false,
-          formError: "تاريخ النهاية مطلوب",
+          formError: "فترة التوفر غير مكتملة",
         ),
       );
       return;
@@ -1113,6 +1228,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       ),
       'availableFrom': state.draft.availableFrom!.toIso8601String(),
       'availableTo': state.draft.availableTo!.toIso8601String(),
+      'pricingPeriods': _pricingPeriodsPayload(),
       'discountEnabled': state.draft.discountEnabled,
       'features': state.draft.features,
       'dayUseEnabled': state.draft.dayUseEnabled,

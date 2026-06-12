@@ -6,6 +6,7 @@ import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 
 import 'package:flutter/material.dart';
+import 'package:rebtal/core/utils/services/chalet_pricing_service.dart';
 
 class BookingWizardCubit extends Cubit<BookingWizardState> {
   final Map<String, dynamic> requestData;
@@ -38,33 +39,11 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   }
 
   void _calculateInitialPrice() {
-    final price = basePriceInput;
-    final discountEnabled = requestData['discountEnabled'] == true;
-    final discountValue =
-        double.tryParse(requestData['discountValue']?.toString() ?? '0') ?? 0;
-
-    double basePrice;
-    if (price is num) {
-      basePrice = price.toDouble();
-    } else {
-      basePrice =
-          double.tryParse(
-            (price ?? '').toString().replaceAll(RegExp(r'[^0-9.]'), ''),
-          ) ??
-          0.0;
+    final data = Map<String, dynamic>.from(requestData);
+    if (basePriceInput != null && data['price'] == null) {
+      data['price'] = basePriceInput;
     }
-
-    if (discountEnabled && discountValue > 0) {
-      final discountType = requestData['discountType'];
-      if (discountType == 'percentage') {
-        basePrice = basePrice * (1 - discountValue / 100);
-      } else if (discountType == 'fixed') {
-        basePrice = basePrice - discountValue;
-      }
-      if (basePrice < 0) basePrice = 0;
-    }
-
-    emit(state.copyWith(nightlyPrice: basePrice));
+    emit(state.copyWith(nightlyPrice: ChaletPricingService.basePrice(data)));
   }
 
   Future<void> _fetchAdditionalData() async {
@@ -155,16 +134,25 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   void selectDates(DateTime start, DateTime end) {
     if (end.isBefore(start)) end = start;
 
+    final data = Map<String, dynamic>.from(requestData);
+    if (basePriceInput != null && data['price'] == null) {
+      data['price'] = basePriceInput;
+    }
+
     final spanDays = end.difference(start).inDays.clamp(0, 365);
-    // ليالي الإقامة = عدد أيام الفترة بين الوصول والمغادرة (يوم المغادرة غير محسوب كإقامة ليلية)
-    // مثال: 20 → 24 = 4 ليالٍ (وليس 3).
     final nights = spanDays.clamp(0, 365);
     final inclusiveStayDays = spanDays + 1;
 
-    // If it's Day Use, we charge for at least 1 day even if nights is 0
-    final double total = state.isDayUse
-        ? state.nightlyPrice * (spanDays == 0 ? 1 : spanDays)
-        : state.nightlyPrice * nights;
+    final breakdown = ChaletPricingService.nightlyBreakdown(data, start, end);
+    final total = ChaletPricingService.totalForRange(
+      data,
+      start,
+      end,
+      isDayUse: state.isDayUse,
+    );
+    final avgNightly = breakdown.isEmpty
+        ? ChaletPricingService.basePrice(data)
+        : ChaletPricingService.averageNightly(data, start, end);
 
     emit(
       state.copyWith(
@@ -173,6 +161,10 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
         days: inclusiveStayDays,
         nights: state.isDayUse ? (spanDays == 0 ? 1 : spanDays) : nights,
         totalAmount: total,
+        nightlyPrice: avgNightly,
+        nightlyBreakdown: breakdown
+            .map((e) => BookingNightLine(date: e.date, price: e.price))
+            .toList(),
         errorMessage: null,
       ),
     );

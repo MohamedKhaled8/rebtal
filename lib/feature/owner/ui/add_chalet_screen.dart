@@ -13,6 +13,7 @@ import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
 import 'package:rebtal/feature/owner/widget/modern_image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/modern_amenities_section.dart';
 import 'package:rebtal/feature/owner/widget/owner_synced_text_field.dart';
+import 'package:rebtal/feature/owner/widget/pricing_periods_section.dart';
 import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -35,10 +36,7 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
 
   void _initializeForm(OwnerCubit cubit) {
     if (widget._isEditMode) {
-      cubit.loadChaletDataForEdit(
-        widget.initialChaletData!,
-        widget.editDocId!,
-      );
+      cubit.loadChaletDataForEdit(widget.initialChaletData!, widget.editDocId!);
     } else {
       cubit.resetForm();
     }
@@ -177,7 +175,9 @@ class _AddChaletContentState extends State<_AddChaletContent> {
   }
 
   void _preserveScrollAfter(VoidCallback action) {
-    final offset = _scrollController.hasClients ? _scrollController.offset : null;
+    final offset = _scrollController.hasClients
+        ? _scrollController.offset
+        : null;
     action();
     if (offset == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -419,38 +419,17 @@ class _AddChaletContentState extends State<_AddChaletContent> {
           SizedBox(height: 20.sh),
         ],
 
-        // Availability Section
-        AvailabilitySection(
-          availableFrom: draft.availableFrom,
-          availableTo: draft.availableTo,
-          onSelectFrom: () async {
+        PricingPeriodsSection(
+          periods: draft.pricingPeriods,
+          onAdd: (from, to, price) {
             _releasePrimaryFocus();
-            final now = DateTime.now();
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: draft.availableFrom ?? now,
-              firstDate: now,
-              lastDate: DateTime(now.year + 2),
+            return ownerCubit.addPricingPeriod(
+              from: from,
+              to: to,
+              price: price,
             );
-            _releasePrimaryFocus();
-            if (picked != null) {
-              ownerCubit.selectAvailableFromDate(picked);
-            }
           },
-          onSelectTo: () async {
-            _releasePrimaryFocus();
-            final now = DateTime.now();
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: draft.availableTo ?? (draft.availableFrom ?? now),
-              firstDate: draft.availableFrom ?? now,
-              lastDate: DateTime(now.year + 2),
-            );
-            _releasePrimaryFocus();
-            if (picked != null) {
-              ownerCubit.selectAvailableToDate(picked);
-            }
-          },
+          onRemove: ownerCubit.removePricingPeriod,
         ),
         SizedBox(height: 20.sh),
 

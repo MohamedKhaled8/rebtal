@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:equatable/equatable.dart';
+import 'package:rebtal/core/utils/model/pricing_period.dart';
 
 enum OwnerStatus { initial, loading, loaded, error }
 
@@ -85,6 +86,7 @@ class OwnerState extends Equatable {
 
 class ChaletDraft extends Equatable {
   final List<File> uploadedImages;
+
   /// Existing remote URLs when editing an approved listing (not mixed with [uploadedImages]).
   final List<String> existingImageUrls;
   final File? profileImage;
@@ -118,6 +120,7 @@ class ChaletDraft extends Equatable {
 
   final DateTime? availableFrom;
   final DateTime? availableTo;
+  final List<PricingPeriod> pricingPeriods;
 
   final double? latitude;
   final double? longitude;
@@ -160,6 +163,7 @@ class ChaletDraft extends Equatable {
     this.bathrooms,
     this.availableFrom,
     this.availableTo,
+    this.pricingPeriods = const [],
     this.latitude,
     this.longitude,
     this.childrenCount,
@@ -203,6 +207,7 @@ class ChaletDraft extends Equatable {
     int? bathrooms,
     DateTime? availableFrom,
     DateTime? availableTo,
+    List<PricingPeriod>? pricingPeriods,
     double? latitude,
     double? longitude,
     int? childrenCount,
@@ -246,6 +251,7 @@ class ChaletDraft extends Equatable {
       bathrooms: bathrooms ?? this.bathrooms,
       availableFrom: availableFrom ?? this.availableFrom,
       availableTo: availableTo ?? this.availableTo,
+      pricingPeriods: pricingPeriods ?? this.pricingPeriods,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       childrenCount: childrenCount ?? this.childrenCount,
@@ -289,6 +295,7 @@ class ChaletDraft extends Equatable {
     bathrooms,
     availableFrom,
     availableTo,
+    pricingPeriods,
     latitude,
     longitude,
     childrenCount,

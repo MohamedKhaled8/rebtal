@@ -22,6 +22,7 @@ abstract class BaseOwnerRepository {
     String? discountValue,
     List<String>? features,
     bool? dayUseEnabled,
+    List<Map<String, dynamic>>? pricingPeriods,
   });
 
   // Returns List<dynamic> to preserve all Firestore fields (availableFrom, availableTo, etc.)

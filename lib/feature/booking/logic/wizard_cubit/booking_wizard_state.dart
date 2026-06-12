@@ -2,6 +2,16 @@ import 'package:equatable/equatable.dart';
 
 enum BookingWizardStatus { initial, loading, success, failure, submitting }
 
+class BookingNightLine extends Equatable {
+  final DateTime date;
+  final double price;
+
+  const BookingNightLine({required this.date, required this.price});
+
+  @override
+  List<Object?> get props => [date, price];
+}
+
 class BookingWizardState extends Equatable {
   final int currentStep;
   final DateTime? startDate;
@@ -15,6 +25,7 @@ class BookingWizardState extends Equatable {
   final double totalAmount;
   final int nights;
   final int days;
+  final List<BookingNightLine> nightlyBreakdown;
 
   // Data for booking
   final String? ownerPhone;
@@ -44,6 +55,7 @@ class BookingWizardState extends Equatable {
     this.totalAmount = 0.0,
     this.nights = 0,
     this.days = 0,
+    this.nightlyBreakdown = const [],
     this.ownerPhone,
     this.ownerEmail,
     this.ownerNameResolved,
@@ -66,6 +78,7 @@ class BookingWizardState extends Equatable {
     double? totalAmount,
     int? nights,
     int? days,
+    List<BookingNightLine>? nightlyBreakdown,
     String? ownerPhone,
     String? ownerEmail,
     String? ownerNameResolved,
@@ -87,6 +100,7 @@ class BookingWizardState extends Equatable {
       totalAmount: totalAmount ?? this.totalAmount,
       nights: nights ?? this.nights,
       days: days ?? this.days,
+      nightlyBreakdown: nightlyBreakdown ?? this.nightlyBreakdown,
       ownerPhone: ownerPhone ?? this.ownerPhone,
       ownerEmail: ownerEmail ?? this.ownerEmail,
       ownerNameResolved: ownerNameResolved ?? this.ownerNameResolved,
@@ -111,6 +125,7 @@ class BookingWizardState extends Equatable {
     totalAmount,
     nights,
     days,
+    nightlyBreakdown,
     ownerPhone,
     ownerEmail,
     ownerNameResolved,

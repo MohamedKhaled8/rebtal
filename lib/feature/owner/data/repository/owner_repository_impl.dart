@@ -35,6 +35,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
     String? discountValue,
     List<String>? features,
     bool? dayUseEnabled,
+    List<Map<String, dynamic>>? pricingPeriods,
   }) async {
     try {
       // 1. Create Document Reference to get ID
@@ -81,8 +82,7 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
 
       // User picked files in the app — do not save a listing with zero URLs
       // (silent Cloudinary failures used to produce empty `images` in Firestore).
-      final bool userExpectedPhotos =
-          images.isNotEmpty || profileImage != null;
+      final bool userExpectedPhotos = images.isNotEmpty || profileImage != null;
       if (userExpectedPhotos && allImages.isEmpty) {
         return Left(
           ServerFailure(
@@ -163,6 +163,9 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         if (discountValue != null) dataMap['discountValue'] = discountValue;
         if (features != null) dataMap['features'] = features;
         if (dayUseEnabled != null) dataMap['dayUseEnabled'] = dayUseEnabled;
+        if (pricingPeriods != null && pricingPeriods.isNotEmpty) {
+          dataMap['pricingPeriods'] = pricingPeriods;
+        }
 
         // إضافة lat و lon للتوافق مع LocationMapCard
         if (chalet.latitude != null) {
@@ -181,18 +184,15 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
           final merchantTrimmed = merchantName?.trim();
           final displayName =
               (merchantTrimmed != null && merchantTrimmed.isNotEmpty)
-                  ? merchantTrimmed
-                  : chalet.ownerName;
+              ? merchantTrimmed
+              : chalet.ownerName;
 
           for (final adminId in adminIds) {
             await NotificationService().sendNotification(
               userId: adminId,
               titleKey: 'notif_new_chalet_review',
               bodyKey: 'notif_new_chalet_body',
-              bodyParams: {
-                'name': displayName,
-                'chalet': chalet.chaletName,
-              },
+              bodyParams: {'name': displayName, 'chalet': chalet.chaletName},
               type: NotificationType.chaletSubmission,
               relatedId: chaletId,
               data: {
@@ -249,16 +249,18 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
 
               final aTimeRaw = aData['createdAt'];
               final bTimeRaw = bData['createdAt'];
-              
+
               DateTime? aTime;
               if (aTimeRaw is Timestamp) {
                 aTime = aTimeRaw.toDate();
-              } else if (aTimeRaw is String) aTime = DateTime.tryParse(aTimeRaw);
-              
+              } else if (aTimeRaw is String)
+                aTime = DateTime.tryParse(aTimeRaw);
+
               DateTime? bTime;
               if (bTimeRaw is Timestamp) {
                 bTime = bTimeRaw.toDate();
-              } else if (bTimeRaw is String) bTime = DateTime.tryParse(bTimeRaw);
+              } else if (bTimeRaw is String)
+                bTime = DateTime.tryParse(bTimeRaw);
 
               if (aTime == null || bTime == null) return 0;
               return bTime.compareTo(aTime); // descending
@@ -310,14 +312,14 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
 
               final aTimeRaw = aData['createdAt'];
               final bTimeRaw = bData['createdAt'];
-              
+
               DateTime? aTime;
               if (aTimeRaw is Timestamp) {
                 aTime = aTimeRaw.toDate();
               } else if (aTimeRaw is String) {
                 aTime = DateTime.tryParse(aTimeRaw);
               }
-              
+
               DateTime? bTime;
               if (bTimeRaw is Timestamp) {
                 bTime = bTimeRaw.toDate();

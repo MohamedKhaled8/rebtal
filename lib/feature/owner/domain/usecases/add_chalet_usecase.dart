@@ -28,6 +28,7 @@ class AddChaletUseCase {
       discountValue: params.discountValue,
       features: params.features,
       dayUseEnabled: params.dayUseEnabled,
+      pricingPeriods: params.pricingPeriods,
     );
   }
 }
@@ -49,6 +50,7 @@ class AddChaletParams extends Equatable {
   final String? discountValue;
   final List<String>? features;
   final bool? dayUseEnabled;
+  final List<Map<String, dynamic>>? pricingPeriods;
 
   const AddChaletParams({
     required this.chalet,
@@ -67,6 +69,7 @@ class AddChaletParams extends Equatable {
     this.discountValue,
     this.features,
     this.dayUseEnabled,
+    this.pricingPeriods,
   });
 
   @override
@@ -87,5 +90,6 @@ class AddChaletParams extends Equatable {
     discountValue,
     features,
     dayUseEnabled,
+    pricingPeriods,
   ];
 }
