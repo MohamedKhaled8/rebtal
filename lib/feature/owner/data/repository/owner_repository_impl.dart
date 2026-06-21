@@ -35,6 +35,9 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
     String? discountValue,
     List<String>? features,
     bool? dayUseEnabled,
+    bool? dayUseOnly,
+    double? dayUsePrice,
+    List<String>? dayUseAmenities,
     List<Map<String, dynamic>>? pricingPeriods,
   }) async {
     try {
@@ -163,6 +166,14 @@ class OwnerRepositoryImpl implements BaseOwnerRepository {
         if (discountValue != null) dataMap['discountValue'] = discountValue;
         if (features != null) dataMap['features'] = features;
         if (dayUseEnabled != null) dataMap['dayUseEnabled'] = dayUseEnabled;
+        if (dayUseOnly != null) dataMap['dayUseOnly'] = dayUseOnly;
+        if (dayUsePrice != null) dataMap['dayUsePrice'] = dayUsePrice;
+        if (dayUseAmenities != null) {
+          dataMap['dayUseAmenities'] = dayUseAmenities;
+          for (final key in dayUseAmenities) {
+            dataMap[key] = true;
+          }
+        }
         if (pricingPeriods != null && pricingPeriods.isNotEmpty) {
           dataMap['pricingPeriods'] = pricingPeriods;
         }

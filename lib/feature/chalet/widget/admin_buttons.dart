@@ -5,12 +5,19 @@ import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:rebtal/core/utils/config/space.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 class AdminButtons extends StatelessWidget {
   final String status;
   final String docId;
+  final Map<String, dynamic> requestData;
 
-  const AdminButtons({super.key, required this.status, required this.docId});
+  const AdminButtons({
+    super.key,
+    required this.status,
+    required this.docId,
+    required this.requestData,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +40,15 @@ class AdminButtons extends StatelessWidget {
           currentStatus = state.newStatus!;
         }
 
+        final showApproveActions =
+            ChaletEditReviewHelper.shouldShowAdminApproveActions(
+              requestData,
+              currentStatus,
+            );
+
         return Container(
           margin: EdgeInsets.fromLTRB(16.sp, 0, 16.sp, 40.sp),
-          child: currentStatus == 'pending'
+          child: showApproveActions
               ? Column(
                   children: [
                     if (state is ActionButtonsLoading)

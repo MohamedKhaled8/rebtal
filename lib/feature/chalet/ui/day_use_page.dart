@@ -40,7 +40,12 @@ class DayUsePage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('chalets')
-            .where('dayUseEnabled', isEqualTo: true)
+            .where(
+              Filter.or(
+                Filter('dayUseEnabled', isEqualTo: true),
+                Filter('dayUseOnly', isEqualTo: true),
+              ),
+            )
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -91,7 +96,11 @@ class DayUsePage extends StatelessWidget {
             );
           }
 
-          final chalets = snapshot.data!.docs;
+          final chalets = snapshot.data!.docs.where((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return data['status'] == 'approved' &&
+                (data['isVisible'] ?? true) == true;
+          }).toList();
 
           return Builder(
             builder: (context) {
@@ -164,6 +173,7 @@ class DayUsePage extends StatelessWidget {
     return PublicChaletCard(
       chaletData: chaletData,
       docId: chaletDoc.id,
+      preferDayUsePrice: true,
       margin: EdgeInsets.only(
         bottom: otv(context: context, portrait: 24.sh, landscape: 12.sh),
         left: isLeft == null

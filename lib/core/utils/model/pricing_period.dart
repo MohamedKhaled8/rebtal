@@ -71,12 +71,17 @@ class PricingPeriod extends Equatable {
   static List<PricingPeriod> listFromFirestore(dynamic raw) {
     if (raw is! List) return const [];
     final periods = <PricingPeriod>[];
-    for (final item in raw) {
-      if (item is Map) {
-        final p = PricingPeriod.fromMap(Map<String, dynamic>.from(item));
-        if (p.id.isEmpty) continue;
-        periods.add(p.normalized());
-      }
+    for (var i = 0; i < raw.length; i++) {
+      final item = raw[i];
+      if (item is! Map) continue;
+      final p = PricingPeriod.fromMap(Map<String, dynamic>.from(item)).normalized();
+      if (p.price <= 0) continue;
+      final id = p.id.isNotEmpty
+          ? p.id
+          : 'period_${i}_${p.from.millisecondsSinceEpoch}_${p.price.toInt()}';
+      periods.add(
+        PricingPeriod(id: id, from: p.from, to: p.to, price: p.price),
+      );
     }
     periods.sort((a, b) => a.from.compareTo(b.from));
     return periods;

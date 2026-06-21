@@ -280,12 +280,15 @@ class _ImageHeaderSectionState extends State<ImageHeaderSection> {
                     color: Colors.black.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Text(
-                    '${data.currentIndex + 1} / ${images.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      '${data.currentIndex + 1} / ${images.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

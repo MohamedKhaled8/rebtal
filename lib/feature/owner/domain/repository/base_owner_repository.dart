@@ -22,6 +22,9 @@ abstract class BaseOwnerRepository {
     String? discountValue,
     List<String>? features,
     bool? dayUseEnabled,
+    bool? dayUseOnly,
+    double? dayUsePrice,
+    List<String>? dayUseAmenities,
     List<Map<String, dynamic>>? pricingPeriods,
   });
 

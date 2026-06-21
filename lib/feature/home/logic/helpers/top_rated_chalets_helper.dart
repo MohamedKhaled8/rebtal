@@ -1,8 +1,17 @@
+import 'package:rebtal/core/utils/services/chalet_filter_service.dart';
 import 'package:rebtal/feature/home/domain/entities/home_chalet_entity.dart';
 
 class TopRatedChaletsHelper {
+  static List<HomeChaletEntity> _generalOnly(List<HomeChaletEntity> source) {
+    return source
+        .where(
+          (e) => ChaletFilterService.isEligibleForGeneralListing(e.data),
+        )
+        .toList(growable: false);
+  }
+
   static List<HomeChaletEntity> sortByRating(List<HomeChaletEntity> source) {
-    final sorted = List<HomeChaletEntity>.from(source);
+    final sorted = List<HomeChaletEntity>.from(_generalOnly(source));
     sorted.sort((a, b) {
       final ratingA = _readRating(a);
       final ratingB = _readRating(b);

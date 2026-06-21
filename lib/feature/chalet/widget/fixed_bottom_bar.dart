@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/format/currency.dart';
 import 'package:rebtal/feature/chalet/logic/cubit/fixed_bottom_bar_cubit.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/uri_launcher_service.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
@@ -111,7 +112,11 @@ class FixedBottomBar extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 2),
                                 child: Text(
-                                  context.tr('chalet_night'),
+                                  OwnerHelper.shouldLabelPricePerDay(
+                                        requestData,
+                                      )
+                                      ? context.tr('common_day')
+                                      : context.tr('chalet_night'),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
@@ -200,8 +205,8 @@ class FixedBottomBar extends StatelessWidget {
                         builder: (context) {
                           // Availability for normal bookings is controlled via `bookingAvailability`.
                           // For day-use, we scope the "unavailable" flag to admin-confirmed payments only.
-                          final bool dayUseEnabled =
-                              requestData['dayUseEnabled'] == true;
+                          final bool supportsDayUse =
+                              OwnerHelper.supportsDayUseBooking(requestData);
                           final String? dayUseBookedAt =
                               requestData['dayUseBookedAt']?.toString();
                           final String? dayUseStatus =
@@ -213,7 +218,7 @@ class FixedBottomBar extends StatelessWidget {
                               '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
                           final status = requestData['bookingAvailability'];
-                          final isAvailable = dayUseEnabled
+                          final isAvailable = supportsDayUse
                               ? !(dayUseStatus == 'unavailable' &&
                                   dayUseBookedAt == todayKey)
                               : status != 'unavailable';

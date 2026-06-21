@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/admin/presentation/cubit/admin_cubit.dart';
 import 'package:rebtal/feature/admin/presentation/cubit/admin_state.dart';
 import 'package:rebtal/feature/admin/widget/ChaletRequestCard.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 class RequestsList extends StatelessWidget {
   final String status;
@@ -56,7 +57,10 @@ class RequestsList extends StatelessWidget {
         if (state is AdminDataLoaded) {
           chalets = state.chalets.where((doc) {
             final data = doc.data();
-            bool matchesStatus = data['status'] == status;
+            bool matchesStatus = status == 'pending'
+                ? ChaletEditReviewHelper.shouldShowInAdminPendingTab(data)
+                : data['status'] == status &&
+                      !ChaletEditReviewHelper.isEditReviewPending(data);
             bool matchesOwner = true;
             if (ownerId != null && ownerId!.isNotEmpty) {
               matchesOwner = data['ownerId'] == ownerId;

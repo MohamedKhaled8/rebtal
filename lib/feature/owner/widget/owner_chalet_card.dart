@@ -6,8 +6,10 @@ import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
 import 'package:rebtal/core/utils/theme/dynamic_theme_manager.dart';
 import 'package:rebtal/feature/owner/utils/owner_helper.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
+import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 
 double _averageRatingFromMap(Map<String, dynamic> d) {
   final v = d['averageRating'] ?? d['avgRating'] ?? d['rating'];
@@ -36,15 +38,19 @@ class OwnerChaletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ownerCubit = context.read<AppCubit>().ownerCubit;
+    final displayData = ChaletEditReviewHelper.dataForOwnerEditForm(chaletData);
+    final statusLabel = ChaletEditReviewHelper.ownerListStatusLabel(chaletData);
     final chaletName =
-        chaletData['chaletName'] ?? context.tr('home_chalet_no_name');
+        displayData['chaletName'] ?? context.tr('home_chalet_no_name');
     final location =
-        chaletData['location'] ?? context.tr('home_location_unknown');
-    final price = chaletData['price'];
-    final images = OwnerHelper.collectChaletImages(chaletData);
+        displayData['location'] ?? context.tr('home_location_unknown');
+    final price = displayData['price'];
+    final images = OwnerHelper.collectChaletImages(displayData);
     final status = chaletData['status'] ?? 'pending';
 
     final bool isVisible = chaletData['isVisible'] ?? true;
+    final bool isEditReviewPending =
+        ChaletEditReviewHelper.isEditReviewPending(chaletData);
     final String bookingStatus =
         chaletData['bookingAvailability'] ??
         (chaletData['isAvailable'] == true ? 'available' : 'unavailable');
@@ -107,7 +113,7 @@ class OwnerChaletCard extends StatelessWidget {
                   Positioned(
                     top: 12,
                     left: 12,
-                    child: _StatusBadge(status: status),
+                    child: _StatusBadge(statusLabel: statusLabel),
                   ),
                   Positioned(
                     top: 12,
@@ -209,37 +215,69 @@ class OwnerChaletCard extends StatelessWidget {
 
                     const SizedBox(height: 12),
 
-                    // Calculate discount
+                    // Calculate discount / day-use display price
                     (() {
-                      final hasDiscount = chaletData['discountEnabled'] == true;
+                      final listedDayUse =
+                          OwnerHelper.isListedInDayUseSection(displayData);
+                      final dayUseOnly = displayData['dayUseOnly'] == true;
+                      final hasDayUsePrice =
+                          OwnerHelper.calculateDayUseFinalPrice(displayData) >
+                          0;
+
+                      if (listedDayUse && hasDayUsePrice) {
+                        final dayUseFinal =
+                            OwnerHelper.calculateDayUseFinalPrice(displayData);
+                        final nightlyBase = (price is num)
+                            ? price.toDouble()
+                            : double.tryParse(
+                                    price?.toString() ?? '',
+                                  ) ??
+                                  0.0;
+
+                        return _PriceRow(
+                          originalPrice: dayUseOnly ? nightlyBase : null,
+                          finalPrice: dayUseFinal,
+                          hasDiscount: false,
+                          isDayUse: true,
+                        );
+                      }
+
+                      final hasDiscount =
+                          displayData['discountEnabled'] == true;
                       if (hasDiscount) {
                         final discountValue =
                             double.tryParse(
-                              chaletData['discountValue']?.toString() ?? '0',
+                              displayData['discountValue']?.toString() ?? '0',
                             ) ??
                             0;
                         final isPercentage =
-                            chaletData['discountType'] == 'percentage';
+                            displayData['discountType'] == 'percentage';
+                        final basePrice = (price is num)
+                            ? price.toDouble()
+                            : double.tryParse(
+                                    price?.toString() ?? '',
+                                  ) ??
+                                  0.0;
                         final discountAmount = isPercentage
-                            ? (price * discountValue / 100)
+                            ? (basePrice * discountValue / 100)
                             : discountValue;
-                        final discountedPrice = (price - discountAmount).clamp(
-                          0.0,
-                          double.infinity,
-                        );
+                        final discountedPrice = (basePrice - discountAmount)
+                            .clamp(0.0, double.infinity);
 
                         return _PriceRow(
-                          originalPrice: price,
+                          originalPrice: basePrice,
                           finalPrice: discountedPrice,
                           hasDiscount: true,
                         );
-                      } else {
-                        return _PriceRow(
-                          originalPrice: price,
-                          finalPrice: price,
-                          hasDiscount: false,
-                        );
                       }
+
+                      return _PriceRow(
+                        originalPrice: price,
+                        finalPrice: (price is num)
+                            ? price.toDouble()
+                            : double.tryParse(price?.toString() ?? '') ?? 0,
+                        hasDiscount: false,
+                      );
                     })(),
 
                     const SizedBox(height: 16),
@@ -249,19 +287,36 @@ class OwnerChaletCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _ActionToggle(
-                            icon: isVisible
+                            icon: isEditReviewPending
+                                ? Icons.lock_clock_rounded
+                                : isVisible
                                 ? Icons.visibility_off
                                 : Icons.visibility,
-                            label: isVisible
+                            label: isEditReviewPending
+                                ? context.tr('owner_visibility_locked_short')
+                                : isVisible
                                 ? context.tr('common_hide')
                                 : context.tr('common_show'),
-                            color: isVisible
+                            color: isEditReviewPending
+                                ? ColorsManager.grey
+                                : isVisible
                                 ? ColorsManager.orange
                                 : ColorsManager.green,
-                            onTap: () => ownerCubit.toggleChaletVisibility(
-                              docId,
-                              isVisible,
-                            ),
+                            onTap: () {
+                              if (isEditReviewPending) {
+                                SnackBarHelper.showWarning(
+                                  context,
+                                  context.tr(
+                                    'owner_visibility_locked_edit_review',
+                                  ),
+                                );
+                                return;
+                              }
+                              ownerCubit.toggleChaletVisibility(
+                                docId,
+                                isVisible,
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -321,16 +376,26 @@ class OwnerChaletCard extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  final String status;
-  const _StatusBadge({required this.status});
+  final String statusLabel;
+  const _StatusBadge({required this.statusLabel});
 
   @override
   Widget build(BuildContext context) {
-    final color = status == 'approved'
+    final color = statusLabel == 'approved'
         ? ColorsManager.green
-        : status == 'rejected'
+        : statusLabel == 'rejected'
         ? ColorsManager.red
+        : statusLabel == 'edit_review_pending'
+        ? ColorsManager.blue2563EB
         : ColorsManager.orange;
+
+    final text = statusLabel == 'approved'
+        ? context.tr('common_approved')
+        : statusLabel == 'rejected'
+        ? context.tr('common_rejected')
+        : statusLabel == 'edit_review_pending'
+        ? context.tr('owner_status_edit_review_pending')
+        : context.tr('booking_status_pending');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -339,11 +404,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status == 'approved'
-            ? context.tr('common_approved')
-            : status == 'rejected'
-            ? context.tr('common_rejected')
-            : context.tr('booking_status_pending'),
+        text,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 11,
@@ -419,36 +480,54 @@ class _PriceRow extends StatelessWidget {
   final dynamic originalPrice;
   final double finalPrice;
   final bool hasDiscount;
+  final bool isDayUse;
 
   const _PriceRow({
     required this.originalPrice,
     required this.finalPrice,
     required this.hasDiscount,
+    this.isDayUse = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final double basePrice = (originalPrice is num)
+    final double? basePrice = originalPrice == null
+        ? null
+        : (originalPrice is num)
         ? originalPrice.toDouble()
         : double.tryParse(
-                originalPrice.toString().replaceAll(RegExp('[^0-9.]'), ''),
-              ) ??
-              0;
+            originalPrice.toString().replaceAll(RegExp('[^0-9.]'), ''),
+          );
 
     return Row(
       children: [
         Text(
-          CurrencyFormatter.egp(context, finalPrice, withSuffixPerNight: true),
+          CurrencyFormatter.egp(
+            context,
+            finalPrice,
+            withSuffixPerNight: !isDayUse,
+            withSuffixPerDay: isDayUse,
+          ),
           style: TextStyle(
             color: ColorsManager.blue2563EB,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (hasDiscount) ...[
+        if (hasDiscount && basePrice != null) ...[
           const SizedBox(width: 8),
           Text(
             CurrencyFormatter.egp(context, basePrice),
+            style: TextStyle(
+              color: ColorsManager.grey400,
+              fontSize: 12,
+              decoration: TextDecoration.lineThrough,
+            ),
+          ),
+        ] else if (isDayUse && basePrice != null && basePrice > 0) ...[
+          const SizedBox(width: 8),
+          Text(
+            CurrencyFormatter.egp(context, basePrice, withSuffixPerNight: true),
             style: TextStyle(
               color: ColorsManager.grey400,
               fontSize: 12,
@@ -491,12 +570,18 @@ class _ActionToggle extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: color),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ),
               ),
             ),
           ],

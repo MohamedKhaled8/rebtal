@@ -203,10 +203,15 @@ class ChaletFilterService {
     return chaletChildren >= minChildren;
   }
 
+  /// Day-use-only listings are excluded from the public/general home feed.
+  static bool isEligibleForGeneralListing(Map<String, dynamic> chalet) {
+    return chalet['dayUseOnly'] != true;
+  }
+
   /// Matches chalet against day use filter
   static bool matchesDayUse(Map<String, dynamic> chalet, bool dayUseOnly) {
     if (!dayUseOnly) return true;
-    return chalet['dayUseEnabled'] == true;
+    return chalet['dayUseEnabled'] == true || chalet['dayUseOnly'] == true;
   }
 
   /// Matches chalet against offers filter

@@ -16,14 +16,49 @@ class _OwnerImageCacheManager {
   );
 }
 
-class OwnerInformationCard extends StatelessWidget {
+class OwnerInformationCard extends StatefulWidget {
   final Map<String, dynamic> requestData;
 
   const OwnerInformationCard({super.key, required this.requestData});
 
   @override
+  State<OwnerInformationCard> createState() => _OwnerInformationCardState();
+}
+
+class _OwnerInformationCardState extends State<OwnerInformationCard> {
+  Future<DocumentSnapshot?>? _ownerFuture;
+  String? _ownerFutureKey;
+
+  static String _resolveOwnerId(Map<String, dynamic> data) {
+    for (final key in ['ownerId', 'merchantId', 'userId']) {
+      final v = data[key]?.toString().trim();
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return '';
+  }
+
+  void _ensureOwnerFuture() {
+    final ownerId = _resolveOwnerId(widget.requestData);
+    if (_ownerFutureKey == ownerId && _ownerFuture != null) return;
+    _ownerFutureKey = ownerId;
+    _ownerFuture = _getOwnerData(ownerId);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureOwnerFuture();
+  }
+
+  @override
+  void didUpdateWidget(covariant OwnerInformationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _ensureOwnerFuture();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ownerId = requestData['ownerId'] ?? requestData['id'] ?? '';
+    final requestData = widget.requestData;
     final isDark = DynamicThemeManager.isDarkMode(context);
 
     String initialMerchantName =
@@ -49,7 +84,7 @@ class OwnerInformationCard extends StatelessWidget {
         requestData['profileImage'] ?? requestData['profileImageUrl'];
 
     return FutureBuilder<DocumentSnapshot?>(
-      future: _getOwnerData(ownerId),
+      future: _ownerFuture,
       builder: (context, snapshot) {
         String merchantName = initialMerchantName;
         String email = initialEmail;

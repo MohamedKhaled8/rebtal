@@ -13,6 +13,9 @@ class HomeChaletListHelper {
     String? selectedCategory,
   ) {
     final filtered = source.where((entity) {
+      if (!ChaletFilterService.isEligibleForGeneralListing(entity.data)) {
+        return false;
+      }
       if (selectedCategory != null) {
         final features = entity.data['features'] as List<dynamic>?;
         if (features == null || !features.contains(selectedCategory)) {

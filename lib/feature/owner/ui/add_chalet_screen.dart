@@ -12,8 +12,10 @@ import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
 import 'package:rebtal/feature/owner/widget/modern_image_upload_section.dart';
 import 'package:rebtal/feature/owner/widget/modern_amenities_section.dart';
+import 'package:rebtal/feature/owner/widget/owner_chalet_form_host.dart';
 import 'package:rebtal/feature/owner/widget/owner_synced_text_field.dart';
 import 'package:rebtal/feature/owner/widget/pricing_periods_section.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/core/utils/helper/image_clean/helper_image_contract.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -80,7 +82,9 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
               SnackBarHelper.showSuccess(
                 context,
                 widget._isEditMode
-                    ? context.tr('owner_chalet_updated_success')
+                    ? (state.editReviewSubmitted
+                          ? context.tr('owner_chalet_edit_review_submitted')
+                          : context.tr('owner_chalet_updated_success'))
                     : context.tr('owner_chalet_added'),
               );
               Navigator.pop(context);
@@ -91,6 +95,7 @@ class _AddChaletScreenState extends State<AddChaletScreen> {
         ),
       ],
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: isDark
             ? ColorsManager.darkBackground0A0E27
             : ColorsManager.lightBackgroundF8FAFF,
@@ -202,10 +207,9 @@ class _AddChaletContentState extends State<_AddChaletContent> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = DynamicThemeManager.isDarkMode(context);
-
     return SingleChildScrollView(
       controller: _scrollController,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
       padding: EdgeInsets.symmetric(
         horizontal: stv(
           context: context,
@@ -215,21 +219,9 @@ class _AddChaletContentState extends State<_AddChaletContent> {
         ),
         vertical: 20.sh,
       ),
-      child: BlocBuilder<OwnerCubit, OwnerState>(
-        bloc: widget.ownerCubit,
-        buildWhen: (previous, current) =>
-            previous.draft != current.draft ||
-            previous.isFormSubmitting != current.isFormSubmitting ||
-            previous.isLocationLoading != current.isLocationLoading ||
-            previous.locationResults != current.locationResults,
-        builder: (context, state) {
-          return _buildSingleColumn(
-            context,
-            isDark,
-            widget.ownerCubit,
-            state.draft,
-          );
-        },
+      child: OwnerChaletFormHost(
+        cubit: widget.ownerCubit,
+        builder: _buildSingleColumn,
       ),
     );
   }
@@ -238,7 +230,7 @@ class _AddChaletContentState extends State<_AddChaletContent> {
     BuildContext context,
     bool isDark,
     OwnerCubit ownerCubit,
-    dynamic draft,
+    ChaletDraft draft,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,17 +324,19 @@ class _AddChaletContentState extends State<_AddChaletContent> {
           iconColor: ColorsManager.green3DDC84,
           child: Column(
             children: [
-              _buildModernTextField(
-                isDark: isDark,
-                fieldId: 'price',
-                draftText: draft.price,
-                label: context.tr('owner_price_per_night'),
-                hint: context.tr('owner_price_hint_zero'),
-                icon: Icons.payments_rounded,
-                keyboardType: TextInputType.number,
-                onChanged: ownerCubit.updatePrice,
-              ),
-              SizedBox(height: 16.sh),
+              if (!draft.dayUseOnly) ...[
+                _buildModernTextField(
+                  isDark: isDark,
+                  fieldId: 'price',
+                  draftText: draft.price,
+                  label: context.tr('owner_price_per_night'),
+                  hint: context.tr('owner_price_hint_zero'),
+                  icon: Icons.payments_rounded,
+                  keyboardType: TextInputType.number,
+                  onChanged: ownerCubit.updatePrice,
+                ),
+                SizedBox(height: 16.sh),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -390,10 +384,10 @@ class _AddChaletContentState extends State<_AddChaletContent> {
                 onChanged: ownerCubit.updateChaletArea,
               ),
               SizedBox(height: 16.sh),
-              _buildDayUseToggle(
+              _buildDayUseSection(
                 context,
                 isDark,
-                draft.dayUseEnabled,
+                draft,
                 ownerCubit,
               ),
             ],
@@ -434,21 +428,10 @@ class _AddChaletContentState extends State<_AddChaletContent> {
         SizedBox(height: 20.sh),
 
         // Amenities Section
+        _buildAmenitiesModeHint(context, isDark, draft),
+        SizedBox(height: 12.sh),
         ModernAmenitiesSection(
-          selectedAmenities: {
-            'hasWifi': draft.hasWifi,
-            'hasPool': draft.hasPool,
-            'hasAirConditioning': draft.hasAirConditioning,
-            'hasParking': draft.hasParking,
-            'hasGarden': draft.hasGarden,
-            'hasBBQ': draft.hasBBQ,
-            'hasBeachView': draft.hasBeachView,
-            'hasHousekeeping': draft.hasHousekeeping,
-            'hasPetsAllowed': draft.hasPetsAllowed,
-            'hasGym': draft.hasGym,
-            'hasKitchen': draft.hasKitchen,
-            'hasTV': draft.hasTV,
-          },
+          selectedAmenities: OwnerHelper.amenitiesDisplayMap(draft),
           onAmenityChanged: ownerCubit.updateAmenity,
         ),
         SizedBox(height: 80.sh), // Space for bottom button
@@ -611,12 +594,113 @@ class _AddChaletContentState extends State<_AddChaletContent> {
     );
   }
 
+  Widget _buildAmenitiesModeHint(
+    BuildContext context,
+    bool isDark,
+    dynamic draft,
+  ) {
+    final String message;
+    if (draft.dayUseOnly) {
+      message = context.tr('owner_amenities_mode_day_use_only');
+    } else if (!draft.dayUseEnabled) {
+      message = context.tr('owner_amenities_mode_general');
+    } else {
+      message = context.tr('owner_amenities_mode_general_and_day_use');
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.sp),
+      decoration: BoxDecoration(
+        color: isDark
+            ? ColorsManager.blue2563EB.withOpacity(0.12)
+            : ColorsManager.blue2563EB.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12.sp),
+        border: Border.all(
+          color: ColorsManager.blue2563EB.withOpacity(0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: ColorsManager.blue2563EB,
+            size: 18.sp,
+          ),
+          SizedBox(width: 8.sw),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: isDark ? ColorsManager.grey300 : ColorsManager.grey700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDayUseSection(
+    BuildContext context,
+    bool isDark,
+    dynamic draft,
+    OwnerCubit ownerCubit,
+  ) {
+    return Column(
+      children: [
+        _buildDayUseToggle(
+          context,
+          isDark,
+          title: context.tr('owner_enable_day_use'),
+          subtitle: draft.dayUseEnabled
+              ? context.tr('owner_toggle_status_on')
+              : context.tr('owner_toggle_status_off'),
+          hint: context.tr('owner_day_use_hint'),
+          value: draft.dayUseEnabled,
+          onChanged: ownerCubit.updateDayUseEnabled,
+        ),
+        SizedBox(height: 12.sh),
+        _buildDayUseToggle(
+          context,
+          isDark,
+          title: context.tr('owner_day_use_only_feature'),
+          subtitle: draft.dayUseOnly
+              ? context.tr('owner_toggle_status_on')
+              : context.tr('owner_toggle_status_off'),
+          hint: context.tr('owner_day_use_only_hint'),
+          value: draft.dayUseOnly,
+          onChanged: ownerCubit.updateDayUseOnly,
+          accentColor: ColorsManager.purple764BA2,
+        ),
+        SizedBox(height: 16.sh),
+        if (draft.dayUseEnabled || draft.dayUseOnly)
+          _buildModernTextField(
+            isDark: isDark,
+            fieldId: 'dayUsePrice',
+            draftText: draft.dayUsePrice,
+            label: context.tr('owner_day_use_price'),
+            hint: context.tr('owner_price_hint_zero'),
+            icon: Icons.wb_sunny_rounded,
+            keyboardType: TextInputType.number,
+            onChanged: ownerCubit.updateDayUsePrice,
+          ),
+      ],
+    );
+  }
+
   Widget _buildDayUseToggle(
     BuildContext context,
     bool isDark,
-    bool dayUseEnabled,
-    OwnerCubit ownerCubit,
-  ) {
+    {
+    required String title,
+    required String subtitle,
+    required String hint,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+    Color accentColor = ColorsManager.blue2563EB,
+  }) {
     return Container(
       padding: EdgeInsets.all(16.sp),
       decoration: BoxDecoration(
@@ -625,8 +709,8 @@ class _AddChaletContentState extends State<_AddChaletContent> {
             : ColorsManager.grey50,
         borderRadius: BorderRadius.circular(14.sp),
         border: Border.all(
-          color: dayUseEnabled
-              ? ColorsManager.blue2563EB
+          color: value
+              ? accentColor
               : (isDark
                     ? ColorsManager.grey800.withOpacity(0.3)
                     : ColorsManager.grey300),
@@ -637,16 +721,14 @@ class _AddChaletContentState extends State<_AddChaletContent> {
           Container(
             padding: EdgeInsets.all(8.sp),
             decoration: BoxDecoration(
-              color: dayUseEnabled
-                  ? ColorsManager.blue2563EB.withOpacity(0.15)
+              color: value
+                  ? accentColor.withOpacity(0.15)
                   : ColorsManager.grey400.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10.sp),
             ),
             child: Icon(
               Icons.wb_sunny_rounded,
-              color: dayUseEnabled
-                  ? ColorsManager.blue2563EB
-                  : ColorsManager.grey600,
+              color: value ? accentColor : ColorsManager.grey600,
               size: 20.sp,
             ),
           ),
@@ -656,18 +738,23 @@ class _AddChaletContentState extends State<_AddChaletContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.tr('owner_day_use_feature'),
+                  title,
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  dayUseEnabled
-                      ? context.tr('owner_toggle_status_on')
-                      : context.tr('owner_toggle_status_off'),
+                  subtitle,
                   style: TextStyle(
                     fontSize: 12.sp,
+                    color: ColorsManager.grey600,
+                  ),
+                ),
+                Text(
+                  hint,
+                  style: TextStyle(
+                    fontSize: 11.sp,
                     color: ColorsManager.grey600,
                   ),
                 ),
@@ -675,9 +762,9 @@ class _AddChaletContentState extends State<_AddChaletContent> {
             ),
           ),
           Switch.adaptive(
-            value: dayUseEnabled,
-            onChanged: ownerCubit.updateDayUseEnabled,
-            activeColor: ColorsManager.blue2563EB,
+            value: value,
+            onChanged: onChanged,
+            activeColor: accentColor,
           ),
         ],
       ),
@@ -702,6 +789,8 @@ class _SubmitButton extends StatelessWidget {
 
     return BlocBuilder<OwnerCubit, OwnerState>(
       bloc: ownerCubit,
+      buildWhen: (previous, current) =>
+          previous.isFormSubmitting != current.isFormSubmitting,
       builder: (context, state) {
         return Container(
           padding: EdgeInsets.all(20.sp),

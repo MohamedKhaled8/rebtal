@@ -6,7 +6,10 @@ part 'services_state.dart';
 class ServicesCubit extends Cubit<ServicesState> {
   ServicesCubit() : super(ServicesInitial());
 
-  void loadAmenities(Map<String, dynamic> requestData) {
+  void loadAmenities(
+    Map<String, dynamic> requestData, {
+    bool preferDayUseAmenities = false,
+  }) {
     final amenitiesList = [
       {'l10nKey': 'chalet_pool', 'key': 'hasPool', 'icon': Icons.pool},
       {'l10nKey': 'chalet_parking', 'key': 'hasParking', 'icon': Icons.local_parking},
@@ -47,6 +50,17 @@ class ServicesCubit extends Cubit<ServicesState> {
 
     final enabledAmenities = amenitiesList.where((item) {
       final key = item['key'] as String;
+      final useDayUseList = preferDayUseAmenities &&
+          requestData['dayUseAmenities'] is List &&
+          (requestData['dayUseAmenities'] as List).isNotEmpty;
+
+      if (useDayUseList) {
+        final list = requestData['dayUseAmenities'] as List;
+        final shortKey = key.startsWith('has')
+            ? key.substring(3).toLowerCase()
+            : key;
+        return list.contains(key) || list.contains(shortKey);
+      }
 
       // 1. Check direct boolean property (e.g. hasWifi: true)
       if (requestData[key] == true) return true;

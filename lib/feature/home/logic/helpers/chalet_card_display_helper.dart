@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 
 class ChaletCardDisplayHelper {
   static bool isDayUseUnavailableToday(Map<String, dynamic> data) {
@@ -38,7 +39,17 @@ class ChaletCardDisplayHelper {
         discountValue.toString().isNotEmpty;
   }
 
-  static String calculateDiscountedPrice(Map<String, dynamic> data) {
+  static String calculateDiscountedPrice(
+    Map<String, dynamic> data, {
+    bool preferDayUse = false,
+  }) {
+    if (preferDayUse || data['dayUseOnly'] == true) {
+      return OwnerHelper.listingDisplayPrice(
+        data,
+        preferDayUse: preferDayUse,
+      ).toStringAsFixed(0);
+    }
+
     final price = data['price'];
     final discountType = data['discountType'];
     final discountValue = data['discountValue'];
@@ -67,4 +78,5 @@ class ChaletCardDisplayHelper {
     if (discountedPrice < 0) discountedPrice = 0;
     return discountedPrice.toStringAsFixed(0);
   }
+
 }

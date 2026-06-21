@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/utils/config/space.dart';
@@ -22,6 +23,8 @@ import 'package:rebtal/feature/chalet/widget/request_details_card.dart';
 import 'package:rebtal/feature/chalet/widget/reviews_section.dart';
 import 'package:rebtal/feature/chalet/widget/show_more_button.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
+import 'package:rebtal/feature/chalet/widget/chalet_edit_review_banner.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 /// Prefer fresh data from [AppAuthenticated.ownerChalets] after edit; else snapshot passed in.
 Map<String, dynamic> _resolveChaletDisplayData(
@@ -37,6 +40,14 @@ Map<String, dynamic> _resolveChaletDisplayData(
     }
   }
   return fallback;
+}
+
+String _roleFromContext(BuildContext context) {
+  final appState = context.read<AppCubit>().state;
+  if (appState is AppAuthenticated) {
+    return context.read<AppCubit>().getCurrentRole();
+  }
+  return 'guest';
 }
 
 class ChaletDetailPage extends StatelessWidget {
@@ -61,12 +72,15 @@ class ChaletDetailPage extends StatelessWidget {
     return BlocProvider(
       key: ValueKey<String>('chalet_detail_$docId'),
       create: (context) {
+        final appState = context.read<AppCubit>().state;
+        final role = _roleFromContext(context);
         final initial = _resolveChaletDisplayData(
-          context.read<AppCubit>().state,
+          appState,
           docId,
           requestData,
         );
-        return getIt<ChaletDetailCubit>()..initialize(initial, docId: docId);
+        return getIt<ChaletDetailCubit>()
+          ..initialize(initial, docId: docId, viewerRole: role);
       },
       child: BlocListener<AppCubit, AppState>(
         listenWhen: (prev, next) {
@@ -75,8 +89,12 @@ class ChaletDetailPage extends StatelessWidget {
           return !identical(prev.ownerChalets, next.ownerChalets);
         },
         listener: (context, appState) {
+          final role = _roleFromContext(context);
           final d = _resolveChaletDisplayData(appState, docId, requestData);
-          context.read<ChaletDetailCubit>().syncImagesFromMap(d);
+          context.read<ChaletDetailCubit>().syncImagesFromMap(
+            d,
+            viewerRole: role,
+          );
         },
         child: BlocSelector<ChaletDetailCubit, ChaletDetailState, List<String>>(
           selector: (state) {
@@ -98,11 +116,70 @@ class ChaletDetailPage extends StatelessWidget {
                   role = context.read<AppCubit>().getCurrentRole();
                 }
 
-                final displayData = _resolveChaletDisplayData(
+                if (role == 'admin') {
+                  return StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('chalets')
+                        .doc(docId)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      final data = snapshot.data?.data();
+                      final liveRaw = data is Map
+                          ? Map<String, dynamic>.from(data)
+                          : _resolveChaletDisplayData(
+                              appState,
+                              docId,
+                              requestData,
+                            );
+                      return _SyncDetailImages(
+                        rawDisplay: liveRaw,
+                        role: role,
+                        child: _buildDetailScaffold(
+                          context: context,
+                          appState: appState,
+                          role: role,
+                          rawDisplay: liveRaw,
+                          images: images,
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                final rawDisplay = _resolveChaletDisplayData(
                   appState,
                   docId,
                   requestData,
                 );
+                return _buildDetailScaffold(
+                  context: context,
+                  appState: appState,
+                  role: role,
+                  rawDisplay: rawDisplay,
+                  images: images,
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailScaffold({
+    required BuildContext context,
+    required AppState appState,
+    required String role,
+    required Map<String, dynamic> rawDisplay,
+    required List<String> images,
+  }) {
+                final displayData =
+                    ChaletEditReviewHelper.detailViewData(rawDisplay, role);
+
+                final adminActionStatus =
+                    ChaletEditReviewHelper.isEditReviewPending(rawDisplay)
+                    ? 'pending'
+                    : status;
 
                 final isDark = DynamicThemeManager.isDarkMode(context);
                 // Force Airbnb styling (White/Black)
@@ -563,11 +640,14 @@ class ChaletDetailPage extends StatelessWidget {
                                             requestData: displayData,
                                           ),
                                           if (role == 'admin') ...[
+                                            ChaletEditReviewBanner(
+                                              rootData: rawDisplay,
+                                            ),
                                             SizedBox(
                                               height: otv(
                                                 context: context,
-                                                portrait: 24.sh,
-                                                landscape: 12.sh,
+                                                portrait: 16.sh,
+                                                landscape: 8.sh,
                                               ),
                                             ),
                                             ChaletSectionTitle(
@@ -594,9 +674,9 @@ class ChaletDetailPage extends StatelessWidget {
                                             ),
                                           ),
                                           ActionButtons(
-                                            status: status,
+                                            status: adminActionStatus,
                                             docId: docId,
-                                            requestData: displayData,
+                                            requestData: rawDisplay,
                                           ),
                                         ],
                                       )],
@@ -630,7 +710,7 @@ class ChaletDetailPage extends StatelessWidget {
                                           ActionButtons(
                                             status: status,
                                             docId: docId,
-                                            requestData: displayData,
+                                            requestData: rawDisplay,
                                           ),
                                         ],
                                       )],
@@ -659,11 +739,59 @@ class ChaletDetailPage extends StatelessWidget {
                     ],
                   ),
                 );
-              },
-            );
-          },
-        ),
-      ),
-    );
   }
+}
+
+/// Syncs gallery once when pending/published image sets change (admin live stream).
+class _SyncDetailImages extends StatefulWidget {
+  final Map<String, dynamic> rawDisplay;
+  final String role;
+  final Widget child;
+
+  const _SyncDetailImages({
+    required this.rawDisplay,
+    required this.role,
+    required this.child,
+  });
+
+  @override
+  State<_SyncDetailImages> createState() => _SyncDetailImagesState();
+}
+
+class _SyncDetailImagesState extends State<_SyncDetailImages> {
+  Object? _lastSyncKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleSyncIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SyncDetailImages oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _scheduleSyncIfNeeded();
+  }
+
+  void _scheduleSyncIfNeeded() {
+    final pending = widget.rawDisplay['pendingEditData'];
+    final key = Object.hash(
+      widget.role,
+      widget.rawDisplay['editReviewStatus'],
+      pending is Map ? pending['images']?.toString() : null,
+      widget.rawDisplay['images']?.toString(),
+    );
+    if (key == _lastSyncKey) return;
+    _lastSyncKey = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ChaletDetailCubit>().syncImagesFromMap(
+        widget.rawDisplay,
+        viewerRole: widget.role,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

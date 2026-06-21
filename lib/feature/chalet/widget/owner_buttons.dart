@@ -7,6 +7,7 @@ import 'package:rebtal/feature/chalet/logic/cubit/action_buttons_cubit.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/owner/ui/add_chalet_screen.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 class OwnerButtons extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -22,8 +23,10 @@ class OwnerButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusRaw = (requestData['status'] ?? '').toString().toLowerCase();
     final isApproved = statusRaw == 'approved';
-    // Owner can refine listing while awaiting admin (same edit screen as approved).
-    final canEdit = isApproved || statusRaw == 'pending';
+    final isEditReviewPending = ChaletEditReviewHelper.isEditReviewPending(
+      requestData,
+    );
+    final canEdit = isApproved || statusRaw == 'pending' || isEditReviewPending;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 40),
@@ -37,7 +40,7 @@ class OwnerButtons extends StatelessWidget {
               requestData: requestData,
             ),
           ],
-          if (isApproved) ...[
+          if (isApproved || isEditReviewPending) ...[
             const SizedBox(height: 12),
             _OwnerDeleteChaletButton(docId: docId, requestData: requestData),
           ],

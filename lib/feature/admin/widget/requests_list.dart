@@ -5,6 +5,7 @@ import 'package:rebtal/core/utils/function/user_manger.dart';
 import 'package:rebtal/core/utils/home_search_notifier.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/admin/widget/ChaletRequestCard.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 class RequestsList extends StatelessWidget {
   final String status;
@@ -25,9 +26,11 @@ class RequestsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Build query based on whether ownerId is provided
-    Query query = FirebaseFirestore.instance
-        .collection('chalets')
-        .where('status', isEqualTo: status);
+    Query query = FirebaseFirestore.instance.collection('chalets');
+
+    if (status != 'pending') {
+      query = query.where('status', isEqualTo: status);
+    }
     
     // Only filter by ownerId if it's provided (for owner view)
     // Admin should see all requests without ownerId filter
@@ -112,6 +115,18 @@ class RequestsList extends StatelessWidget {
             // simple case-insensitive filter by common fields
             final filtered = docs.where((doc) {
               final data = doc.data() as Map<String, dynamic>;
+              if (status == 'pending' &&
+                  !ChaletEditReviewHelper.shouldShowInAdminPendingTab(data)) {
+                return false;
+              }
+              if (status != 'pending' &&
+                  data['status'] != status) {
+                return false;
+              }
+              if (status == 'approved' &&
+                  ChaletEditReviewHelper.isEditReviewPending(data)) {
+                return false;
+              }
               final lcq = query.toLowerCase();
               if (lcq.isEmpty) return true;
               // check common fields

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
+import 'package:rebtal/core/utils/helper/chalet_booked_calendar_helper.dart';
 
 import 'package:flutter/material.dart';
 import 'package:rebtal/core/utils/services/chalet_pricing_service.dart';
@@ -18,6 +19,13 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   final String ownerIdInput;
   final String ownerNameInput;
 
+  /// Merged with Firestore so pricingPeriods are always complete.
+  Map<String, dynamic> activeRequestData;
+  ChaletCalendarOccupancy? cachedOccupancy;
+  Future<void>? _occupancyLoad;
+
+  static const int lastStepIndex = 2;
+
   BookingWizardCubit({
     required this.requestData,
     required this.basePriceInput,
@@ -27,10 +35,51 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
     required this.chaletName,
     required this.ownerIdInput,
     required this.ownerNameInput,
-  }) : super(const BookingWizardState()) {
+  }) : activeRequestData = Map<String, dynamic>.from(requestData),
+       super(const BookingWizardState()) {
     _calculateInitialPrice();
     _fetchAdditionalData();
     _checkDayUse();
+    _bootstrapChaletData();
+  }
+
+  bool get isOccupancyReady => cachedOccupancy != null;
+
+  Future<ChaletCalendarOccupancy> ensureOccupancy() async {
+    if (cachedOccupancy != null) return cachedOccupancy!;
+    _occupancyLoad ??= _loadOccupancy();
+    await _occupancyLoad;
+    return cachedOccupancy ?? ChaletCalendarOccupancy.empty;
+  }
+
+  Future<void> _loadOccupancy() async {
+    cachedOccupancy = await loadChaletCalendarOccupancy(chaletId);
+  }
+
+  Future<void> _bootstrapChaletData() async {
+    _occupancyLoad = _loadOccupancy();
+    await _refreshChaletFromFirestore();
+  }
+
+  Future<void> _refreshChaletFromFirestore() async {
+    if (chaletId.isEmpty) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('chalets')
+          .doc(chaletId)
+          .get();
+      if (doc.exists && doc.data() != null) {
+        final fresh = Map<String, dynamic>.from(doc.data()!);
+        activeRequestData = {
+          ...activeRequestData,
+          ...fresh,
+        };
+        _calculateInitialPrice();
+        emit(state.copyWith(dataRevision: state.dataRevision + 1));
+      }
+    } catch (e) {
+      debugPrint('Error refreshing chalet for wizard: $e');
+    }
   }
 
   void _checkDayUse() {
@@ -39,7 +88,7 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   }
 
   void _calculateInitialPrice() {
-    final data = Map<String, dynamic>.from(requestData);
+    final data = Map<String, dynamic>.from(activeRequestData);
     if (basePriceInput != null && data['price'] == null) {
       data['price'] = basePriceInput;
     }
@@ -74,7 +123,6 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
 
     // Fetch Owner Data
     try {
-      // Resolve Owner ID/Name first if empty
       String resolvedId = ownerIdInput;
       String resolvedName = ownerNameInput;
 
@@ -95,7 +143,6 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
         }
       }
 
-      // Encode normalized owner ID
       final normOwnerId = resolvedId.contains(':')
           ? resolvedId.split(':').last.trim()
           : resolvedId.trim();
@@ -134,7 +181,7 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
   void selectDates(DateTime start, DateTime end) {
     if (end.isBefore(start)) end = start;
 
-    final data = Map<String, dynamic>.from(requestData);
+    final data = Map<String, dynamic>.from(activeRequestData);
     if (basePriceInput != null && data['price'] == null) {
       data['price'] = basePriceInput;
     }
@@ -186,10 +233,14 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
         );
         return;
       }
+    } else if (state.currentStep == 1) {
+      if (state.nightlyBreakdown.isEmpty) {
+        emit(state.copyWith(errorMessage: 'يرجى اختيار فترة الحجز أولاً'));
+        return;
+      }
     }
 
-    if (state.currentStep < 1) {
-      // Only 2 steps total (0, 1) currently
+    if (state.currentStep < lastStepIndex) {
       emit(
         state.copyWith(currentStep: state.currentStep + 1, errorMessage: null),
       );
@@ -220,14 +271,10 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
     );
 
     try {
-      final docRef = FirebaseFirestore.instance
-          .collection('bookings')
-          .doc(); // Auto-gen ID for doc, or use bookingId?
-      // The original code used a generated UUID for the 'id' field, but let Firestore gen auth doc ID.
-      // Actually it used: final docRef = ...doc(); final bookingWithId = booking.copyWith(id: docRef.id);
+      final docRef = FirebaseFirestore.instance.collection('bookings').doc();
 
       final booking = Booking(
-        id: docRef.id, // Using Firestore ID to match original logic
+        id: docRef.id,
         chaletId: chaletId,
         chaletName: chaletName,
         ownerId: state.ownerIdResolved ?? ownerIdInput,
@@ -242,14 +289,13 @@ class BookingWizardCubit extends Cubit<BookingWizardState> {
         userEmail: state.userEmail,
         ownerPhone: state.ownerPhone,
         ownerEmail: state.ownerEmail,
-        chaletLocation: requestData['location'] as String?,
+        chaletLocation: activeRequestData['location'] as String?,
         childrenCount: state.guestCount,
         isDayUse: state.isDayUse,
       );
 
       await docRef.set(booking.toMap());
 
-      // Send Notification (مفاتيح ترجمة + بارامترات لتفادي {userName} ولغة المالك)
       try {
         await NotificationService().sendNotification(
           userId: booking.ownerId,

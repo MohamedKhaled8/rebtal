@@ -29,7 +29,11 @@ class ActionButtons extends StatelessWidget {
             final role = context.read<AppCubit>().getCurrentRole();
 
             if (role == 'admin') {
-              return AdminButtons(status: status, docId: docId);
+              return AdminButtons(
+                status: status,
+                docId: docId,
+                requestData: requestData,
+              );
             } else if (role == 'user') {
               return UserButtons(requestData: requestData, docId: docId);
             } else if (role == 'owner') {

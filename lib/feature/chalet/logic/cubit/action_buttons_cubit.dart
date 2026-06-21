@@ -7,6 +7,7 @@ import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/constant/color_manager.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 part 'action_buttons_state.dart';
 
@@ -23,16 +24,56 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
           .collection('chalets')
           .doc(docId);
       final chaletDoc = await docRef.get();
+      if (!chaletDoc.exists) {
+        emit(const ActionButtonsError('Chalet not found'));
+        return;
+      }
 
-      await docRef.update({
-        'status': newStatus,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      final chaletData = chaletDoc.data() as Map<String, dynamic>;
+      final isEditReview = ChaletEditReviewHelper.isEditReviewPending(
+        chaletData,
+      );
 
-      // ✅ Send notification to owner
-      if (chaletDoc.exists) {
-        final chaletData = chaletDoc.data() as Map<String, dynamic>;
+      if (isEditReview) {
+        if (newStatus == 'approved') {
+          final pending = chaletData['pendingEditData'];
+          final merge = pending is Map
+              ? Map<String, dynamic>.from(pending)
+              : <String, dynamic>{};
+          merge['status'] = 'approved';
+          merge['isVisible'] = true;
+          merge['editReviewStatus'] = FieldValue.delete();
+          merge['pendingEditData'] = FieldValue.delete();
+          merge['submissionType'] = FieldValue.delete();
+          merge['editSubmittedAt'] = FieldValue.delete();
+          merge['updatedAt'] = FieldValue.serverTimestamp();
+          ChaletEditReviewHelper.applyDayUseFieldDeletesIfNeeded(merge);
+          await docRef.update(merge);
+        } else if (newStatus == 'rejected') {
+          await docRef.update({
+            'editReviewStatus': FieldValue.delete(),
+            'pendingEditData': FieldValue.delete(),
+            'submissionType': FieldValue.delete(),
+            'editSubmittedAt': FieldValue.delete(),
+            'isVisible': true,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          await docRef.update({
+            'status': newStatus,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      } else {
+        await docRef.update({
+          'status': newStatus,
+          'updatedAt': FieldValue.serverTimestamp(),
+          if (newStatus == 'approved') 'isVisible': true,
+        });
+      }
 
+      // Send notification to owner
+      {
         // Use merchantId or userId as fallback for ownerId
         String? ownerId =
             (chaletData['ownerId'] ??
@@ -47,6 +88,27 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
             ownerId = ownerId.split(':').last.trim();
           }
 
+          if (isEditReview && newStatus == 'approved') {
+            await NotificationService().sendNotification(
+              userId: ownerId,
+              titleKey: 'notif_chalet_edit_approved_title',
+              bodyKey: 'notif_chalet_edit_approved_body',
+              bodyParams: {'chalet': chaletName},
+              type: NotificationType.chaletApproved,
+              relatedId: docId,
+              data: {'chaletId': docId},
+            );
+          } else if (isEditReview && newStatus == 'rejected') {
+            await NotificationService().sendNotification(
+              userId: ownerId,
+              titleKey: 'notif_chalet_edit_rejected_title',
+              bodyKey: 'notif_chalet_edit_rejected_body',
+              bodyParams: {'chalet': chaletName},
+              type: NotificationType.chaletRejected,
+              relatedId: docId,
+              data: {'chaletId': docId},
+            );
+          } else {
           NotificationType type = NotificationType.general;
           String title = 'تحديث حالة الشاليه';
           String body = 'تمت مراجعة شاليهك $chaletName من قبل الإدارة.';
@@ -71,6 +133,7 @@ class ActionButtonsCubit extends Cubit<ActionButtonsState> {
             relatedId: docId,
             data: {'chaletId': docId},
           );
+          }
         }
       }
       emit(

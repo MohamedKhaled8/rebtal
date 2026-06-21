@@ -13,10 +13,12 @@ class CurrencyFormatter {
     BuildContext context,
     num? amount, {
     bool withSuffixPerNight = false,
+    bool withSuffixPerDay = false,
   }) {
     final value = (amount ?? 0).toDouble();
     final numStr = _number.format(value);
     final base = '$numStr ${context.tr('booking_egp_currency')}';
+    if (withSuffixPerDay) return '$base / ${context.tr('common_day')}';
     if (withSuffixPerNight) return '$base / ${context.tr('common_night')}';
     return base;
   }

@@ -8,13 +8,10 @@ import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
-import 'package:rebtal/core/utils/helper/chalet_booked_calendar_helper.dart';
 import 'package:rebtal/feature/booking/widgets/booking_table_range_picker_dialog.dart';
 import 'package:rebtal/feature/booking/widgets/booking_date_step_view.dart';
-import 'package:rebtal/feature/booking/widgets/booking_pricing_ui_helper.dart';
+import 'package:rebtal/feature/booking/widgets/booking_pricing_step_view.dart';
 import 'package:rebtal/core/utils/services/chalet_pricing_service.dart';
-import 'package:rebtal/core/utils/format/currency.dart';
-import 'package:intl/intl.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 import 'package:confetti/confetti.dart';
 
@@ -107,29 +104,8 @@ class _BookingWizardViewState extends State<BookingWizardView> {
     final text = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? const [
-                    Color(0xFF0E1812),
-                    Color(0xFF121212),
-                    Color(0xFF0A0F0C),
-                  ]
-                : const [
-                    Color(0xFFE6FBF0),
-                    Color(0xFFFAFAFA),
-                    Color(0xFFFFFFFF),
-                  ],
-            stops: const [0.0, 0.5, 1.0],
-          ),
-        ),
-        child: BlocListener<BookingWizardCubit, BookingWizardState>(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFF5F5F5),
+      body: BlocListener<BookingWizardCubit, BookingWizardState>(
           listener: (context, state) {
             if (!mounted) return;
             if (state.errorMessage != null) {
@@ -195,9 +171,14 @@ class _BookingWizardViewState extends State<BookingWizardView> {
                                 },
                                 child: KeyedSubtree(
                                   key: ValueKey(state.currentStep),
-                                  child: state.currentStep == 0
-                                      ? const _DateSelectionStep()
-                                      : const _BookingReviewStep(),
+                                  child: switch (state.currentStep) {
+                                    0 => const _DateSelectionStep(),
+                                    1 => _BookingPricingStep(
+                                      isDark: Theme.of(context).brightness ==
+                                          Brightness.dark,
+                                    ),
+                                    _ => const _BookingReviewStep(),
+                                  },
                                 ),
                               );
                             },
@@ -235,7 +216,6 @@ class _BookingWizardViewState extends State<BookingWizardView> {
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -299,22 +279,6 @@ class _BookingWizardViewState extends State<BookingWizardView> {
             ],
           ),
         ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: hPad),
-          child: Container(
-            height: 3,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(3),
-              gradient: LinearGradient(
-                colors: [
-                  kPrimaryColor,
-                  kPrimaryColor.withValues(alpha: 0.35),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -348,44 +312,59 @@ class _WizardProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BookingWizardCubit, BookingWizardState>(
       builder: (context, state) {
-        final step = state.currentStep.clamp(0, 1);
+        final step = state.currentStep.clamp(0, BookingWizardCubit.lastStepIndex);
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final labels = [
           context.tr('booking_wizard_step_date'),
+          context.tr('booking_wizard_step_pricing'),
           context.tr('booking_wizard_step_review'),
         ];
+        final inactive = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFD1D5DB);
+
+        Widget connector(int index) {
+          return Expanded(
+            child: Container(
+              height: 2,
+              margin: const EdgeInsets.only(bottom: 18, left: 4, right: 4),
+              color: step > index ? kPrimaryColor : inactive,
+            ),
+          );
+        }
 
         return Padding(
           padding: EdgeInsets.fromLTRB(
-            stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 32.sw),
-            4,
-            stv(context: context, mobile: 20.sw, tablet: 28.sw, desktop: 32.sw),
-            otv(context: context, portrait: 12.sh, landscape: 8.sh),
+            stv(context: context, mobile: 16.sw, tablet: 24.sw, desktop: 28.sw),
+            8,
+            stv(context: context, mobile: 16.sw, tablet: 24.sw, desktop: 28.sw),
+            otv(context: context, portrait: 8.sh, landscape: 6.sh),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _WizardStepTile(
-                  index: 1,
-                  label: labels[0],
-                  isDone: step >= 1,
-                  isCurrent: step == 0,
-                  isDark: isDark,
-                ),
+              _WizardStepDot(
+                index: 1,
+                label: labels[0],
+                isActive: step == 0,
+                isDone: step > 0,
+                isDark: isDark,
+                compact: true,
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 14, left: 6, right: 6),
-                child: _WizardStepConnector(filled: step >= 1, isDark: isDark),
+              connector(0),
+              _WizardStepDot(
+                index: 2,
+                label: labels[1],
+                isActive: step == 1,
+                isDone: step > 1,
+                isDark: isDark,
+                compact: true,
               ),
-              Expanded(
-                child: _WizardStepTile(
-                  index: 2,
-                  label: labels[1],
-                  isDone: false,
-                  isCurrent: step == 1,
-                  isDark: isDark,
-                ),
+              connector(1),
+              _WizardStepDot(
+                index: 3,
+                label: labels[2],
+                isActive: step == 2,
+                isDone: false,
+                isDark: isDark,
+                compact: true,
               ),
             ],
           ),
@@ -395,136 +374,68 @@ class _WizardProgressBar extends StatelessWidget {
   }
 }
 
-class _WizardStepTile extends StatelessWidget {
-  const _WizardStepTile({
+class _WizardStepDot extends StatelessWidget {
+  const _WizardStepDot({
     required this.index,
     required this.label,
+    required this.isActive,
     required this.isDone,
-    required this.isCurrent,
     required this.isDark,
+    this.compact = false,
   });
 
   final int index;
   final String label;
+  final bool isActive;
   final bool isDone;
-  final bool isCurrent;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final active = isCurrent || isDone;
-    final ring = active
-        ? kPrimaryColor
-        : (isDark ? Colors.white24 : Colors.grey[400]!);
-    final fill = isDone && !isCurrent
-        ? kPrimaryColor.withValues(alpha: 0.2)
-        : (isCurrent
-              ? kPrimaryColor.withValues(alpha: 0.15)
-              : (isDark
-                    ? Colors.white.withValues(alpha: 0.04)
-                    : Colors.grey[100]!));
+    final muted = isDark ? const Color(0xFF8E8E93) : const Color(0xFF6B7280);
+    final active = isActive || isDone;
 
     return Column(
       children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 320),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(16),
+            shape: BoxShape.circle,
+            color: isDone && !isActive
+                ? kPrimaryColor
+                : (isActive ? kPrimaryColor.withValues(alpha: 0.15) : Colors.transparent),
             border: Border.all(
-              color: ring.withValues(alpha: active ? 0.9 : 0.35),
-              width: active ? 1.5 : 1,
+              color: active ? kPrimaryColor : (isDark ? const Color(0xFF3A3A3C) : const Color(0xFFD1D5DB)),
+              width: 1.5,
             ),
-            boxShadow: isCurrent
-                ? [
-                    BoxShadow(
-                      color: kPrimaryColor.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: active ? kPrimaryColor : Colors.transparent,
-                  border: Border.all(
-                    color: active ? kPrimaryColor : ring,
-                    width: 2,
-                  ),
-                ),
-                child: isDone && !isCurrent
-                    ? const Icon(
-                        Icons.check_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      )
-                    : Text(
-                        '$index',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                          color: active && !isDone
-                              ? Colors.white
-                              : (isDark ? Colors.white70 : Colors.black54),
-                        ),
-                      ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          child: isDone && !isActive
+              ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+              : Text(
+                  '$index',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    color: active
-                        ? (isDark ? Colors.white : Colors.black87)
-                        : (isDark ? Colors.white38 : Colors.black45),
+                    fontSize: 12,
+                    color: isActive ? kPrimaryColor : muted,
                   ),
                 ),
-              ),
-            ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: compact ? 10 : 12,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            color: active ? (isDark ? Colors.white : Colors.black87) : muted,
           ),
         ),
       ],
-    );
-  }
-}
-
-class _WizardStepConnector extends StatelessWidget {
-  const _WizardStepConnector({required this.filled, required this.isDark});
-
-  final bool filled;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 28,
-      height: 4,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          gradient: LinearGradient(
-            colors: filled
-                ? [kPrimaryColor, kPrimaryColor.withValues(alpha: 0.6)]
-                : [
-                    isDark ? Colors.white12 : Colors.grey[300]!,
-                    isDark ? Colors.white10 : Colors.grey[200]!,
-                  ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -536,31 +447,21 @@ class _DateSelectionStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<BookingWizardCubit>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black;
 
     return BlocBuilder<BookingWizardCubit, BookingWizardState>(
+      buildWhen: (prev, curr) =>
+          prev.isDatesSelected != curr.isDatesSelected ||
+          prev.startDate != curr.startDate ||
+          prev.endDate != curr.endDate ||
+          prev.dataRevision != curr.dataRevision,
       builder: (context, state) {
-        return Column(
-          children: [
-            Expanded(
-              child: BookingDateStepView(
-                chaletName: cubit.chaletName,
-                requestData: cubit.requestData,
-                state: state,
-                isDark: isDark,
-                onOpenCalendar: () => _pickDateRange(context, cubit, state),
-              ),
-            ),
-            if (state.isDatesSelected && state.nightlyBreakdown.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                child: _BookingDailyPriceBreakdown(
-                  state: state,
-                  isDark: isDark,
-                  textColor: textColor,
-                ),
-              ),
-          ],
+        return BookingDateStepView(
+          key: ValueKey(state.dataRevision),
+          chaletName: cubit.chaletName,
+          requestData: cubit.activeRequestData,
+          state: state,
+          isDark: isDark,
+          onOpenCalendar: () => _pickDateRange(context, cubit, state),
         );
       },
     );
@@ -571,7 +472,7 @@ class _DateSelectionStep extends StatelessWidget {
     BookingWizardCubit cubit,
     BookingWizardState state,
   ) async {
-    final requestData = cubit.requestData;
+    final requestData = cubit.activeRequestData;
 
     DateTime? parseDate(dynamic val) {
       if (val == null) return null;
@@ -584,8 +485,10 @@ class _DateSelectionStep extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    final serverFrom = parseDate(requestData['availableFrom']);
-    final serverTo = parseDate(requestData['availableTo']);
+    final serverFrom = ChaletPricingService.envelopeFrom(requestData) ??
+        parseDate(requestData['availableFrom']);
+    final serverTo = ChaletPricingService.envelopeTo(requestData) ??
+        parseDate(requestData['availableTo']);
 
     DateTime rangeFirst;
     DateTime rangeLast;
@@ -604,9 +507,9 @@ class _DateSelectionStep extends StatelessWidget {
       }
     }
 
-    final occupancy = await loadChaletCalendarOccupancy(cubit.chaletId);
-
-    if (!context.mounted) return;
+    final cached = cubit.cachedOccupancy;
+    final occupancyFuture =
+        cubit.isOccupancyReady ? null : cubit.ensureOccupancy();
 
     final pricingData = Map<String, dynamic>.from(requestData);
     if (cubit.basePriceInput != null && pricingData['price'] == null) {
@@ -617,8 +520,9 @@ class _DateSelectionStep extends StatelessWidget {
       context,
       firstDate: rangeFirst,
       lastDate: rangeLast,
-      bookedDays: occupancy.confirmedBooked,
-      pendingDays: occupancy.pendingReview,
+      bookedDays: cached?.confirmedBooked ?? const {},
+      pendingDays: cached?.pendingReview ?? const {},
+      occupancyFuture: occupancyFuture,
       initialRange: state.startDate != null && state.endDate != null
           ? DateTimeRange(start: state.startDate!, end: state.endDate!)
           : null,
@@ -633,147 +537,17 @@ class _DateSelectionStep extends StatelessWidget {
   }
 }
 
-class _BookingDailyPriceBreakdown extends StatelessWidget {
-  const _BookingDailyPriceBreakdown({
-    required this.state,
-    required this.isDark,
-    required this.textColor,
-  });
+class _BookingPricingStep extends StatelessWidget {
+  const _BookingPricingStep({required this.isDark});
 
-  final BookingWizardState state;
   final bool isDark;
-  final Color textColor;
 
   @override
   Widget build(BuildContext context) {
-    final dateFmt = DateFormat(
-      'd MMM',
-      Localizations.localeOf(context).languageCode,
-    );
-    final cardColor = isDark ? kDarkCard : kLightCard;
-    final prices = state.nightlyBreakdown.map((e) => e.price).toList();
-    final colorMap = BookingPricingUiHelper.tierColorMap(prices);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.grey.shade200,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  context.tr('booking_daily_price_breakdown'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: textColor,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: kPrimaryColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  CurrencyFormatter.egp(context, state.totalAmount),
-                  style: const TextStyle(
-                    color: kPrimaryColor,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ...state.nightlyBreakdown.map((line) {
-            final tier = BookingPricingUiHelper.colorForPrice(
-              line.price,
-              colorMap,
-            );
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : const Color(0xFFF9FAFB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: tier.withValues(alpha: 0.25)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: tier,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            dateFmt.format(line.date),
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: textColor,
-                            ),
-                          ),
-                          Text(
-                            context.tr('booking_one_night_stay'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark ? Colors.white38 : Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      CurrencyFormatter.egp(context, line.price),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: tier,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
+    return BlocBuilder<BookingWizardCubit, BookingWizardState>(
+      builder: (context, state) {
+        return BookingPricingStepView(state: state, isDark: isDark);
+      },
     );
   }
 }
@@ -795,24 +569,20 @@ class _BookingReviewStep extends StatelessWidget {
         children: [
           BlocBuilder<BookingWizardCubit, BookingWizardState>(
             builder: (context, state) {
-              return Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                child: Column(
+                  children: [
                         Text(
                           context.tr('booking_total_label').replaceAll(':', ''),
                           style: TextStyle(
@@ -900,24 +670,6 @@ class _BookingReviewStep extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-
-                  Positioned(
-                    top: 12,
-                    right: 24,
-                    left: 24,
-                    child: Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.grey[200],
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               );
             },
           ),
@@ -1031,31 +783,32 @@ class _WizardBottomBar extends StatelessWidget {
 
     return BlocBuilder<BookingWizardCubit, BookingWizardState>(
       builder: (context, state) {
-        final isLast = state.currentStep == 1;
-        final isValid = isLast ? state.termsAccepted : state.isDatesSelected;
+        final isLast = state.currentStep == BookingWizardCubit.lastStepIndex;
+        final isValid = switch (state.currentStep) {
+          0 => state.isDatesSelected,
+          1 => state.nightlyBreakdown.isNotEmpty,
+          _ => state.termsAccepted,
+        };
+        final actionLabel = switch (state.currentStep) {
+          0 => context.tr('booking_wizard_next'),
+          1 => context.tr('booking_wizard_continue_pricing'),
+          _ => context.tr('booking_wizard_confirm_continue'),
+        };
 
         return Container(
-          padding: EdgeInsets.all(
-            otv(context: context, portrait: 16.sh, landscape: 10.sh),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            otv(context: context, portrait: 12.sh, landscape: 8.sh),
+            20,
+            otv(context: context, portrait: 16.sh, landscape: 12.sh),
           ),
           decoration: BoxDecoration(
-            color: isDark ? kDarkCard : kLightCard,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
-                blurRadius: 24,
-                offset: const Offset(0, -8),
-              ),
-            ],
+            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
             border: Border(
               top: BorderSide(
-                color: isDark
-                    ? kPrimaryColor.withValues(alpha: 0.25)
-                    : kPrimaryColor.withValues(alpha: 0.35),
-                width: 1,
+                color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E7EB),
               ),
             ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Row(
             children: [
@@ -1112,22 +865,12 @@ class _WizardBottomBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18),
                       child: Ink(
                         decoration: BoxDecoration(
-                          gradient: isValid
-                              ? const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFF3CE89F),
-                                    kPrimaryColor,
-                                    Color(0xFF00A656),
-                                  ],
-                                )
-                              : null,
-                          color: !isValid
-                              ? (isDark
+                          color: isValid
+                              ? kPrimaryColor
+                              : (isDark
                                     ? Colors.white.withValues(alpha: 0.08)
-                                    : Colors.grey[300])
-                              : null,
+                                    : Colors.grey[300]),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
                           child: Row(
@@ -1135,11 +878,7 @@ class _WizardBottomBar extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                isLast
-                                    ? context.tr(
-                                        'booking_wizard_confirm_continue',
-                                      )
-                                    : context.tr('booking_wizard_next'),
+                                actionLabel,
                                 style: TextStyle(
                                   fontSize: stv(
                                     context: context,

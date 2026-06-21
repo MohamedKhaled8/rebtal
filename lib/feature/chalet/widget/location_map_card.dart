@@ -43,6 +43,7 @@ Future<(double, double)?> _geocodeAddressWithNominatim(String query) async {
 /// Resolves coordinates (Firestore or Nominatim) and shows a real OSM tile map.
 class _ResolvedLatLngMap extends StatefulWidget {
   const _ResolvedLatLngMap({
+    super.key,
     required this.location,
     required this.latitude,
     required this.longitude,
@@ -312,6 +313,9 @@ class LocationMapCard extends StatelessWidget {
                 children: [
                   Positioned.fill(
                     child: _ResolvedLatLngMap(
+                      key: ValueKey(
+                        '${latitude ?? ''}_${longitude ?? ''}_$location',
+                      ),
                       location: location,
                       latitude: latitude,
                       longitude: longitude,

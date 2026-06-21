@@ -16,6 +16,8 @@ class OwnerState extends Equatable {
   final bool isFormSubmitting;
   final String? formError;
   final bool isFormSuccess;
+  /// True when an approved listing edit was queued for admin review.
+  final bool editReviewSubmitted;
 
   // Location Search State
   final List<Map<String, dynamic>> locationResults;
@@ -29,6 +31,7 @@ class OwnerState extends Equatable {
     this.isFormSubmitting = false,
     this.formError,
     this.isFormSuccess = false,
+    this.editReviewSubmitted = false,
     this.locationResults = const [],
     this.isLocationLoading = false,
   });
@@ -45,6 +48,7 @@ class OwnerState extends Equatable {
     bool? isFormSubmitting,
     String? formError,
     bool? isFormSuccess,
+    bool? editReviewSubmitted,
     List<Map<String, dynamic>>? locationResults,
     bool? isLocationLoading,
   }) {
@@ -56,6 +60,7 @@ class OwnerState extends Equatable {
       isFormSubmitting: isFormSubmitting ?? this.isFormSubmitting,
       formError: formError ?? this.formError,
       isFormSuccess: isFormSuccess ?? this.isFormSuccess,
+      editReviewSubmitted: editReviewSubmitted ?? this.editReviewSubmitted,
       locationResults: locationResults ?? this.locationResults,
       isLocationLoading: isLocationLoading ?? this.isLocationLoading,
     );
@@ -67,6 +72,7 @@ class OwnerState extends Equatable {
       isFormSubmitting: false,
       isFormSuccess: false,
       formError: null,
+      editReviewSubmitted: false,
     );
   }
 
@@ -79,6 +85,7 @@ class OwnerState extends Equatable {
     isFormSubmitting,
     formError,
     isFormSuccess,
+    editReviewSubmitted,
     locationResults,
     isLocationLoading,
   ];
@@ -131,6 +138,9 @@ class ChaletDraft extends Equatable {
   final String? discountValue;
   final List<String> features;
   final bool dayUseEnabled;
+  final bool dayUseOnly;
+  final String dayUsePrice;
+  final List<String> dayUseAmenities;
   final String? popularDestination;
 
   const ChaletDraft({
@@ -172,10 +182,37 @@ class ChaletDraft extends Equatable {
     this.discountValue,
     this.features = const [],
     this.dayUseEnabled = false,
+    this.dayUseOnly = false,
+    this.dayUsePrice = '',
+    this.dayUseAmenities = const [],
     this.popularDestination,
   });
 
   factory ChaletDraft.initial() => const ChaletDraft();
+
+  /// True when the only draft delta is typing in text/numeric fields (skip form rebuild).
+  bool differsOnlyByTypingInForm(ChaletDraft other) {
+    if (this == other) return false;
+    return copyWith(
+          chaletName: other.chaletName,
+          description: other.description,
+          merchantName: other.merchantName,
+          price: other.price,
+          dayUsePrice: other.dayUsePrice,
+          phoneNumber: other.phoneNumber,
+          email: other.email,
+          chaletArea: other.chaletArea,
+          discountValue: other.discountValue,
+          bedrooms: other.bedrooms,
+          bathrooms: other.bathrooms,
+          childrenCount: other.childrenCount,
+        ) ==
+        other;
+  }
+
+  /// @deprecated Use [differsOnlyByTypingInForm].
+  bool differsOnlyByTypingPrices(ChaletDraft other) =>
+      differsOnlyByTypingInForm(other);
 
   ChaletDraft copyWith({
     List<File>? uploadedImages,
@@ -216,6 +253,9 @@ class ChaletDraft extends Equatable {
     String? discountValue,
     List<String>? features,
     bool? dayUseEnabled,
+    bool? dayUseOnly,
+    String? dayUsePrice,
+    List<String>? dayUseAmenities,
     bool clearProfileImage = false,
     String? popularDestination,
   }) {
@@ -260,6 +300,9 @@ class ChaletDraft extends Equatable {
       discountValue: discountValue ?? this.discountValue,
       features: features ?? this.features,
       dayUseEnabled: dayUseEnabled ?? this.dayUseEnabled,
+      dayUseOnly: dayUseOnly ?? this.dayUseOnly,
+      dayUsePrice: dayUsePrice ?? this.dayUsePrice,
+      dayUseAmenities: dayUseAmenities ?? this.dayUseAmenities,
       popularDestination: popularDestination ?? this.popularDestination,
     );
   }
@@ -304,6 +347,9 @@ class ChaletDraft extends Equatable {
     discountValue,
     features,
     dayUseEnabled,
+    dayUseOnly,
+    dayUsePrice,
+    dayUseAmenities,
     popularDestination,
   ];
 }

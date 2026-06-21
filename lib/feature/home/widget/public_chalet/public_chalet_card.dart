@@ -6,6 +6,7 @@ import 'package:rebtal/core/utils/widgets/rating_display_widget.dart';
 import 'package:rebtal/core/utils/widgets/glass_badge.dart';
 import 'package:rebtal/feature/chalet/ui/chalet_detail_page.dart';
 import 'package:rebtal/feature/home/logic/helpers/chalet_card_display_helper.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/feature/home/widget/public_chalet/chalet_favorite_button.dart';
 import 'package:rebtal/feature/home/widget/public_chalet/chalet_image_carousel.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
@@ -18,6 +19,7 @@ class PublicChaletCard extends StatelessWidget {
     this.onDetailsPressed,
     this.badge,
     this.margin,
+    this.preferDayUsePrice = false,
   });
 
   final Map<String, dynamic> chaletData;
@@ -25,6 +27,7 @@ class PublicChaletCard extends StatelessWidget {
   final VoidCallback? onDetailsPressed;
   final Widget? badge;
   final EdgeInsetsGeometry? margin;
+  final bool preferDayUsePrice;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,7 @@ class PublicChaletCard extends StatelessWidget {
       onDetailsPressed: onDetailsPressed,
       badge: badge,
       margin: margin,
+      preferDayUsePrice: preferDayUsePrice,
     );
   }
 }
@@ -46,6 +50,7 @@ class PublicChaletCardBody extends StatelessWidget {
     this.onDetailsPressed,
     this.badge,
     this.margin,
+    this.preferDayUsePrice = false,
   });
 
   final Map<String, dynamic> chaletData;
@@ -53,6 +58,7 @@ class PublicChaletCardBody extends StatelessWidget {
   final VoidCallback? onDetailsPressed;
   final Widget? badge;
   final EdgeInsetsGeometry? margin;
+  final bool preferDayUsePrice;
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +233,7 @@ class PublicChaletCardBody extends StatelessWidget {
                         PublicChaletPriceSection(
                           chaletData: chaletData,
                           isDark: isDark,
+                          preferDayUsePrice: preferDayUsePrice,
                         ),
                       ],
                     ),
@@ -459,23 +466,37 @@ class PublicChaletPriceSection extends StatelessWidget {
     super.key,
     required this.chaletData,
     required this.isDark,
+    this.preferDayUsePrice = false,
   });
 
   final Map<String, dynamic> chaletData;
   final bool isDark;
+  final bool preferDayUsePrice;
 
   @override
   Widget build(BuildContext context) {
+    final useDayUseLabel = OwnerHelper.shouldLabelPricePerDay(
+      chaletData,
+      preferDayUse: preferDayUsePrice,
+    );
+    final displayBase = OwnerHelper.listingDisplayPrice(
+      chaletData,
+      preferDayUse: preferDayUsePrice,
+    );
     final price = chaletData['price'];
-    final hasDisc = ChaletCardDisplayHelper.hasDiscount(chaletData);
+    final hasDisc = !useDayUseLabel && ChaletCardDisplayHelper.hasDiscount(chaletData);
     final discounted = ChaletCardDisplayHelper.calculateDiscountedPrice(
       chaletData,
+      preferDayUse: preferDayUsePrice,
     );
+    final showPrice = useDayUseLabel
+        ? displayBase.toStringAsFixed(0)
+        : (hasDisc ? discounted : '$price');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (hasDisc)
+        if (hasDisc && !useDayUseLabel)
           Text(
             '$price',
             style: TextStyle(
@@ -498,7 +519,7 @@ class PublicChaletPriceSection extends StatelessWidget {
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
-              hasDisc ? discounted : '$price',
+              showPrice,
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
                 fontSize: stv(
@@ -519,7 +540,9 @@ class PublicChaletPriceSection extends StatelessWidget {
               ),
             ),
             Text(
-              context.tr('booking_egp_currency'),
+              useDayUseLabel
+                  ? '${context.tr('booking_egp_currency')} / ${context.tr('common_day')}'
+                  : context.tr('booking_egp_currency'),
               style: TextStyle(
                 fontSize: stv(
                   context: context,

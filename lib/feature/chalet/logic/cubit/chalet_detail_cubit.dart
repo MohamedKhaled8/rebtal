@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rebtal/core/utils/error/failure.dart';
@@ -10,6 +11,7 @@ import 'package:rebtal/feature/chalet/domain/usecases/get_chalet_booked_dates_us
 import 'package:rebtal/feature/chalet/domain/usecases/toggle_booking_availability_usecase.dart';
 import 'package:rebtal/feature/chalet/domain/usecases/update_chalet_status_usecase.dart';
 import 'package:rebtal/core/utils/helper/app_image_helper.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 part 'chalet_detail_state.dart';
 
@@ -46,14 +48,16 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   Future<void> initialize(
     Map<String, dynamic> requestData, {
     String? docId,
+    String viewerRole = 'guest',
   }) async {
     // Paint immediately from the snapshot (no grey "empty" header while server
     // round-trips). Server merge may refine URLs/order afterward.
     if (!isClosed) {
+      final bootData = _viewerDisplayData(requestData, viewerRole);
       emit(
         ChaletDetailLoaded(
-          images: collectChaletImageUrls(requestData),
-          bookedDates: _parseBookedDatesField(requestData),
+          images: collectChaletImageUrls(bootData),
+          bookedDates: _parseBookedDatesField(bootData),
         ),
       );
       _startAutoPlay();
@@ -76,7 +80,8 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
       }
     }
 
-    final images = _extractImagesFromRequestData(effectiveData);
+    effectiveData = _viewerDisplayData(effectiveData, viewerRole);
+    final images = collectChaletImageUrls(effectiveData);
     final initialDates = _parseBookedDatesField(effectiveData);
 
     if (isClosed) return;
@@ -99,11 +104,15 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
   }
 
   /// When owner list is patched after edit, keep gallery in sync with Firestore fields.
-  void syncImagesFromMap(Map<String, dynamic> data) {
+  void syncImagesFromMap(
+    Map<String, dynamic> data, {
+    String viewerRole = 'guest',
+  }) {
     if (isClosed) return;
-    final next = _extractImagesFromRequestData(data);
+    final next = _extractImagesFromRequestData(data, viewerRole);
     final s = state;
     if (s is! ChaletDetailLoaded) return;
+    if (listEquals(s.images, next)) return;
     final idx = next.isEmpty
         ? 0
         : s.currentImageIndex.clamp(0, next.length - 1);
@@ -135,8 +144,24 @@ class ChaletDetailCubit extends Cubit<ChaletDetailState> {
     );
   }
 
-  List<String> _extractImagesFromRequestData(Map<String, dynamic> data) {
-    return collectChaletImageUrls(data);
+  Map<String, dynamic> _viewerDisplayData(
+    Map<String, dynamic> root,
+    String viewerRole,
+  ) {
+    if (viewerRole == 'admin') {
+      return ChaletEditReviewHelper.previewDataForAdmin(root);
+    }
+    if (viewerRole == 'owner') {
+      return ChaletEditReviewHelper.dataForOwnerEditForm(root);
+    }
+    return Map<String, dynamic>.from(root);
+  }
+
+  List<String> _extractImagesFromRequestData(
+    Map<String, dynamic> data,
+    String viewerRole,
+  ) {
+    return collectChaletImageUrls(_viewerDisplayData(data, viewerRole));
   }
 
   void _startAutoPlay() {

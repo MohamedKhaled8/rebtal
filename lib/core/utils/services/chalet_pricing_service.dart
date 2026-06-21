@@ -180,6 +180,31 @@ class ChaletPricingService {
         )
         .toList();
   }
+
+  /// All pricing tiers to show in the booking wizard (discounted when applicable).
+  static List<PricingPeriod> bookingDisplayPeriods(Map<String, dynamic> data) {
+    final firestore = withDiscountedDisplay(
+      data,
+      PricingPeriod.listFromFirestore(data['pricingPeriods']),
+    );
+    if (firestore.isNotEmpty) return firestore;
+
+    final legacy = withDiscountedDisplay(data, periodsFromChalet(data));
+    if (legacy.isNotEmpty) return legacy;
+
+    final base = _applyDiscount(data, _parseBasePrice(data['price']));
+    if (base > 0) {
+      return [
+        PricingPeriod(
+          id: 'base',
+          from: DateTime.now(),
+          to: DateTime.now(),
+          price: base,
+        ),
+      ];
+    }
+    return const [];
+  }
 }
 
 class DailyPriceEntry {

@@ -7,25 +7,62 @@ import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 import 'package:rebtal/feature/chalet/ui/chalet_reviews_page.dart';
 
-class ReviewsSection extends StatelessWidget {
+class ReviewsSection extends StatefulWidget {
   final String chaletId;
   final bool isDark;
-  final Map<String, dynamic> requestData; // Added
+  final Map<String, dynamic> requestData;
 
   const ReviewsSection({
     super.key,
     required this.chaletId,
     required this.isDark,
-    required this.requestData, // Added
+    required this.requestData,
   });
 
   @override
+  State<ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends State<ReviewsSection> {
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _reviewsStream;
+  String? _streamChaletId;
+
+  void _ensureReviewsStream() {
+    final id = widget.chaletId.trim();
+    if (_streamChaletId == id && _reviewsStream != null) return;
+    _streamChaletId = id;
+    _reviewsStream = FirebaseFirestore.instance
+        .collection('chalet_ratings')
+        .where('chaletId', isEqualTo: id)
+        .limit(10)
+        .snapshots();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureReviewsStream();
+  }
+
+  @override
+  void didUpdateWidget(covariant ReviewsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _ensureReviewsStream();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final requestData = widget.requestData;
+    final isDark = widget.isDark;
     // Get real rating and count with safe casting
-    final rating = (requestData['rating'] as num?)?.toDouble() ?? 0.0;
+    final rating =
+        (requestData['averageRating'] as num?)?.toDouble() ??
+        (requestData['rating'] as num?)?.toDouble() ??
+        0.0;
     final reviewsCount =
         (requestData['reviews_count'] as num?)?.toInt() ??
         (requestData['ratingCount'] as num?)?.toInt() ??
+        (requestData['reviewCount'] as num?)?.toInt() ??
         0;
 
     return Padding(
@@ -100,12 +137,8 @@ class ReviewsSection extends StatelessWidget {
             height: otv(context: context, portrait: 40.sh, landscape: 20.sh),
           ),
           // Horizontal Review List
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('chalet_ratings')
-                .where('chaletId', isEqualTo: chaletId.trim())
-                .limit(10)
-                .snapshots(),
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: _reviewsStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting &&
                   !snapshot.hasData) {
@@ -277,7 +310,7 @@ class ReviewsSection extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChaletReviewsPage(
-                        chaletId: chaletId,
+                        chaletId: widget.chaletId,
                         chaletName: requestData['chaletName'] ?? 'Chalet',
                         isDark: isDark,
                       ),
@@ -315,7 +348,7 @@ class ReviewsSection extends StatelessWidget {
   Widget _buildEmptyState(BuildContext context) {
     return Text(
       context.tr('chalet_detail_no_reviews'),
-      style: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
+      style: TextStyle(color: widget.isDark ? Colors.white54 : Colors.grey),
     );
   }
 }

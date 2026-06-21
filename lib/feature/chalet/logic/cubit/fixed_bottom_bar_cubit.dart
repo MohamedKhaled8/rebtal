@@ -4,8 +4,9 @@ import 'package:rebtal/core/utils/helper/auth_restriction_helper.dart';
 import 'package:rebtal/core/utils/helper/snack_bar_helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rebtal/core/app/cubit/app_cubit.dart';
-import 'package:rebtal/feature/booking/ui/booking_wizard_page.dart'; // Import Wizard Page
+import 'package:rebtal/feature/booking/ui/booking_wizard_page.dart';
 import 'package:rebtal/feature/booking/models/booking.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/core/utils/services/notification_service.dart';
 import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/widgets/premium_loading_overlay.dart';
@@ -24,10 +25,12 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     String? bookingId,
     String? currentUserId,
   }) async {
-    // Store raw price values - formatting will happen in UI layer
-    final rawPrice = (price is num)
-        ? price.toDouble()
-        : double.tryParse((price ?? '').toString()) ?? 0.0;
+    final useDayUseDisplay = OwnerHelper.shouldLabelPricePerDay(requestData);
+    final rawPrice = useDayUseDisplay
+        ? OwnerHelper.listingDisplayPrice(requestData, preferDayUse: true)
+        : ((price is num)
+              ? price.toDouble()
+              : double.tryParse((price ?? '').toString()) ?? 0.0);
 
     final discountEnabled = requestData['discountEnabled'] == true;
     final discountValue =
@@ -330,11 +333,17 @@ class FixedBottomBarCubit extends Cubit<FixedBottomBarState> {
     final isBookingAvailable = bookingAvailability == 'available';
 
     if (isBookingAvailable) {
-      final bool dayUseEnabled = requestData['dayUseEnabled'] == true;
+      final bool supportsDayUse =
+          OwnerHelper.supportsDayUseBooking(requestData);
 
-      // If Day Use is enabled, show the quick request sheet
-      if (dayUseEnabled) {
-        _showDayUseQuickRequest(context, docId, requestData, price);
+      if (supportsDayUse) {
+        final dayUsePrice = OwnerHelper.calculateDayUseFinalPrice(requestData);
+        _showDayUseQuickRequest(
+          context,
+          docId,
+          requestData,
+          dayUsePrice,
+        );
         return;
       }
 

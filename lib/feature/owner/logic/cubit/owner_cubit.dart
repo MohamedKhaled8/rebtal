@@ -12,8 +12,13 @@ import 'package:rebtal/feature/owner/domain/usecases/add_chalet_usecase.dart';
 import 'package:rebtal/feature/owner/domain/usecases/get_owner_chalets_usecase.dart';
 import 'package:rebtal/feature/owner/domain/entities/chalet_entity.dart';
 import 'package:rebtal/core/utils/services/local_notification_service.dart';
+import 'package:rebtal/core/utils/services/notification_service.dart';
+import 'package:rebtal/core/models/notification_type.dart';
 import 'package:rebtal/core/utils/model/pricing_period.dart';
 import 'package:rebtal/core/utils/services/chalet_pricing_service.dart';
+import 'package:rebtal/core/utils/error/failure.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 int? _intFromFirestore(dynamic v) {
   if (v == null) return null;
@@ -124,48 +129,15 @@ class OwnerCubit extends Cubit<OwnerState> {
 
   // Amenities
   void updateAmenity(String amenityKey, bool value) {
-    ChaletDraft newDraft;
-    switch (amenityKey) {
-      case 'hasWifi':
-        newDraft = state.draft.copyWith(hasWifi: value);
-        break;
-      case 'hasPool':
-        newDraft = state.draft.copyWith(hasPool: value);
-        break;
-      case 'hasAirConditioning':
-        newDraft = state.draft.copyWith(hasAirConditioning: value);
-        break;
-      case 'hasParking':
-        newDraft = state.draft.copyWith(hasParking: value);
-        break;
-      case 'hasGarden':
-        newDraft = state.draft.copyWith(hasGarden: value);
-        break;
-      case 'hasBBQ':
-        newDraft = state.draft.copyWith(hasBBQ: value);
-        break;
-      case 'hasBeachView':
-        newDraft = state.draft.copyWith(hasBeachView: value);
-        break;
-      case 'hasHousekeeping':
-        newDraft = state.draft.copyWith(hasHousekeeping: value);
-        break;
-      case 'hasPetsAllowed':
-        newDraft = state.draft.copyWith(hasPetsAllowed: value);
-        break;
-      case 'hasGym':
-        newDraft = state.draft.copyWith(hasGym: value);
-        break;
-      case 'hasKitchen':
-        newDraft = state.draft.copyWith(hasKitchen: value);
-        break;
-      case 'hasTV':
-        newDraft = state.draft.copyWith(hasTV: value);
-        break;
-      default:
-        newDraft = state.draft;
-    }
-    emit(state.copyWith(draft: newDraft));
+    emit(
+      state.copyWith(
+        draft: OwnerHelper.applyAmenityUpdate(
+          state.draft,
+          amenityKey,
+          value,
+        ),
+      ),
+    );
   }
 
   void updatePhoneNumber(String phone) =>
@@ -214,8 +186,32 @@ class OwnerCubit extends Cubit<OwnerState> {
   void updateDiscountValue(String? value) =>
       emit(state.copyWith(draft: state.draft.copyWith(discountValue: value)));
 
-  void updateDayUseEnabled(bool enabled) =>
-      emit(state.copyWith(draft: state.draft.copyWith(dayUseEnabled: enabled)));
+  void updateDayUseEnabled(bool enabled) => emit(
+    state.copyWith(
+      draft: state.draft.copyWith(
+        dayUseEnabled: enabled,
+        dayUseOnly: enabled ? false : state.draft.dayUseOnly,
+        dayUsePrice: enabled && !state.draft.dayUseEnabled
+            ? ''
+            : state.draft.dayUsePrice,
+      ),
+    ),
+  );
+
+  void updateDayUseOnly(bool only) => emit(
+    state.copyWith(
+      draft: state.draft.copyWith(
+        dayUseOnly: only,
+        dayUseEnabled: only ? false : state.draft.dayUseEnabled,
+        dayUsePrice: only && !state.draft.dayUseOnly
+            ? ''
+            : state.draft.dayUsePrice,
+      ),
+    ),
+  );
+
+  void updateDayUsePrice(String price) =>
+      emit(state.copyWith(draft: state.draft.copyWith(dayUsePrice: price)));
 
   bool addPricingPeriod({
     required DateTime from,
@@ -372,6 +368,19 @@ class OwnerCubit extends Cubit<OwnerState> {
     return null;
   }
 
+  String _priceStringFromFirestore(dynamic raw) {
+    if (raw == null) return '';
+    return raw is num ? raw.toString() : raw.toString();
+  }
+
+  Map<String, dynamic> _dayUseAmenityFlagPayload(ChaletDraft draft) {
+    final flags = OwnerHelper.dayUseAmenityFlags(draft);
+    return {
+      for (final entry in flags.entries)
+        entry.key: entry.value,
+    };
+  }
+
   /// Firestore expects `available` | `unavailable` (see [BookingAvailability]).
   String _normalizeBookingAvailability(String? raw) {
     final v = (raw ?? 'available').toLowerCase().trim();
@@ -393,16 +402,19 @@ class OwnerCubit extends Cubit<OwnerState> {
   void loadChaletDataForEdit(Map<String, dynamic> m, String docId) {
     _editingChaletId = docId;
     _editSource = Map<String, dynamic>.from(m);
+    final source = ChaletEditReviewHelper.dataForOwnerEditForm(m);
     _preserveBookingAvailability =
-        m['bookingAvailability']?.toString() ?? 'available';
+        source['bookingAvailability']?.toString() ??
+        m['bookingAvailability']?.toString() ??
+        'available';
 
     final amenities = List<String>.from(
-      (m['amenities'] as List?)?.map((e) => e.toString()) ?? const [],
+      (source['amenities'] as List?)?.map((e) => e.toString()) ?? const [],
     );
-    final features = List<String>.from(m['features'] ?? []);
+    final features = List<String>.from(source['features'] ?? []);
 
     final List<String> sanitizedImageUrls = [];
-    final rawImages = m['images'];
+    final rawImages = source['images'];
     if (rawImages is List) {
       for (final e in rawImages) {
         if (e == null) continue;
@@ -419,59 +431,69 @@ class OwnerCubit extends Cubit<OwnerState> {
       }
     }
 
-    final priceRaw = m['price'];
+    final priceRaw = source['price'];
     final priceStr = priceRaw == null
         ? ''
         : (priceRaw is num ? priceRaw.toString() : priceRaw.toString());
 
-    final lat = m['latitude'] ?? m['lat'];
-    final lon = m['longitude'] ?? m['lon'];
+    final lat = source['latitude'] ?? source['lat'];
+    final lon = source['longitude'] ?? source['lon'];
 
     emit(
       state.copyWith(
         draft: ChaletDraft(
           uploadedImages: const [],
           existingImageUrls: sanitizedImageUrls,
-          selectedLocation: m['location']?.toString() ?? '',
-          isAvailable: m['isAvailable'] ?? true,
-          hasWifi: _amenityFlagFromMap(m, amenities, 'hasWifi'),
-          hasPool: _amenityFlagFromMap(m, amenities, 'hasPool'),
+          selectedLocation: source['location']?.toString() ?? '',
+          isAvailable: source['isAvailable'] ?? true,
+          hasWifi: _amenityFlagFromMap(source, amenities, 'hasWifi'),
+          hasPool: _amenityFlagFromMap(source, amenities, 'hasPool'),
           hasAirConditioning: _amenityFlagFromMap(
-            m,
+            source,
             amenities,
             'hasAirConditioning',
           ),
-          hasParking: _amenityFlagFromMap(m, amenities, 'hasParking'),
-          hasGarden: _amenityFlagFromMap(m, amenities, 'hasGarden'),
-          hasBBQ: _amenityFlagFromMap(m, amenities, 'hasBBQ'),
-          hasBeachView: _amenityFlagFromMap(m, amenities, 'hasBeachView'),
-          hasHousekeeping: _amenityFlagFromMap(m, amenities, 'hasHousekeeping'),
-          hasPetsAllowed: _amenityFlagFromMap(m, amenities, 'hasPetsAllowed'),
-          hasGym: _amenityFlagFromMap(m, amenities, 'hasGym'),
-          hasKitchen: _amenityFlagFromMap(m, amenities, 'hasKitchen'),
-          hasTV: _amenityFlagFromMap(m, amenities, 'hasTV'),
+          hasParking: _amenityFlagFromMap(source, amenities, 'hasParking'),
+          hasGarden: _amenityFlagFromMap(source, amenities, 'hasGarden'),
+          hasBBQ: _amenityFlagFromMap(source, amenities, 'hasBBQ'),
+          hasBeachView: _amenityFlagFromMap(source, amenities, 'hasBeachView'),
+          hasHousekeeping: _amenityFlagFromMap(
+            source,
+            amenities,
+            'hasHousekeeping',
+          ),
+          hasPetsAllowed: _amenityFlagFromMap(source, amenities, 'hasPetsAllowed'),
+          hasGym: _amenityFlagFromMap(source, amenities, 'hasGym'),
+          hasKitchen: _amenityFlagFromMap(source, amenities, 'hasKitchen'),
+          hasTV: _amenityFlagFromMap(source, amenities, 'hasTV'),
           status: m['status']?.toString() ?? 'approved',
-          phoneNumber: m['phoneNumber']?.toString(),
-          email: m['email']?.toString(),
-          chaletName: m['chaletName']?.toString(),
-          description: m['description']?.toString(),
-          merchantName: m['merchantName']?.toString(),
+          phoneNumber: source['phoneNumber']?.toString(),
+          email: source['email']?.toString(),
+          chaletName: source['chaletName']?.toString(),
+          description: source['description']?.toString(),
+          merchantName: source['merchantName']?.toString(),
           price: priceStr,
-          chaletArea: m['chaletArea']?.toString(),
-          bedrooms: _intFromFirestore(m['bedrooms']),
-          bathrooms: _intFromFirestore(m['bathrooms']),
-          availableFrom: _parseFirestoreDate(m['availableFrom']),
-          availableTo: _parseFirestoreDate(m['availableTo']),
+          chaletArea: source['chaletArea']?.toString(),
+          bedrooms: _intFromFirestore(source['bedrooms']),
+          bathrooms: _intFromFirestore(source['bathrooms']),
+          availableFrom: _parseFirestoreDate(source['availableFrom']),
+          availableTo: _parseFirestoreDate(source['availableTo']),
           latitude: lat is num ? lat.toDouble() : double.tryParse('$lat'),
           longitude: lon is num ? lon.toDouble() : double.tryParse('$lon'),
-          childrenCount: _intFromFirestore(m['childrenCount']),
-          discountEnabled: m['discountEnabled'] ?? false,
-          discountType: m['discountType']?.toString(),
-          discountValue: m['discountValue']?.toString(),
+          childrenCount: _intFromFirestore(source['childrenCount']),
+          discountEnabled: source['discountEnabled'] ?? false,
+          discountType: source['discountType']?.toString(),
+          discountValue: source['discountValue']?.toString(),
           features: features,
-          dayUseEnabled: m['dayUseEnabled'] ?? false,
+          dayUseEnabled: source['dayUseEnabled'] ?? false,
+          dayUseOnly: source['dayUseOnly'] ?? false,
+          dayUsePrice: _priceStringFromFirestore(source['dayUsePrice']),
+          dayUseAmenities: List<String>.from(
+            (source['dayUseAmenities'] as List?)?.map((e) => e.toString()) ??
+                const [],
+          ),
           popularDestination: popularKey,
-          pricingPeriods: _pricingPeriodsFromMap(m),
+          pricingPeriods: _pricingPeriodsFromMap(source),
         ),
         isFormSubmitting: false,
         formError: null,
@@ -595,10 +617,22 @@ class OwnerCubit extends Cubit<OwnerState> {
   // Management Actions
   // ==========================================
 
-  Future<void> toggleChaletVisibility(
+  Future<bool> toggleChaletVisibility(
     String chaletId,
     bool currentVisibility,
   ) async {
+    Map<String, dynamic>? chaletMap;
+    for (final c in state.chalets) {
+      if (c is Map && c['id']?.toString() == chaletId) {
+        chaletMap = Map<String, dynamic>.from(c);
+        break;
+      }
+    }
+    if (chaletMap != null &&
+        ChaletEditReviewHelper.isEditReviewPending(chaletMap)) {
+      return false;
+    }
+
     final newVisibility = !currentVisibility;
     // Optimistic Update
     final updatedChalets = state.chalets.map((c) {
@@ -620,6 +654,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       // Revert if failed (optional, but good practice)
       fetchChalets(state.chalets.first['ownerId']);
     }
+    return true;
   }
 
   Future<void> toggleBookingAvailability(
@@ -955,19 +990,25 @@ class OwnerCubit extends Cubit<OwnerState> {
 
     // Construct Entity
     // Collect amenities list with full keys (hasWifi, hasPool, etc.)
-    final amenitiesList = <String>[];
-    if (state.draft.hasWifi) amenitiesList.add('hasWifi');
-    if (state.draft.hasPool) amenitiesList.add('hasPool');
-    if (state.draft.hasAirConditioning) amenitiesList.add('hasAirConditioning');
-    if (state.draft.hasParking) amenitiesList.add('hasParking');
-    if (state.draft.hasGarden) amenitiesList.add('hasGarden');
-    if (state.draft.hasBBQ) amenitiesList.add('hasBBQ');
-    if (state.draft.hasBeachView) amenitiesList.add('hasBeachView');
-    if (state.draft.hasHousekeeping) amenitiesList.add('hasHousekeeping');
-    if (state.draft.hasPetsAllowed) amenitiesList.add('hasPetsAllowed');
-    if (state.draft.hasGym) amenitiesList.add('hasGym');
-    if (state.draft.hasKitchen) amenitiesList.add('hasKitchen');
-    if (state.draft.hasTV) amenitiesList.add('hasTV');
+    final amenitiesList = OwnerHelper.buildGeneralAmenitiesList(state.draft);
+    final dayUseAmenitiesList = OwnerHelper.buildDayUseAmenitiesList(
+      state.draft,
+    );
+
+    if (OwnerHelper.requiresDayUsePrice(state.draft)) {
+      final dayUsePrice = double.tryParse(state.draft.dayUsePrice.trim());
+      if (dayUsePrice == null || dayUsePrice <= 0) {
+        emit(
+          state.copyWith(
+            isFormSubmitting: false,
+            formError: 'سعر حجز اليوم الواحد مطلوب ويجب أن يكون رقماً صحيحاً',
+          ),
+        );
+        return;
+      }
+    }
+
+    final hasDayUseOption = OwnerHelper.requiresDayUsePrice(state.draft);
 
     final chalet = ChaletEntity(
       id: '', // Will be generated by Repo
@@ -1014,6 +1055,11 @@ class OwnerCubit extends Cubit<OwnerState> {
         discountValue: state.draft.discountValue,
         features: state.draft.features,
         dayUseEnabled: state.draft.dayUseEnabled,
+        dayUseOnly: state.draft.dayUseOnly,
+        dayUsePrice: hasDayUseOption
+            ? double.tryParse(state.draft.dayUsePrice.trim())
+            : null,
+        dayUseAmenities: dayUseAmenitiesList,
         pricingPeriods: _pricingPeriodsPayload(),
       ),
     );
@@ -1035,7 +1081,36 @@ class OwnerCubit extends Cubit<OwnerState> {
     );
   }
 
-  /// Update an existing approved listing (same fields as add flow).
+  /// Notify admins that an owner submitted edits to an approved listing.
+  Future<void> _notifyAdminsChaletEditReview({
+    required String ownerName,
+    required String chaletName,
+    required String chaletId,
+    required String ownerId,
+  }) async {
+    try {
+      final adminsSnapshot = await _firestore.collection('Admin').get();
+      final adminIds = adminsSnapshot.docs.map((d) => d.id).toSet();
+      for (final adminId in adminIds) {
+        await NotificationService().sendNotification(
+          userId: adminId,
+          titleKey: 'notif_chalet_edit_review',
+          bodyKey: 'notif_chalet_edit_body',
+          bodyParams: {'name': ownerName, 'chalet': chaletName},
+          type: NotificationType.chaletSubmission,
+          relatedId: chaletId,
+          data: {
+            'chaletId': chaletId,
+            'ownerId': ownerId,
+            'ownerName': ownerName,
+            'submissionType': ChaletEditReviewHelper.submissionTypeEdit,
+          },
+        );
+      }
+    } catch (_) {}
+  }
+
+  /// Update an existing listing (same fields as add flow).
   Future<void> submitChaletEdit(String ownerId, String ownerName) async {
     final docId = _editingChaletId;
     if (docId == null) {
@@ -1050,11 +1125,17 @@ class OwnerCubit extends Cubit<OwnerState> {
 
     if (state.isFormSubmitting) return;
 
+    final editSource = _editSource ?? <String, dynamic>{};
+    final requiresAdminReview =
+        ChaletEditReviewHelper.isApprovedListing(editSource) ||
+        ChaletEditReviewHelper.isEditReviewPending(editSource);
+
     emit(
       state.copyWith(
         isFormSubmitting: true,
         formError: null,
         isFormSuccess: false,
+        editReviewSubmitted: false,
       ),
     );
 
@@ -1175,21 +1256,25 @@ class OwnerCubit extends Cubit<OwnerState> {
 
     final allImages = [...state.draft.existingImageUrls, ...uploadedUrls];
 
-    final amenitiesList = <String>[];
-    if (state.draft.hasWifi) amenitiesList.add('hasWifi');
-    if (state.draft.hasPool) amenitiesList.add('hasPool');
-    if (state.draft.hasAirConditioning) {
-      amenitiesList.add('hasAirConditioning');
+    final amenitiesList = OwnerHelper.buildGeneralAmenitiesList(state.draft);
+    final dayUseAmenitiesList = OwnerHelper.buildDayUseAmenitiesList(
+      state.draft,
+    );
+
+    if (OwnerHelper.requiresDayUsePrice(state.draft)) {
+      final dayUsePrice = double.tryParse(state.draft.dayUsePrice.trim());
+      if (dayUsePrice == null || dayUsePrice <= 0) {
+        emit(
+          state.copyWith(
+            isFormSubmitting: false,
+            formError: 'سعر حجز اليوم الواحد مطلوب ويجب أن يكون رقماً صحيحاً',
+          ),
+        );
+        return;
+      }
     }
-    if (state.draft.hasParking) amenitiesList.add('hasParking');
-    if (state.draft.hasGarden) amenitiesList.add('hasGarden');
-    if (state.draft.hasBBQ) amenitiesList.add('hasBBQ');
-    if (state.draft.hasBeachView) amenitiesList.add('hasBeachView');
-    if (state.draft.hasHousekeeping) amenitiesList.add('hasHousekeeping');
-    if (state.draft.hasPetsAllowed) amenitiesList.add('hasPetsAllowed');
-    if (state.draft.hasGym) amenitiesList.add('hasGym');
-    if (state.draft.hasKitchen) amenitiesList.add('hasKitchen');
-    if (state.draft.hasTV) amenitiesList.add('hasTV');
+
+    final hasDayUseOption = OwnerHelper.requiresDayUsePrice(state.draft);
 
     final name = state.draft.chaletName!.trim();
     final loc = state.draft.selectedLocation.trim();
@@ -1202,7 +1287,11 @@ class OwnerCubit extends Cubit<OwnerState> {
       'location': loc,
       'description': desc,
       'images': allImages,
-      'price': double.tryParse(state.draft.price.trim()) ?? 0.0,
+      'price': state.draft.dayUseOnly
+          ? (_editSource?['price'] is num
+                ? (_editSource!['price'] as num).toDouble()
+                : double.tryParse(state.draft.price.trim()) ?? 0.0)
+          : double.tryParse(state.draft.price.trim()) ?? 0.0,
       'bedrooms': state.draft.bedrooms ?? 0,
       'bathrooms': state.draft.bathrooms ?? 0,
       'amenities': amenitiesList,
@@ -1232,9 +1321,7 @@ class OwnerCubit extends Cubit<OwnerState> {
       'discountEnabled': state.draft.discountEnabled,
       'features': state.draft.features,
       'dayUseEnabled': state.draft.dayUseEnabled,
-      'status': _statusForEditSave(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'isVisible': _editSource?['isVisible'] ?? true,
+      'dayUseOnly': state.draft.dayUseOnly,
     };
 
     if (state.draft.chaletArea != null &&
@@ -1250,6 +1337,19 @@ class OwnerCubit extends Cubit<OwnerState> {
     if (state.draft.discountValue != null) {
       data['discountValue'] = state.draft.discountValue;
     }
+    if (hasDayUseOption) {
+      data['dayUsePrice'] =
+          double.tryParse(state.draft.dayUsePrice.trim()) ?? 0.0;
+      data['dayUseAmenities'] = dayUseAmenitiesList;
+      data.addAll(_dayUseAmenityFlagPayload(state.draft));
+    } else {
+      data['dayUseOnly'] = false;
+      data['dayUseEnabled'] = false;
+      if (!requiresAdminReview) {
+        data['dayUsePrice'] = FieldValue.delete();
+        data['dayUseAmenities'] = FieldValue.delete();
+      }
+    }
     if (state.draft.latitude != null) {
       data['latitude'] = state.draft.latitude;
       data['lat'] = state.draft.latitude;
@@ -1259,30 +1359,78 @@ class OwnerCubit extends Cubit<OwnerState> {
       data['lon'] = state.draft.longitude;
     }
 
-    final result = await ownerRepository.updateChaletFields(docId, data);
+    late final Map<String, dynamic> firestorePayload;
+    final editReviewSubmitted = requiresAdminReview;
 
-    result.fold(
-      (failure) => emit(
+    if (requiresAdminReview) {
+      final pendingData = Map<String, dynamic>.from(data)
+        ..removeWhere((k, v) => v is FieldValue);
+      firestorePayload = {
+        'pendingEditData': pendingData,
+        'editReviewStatus': ChaletEditReviewHelper.editReviewPending,
+        'submissionType': ChaletEditReviewHelper.submissionTypeEdit,
+        'isVisible': false,
+        'editSubmittedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+    } else {
+      data['status'] = _statusForEditSave();
+      data['updatedAt'] = FieldValue.serverTimestamp();
+      data['isVisible'] = _editSource?['isVisible'] ?? false;
+      firestorePayload = data;
+    }
+
+    final result = await ownerRepository.updateChaletFields(
+      docId,
+      firestorePayload,
+    );
+
+    final failure = result.fold<Failure?>((l) => l, (_) => null);
+    if (failure != null) {
+      emit(
         state.copyWith(isFormSubmitting: false, formError: failure.message),
-      ),
-      (_) {
+      );
+      return;
+    }
+
+    try {
+      if (requiresAdminReview) {
+        await _notifyAdminsChaletEditReview(
+          ownerName: ownerName.trim(),
+          chaletName: name,
+          chaletId: docId,
+          ownerId: ownerId,
+        );
+        final pendingData = Map<String, dynamic>.from(data)
+          ..removeWhere((k, v) => v is FieldValue);
+        patchChaletInListAfterSave(docId, {
+          'editReviewStatus': ChaletEditReviewHelper.editReviewPending,
+          'submissionType': ChaletEditReviewHelper.submissionTypeEdit,
+          'isVisible': false,
+          'pendingEditData': pendingData,
+          'editSubmittedAt': DateTime.now().toIso8601String(),
+        });
+      } else {
         final forList = Map<String, dynamic>.from(data);
         forList.removeWhere((k, v) => v is FieldValue);
         patchChaletInListAfterSave(docId, forList);
+      }
+    } catch (_) {
+      // Firestore save succeeded; notification/list patch must not block UX.
+    }
 
-        _editingChaletId = null;
-        _editSource = null;
-        _preserveBookingAvailability = null;
-        emit(
-          state.copyWith(
-            isFormSubmitting: false,
-            isFormSuccess: true,
-            draft: ChaletDraft.initial(),
-            formError: null,
-          ),
-        );
-        fetchChalets(ownerId);
-      },
+    _editingChaletId = null;
+    _editSource = null;
+    _preserveBookingAvailability = null;
+    emit(
+      state.copyWith(
+        isFormSubmitting: false,
+        isFormSuccess: true,
+        editReviewSubmitted: editReviewSubmitted,
+        draft: ChaletDraft.initial(),
+        formError: null,
+      ),
     );
+    fetchChalets(ownerId);
   }
 }

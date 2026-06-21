@@ -39,6 +39,9 @@ class BookingWizardState extends Equatable {
   final bool termsAccepted;
   final bool isDayUse;
 
+  /// Bumped when chalet Firestore data is merged into the wizard.
+  final int dataRevision;
+
   // Rating post-booking
   final bool showRating;
 
@@ -65,6 +68,7 @@ class BookingWizardState extends Equatable {
     this.termsAccepted = false,
     this.showRating = false,
     this.isDayUse = false,
+    this.dataRevision = 0,
   });
 
   BookingWizardState copyWith({
@@ -88,6 +92,7 @@ class BookingWizardState extends Equatable {
     bool? termsAccepted,
     bool? showRating,
     bool? isDayUse,
+    int? dataRevision,
   }) {
     return BookingWizardState(
       currentStep: currentStep ?? this.currentStep,
@@ -110,6 +115,7 @@ class BookingWizardState extends Equatable {
       termsAccepted: termsAccepted ?? this.termsAccepted,
       showRating: showRating ?? this.showRating,
       isDayUse: isDayUse ?? this.isDayUse,
+      dataRevision: dataRevision ?? this.dataRevision,
     );
   }
 
@@ -135,5 +141,6 @@ class BookingWizardState extends Equatable {
     termsAccepted,
     showRating,
     isDayUse,
+    dataRevision,
   ];
 }

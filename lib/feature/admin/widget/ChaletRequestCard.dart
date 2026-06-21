@@ -11,6 +11,7 @@ import 'package:responsive_screen_master/responsive_screen_master.dart';
 
 import 'package:rebtal/feature/admin/widget/chalet_management_controls.dart';
 import 'package:rebtal/feature/admin/widget/chalet_action_buttons.dart';
+import 'package:rebtal/feature/owner/utils/chalet_edit_review_helper.dart';
 
 class ChaletRequestCard extends StatelessWidget {
   final Map<String, dynamic> requestData;
@@ -26,18 +27,28 @@ class ChaletRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final preview = ChaletEditReviewHelper.previewDataForAdmin(requestData);
+    final isEditSubmission =
+        ChaletEditReviewHelper.isEditReviewPending(requestData) ||
+        requestData['submissionType']?.toString() ==
+            ChaletEditReviewHelper.submissionTypeEdit;
+    final ownerLabel =
+        preview['merchantName']?.toString() ??
+        preview['ownerName']?.toString() ??
+        '';
+
     final chaletName =
-        requestData['chaletName'] ?? context.tr('home_chalet_no_name');
+        preview['chaletName'] ?? context.tr('home_chalet_no_name');
     final location =
-        requestData['location'] ?? context.tr('home_location_unknown');
-    final rawImages = collectChaletImageUrls(requestData);
+        preview['location'] ?? context.tr('home_location_unknown');
+    final rawImages = collectChaletImageUrls(preview);
     final images = rawImages.isEmpty ? const [''] : rawImages;
     final isDark = DynamicThemeManager.isDarkMode(context);
 
-    final price = requestData['price']?.toString() ?? '0';
-    final bedrooms = requestData['bedrooms']?.toString() ?? '0';
-    final bathrooms = requestData['bathrooms']?.toString() ?? '0';
-    final chaletArea = requestData['chaletArea']?.toString() ?? '';
+    final price = preview['price']?.toString() ?? '0';
+    final bedrooms = preview['bedrooms']?.toString() ?? '0';
+    final bathrooms = preview['bathrooms']?.toString() ?? '0';
+    final chaletArea = preview['chaletArea']?.toString() ?? '';
 
     final isVisible = requestData['isVisible'] ?? true;
     final bookingAvailability =
@@ -64,7 +75,7 @@ class ChaletRequestCard extends StatelessWidget {
               builder: (context) => ChaletDetailPage(
                 requestData: requestData,
                 docId: docId,
-                status: status,
+                status: isEditSubmission ? 'pending' : status,
               ),
             ),
           );
@@ -148,6 +159,27 @@ class ChaletRequestCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (isEditSubmission) ...[
+                        horizintalSpace(1),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.sp,
+                            vertical: 4.sp,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1),
+                            borderRadius: BorderRadius.circular(8.sp),
+                          ),
+                          child: Text(
+                            context.tr('admin_chalet_edit_badge'),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                       horizintalSpace(2),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -178,6 +210,42 @@ class ChaletRequestCard extends StatelessWidget {
                     ],
                   ),
                   verticalSpace(0.5),
+                  if (isEditSubmission && ownerLabel.isNotEmpty) ...[
+                    Text(
+                      '${context.tr('admin_chalet_edit_owner_hint')} $ownerLabel',
+                      style: TextStyle(
+                        color: isDark ? Colors.white60 : Colors.grey[600],
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    verticalSpace(0.5),
+                  ],
+                  if (isEditSubmission) ...[
+                    Builder(
+                      builder: (context) {
+                        final changeCount =
+                            ChaletEditReviewHelper.listPendingFieldChanges(
+                              requestData,
+                            ).length;
+                        if (changeCount <= 0) return const SizedBox.shrink();
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 6.sh),
+                          child: Text(
+                            context.tr('admin_edit_changes_count')
+                                .replaceAll('{count}', '$changeCount'),
+                            style: TextStyle(
+                              color: const Color(0xFF4F46E5),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
 
                   // Location Row
                   Row(

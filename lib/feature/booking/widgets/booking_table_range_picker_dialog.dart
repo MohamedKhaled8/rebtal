@@ -4,10 +4,11 @@ import 'package:rebtal/core/utils/helper/chalet_booked_calendar_helper.dart';
 import 'package:rebtal/core/utils/localization/translation_extension.dart';
 import 'package:rebtal/feature/booking/widgets/booking_pricing_ui_helper.dart';
 
-bool _rangeCrossesBooked(
+bool _rangeCrossesBlocked(
   DateTime start,
   DateTime end,
   Set<DateTime> booked,
+  Set<DateTime> pending,
 ) {
   var c = chaletDateOnly(start);
   final e = chaletDateOnly(end);
@@ -15,7 +16,7 @@ bool _rangeCrossesBooked(
   var hi = c.isBefore(e) ? e : c;
   var x = lo;
   while (!x.isAfter(hi)) {
-    if (booked.contains(x)) return true;
+    if (booked.contains(x) || pending.contains(x)) return true;
     x = x.add(const Duration(days: 1));
   }
   return false;
@@ -31,6 +32,7 @@ Future<DateTimeRange?> showBookingTableRangePicker(
   Set<DateTime> pendingDays = const {},
   DateTimeRange? initialRange,
   BookingDayPriceResolver? dayPriceFor,
+  Future<ChaletCalendarOccupancy>? occupancyFuture,
 }) {
   return showModalBottomSheet<DateTimeRange>(
     context: context,
@@ -50,6 +52,7 @@ Future<DateTimeRange?> showBookingTableRangePicker(
               end: chaletDateOnly(initialRange.end),
             ),
       dayPriceFor: dayPriceFor,
+      occupancyFuture: occupancyFuture,
     ),
   );
 }
@@ -61,6 +64,7 @@ class _BookingTableRangePickerBody extends StatefulWidget {
   final Set<DateTime> pendingDays;
   final DateTimeRange? initialRange;
   final BookingDayPriceResolver? dayPriceFor;
+  final Future<ChaletCalendarOccupancy>? occupancyFuture;
 
   const _BookingTableRangePickerBody({
     required this.firstDate,
@@ -69,6 +73,7 @@ class _BookingTableRangePickerBody extends StatefulWidget {
     required this.pendingDays,
     this.initialRange,
     this.dayPriceFor,
+    this.occupancyFuture,
   });
 
   @override
@@ -81,10 +86,15 @@ class _BookingTableRangePickerBodyState
   late DateTime _focusedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+  late Set<DateTime> _bookedDays;
+  late Set<DateTime> _pendingDays;
+  bool _occupancyRefreshing = false;
 
   @override
   void initState() {
     super.initState();
+    _bookedDays = Set<DateTime>.from(widget.bookedDays);
+    _pendingDays = Set<DateTime>.from(widget.pendingDays);
     final i = widget.initialRange;
     if (i != null) {
       _rangeStart = chaletDateOnly(i.start);
@@ -93,6 +103,24 @@ class _BookingTableRangePickerBodyState
     } else {
       _focusedDay = widget.firstDate;
     }
+    _loadOccupancyIfNeeded();
+  }
+
+  Future<void> _loadOccupancyIfNeeded() async {
+    final future = widget.occupancyFuture;
+    if (future == null) return;
+    setState(() => _occupancyRefreshing = true);
+    try {
+      final occupancy = await future;
+      if (!mounted) return;
+      setState(() {
+        _bookedDays = Set<DateTime>.from(occupancy.confirmedBooked);
+        _pendingDays = Set<DateTime>.from(occupancy.pendingReview);
+        _occupancyRefreshing = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _occupancyRefreshing = false);
+    }
   }
 
   bool _inBounds(DateTime d) {
@@ -100,11 +128,9 @@ class _BookingTableRangePickerBodyState
     return !x.isBefore(widget.firstDate) && !x.isAfter(widget.lastDate);
   }
 
-  bool _isBooked(DateTime d) =>
-      widget.bookedDays.contains(chaletDateOnly(d));
+  bool _isBooked(DateTime d) => _bookedDays.contains(chaletDateOnly(d));
 
-  bool _isPending(DateTime d) =>
-      widget.pendingDays.contains(chaletDateOnly(d));
+  bool _isPending(DateTime d) => _pendingDays.contains(chaletDateOnly(d));
 
   BookingDayAvailability _availability(DateTime d) {
     if (!_inBounds(d)) return BookingDayAvailability.unavailable;
@@ -132,7 +158,7 @@ class _BookingTableRangePickerBodyState
 
   void _handleDayTap(DateTime selectedDay, DateTime focusedDay) {
     final day = chaletDateOnly(selectedDay);
-    if (!_inBounds(day) || _isBooked(day)) return;
+    if (!_inBounds(day) || _isBooked(day) || _isPending(day)) return;
 
     setState(() {
       if (_rangeStart == null) {
@@ -157,10 +183,18 @@ class _BookingTableRangePickerBodyState
 
     if (_rangeStart != null &&
         _rangeEnd != null &&
-        _rangeCrossesBooked(_rangeStart!, _rangeEnd!, widget.bookedDays)) {
+        _rangeCrossesBlocked(
+          _rangeStart!,
+          _rangeEnd!,
+          _bookedDays,
+          _pendingDays,
+        )) {
       if (mounted) {
+        final msg = _rangeIncludesPending(_rangeStart!, _rangeEnd!)
+            ? context.tr('booking_range_invalid_pending')
+            : context.tr('booking_range_invalid_booked');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('booking_range_invalid_booked'))),
+          SnackBar(content: Text(msg)),
         );
       }
       setState(() {
@@ -168,6 +202,19 @@ class _BookingTableRangePickerBodyState
         _rangeEnd = null;
       });
     }
+  }
+
+  bool _rangeIncludesPending(DateTime start, DateTime end) {
+    var c = chaletDateOnly(start);
+    final e = chaletDateOnly(end);
+    final lo = c.isBefore(e) ? c : e;
+    var hi = c.isBefore(e) ? e : c;
+    var x = lo;
+    while (!x.isAfter(hi)) {
+      if (_pendingDays.contains(x)) return true;
+      x = x.add(const Duration(days: 1));
+    }
+    return false;
   }
 
   bool get _canSave => _rangeStart != null && _rangeEnd != null;
@@ -183,9 +230,12 @@ class _BookingTableRangePickerBodyState
       b = t;
     }
 
-    if (_rangeCrossesBooked(a, b, widget.bookedDays)) {
+    if (_rangeCrossesBlocked(a, b, _bookedDays, _pendingDays)) {
+      final msg = _rangeIncludesPending(a, b)
+          ? context.tr('booking_range_invalid_pending')
+          : context.tr('booking_range_invalid_booked');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.tr('booking_range_invalid_booked'))),
+        SnackBar(content: Text(msg)),
       );
       return;
     }
@@ -215,13 +265,29 @@ class _BookingTableRangePickerBodyState
     );
   }
 
+  List<MapEntry<double, Color>> _legendPriceTiers() {
+    final prices = <double>{};
+    var cursor = widget.firstDate;
+    while (!cursor.isAfter(widget.lastDate)) {
+      final p = widget.dayPriceFor?.call(cursor);
+      if (p != null && p > 0) prices.add(p);
+      cursor = cursor.add(const Duration(days: 1));
+    }
+    if (prices.isEmpty) return const [];
+    final sorted = prices.toList()..sort();
+    final colorMap = BookingPricingUiHelper.tierColorMap(sorted);
+    return BookingPricingUiHelper.legendEntries(sorted, colorMap);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBg = isDark ? const Color(0xFF141820) : Colors.white;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Padding(
+    return Material(
+      color: sheetBg,
+      child: Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: Container(
         constraints: BoxConstraints(
@@ -274,6 +340,15 @@ class _BookingTableRangePickerBodyState
                 ],
               ),
             ),
+            if (_occupancyRefreshing)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                child: LinearProgressIndicator(
+                  minHeight: 2,
+                  color: BookingPricingUiHelper.rangeAccent,
+                  backgroundColor: isDark ? Colors.white12 : Colors.grey.shade200,
+                ),
+              ),
             if (_rangeStart != null)
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 280),
@@ -302,7 +377,17 @@ class _BookingTableRangePickerBodyState
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                 child: Column(
                   children: [
-                    TableCalendar<void>(
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        canvasColor: sheetBg,
+                        cardColor: sheetBg,
+                        listTileTheme: ListTileThemeData(
+                          tileColor: sheetBg,
+                          selectedTileColor: sheetBg,
+                          iconColor: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      child: TableCalendar<void>(
                       locale: Localizations.localeOf(context).toLanguageTag(),
                       firstDay: widget.firstDate,
                       lastDay: widget.lastDate,
@@ -359,21 +444,26 @@ class _BookingTableRangePickerBodyState
                       ),
                       enabledDayPredicate: (day) {
                         if (!_inBounds(day)) return false;
-                        return !_isBooked(day);
+                        return !_isBooked(day) && !_isPending(day);
                       },
                       calendarBuilders: CalendarBuilders<void>(
                         defaultBuilder: (ctx, day, _) => _dayCell(ctx, day),
+                        todayBuilder: (ctx, day, _) => _dayCell(ctx, day),
                         disabledBuilder: (ctx, day, _) => _dayCell(ctx, day),
                         outsideBuilder: (ctx, day, _) => _dayCell(ctx, day),
-                        todayBuilder: (ctx, day, _) => _dayCell(ctx, day),
+                        selectedBuilder: (ctx, day, _) => _dayCell(ctx, day),
+                        rangeStartBuilder: (ctx, day, _) => _dayCell(ctx, day),
+                        rangeEndBuilder: (ctx, day, _) => _dayCell(ctx, day),
+                        withinRangeBuilder: (ctx, day, _) => _dayCell(ctx, day),
                       ),
                       onDaySelected: _handleDayTap,
                       onPageChanged: (f) => setState(() => _focusedDay = f),
                     ),
+                    ),
                     const SizedBox(height: 12),
                     BookingCalendarLegend(
                       isDark: isDark,
-                      tierEntries: const [],
+                      tierEntries: _legendPriceTiers(),
                       showInstructions: true,
                     ),
                   ],
@@ -435,6 +525,7 @@ class _BookingTableRangePickerBodyState
             ),
           ],
         ),
+      ),
       ),
     );
   }

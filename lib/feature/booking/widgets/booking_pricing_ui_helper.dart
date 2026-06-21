@@ -14,10 +14,10 @@ class BookingPricingUiHelper {
   static const Color rangeAccent = Color(0xFF00D27F);
   static const Color unavailableGrey = Color(0xFF9CA3AF);
 
-  static const Color selectedEndpoint = Color(0xFF06B6D4);
-  static const Color selectedEndpointAlt = Color(0xFF34D399);
-  static const Color rangeFill = Color(0xFF6EE7B7);
-  static const Color rangeFillDark = Color(0xFF064E3B);
+  static const Color selectedEndpoint = Color(0xFFFF5722);
+  static const Color selectedEndpointAlt = Color(0xFFFF9800);
+  static const Color rangeFill = Color(0xFF2196F3);
+  static const Color rangeFillDark = Color(0xFF64B5F6);
 
   static const List<Color> tierPalette = [
     Color(0xFF2563EB),
@@ -212,6 +212,22 @@ class BookingCalendarLegend extends StatelessWidget {
               label: context.tr('booking_calendar_booked'),
               isDark: isDark,
             ),
+            _LegendChip(
+              color: BookingPricingUiHelper.selectedEndpoint,
+              label: context.tr('booking_calendar_selected'),
+              isDark: isDark,
+            ),
+            _LegendChip(
+              color: BookingPricingUiHelper.rangeFill,
+              label: context.tr('booking_calendar_in_range'),
+              isDark: isDark,
+            ),
+            for (final entry in tierEntries)
+              _LegendChip(
+                color: entry.value,
+                label: BookingPricingUiHelper.compactEgp(context, entry.key),
+                isDark: isDark,
+              ),
           ],
         ),
         if (showInstructions) ...[
@@ -366,42 +382,43 @@ class _BookingCalendarDayCellState extends State<BookingCalendarDayCell>
     if (widget.isSelected) {
       return BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            BookingPricingUiHelper.selectedEndpoint,
-            BookingPricingUiHelper.selectedEndpointAlt,
-          ],
-        ),
+        color: BookingPricingUiHelper.selectedEndpoint,
+        border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: BookingPricingUiHelper.selectedEndpoint.withValues(alpha: 0.55),
-            blurRadius: 10,
+            color: BookingPricingUiHelper.selectedEndpoint.withValues(alpha: 0.85),
+            blurRadius: 12,
             offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: Colors.white, width: 2),
       );
     }
     if (widget.isInRange) {
       return BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: widget.isDark
-            ? BookingPricingUiHelper.rangeFillDark.withValues(alpha: 0.85)
-            : BookingPricingUiHelper.rangeFill.withValues(alpha: 0.55),
-        border: Border.all(
-          color: BookingPricingUiHelper.selectedEndpointAlt.withValues(alpha: 0.6),
-          width: 1.5,
-        ),
+            ? BookingPricingUiHelper.rangeFillDark
+            : BookingPricingUiHelper.rangeFill,
+        border: Border.all(color: Colors.white, width: 2.5),
+        boxShadow: [
+          BoxShadow(
+            color: BookingPricingUiHelper.rangeFill.withValues(alpha: 0.55),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       );
     }
     return BoxDecoration(
       borderRadius: BorderRadius.circular(10),
-      color: _baseColor.withValues(alpha: widget.isDark ? 0.88 : 0.95),
-      border: Border.all(color: _baseColor.withValues(alpha: 0.55), width: 1),
+      color: _baseColor.withValues(alpha: widget.isDark ? 0.92 : 0.95),
+      border: Border.all(color: _baseColor.withValues(alpha: 0.7), width: 1),
     );
   }
+
+  Color get _onStatusText => Colors.white;
+
+  Color get _onStatusSubtext => Colors.white.withValues(alpha: 0.88);
 
   @override
   Widget build(BuildContext context) {
@@ -410,14 +427,38 @@ class _BookingCalendarDayCellState extends State<BookingCalendarDayCell>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: _baseColor,
-        ),
-        child: Text(
-          '${widget.day.day}',
-          style: TextStyle(
-            color: BookingPricingUiHelper.unavailableGrey,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
+          border: Border.all(
+            color: widget.isDark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
           ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${widget.day.day}',
+              style: TextStyle(
+                color: BookingPricingUiHelper.unavailableGrey,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            if (widget.price != null && widget.price! > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    BookingPricingUiHelper.shortEgp(context, widget.price!),
+                    style: TextStyle(
+                      color: BookingPricingUiHelper.unavailableGrey,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 7,
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
+              ),
+          ],
         ),
       );
     }
@@ -427,36 +468,67 @@ class _BookingCalendarDayCellState extends State<BookingCalendarDayCell>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: _baseColor,
+          border: Border.all(color: _baseColor.withValues(alpha: 0.85)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               '${widget.day.day}',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: _onStatusText,
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
               ),
             ),
             Text(
               context.tr('booking_calendar_booked_short'),
-              style: const TextStyle(color: Colors.white70, fontSize: 7),
+              style: TextStyle(color: _onStatusSubtext, fontSize: 7),
             ),
           ],
         ),
       );
     }
 
-    final subtitle = widget.availability == BookingDayAvailability.pending
-        ? context.tr('booking_calendar_pending_short')
-        : (widget.price != null && widget.price! > 0
-              ? BookingPricingUiHelper.shortEgp(context, widget.price!)
-              : null);
+    if (widget.availability == BookingDayAvailability.pending) {
+      return _cellBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: _baseColor,
+          border: Border.all(color: _baseColor.withValues(alpha: 0.85)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${widget.day.day}',
+              style: TextStyle(
+                color: _onStatusText,
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
+            ),
+            Text(
+              context.tr('booking_calendar_pending_short'),
+              style: TextStyle(color: _onStatusSubtext, fontSize: 7),
+            ),
+          ],
+        ),
+      );
+    }
 
-    final textColor = widget.isInRange && !widget.isSelected
-        ? (widget.isDark ? const Color(0xFFA7F3D0) : const Color(0xFF065F46))
-        : Colors.white;
+    final subtitle = widget.price != null && widget.price! > 0
+        ? BookingPricingUiHelper.shortEgp(context, widget.price!)
+        : null;
+
+    final textColor = widget.isSelected
+        ? Colors.white
+        : widget.isInRange
+            ? Colors.white
+            : _onStatusText;
+    final subtitleColor = widget.isSelected
+        ? Colors.white.withValues(alpha: 0.92)
+        : _onStatusSubtext;
 
     return ScaleTransition(
       scale: _scaleAnim,
@@ -485,11 +557,9 @@ class _BookingCalendarDayCellState extends State<BookingCalendarDayCell>
                   child: Text(
                     subtitle,
                     style: TextStyle(
-                      color: textColor.withValues(alpha: 0.92),
-                      fontWeight: FontWeight.w600,
-                      fontSize: widget.availability == BookingDayAvailability.pending
-                          ? 7
-                          : 8,
+                      color: subtitleColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 8,
                       height: 1.1,
                     ),
                     maxLines: 1,

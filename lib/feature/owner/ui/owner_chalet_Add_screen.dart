@@ -12,8 +12,10 @@ import 'package:rebtal/feature/maps/ui/flutter_map_location_picker.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_cubit.dart';
 import 'package:rebtal/feature/owner/logic/cubit/owner_state.dart';
 import 'package:rebtal/feature/owner/widget/add_chalet_widgets.dart';
+import 'package:rebtal/feature/owner/widget/owner_chalet_form_host.dart';
 import 'package:rebtal/feature/owner/widget/pricing_periods_section.dart';
 import 'package:rebtal/feature/owner/widget/amenities_selection_section.dart';
+import 'package:rebtal/feature/owner/utils/owner_helper.dart';
 import 'package:rebtal/feature/owner/widget/image_upload_section.dart';
 import 'package:responsive_screen_master/responsive_screen_master.dart';
 
@@ -70,13 +72,16 @@ class OwnerChaletAddScreen extends StatelessWidget {
       ],
       child: BlocBuilder<OwnerCubit, OwnerState>(
         bloc: ownerCubit,
+        buildWhen: (previous, current) =>
+            previous.isFormSubmitting != current.isFormSubmitting,
         builder: (context, state) {
           return Scaffold(
+            resizeToAvoidBottomInset: false,
             backgroundColor: isDark
                 ? ColorsManager.darkBackground0A0E27
                 : ColorsManager.lightBackgroundF8FAFF,
             appBar: _buildModernAppBar(context, isDark),
-            body: const _ChaletFormContent(),
+            body: _ChaletFormContent(ownerCubit: ownerCubit),
             bottomNavigationBar: _SubmitButton(
               isSubmitting: state.isFormSubmitting,
               isDark: isDark,
@@ -147,150 +152,147 @@ class OwnerChaletAddScreen extends StatelessWidget {
 }
 
 class _ChaletFormContent extends StatelessWidget {
-  const _ChaletFormContent();
+  const _ChaletFormContent({required this.ownerCubit});
+
+  final OwnerCubit ownerCubit;
 
   @override
   Widget build(BuildContext context) {
-    final ownerCubit = context.read<AppCubit>().ownerCubit;
-    final isDark = DynamicThemeManager.isDarkMode(context);
-
-    return BlocBuilder<OwnerCubit, OwnerState>(
-      bloc: ownerCubit,
-      builder: (context, state) {
-        final draft = state.draft;
-
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: stv(
-              context: context,
-              mobile: 20.sw,
-              tablet: 32.sw,
-              desktop: 48.sw,
-            ),
-            vertical: 20.sh,
-          ),
-          child: Column(
-            children: [
-              // Progress Indicator
-              _buildProgressCard(context, isDark),
-              SizedBox(height: 24.sh),
-
-              // Owner Info Section
-              OwnerInfoSection(
-                name: draft.merchantName ?? '',
-                email: draft.email ?? '',
-                phone: draft.phoneNumber ?? '',
-              ),
-              SizedBox(height: 20.sh),
-
-              // Images Section
-              ImageUploadSection(
-                images: draft.uploadedImages,
-                onAdd: () =>
-                    getIt<HelperImageContract>().addSampleImages(context),
-                onRemove: (index) => ownerCubit.removeChaletImage(index),
-              ),
-              SizedBox(height: 20.sh),
-
-              // Chalet Details Section
-              ChaletDetailsSection(
-                initialName: draft.chaletName,
-                initialDescription: draft.description,
-                onNameChanged: ownerCubit.updateChaletName,
-                onDescriptionChanged: ownerCubit.updateDescription,
-              ),
-              SizedBox(height: 20.sh),
-
-              // Location Section
-              LocationSection(
-                address: draft.selectedLocation,
-                selectedPopularDestination: draft.popularDestination,
-                onPopularDestinationChanged:
-                    ownerCubit.selectPopularDestination,
-                onPickLocation: () async {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  final selected = await Navigator.push<Object?>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => FlutterGoogleMapLocationPicker(
-                        initialAddress: draft.selectedLocation,
-                      ),
-                    ),
-                  );
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  if (selected is Map) {
-                    final addr = selected['address'] as String?;
-                    final lat = selected['lat'] as double?;
-                    final lon = selected['lon'] as double?;
-                    if (addr != null) {
-                      ownerCubit.updateGeo(
-                        lat: lat ?? 0,
-                        lon: lon ?? 0,
-                        address: addr,
-                      );
-                    }
-                  }
-                },
-              ),
-              SizedBox(height: 20.sh),
-
-              // Property Details Section
-              PropertyDetailsSection(
-                initialPrice: draft.price,
-                initialArea: draft.chaletArea,
-                initialBedrooms: draft.bedrooms?.toString(),
-                initialBathrooms: draft.bathrooms?.toString(),
-                onPriceChanged: ownerCubit.updatePrice,
-                onAreaChanged: ownerCubit.updateChaletArea,
-                onBedroomsChanged: (v) =>
-                    ownerCubit.updateBedrooms(int.tryParse(v) ?? 0),
-                onBathroomsChanged: (v) =>
-                    ownerCubit.updateBathrooms(int.tryParse(v) ?? 0),
-              ),
-              SizedBox(height: 20.sh),
-
-              DayUseSection(
-                dayUseEnabled: draft.dayUseEnabled,
-                onDayUseChanged: ownerCubit.updateDayUseEnabled,
-              ),
-              SizedBox(height: 20.sh),
-
-              PricingPeriodsSection(
-                periods: draft.pricingPeriods,
-                onAdd: (from, to, price) => ownerCubit.addPricingPeriod(
-                  from: from,
-                  to: to,
-                  price: price,
-                ),
-                onRemove: ownerCubit.removePricingPeriod,
-              ),
-              SizedBox(height: 20.sh),
-
-              // المرافق والخدمات (يشمل المميزات الإضافية — بدون قسم منفصل)
-              AmenitiesSelectionSection(
-                selectedAmenities: {
-                  'hasWifi': draft.hasWifi,
-                  'hasPool': draft.hasPool,
-                  'hasAirConditioning': draft.hasAirConditioning,
-                  'hasParking': draft.hasParking,
-                  'hasGarden': draft.hasGarden,
-                  'hasBBQ': draft.hasBBQ,
-                  'hasBeachView': draft.hasBeachView,
-                  'hasHousekeeping': draft.hasHousekeeping,
-                  'hasPetsAllowed': draft.hasPetsAllowed,
-                  'hasGym': draft.hasGym,
-                  'hasKitchen': draft.hasKitchen,
-                  'hasTV': draft.hasTV,
-                },
-                onAmenityChanged: ownerCubit.updateAmenity,
-              ),
-
-              SizedBox(height: 80.sh), // Space for bottom button
-            ],
-          ),
-        );
-      },
+    return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+      padding: EdgeInsets.symmetric(
+        horizontal: stv(
+          context: context,
+          mobile: 20.sw,
+          tablet: 32.sw,
+          desktop: 48.sw,
+        ),
+        vertical: 20.sh,
+      ),
+      child: OwnerChaletFormHost(
+        cubit: ownerCubit,
+        builder: _buildFormColumn,
+      ),
     );
+  }
+
+  Widget _buildFormColumn(
+    BuildContext context,
+    bool isDark,
+    OwnerCubit ownerCubit,
+    ChaletDraft draft,
+  ) {
+    return Column(
+      children: [
+          // Progress Indicator
+          _buildProgressCard(context, isDark),
+          SizedBox(height: 24.sh),
+
+          // Owner Info Section
+          OwnerInfoSection(
+            name: draft.merchantName ?? '',
+            email: draft.email ?? '',
+            phone: draft.phoneNumber ?? '',
+          ),
+          SizedBox(height: 20.sh),
+
+          // Images Section
+          ImageUploadSection(
+            images: draft.uploadedImages,
+            onAdd: () =>
+                getIt<HelperImageContract>().addSampleImages(context),
+            onRemove: (index) => ownerCubit.removeChaletImage(index),
+          ),
+          SizedBox(height: 20.sh),
+
+          // Chalet Details Section
+          ChaletDetailsSection(
+            initialName: draft.chaletName,
+            initialDescription: draft.description,
+            onNameChanged: ownerCubit.updateChaletName,
+            onDescriptionChanged: ownerCubit.updateDescription,
+          ),
+          SizedBox(height: 20.sh),
+
+          // Location Section
+          LocationSection(
+            address: draft.selectedLocation,
+            selectedPopularDestination: draft.popularDestination,
+            onPopularDestinationChanged:
+                ownerCubit.selectPopularDestination,
+            onPickLocation: () async {
+              FocusManager.instance.primaryFocus?.unfocus();
+              final selected = await Navigator.push<Object?>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FlutterGoogleMapLocationPicker(
+                    initialAddress: draft.selectedLocation,
+                  ),
+                ),
+              );
+              FocusManager.instance.primaryFocus?.unfocus();
+              if (selected is Map) {
+                final addr = selected['address'] as String?;
+                final lat = selected['lat'] as double?;
+                final lon = selected['lon'] as double?;
+                if (addr != null) {
+                  ownerCubit.updateGeo(
+                    lat: lat ?? 0,
+                    lon: lon ?? 0,
+                    address: addr,
+                  );
+                }
+              }
+            },
+          ),
+          SizedBox(height: 20.sh),
+
+          // Property Details Section
+          PropertyDetailsSection(
+            hideNightlyPrice: draft.dayUseOnly,
+            initialPrice: draft.price,
+            initialArea: draft.chaletArea,
+            initialBedrooms: draft.bedrooms?.toString(),
+            initialBathrooms: draft.bathrooms?.toString(),
+            onPriceChanged: ownerCubit.updatePrice,
+            onAreaChanged: ownerCubit.updateChaletArea,
+            onBedroomsChanged: (v) =>
+                ownerCubit.updateBedrooms(int.tryParse(v) ?? 0),
+            onBathroomsChanged: (v) =>
+                ownerCubit.updateBathrooms(int.tryParse(v) ?? 0),
+          ),
+          SizedBox(height: 20.sh),
+
+          DayUseSection(
+            dayUseEnabled: draft.dayUseEnabled,
+            dayUseOnly: draft.dayUseOnly,
+            dayUsePrice: draft.dayUsePrice,
+            onDayUseChanged: ownerCubit.updateDayUseEnabled,
+            onDayUseOnlyChanged: ownerCubit.updateDayUseOnly,
+            onDayUsePriceChanged: ownerCubit.updateDayUsePrice,
+          ),
+          SizedBox(height: 20.sh),
+
+          PricingPeriodsSection(
+            periods: draft.pricingPeriods,
+            onAdd: (from, to, price) => ownerCubit.addPricingPeriod(
+              from: from,
+              to: to,
+              price: price,
+            ),
+            onRemove: ownerCubit.removePricingPeriod,
+          ),
+          SizedBox(height: 20.sh),
+
+          // المرافق والخدمات (يشمل المميزات الإضافية — بدون قسم منفصل)
+          AmenitiesSelectionSection(
+            selectedAmenities: OwnerHelper.amenitiesDisplayMap(draft),
+            onAmenityChanged: ownerCubit.updateAmenity,
+          ),
+
+          SizedBox(height: 80.sh), // Space for bottom button
+        ],
+      );
   }
 
   Widget _buildProgressCard(BuildContext context, bool isDark) {

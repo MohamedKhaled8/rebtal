@@ -650,6 +650,7 @@ class PropertyDetailsSection extends StatelessWidget {
   final String? initialArea;
   final String? initialBedrooms;
   final String? initialBathrooms;
+  final bool hideNightlyPrice;
   final Function(String) onPriceChanged;
   final Function(String) onAreaChanged;
   final Function(String) onBedroomsChanged;
@@ -661,6 +662,7 @@ class PropertyDetailsSection extends StatelessWidget {
     this.initialArea,
     this.initialBedrooms,
     this.initialBathrooms,
+    this.hideNightlyPrice = false,
     required this.onPriceChanged,
     required this.onAreaChanged,
     required this.onBedroomsChanged,
@@ -678,17 +680,19 @@ class PropertyDetailsSection extends StatelessWidget {
       color: ColorsManager.mainBlue,
       child: Column(
         children: [
-          _ModernTextField(
-            fieldId: 'legacy_price',
-            isDark: isDark,
-            draftText: initialPrice ?? '',
-            label: context.tr('owner_price_per_night'),
-            icon: Icons.payments_rounded,
-            hint: '0',
-            keyboardType: TextInputType.number,
-            onChanged: onPriceChanged,
-          ),
-          const SizedBox(height: 16),
+          if (!hideNightlyPrice) ...[
+            _ModernTextField(
+              fieldId: 'legacy_price',
+              isDark: isDark,
+              draftText: initialPrice ?? '',
+              label: context.tr('owner_price_per_night'),
+              icon: Icons.payments_rounded,
+              hint: '0',
+              keyboardType: TextInputType.number,
+              onChanged: onPriceChanged,
+            ),
+            const SizedBox(height: 16),
+          ],
           _ModernTextField(
             fieldId: 'legacy_area',
             isDark: isDark,
@@ -1204,12 +1208,20 @@ class DiscountSection extends StatelessWidget {
 // ==========================================
 class DayUseSection extends StatelessWidget {
   final bool? dayUseEnabled;
+  final bool dayUseOnly;
+  final String dayUsePrice;
   final ValueChanged<bool> onDayUseChanged;
+  final ValueChanged<bool>? onDayUseOnlyChanged;
+  final ValueChanged<String>? onDayUsePriceChanged;
 
   const DayUseSection({
     super.key,
     this.dayUseEnabled,
+    this.dayUseOnly = false,
+    this.dayUsePrice = '',
     required this.onDayUseChanged,
+    this.onDayUseOnlyChanged,
+    this.onDayUsePriceChanged,
   });
 
   @override
@@ -1222,26 +1234,68 @@ class DayUseSection extends StatelessWidget {
       icon: Icons.access_time_rounded,
       title: context.tr('owner_day_use_feature'),
       color: ColorsManager.green3DDC84,
-      child: SwitchListTile(
-        title: Text(
-          context.tr('owner_enable_day_use'),
-          style: TextStyle(
-            color: isDark ? ColorsManager.white : ColorsManager.black,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+      child: Column(
+        children: [
+          SwitchListTile(
+            title: Text(
+              context.tr('owner_enable_day_use'),
+              style: TextStyle(
+                color: isDark ? ColorsManager.white : ColorsManager.black,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              context.tr('owner_day_use_hint'),
+              style: TextStyle(
+                color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
+                fontSize: 12,
+              ),
+            ),
+            value: isEnabled,
+            activeColor: ColorsManager.green3DDC84,
+            onChanged: (val) => onDayUseChanged(val),
+            contentPadding: EdgeInsets.zero,
           ),
-        ),
-        subtitle: Text(
-          context.tr('owner_day_use_hint'),
-          style: TextStyle(
-            color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
-            fontSize: 12,
-          ),
-        ),
-        value: isEnabled,
-        activeColor: ColorsManager.green3DDC84,
-        onChanged: (val) => onDayUseChanged(val),
-        contentPadding: EdgeInsets.zero,
+          if (onDayUseOnlyChanged != null) ...[
+            const Divider(height: 24),
+            SwitchListTile(
+              title: Text(
+                context.tr('owner_day_use_only_feature'),
+                style: TextStyle(
+                  color: isDark ? ColorsManager.white : ColorsManager.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                context.tr('owner_day_use_only_hint'),
+                style: TextStyle(
+                  color: isDark ? ColorsManager.grey400 : ColorsManager.grey600,
+                  fontSize: 12,
+                ),
+              ),
+              value: dayUseOnly,
+              activeColor: ColorsManager.purple764BA2,
+              onChanged: onDayUseOnlyChanged,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ],
+          if (onDayUsePriceChanged != null &&
+              (isEnabled || dayUseOnly)) ...[
+            const SizedBox(height: 16),
+            _ModernTextField(
+              fieldId: 'legacy_day_use_price',
+              isDark: isDark,
+              draftText: dayUsePrice,
+              label: context.tr('owner_day_use_price'),
+              icon: Icons.wb_sunny_rounded,
+              hint: context.tr('owner_price_hint_zero'),
+              keyboardType: TextInputType.number,
+              onChanged: onDayUsePriceChanged!,
+            ),
+          ],
+        ],
       ),
     );
   }
